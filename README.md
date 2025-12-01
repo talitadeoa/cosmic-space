@@ -1,4 +1,4 @@
-# Cosmic Universe Portal
+# Cosmic Portal
 
 
 Como rodar localmente
