@@ -10,17 +10,15 @@ export function LuaView() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const canvasEl = canvasRef.current!;
-    const ctx = canvasEl.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     // ==========================
     // Setup básico do canvas
     // ==========================
     function resizeCanvas() {
-      const c = canvasRef.current;
-      if (!c) return;
-      c.width = window.innerWidth;
-      c.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
 
     resizeCanvas();
@@ -30,15 +28,15 @@ export function LuaView() {
     // Coordenadas normalizadas
     // ==========================
     function normToPixelX(nx: number) {
-      return nx * canvasEl.width;
+      return nx * canvas.width;
     }
 
     function normToPixelY(ny: number) {
-      return ny * canvasEl.height;
+      return ny * canvas.height;
     }
 
     function normRadiusToPixels(nr: number) {
-      return nr * Math.min(canvasEl.width, canvasEl.height);
+      return nr * Math.min(canvas.width, canvas.height);
     }
 
     // ==========================
@@ -63,7 +61,7 @@ export function LuaView() {
       const cxPix = normToPixelX(c.x);
       const cyPix = normToPixelY(c.y);
 
-      ctx.translate(canvasEl.width / 2, canvasEl.height / 2);
+      ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.scale(c.scale, c.scale);
       ctx.translate(-cxPix, -cyPix);
     }
@@ -73,11 +71,11 @@ export function LuaView() {
       const cxPix = normToPixelX(c.x);
       const cyPix = normToPixelY(c.y);
 
-      const worldPixX = (sx - canvasEl.width / 2) / c.scale + cxPix;
-      const worldPixY = (sy - canvasEl.height / 2) / c.scale + cyPix;
+      const worldPixX = (sx - canvas.width / 2) / c.scale + cxPix;
+      const worldPixY = (sy - canvas.height / 2) / c.scale + cyPix;
 
-      const nx = worldPixX / canvasEl.width;
-      const ny = worldPixY / canvasEl.height;
+      const nx = worldPixX / canvas.width;
+      const ny = worldPixY / canvas.height;
       return { x: nx, y: ny };
     }
 
@@ -266,7 +264,7 @@ export function LuaView() {
     // ==========================
     function drawBackground() {
       ctx.fillStyle = "#02030a";
-      ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     function drawStars(time: number) {
@@ -314,7 +312,12 @@ export function LuaView() {
       ctx.shadowBlur = 40;
       ctx.shadowColor = "rgba(180, 230, 255, 0.9)";
 
-      const grad = ctx.createLinearGradient(0, canvasEl.height, canvasEl.width, 0);
+      const grad = ctx.createLinearGradient(
+        0,
+        canvas.height,
+        canvas.width,
+        0
+      );
       grad.addColorStop(0.0, "rgba(100, 160, 255, 0)");
       grad.addColorStop(0.2, "rgba(160, 210, 255, 0.8)");
       grad.addColorStop(0.5, "rgba(255, 255, 255, 1)");
@@ -428,8 +431,8 @@ export function LuaView() {
       const worldPixY = normToPixelY(moon.y + floatOffset);
       const scale = c.scale;
 
-      const sx = (worldPixX - cxPix) * scale + canvasEl.width / 2;
-      const sy = (worldPixY - cyPix) * scale + canvasEl.height / 2;
+      const sx = (worldPixX - cxPix) * scale + canvas.width / 2;
+      const sy = (worldPixY - cyPix) * scale + canvas.height / 2;
       const r = normRadiusToPixels(moon.radius) * scale;
 
       ctx.save();
@@ -517,7 +520,7 @@ export function LuaView() {
     }
 
     const handleClick = (e: MouseEvent) => {
-      const rect = canvasEl.getBoundingClientRect();
+      const rect = canvas.getBoundingClientRect();
       const sx = e.clientX - rect.left;
       const sy = e.clientY - rect.top;
       const clicked = findClickedMoon(sx, sy);
@@ -536,7 +539,7 @@ export function LuaView() {
       }
     };
 
-    canvasEl.addEventListener("click", handleClick);
+    canvas.addEventListener("click", handleClick);
     window.addEventListener("keydown", handleKeyDown);
 
     // ==========================
@@ -565,7 +568,7 @@ export function LuaView() {
       if (focusedMoonId !== null) {
         ctx.save();
         ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
-        ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const moon = moons.find((m) => m.id === focusedMoonId);
         if (moon) {
@@ -585,7 +588,7 @@ export function LuaView() {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("keydown", handleKeyDown);
-      canvasEl.removeEventListener("click", handleClick);
+      canvas.removeEventListener("click", handleClick);
     };
   }, []);
 
