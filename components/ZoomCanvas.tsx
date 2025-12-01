@@ -1,39 +1,19 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
+import { ZOOM_COLORS } from "@/lib/constants/colors";
+import { ZOOM_CONFIG } from "@/lib/constants/config";
+import type {
+  Planet,
+  Moon,
+  FocusedTarget,
+} from "@/types/canvas";
 
-interface Moon {
-  orbitRadius: number;
-  size: number;
-  periodDays: number;
-  angleOffset: number;
-  worldX?: number;
-  worldY?: number;
-  screenX?: number;
-  screenY?: number;
-  planet?: Planet;
-}
-
-interface Planet {
-  name: string;
-  radius: number;
-  size: number;
-  periodDays: number;
-  angleOffset: number;
-  color: string;
-  spinAngle: number;
-  moons: Moon[];
-  worldX?: number;
-  worldY?: number;
-  screenX?: number;
-  screenY?: number;
-}
-
-interface FocusedTarget {
-  type: "sun" | "planet" | "moon";
-  target: Planet | Moon | null;
-}
-
+/**
+ * Cria array de luas para um planeta com órbitas, períodos e tamanhos proporcionais
+ * @param baseSize - Tamanho base do planeta para calcular proporções das luas
+ * @returns Array com 4 luas configuradas
+ */
 const createMoonsForPlanet = (baseSize: number): Moon[] => [
   {
     orbitRadius: baseSize * 3.0,
@@ -61,6 +41,7 @@ const createMoonsForPlanet = (baseSize: number): Moon[] => [
   },
 ];
 
+/** Array com 4 planetas principais (Mercúrio, Terra, Júpiter, Saturno) */
 const PLANETS: Planet[] = [
   {
     name: "Mercury",
@@ -106,9 +87,75 @@ const PLANETS: Planet[] = [
 
 const SUN_RADIUS = 20;
 
+/**
+ * Escurece ou ilumina uma cor hexadecimal por uma porcentagem
+ * @param hex - Cor em formato hexadecimal (ex: "#ff0000")
+ * @param percent - Porcentagem para escurecer (negativo) ou iluminar (positivo)
+ * @returns Cor em formato RGB
+ */
+const shadeColor = (hex: string, percent: number): string => {
+  const num = parseInt(hex.slice(1), 16);
+  let r = (num >> 16) & 0xff;
+  let g = (num >> 8) & 0xff;
+  let b = num & 0xff;
+
+  r = Math.min(255, Math.max(0, r + (255 * percent) / 100));
+  g = Math.min(255, Math.max(0, g + (255 * percent) / 100));
+  b = Math.min(255, Math.max(0, b + (255 * percent) / 100));
+
+  return `rgb(${r},${g},${b})`;
+};
+
+/**
+ * Desenha uma esfera sombreada com efeito de luz radial e textura
+ * @param ctx - Contexto 2D do canvas
+ * @param radius - Raio da esfera
+ * @param baseColor - Cor base em hexadecimal
+ * @param spinAngle - Ângulo de rotação para simular movimento
+ */
+const drawShadedSphere = (
+  ctx: CanvasRenderingContext2D,
+  radius: number,
+  baseColor: string,
+  spinAngle: number
+) => {
+  const lightRadius = radius * 0.3;
+  const lx = Math.cos(spinAngle) * radius * 0.5;
+  const ly = Math.sin(spinAngle) * radius * 0.5;
+
+  const gradient = ctx.createRadialGradient(
+    lx,
+    ly,
+    lightRadius * 0.2,
+    0,
+    0,
+    radius
+  );
+  gradient.addColorStop(0, "rgba(255,255,255,0.95)");
+  gradient.addColorStop(0.3, baseColor);
+  gradient.addColorStop(0.8, shadeColor(baseColor, -30));
+  gradient.addColorStop(1, "rgba(0,0,0,0.9)");
+
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.clip();
+  ctx.globalAlpha = 0.15;
+  ctx.lineWidth = radius * 0.15;
+  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.beginPath();
+  ctx.arc(0, radius * 0.3, radius * 0.9, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+};
+
 export const ZoomCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [, setDimensions] = useState({ width: 0, height: 0 });
+
   const stateRef = useRef({
     time: 0,
     zoom: 1,
@@ -124,61 +171,9 @@ export const ZoomCanvas: React.FC = () => {
     startTime: performance.now(),
   });
 
-  const DAYS_PER_SECOND = 0.01;
-
-  const shadeColor = (hex: string, percent: number): string => {
-    const num = parseInt(hex.slice(1), 16);
-    let r = (num >> 16) & 0xff;
-    let g = (num >> 8) & 0xff;
-    let b = num & 0xff;
-
-    r = Math.min(255, Math.max(0, r + (255 * percent) / 100));
-    g = Math.min(255, Math.max(0, g + (255 * percent) / 100));
-    b = Math.min(255, Math.max(0, b + (255 * percent) / 100));
-
-    return `rgb(${r},${g},${b})`;
-  };
-
-  const drawShadedSphere = (
-    ctx: CanvasRenderingContext2D,
-    radius: number,
-    baseColor: string,
-    spinAngle: number
-  ) => {
-    const lightRadius = radius * 0.3;
-    const lx = Math.cos(spinAngle) * radius * 0.5;
-    const ly = Math.sin(spinAngle) * radius * 0.5;
-
-    const gradient = ctx.createRadialGradient(
-      lx,
-      ly,
-      lightRadius * 0.2,
-      0,
-      0,
-      radius
-    );
-
-    gradient.addColorStop(0, "rgba(255,255,255,0.95)");
-    gradient.addColorStop(0.3, baseColor);
-    gradient.addColorStop(0.8, shadeColor(baseColor, -30));
-    gradient.addColorStop(1, "rgba(0,0,0,0.9)");
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.save();
-    ctx.clip();
-    ctx.globalAlpha = 0.15;
-    ctx.lineWidth = radius * 0.15;
-    ctx.strokeStyle = "rgba(255,255,255,0.5)";
-    ctx.beginPath();
-    ctx.arc(0, radius * 0.3, radius * 0.9, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  };
-
+  /**
+   * Verifica se câmera atingiu o zoom e posição alvo
+   */
   const cameraAtTarget = (): boolean => {
     const state = stateRef.current;
     const dz = Math.abs(state.targetZoom - state.zoom);
@@ -187,6 +182,9 @@ export const ZoomCanvas: React.FC = () => {
     return dz < 0.001 && dcx < 0.1 && dcy < 0.1;
   };
 
+  /**
+   * Verifica se câmera está próxima ao alvo (para rotação)
+   */
   const cameraAlmostAtTarget = (): boolean => {
     const state = stateRef.current;
     const dz = Math.abs(state.targetZoom - state.zoom);
@@ -195,6 +193,9 @@ export const ZoomCanvas: React.FC = () => {
     return dz < 0.02 && dcx < 2 && dcy < 2;
   };
 
+  /**
+   * Calcula qual planeta ou lua foi clicado e ajusta câmera
+   */
   const handleCanvasClick = (e: MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -202,17 +203,18 @@ export const ZoomCanvas: React.FC = () => {
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
-
     const state = stateRef.current;
 
     let clickedPlanet: Planet | null = null;
     let clickedMoon: Moon | null = null;
     let clickedSun = false;
 
+    // Verifica clique no Sol
     const distSun = Math.hypot(clickX - state.sunScreenX, clickY - state.sunScreenY);
     if (distSun < SUN_RADIUS * state.zoom + 15) {
       clickedSun = true;
     } else {
+      // Verifica clique em planetas
       for (const p of PLANETS) {
         if (p.screenX === undefined || p.screenY === undefined) continue;
         const dist = Math.hypot(clickX - p.screenX, clickY - p.screenY);
@@ -222,6 +224,7 @@ export const ZoomCanvas: React.FC = () => {
         }
       }
 
+      // Verifica clique em luas
       if (!clickedPlanet && !clickedSun) {
         for (const p of PLANETS) {
           const isGeneralView = !state.focusedTarget;
@@ -254,6 +257,7 @@ export const ZoomCanvas: React.FC = () => {
       }
     }
 
+    // Sem clique: volta para visão geral
     if (!clickedSun && !clickedPlanet && !clickedMoon) {
       state.focusedTarget = null;
       state.targetZoom = 1;
@@ -262,6 +266,7 @@ export const ZoomCanvas: React.FC = () => {
       return;
     }
 
+    // Clique no Sol
     if (clickedSun) {
       if (state.focusedTarget?.type === "sun") {
         state.focusedTarget = null;
@@ -277,6 +282,7 @@ export const ZoomCanvas: React.FC = () => {
       return;
     }
 
+    // Clique em lua
     if (clickedMoon) {
       if (
         state.focusedTarget?.type === "moon" &&
@@ -300,6 +306,7 @@ export const ZoomCanvas: React.FC = () => {
       return;
     }
 
+    // Clique em planeta
     if (clickedPlanet) {
       if (
         state.focusedTarget?.type === "planet" &&
@@ -323,11 +330,13 @@ export const ZoomCanvas: React.FC = () => {
     }
   };
 
+  /**
+   * Renderiza toda a cena: Sol, planetas, luas e órbitas
+   */
   const draw = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
     const state = stateRef.current;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -338,13 +347,14 @@ export const ZoomCanvas: React.FC = () => {
 
     const now = performance.now();
     const elapsedSeconds = (now - state.startTime) / 1000;
-    const simulatedDays = elapsedSeconds * DAYS_PER_SECOND;
+    const simulatedDays = elapsedSeconds * ZOOM_CONFIG.daysPerSecond;
 
     state.sunScreenX = canvas.width / 2 + (0 + state.camX) * state.zoom;
     state.sunScreenY = canvas.height / 2 + (0 + state.camY) * state.zoom;
 
+    // Desenha órbitas em visão geral
     if (!state.focusedTarget) {
-      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.strokeStyle = ZOOM_COLORS.orbitBase;
       ctx.lineWidth = 1.2 / state.zoom;
       for (const p of PLANETS) {
         ctx.beginPath();
@@ -353,12 +363,14 @@ export const ZoomCanvas: React.FC = () => {
       }
     }
 
+    // Desenha Sol
     if (!state.focusedTarget || state.focusedTarget.type === "sun") {
       ctx.save();
-      drawShadedSphere(ctx, SUN_RADIUS, "#ffcc66", state.sunSpinAngle);
+      drawShadedSphere(ctx, SUN_RADIUS, ZOOM_COLORS.sunCore, state.sunSpinAngle);
       ctx.restore();
     }
 
+    // Itera sobre planetas
     for (const p of PLANETS) {
       const orbitFraction = simulatedDays / p.periodDays;
       const angle = orbitFraction * Math.PI * 2 + p.angleOffset;
@@ -379,7 +391,6 @@ export const ZoomCanvas: React.FC = () => {
             state.focusedTarget.target.planet === p));
 
       const shouldDrawPlanet = isGeneralView || isFocusedThisPlanet;
-
       const moonsToDraw = isGeneralView
         ? p.moons.length > 0
           ? [p.moons[0]]
@@ -388,9 +399,11 @@ export const ZoomCanvas: React.FC = () => {
           ? p.moons
           : [];
 
+      // Desenha órbitas das luas
       if (shouldDrawPlanet && moonsToDraw.length > 0) {
         ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,0.45)";
+        ctx.strokeStyle = ZOOM_COLORS.orbitHighlight;
+        ctx.globalAlpha = 0.45;
         ctx.lineWidth = 1 / state.zoom;
         for (const moon of moonsToDraw) {
           ctx.beginPath();
@@ -400,6 +413,7 @@ export const ZoomCanvas: React.FC = () => {
         ctx.restore();
       }
 
+      // Desenha planeta
       if (shouldDrawPlanet) {
         ctx.save();
         ctx.translate(x, y);
@@ -407,6 +421,7 @@ export const ZoomCanvas: React.FC = () => {
         ctx.restore();
       }
 
+      // Desenha luas
       for (const moon of moonsToDraw) {
         const mOrbitFraction = simulatedDays / moon.periodDays;
         const mAngle = mOrbitFraction * Math.PI * 2 + moon.angleOffset;
@@ -420,7 +435,7 @@ export const ZoomCanvas: React.FC = () => {
 
         ctx.save();
         ctx.translate(mx, my);
-        drawShadedSphere(ctx, moon.size, "#d0d0d0", p.spinAngle + mAngle);
+        drawShadedSphere(ctx, moon.size, ZOOM_COLORS.moonSmall, p.spinAngle + mAngle);
         ctx.restore();
 
         const moonScreenX = canvas.width / 2 + (mx + state.camX) * state.zoom;
@@ -438,6 +453,9 @@ export const ZoomCanvas: React.FC = () => {
     ctx.restore();
   };
 
+  /**
+   * Loop principal de animação com interpolação suave da câmera (lerp 8%)
+   */
   const animate = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -447,11 +465,11 @@ export const ZoomCanvas: React.FC = () => {
 
     const state = stateRef.current;
 
-    state.zoom += (state.targetZoom - state.zoom) * 0.08;
-    state.camX += (state.targetCamX - state.camX) * 0.08;
-    state.camY += (state.targetCamY - state.camY) * 0.08;
+    // Suavização de câmera com lerp 8%
+    state.zoom += (state.targetZoom - state.zoom) * ZOOM_CONFIG.cameraEasing;
+    state.camX += (state.targetCamX - state.camX) * ZOOM_CONFIG.cameraEasing;
+    state.camY += (state.targetCamY - state.camY) * ZOOM_CONFIG.cameraEasing;
 
-    const atTarget = cameraAtTarget();
     const almostAtTarget = cameraAlmostAtTarget();
 
     if (!state.focusedTarget) {
@@ -471,10 +489,8 @@ export const ZoomCanvas: React.FC = () => {
             (state.focusedTarget.target &&
               "planet" in state.focusedTarget.target &&
               state.focusedTarget.target.planet === p);
-          if (isFocused) {
-            if (!almostAtTarget) {
-              p.spinAngle += 0.2;
-            }
+          if (isFocused && !almostAtTarget) {
+            p.spinAngle += 0.2;
           }
         }
       }

@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { PhasesCanvas } from "@/components/PhasesCanvas";
+import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
 
 /**
  * Exploração interativa das fases da Lua.
@@ -12,7 +13,9 @@ export const PhasesView: FC = () => {
     <div className="w-full h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden relative">
       {/* Canvas de animação */}
       <div className="flex-1 relative">
-        <PhasesCanvas />
+        <CanvasErrorBoundary>
+          <PhasesCanvas />
+        </CanvasErrorBoundary>
       </div>
 
       {/* Instruções sobrepostas */}
