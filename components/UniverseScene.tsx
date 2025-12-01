@@ -1,49 +1,49 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import React from "react";
 
 /**
- * Cena 3D sutil de fundo usando React Three Fiber.
- * Mantemos simples e leve para não competir com as esferas 2D.
+ * Cena de fundo sutil usando SVG + CSS.
+ * Renderiza um campo de estrelas e gradientes estilizados.
  */
-function CosmicBackgroundObjects() {
-  return (
-    <>
-      {/* Campo de estrelas suave */}
-      <Stars
-        radius={80}
-        depth={50}
-        count={4000}
-        factor={3}
-        saturation={0}
-        fade
-        speed={0.6}
-      />
-
-      {/* Névoa volumétrica leve */}
-      <fog attach="fog" args={["#020617", 15, 120]} />
-    </>
-  );
-}
-
 export function UniverseScene() {
   return (
     <div className="pointer-events-none absolute inset-0 -z-10">
-      <Canvas
-        camera={{ position: [0, 0, 22], fov: 60 }}
-        gl={{ antialias: true }}
+      <svg
+        className="h-full w-full"
+        viewBox="0 0 1024 768"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
       >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[6, 8, 4]} intensity={1.1} />
-        <CosmicBackgroundObjects />
-        <OrbitControls
-          enablePan={false}
-          enableZoom={false}
-          autoRotate
-          autoRotateSpeed={0.35}
-        />
-      </Canvas>
+        <defs>
+          <radialGradient id="cosmicGradient" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stopColor="#4c1d95" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="#1e1b4b" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#0f172a" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Fundo gradiente cósmico */}
+        <rect width="1024" height="768" fill="url(#cosmicGradient)" />
+
+        {/* Campo de estrelas simples */}
+        {Array.from({ length: 80 }).map((_, i) => {
+          const x = Math.random() * 1024;
+          const y = Math.random() * 768;
+          const r = Math.random() * 1.5;
+          const opacity = Math.random() * 0.7 + 0.3;
+          return (
+            <circle
+              key={i}
+              cx={x}
+              cy={y}
+              r={r}
+              fill="#e5e7eb"
+              opacity={opacity}
+            />
+          );
+        })}
+      </svg>
     </div>
   );
 }

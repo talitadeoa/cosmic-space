@@ -3,12 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
-import dynamic from "next/dynamic";
-
-const UniverseScene = dynamic(
-  () => import("@/components/UniverseScene").then((mod) => mod.UniverseScene),
-  { ssr: false }
-);
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { UniverseScene } from "@/components/UniverseScene";
 import {
   FocusSphere,
   Sphere,
@@ -91,7 +87,9 @@ export default function UniversePage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-space-dark text-slate-50">
       {/* Cena 3D de fundo */}
-      <UniverseScene />
+      <ErrorBoundary>
+        <UniverseScene />
+      </ErrorBoundary>
 
       {/* Overlay leve para garantir contraste sobre o Canvas */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/80" />
