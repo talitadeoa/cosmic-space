@@ -51,7 +51,7 @@ export default function LandingPage() {
             </span>
           </h1>
           <p className="mt-3 text-sm text-slate-300 md:text-base">
-            Deixe seu e-mail se quiser acompanhar de perto
+            Deixa seu e-mail se quiser acompanhar de perto 👀
           </p>
         </div>
 

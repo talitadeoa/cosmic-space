@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import LuaView from "./componentes/html-views/LuaView"; 
+import { LuaView } from "../../components/html-views/LuaView";
 // depois você pode importar as outras views: LuaFasesView, SolView, ZoomView etc.
 
 const VIEWS = [
