@@ -8,10 +8,19 @@ export function LuaView() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn("[LuaView] Canvas ref é nulo");
+      return;
+    }
 
     const canvasEl = canvasRef.current!;
     const ctx = canvasEl.getContext("2d")!;
+    if (!ctx) {
+      console.error("[LuaView] Falha ao obter 2D context do canvas");
+      return;
+    }
+    
+    console.log("[LuaView] Canvas e context inicializados com sucesso");
 
     // ==========================
     // Setup básico do canvas
@@ -579,6 +588,8 @@ export function LuaView() {
     };
 
     animationFrameId = requestAnimationFrame(render);
+
+    console.log("[LuaView] Loop de animação iniciado com sucesso");
 
     // Cleanup
     return () => {
