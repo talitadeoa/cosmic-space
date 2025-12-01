@@ -1,99 +1,44 @@
 import type { FC } from "react";
+import { SolarOrbitCanvas } from "@/components/SolarOrbitCanvas";
 
+/**
+ * Visualização da órbita trocoidal da Lua ao redor da Terra,
+ * orbitando o Sol — um sistema de movimentos cósmicos em harmonia.
+ */
 export const SolarOrbitView: FC = () => {
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-indigo-100">
-        Órbita Solar & Galáctica
-      </h3>
-      <p className="text-xs text-slate-300">
-        Uma visão em camadas da dança do Sol em torno do centro da galáxia — e
-        da própria galáxia movendo-se em algo ainda maior.
-      </p>
-
-      <div className="mt-2 flex items-center justify-center">
-        <svg
-          className="h-48 w-48"
-          viewBox="0 0 200 200"
-          aria-hidden="true"
-        >
-          {/* Fundo galáctico */}
-          <defs>
-            <radialGradient id="galaxyCore" cx="50%" cy="50%" r="60%">
-              <stop offset="0%" stopColor="#a5b4fc" stopOpacity="0.9" />
-              <stop offset="40%" stopColor="#6366f1" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="url(#galaxyCore)"
-            opacity="0.6"
-          />
-
-          {/* Centro galáctico */}
-          <circle
-            cx="100"
-            cy="100"
-            r="6"
-            fill="#0f172a"
-            stroke="#e5e7eb"
-            strokeWidth="1.5"
-          />
-
-          {/* Órbita do Sol */}
-          <circle
-            cx="100"
-            cy="100"
-            r="40"
-            fill="none"
-            stroke="rgba(248,250,252,0.9)"
-            strokeWidth="1.4"
-          />
-
-          {/* Sol orbitando */}
-          <g className="origin-center animate-[spin_16s_linear_infinite]">
-            <circle
-              cx="140"
-              cy="100"
-              r="7"
-              fill="#facc15"
-              stroke="#fde68a"
-              strokeWidth="1.3"
-            />
-          </g>
-
-          {/* Órbita da galáxia em algo maior (apenas sugerida) */}
-          <circle
-            cx="100"
-            cy="100"
-            r="65"
-            fill="none"
-            stroke="rgba(148,163,184,0.5)"
-            strokeWidth="1"
-            strokeDasharray="5 4"
-          />
-        </svg>
+    <div className="w-full h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+      {/* Canvas de animação */}
+      <div className="flex-1 relative">
+        <SolarOrbitCanvas />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-[0.7rem] text-slate-300">
-        <div className="space-y-1 rounded-2xl border border-slate-700/80 bg-slate-900/60 p-2">
-          <p className="font-semibold text-indigo-100/90">Órbita Solar</p>
-          <p className="text-slate-400">
-            Representada pelo círculo interno. O Sol não está parado; é um
-            viajante orbitando o núcleo galáctico.
-          </p>
-        </div>
-        <div className="space-y-1 rounded-2xl border border-slate-700/80 bg-slate-900/60 p-2">
-          <p className="font-semibold text-indigo-100/90">Órbita Galáctica</p>
-          <p className="text-slate-400">
-            O círculo tracejado maior sugere que até a galáxia participa de
-            órbitas em escalas maiores, ainda mais abstratas.
-          </p>
-        </div>
+      {/* Informações descritivas */}
+      <div className="absolute bottom-6 left-6 max-w-sm space-y-2 bg-slate-900/80 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50">
+        <h3 className="text-sm font-semibold text-cyan-300">
+          Órbita Trocoidal
+        </h3>
+        <p className="text-xs text-slate-300 leading-relaxed">
+          A Lua segue uma trajetória hipnótica ao orbitar a Terra, que por sua
+          vez orbita o Sol. Este movimento composto cria uma curva trocoidal —
+          um padrão que reflete a dança perpétua dos corpos celestes.
+        </p>
+        <ul className="text-xs text-slate-400 space-y-1 mt-3">
+          <li>
+            <span className="text-cyan-200">☀️ Sol</span> — Centro do sistema
+          </li>
+          <li>
+            <span className="text-blue-300">🌍 Earth</span> — Órbita em azul
+          </li>
+          <li>
+            <span className="text-cyan-100">🌙 Moon</span> — Traço luminoso
+          </li>
+        </ul>
+      </div>
+
+      {/* Crédito (opcional) */}
+      <div className="absolute top-6 right-6 text-xs text-slate-500">
+        Sistema Solar em Tempo Real
       </div>
     </div>
   );
