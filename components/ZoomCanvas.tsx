@@ -214,7 +214,7 @@ export const ZoomCanvas: React.FC = () => {
       clickedSun = true;
     } else {
       for (const p of PLANETS) {
-        if (p.screenX === undefined) continue;
+        if (p.screenX === undefined || p.screenY === undefined) continue;
         const dist = Math.hypot(clickX - p.screenX, clickY - p.screenY);
         if (dist < p.size * state.zoom + 10) {
           clickedPlanet = p;
@@ -242,7 +242,7 @@ export const ZoomCanvas: React.FC = () => {
               : [];
 
           for (const moon of moonsToCheck) {
-            if (moon.screenX === undefined) continue;
+            if (moon.screenX === undefined || moon.screenY === undefined) continue;
             const distM = Math.hypot(clickX - moon.screenX, clickY - moon.screenY);
             if (distM < moon.size * state.zoom + 8) {
               clickedMoon = moon;
