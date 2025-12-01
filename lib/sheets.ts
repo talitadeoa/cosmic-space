@@ -2,11 +2,11 @@
 // Integração com Google Sheets API
 
 interface SheetData {
-  name: string;
-  email: string;
-  message: string;
   timestamp: string;
-  [key: string]: string;
+  name?: string;
+  email?: string;
+  message?: string;
+  [key: string]: any;
 }
 
 export async function appendToSheet(data: SheetData): Promise<boolean> {
@@ -20,6 +20,13 @@ export async function appendToSheet(data: SheetData): Promise<boolean> {
     }
 
     // Usando Google Sheets API v4
+    // Suporta dois formatos de entrada:
+    // - formulário genérico (name, email, message)
+    // - payloads arbitrários (ex: registro de fase lunar) — nesses casos serializamos em JSON
+    const valuesRow = (data.name && data.email && data.message)
+      ? [data.timestamp ?? '', data.name ?? '', data.email ?? '', data.message ?? '', new Date().toISOString(), 'Novo registro']
+      : [data.timestamp ?? '', JSON.stringify(data), '', new Date().toISOString(), 'LunarPhase', ''];
+
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Dados!A:F:append?key=${apiKey}`,
       {
@@ -28,14 +35,7 @@ export async function appendToSheet(data: SheetData): Promise<boolean> {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          values: [[
-            data.timestamp,
-            data.name,
-            data.email,
-            data.message,
-            new Date().toISOString(),
-            'Novo registro'
-          ]],
+          values: [valuesRow],
           majorDimension: 'ROWS',
         }),
       }
