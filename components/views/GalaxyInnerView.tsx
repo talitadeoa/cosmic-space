@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import DataCollectionForm from "../DataCollectionForm";
 
 /**
  * Visualização de uma "galáxia interior" lembrando um átomo:
@@ -7,14 +8,16 @@ import type { FC } from "react";
  */
 export const GalaxyInnerView: FC = () => {
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-indigo-100">
-        Galáxia Interior
-      </h3>
-      <p className="text-xs text-slate-300">
-        Uma cartografia simbólica do seu universo interno — camadas, órbitas e
-        partículas em constante reorganização.
-      </p>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-semibold text-indigo-100">
+          Galáxia Interior
+        </h3>
+        <p className="text-xs text-slate-300">
+          Uma cartografia simbólica do seu universo interno — camadas, órbitas e
+          partículas em constante reorganização.
+        </p>
+      </div>
 
       <div className="mt-2 flex items-center justify-center">
         <svg
@@ -117,6 +120,11 @@ export const GalaxyInnerView: FC = () => {
         Você pode futuramente conectar esta visualização a dados reais (estado
         emocional, ciclos, projetos), transformando o átomo em mapa vivo.
       </p>
+
+      {/* Formulário de coleta de dados integrado */}
+      <div className="border-t border-slate-700 pt-6 mt-6">
+        <DataCollectionForm />
+      </div>
     </div>
   );
 };

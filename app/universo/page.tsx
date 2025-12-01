@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AuthGate from "@/components/AuthGate";
 import { UniverseScene } from "@/components/UniverseScene";
 import {
   FocusSphere,
@@ -85,11 +86,12 @@ export default function UniversePage() {
   const activeConfig = SPHERES.find((s) => s.id === activeSphere) || null;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-space-dark text-slate-50">
-      {/* Cena 3D de fundo */}
-      <ErrorBoundary>
-        <UniverseScene />
-      </ErrorBoundary>
+    <AuthGate>
+      <main className="relative min-h-screen overflow-hidden bg-space-dark text-slate-50">
+        {/* Cena 3D de fundo */}
+        <ErrorBoundary>
+          <UniverseScene />
+        </ErrorBoundary>
 
       {/* Overlay leve para garantir contraste sobre o Canvas */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/80" />
@@ -165,6 +167,7 @@ export default function UniversePage() {
           </FocusSphere>
         )}
       </AnimatePresence>
-    </main>
+      </main>
+    </AuthGate>
   );
 }
