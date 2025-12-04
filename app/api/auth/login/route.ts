@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = createAuthToken();
+    const token = createAuthToken({ provider: 'password' });
 
     const response = NextResponse.json(
       { success: true, token, message: 'Autenticação bem-sucedida' },

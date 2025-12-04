@@ -159,6 +159,7 @@ export default function DataCollectionForm({ onSuccess }: DataCollectionFormProp
           {isSubmitting ? 'Enviando...' : 'Enviar Dados'}
         </span>
       </button>
+      <div className="mt-3 text-xs text-slate-500">© {new Date().getFullYear()} Cosmic Space — Todos os direitos reservados</div>
     </form>
   );
 }

@@ -1,6 +1,6 @@
 // app/api/auth/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { validateToken } from '@/lib/auth';
+import { validateToken, getTokenPayload } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +15,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const payload = getTokenPayload(token);
+
     return NextResponse.json(
-      { authenticated: true },
+      { authenticated: true, user: payload ?? null },
       { status: 200 }
     );
   } catch (error) {
