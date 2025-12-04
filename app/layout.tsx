@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import RadioPlayer from "@/components/RadioPlayer";
 
 export const metadata: Metadata = {
   title: "Cosmic Universe Portal",
@@ -15,6 +16,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className="min-h-screen bg-space-dark bg-cosmic-gradient text-slate-100">
         {children}
+        <RadioPlayer />
       </body>
     </html>
   );

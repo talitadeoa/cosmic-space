@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { SolarOrbitCanvas } from "@/components/SolarOrbitCanvas";
+import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
 
 /**
  * Visualização da órbita trocoidal da Lua ao redor da Terra,
@@ -10,7 +11,9 @@ export const SolarOrbitView: FC = () => {
     <div className="w-full h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
       {/* Canvas de animação */}
       <div className="flex-1 relative">
-        <SolarOrbitCanvas />
+        <CanvasErrorBoundary>
+          <SolarOrbitCanvas />
+        </CanvasErrorBoundary>
       </div>
 
       {/* Informações descritivas */}

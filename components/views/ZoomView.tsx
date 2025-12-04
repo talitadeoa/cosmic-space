@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { ZoomCanvas } from "@/components/ZoomCanvas";
+import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
 
 /**
  * Exploração interativa do sistema solar com zoom e transições suaves.
@@ -10,7 +11,9 @@ export const ZoomView: FC = () => {
     <div className="w-full h-screen flex flex-col bg-black overflow-hidden relative">
       {/* Canvas de animação */}
       <div className="flex-1 relative">
-        <ZoomCanvas />
+        <CanvasErrorBoundary>
+          <ZoomCanvas />
+        </CanvasErrorBoundary>
       </div>
 
       {/* Instruções sobrepostas */}
