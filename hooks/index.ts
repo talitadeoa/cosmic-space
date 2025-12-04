@@ -6,3 +6,9 @@ export { useMouseTracking } from "./useMouseTracking";
 
 /** Hooks para áudio */
 export { useAudioPlayer } from "./useAudioPlayer";
+
+/** Hooks para autenticação */
+export { useAuth } from "./useAuth";
+
+/** Hooks para SFX */
+export { useSfx } from "./useSfx";
