@@ -14,7 +14,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         onClick={(e) =>
           navigateWithFocus("solOrbit", { event: e, type: "sol", size: "md" })
         }
-        className="absolute top-12 left-10"
+        className="absolute top-6 sm:top-12 left-4 sm:left-10"
         floatOffset={-2}
       />
 
@@ -29,7 +29,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             size: "lg",
           })
         }
-        className="absolute top-10 left-1/2 -translate-x-1/2"
+        className="absolute top-6 sm:top-10 left-1/2 -translate-x-1/2"
         floatOffset={-4}
       />
 
@@ -44,7 +44,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             size: "sm",
           })
         }
-        className="absolute top-16 right-16"
+        className="absolute top-8 sm:top-16 right-4 sm:right-16"
         floatOffset={1}
       />
 
@@ -59,7 +59,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             size: "lg",
           })
         }
-        className="absolute bottom-24 left-14"
+        className="absolute bottom-16 sm:bottom-24 left-4 sm:left-14"
         floatOffset={3}
       />
 
@@ -70,7 +70,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         onClick={(e) =>
           navigateWithFocus("luaList", { event: e, type: "lua", size: "lg" })
         }
-        className="absolute bottom-24 left-1/2 -translate-x-1/2"
+        className="absolute bottom-16 sm:bottom-24 left-1/2 -translate-x-1/2"
         floatOffset={0}
       />
 
@@ -85,12 +85,12 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             size: "lg",
           })
         }
-        className="absolute bottom-10 right-10"
+        className="absolute bottom-6 sm:bottom-10 right-4 sm:right-10"
         floatOffset={-1}
       />
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.3em] uppercase text-slate-300/60">
-        Clique em um astro para navegar · Clique no espaço para voltar
+      <div className="absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] uppercase text-slate-300/60 px-2 text-center">
+        Clique em um astro · Clique no espaço para voltar
       </div>
     </div>
   );

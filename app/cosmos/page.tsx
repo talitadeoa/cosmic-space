@@ -151,11 +151,11 @@ const CosmosPage: React.FC = () => {
       </AnimatePresence>
 
       <div className="relative z-10 flex h-screen flex-col">
-        <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-900/60 px-4 py-1 text-xs text-slate-200/70">
-          Tela atual: <span className="font-semibold">{currentScreen}</span>
+        <div className="pointer-events-none absolute top-2 sm:top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-900/60 px-3 sm:px-4 py-1 text-[0.65rem] sm:text-xs text-slate-200/70">
+          Tela: <span className="font-semibold">{currentScreen}</span>
         </div>
 
-        <div className="relative flex flex-1 items-center justify-center">
+        <div className="relative flex flex-1 items-center justify-center px-2 sm:px-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentScreen}
@@ -163,7 +163,7 @@ const CosmosPage: React.FC = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="relative h-[80vh] w-[90vw] max-w-5xl"
+              className="relative h-[75vh] sm:h-[80vh] w-full sm:w-[90vw] max-w-5xl"
             >
               <CurrentScreen
                 navigateTo={navigateTo}
