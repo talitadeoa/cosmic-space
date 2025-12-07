@@ -30,6 +30,14 @@ const sizeToClass: Record<CelestialSize, string> = {
 const CELESTIAL_STYLES: Record<CelestialType, string> = {
   sol: "bg-gradient-to-br from-yellow-300 via-amber-300 to-orange-400 shadow-[0_0_40px_rgba(252,211,77,0.7)]",
   lua: "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 shadow-[0_0_24px_rgba(148,163,184,0.9)]",
+  luaNova:
+    "bg-[radial-gradient(circle_at_50%_55%,#111827_10%,#0f172a_55%,#020617_100%)] ring-2 ring-slate-800/70 shadow-[0_0_28px_rgba(148,163,184,0.35)]",
+  luaCrescente:
+    "bg-[radial-gradient(circle_at_70%_50%,#e2e8f0_0%,#e2e8f0_34%,#0f172a_46%,#020617_100%)] ring-2 ring-slate-500/70 shadow-[0_0_32px_rgba(148,163,184,0.55)]",
+  luaCheia:
+    "bg-[radial-gradient(circle_at_45%_40%,#f8fafc_0%,#e2e8f0_40%,#cbd5e1_70%,#94a3b8_100%)] shadow-[0_0_36px_rgba(226,232,240,0.85)] ring-2 ring-slate-100/70",
+  luaMinguante:
+    "bg-[radial-gradient(circle_at_30%_50%,#e2e8f0_0%,#e2e8f0_34%,#0f172a_46%,#020617_100%)] ring-2 ring-slate-500/70 shadow-[0_0_32px_rgba(148,163,184,0.55)]",
   planeta:
     "bg-gradient-to-br from-sky-300 via-sky-400 to-blue-500 shadow-[0_0_40px_rgba(56,189,248,0.8)]",
   galaxia:

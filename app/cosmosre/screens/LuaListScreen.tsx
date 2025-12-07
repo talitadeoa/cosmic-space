@@ -4,9 +4,16 @@ import React from "react";
 import { motion } from "framer-motion";
 import { CelestialObject } from "../components/CelestialObject";
 import { LuminousTrail } from "../components/LuminousTrail";
-import type { ScreenProps } from "../types";
+import type { CelestialType, ScreenProps } from "../types";
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+  const moonPhases: CelestialType[] = [
+    "luaNova",
+    "luaCrescente",
+    "luaCheia",
+    "luaMinguante",
+  ];
+
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-between py-16">
       <LuminousTrail />
@@ -28,19 +35,19 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
       <div className="relative flex flex-col items-center gap-6">
         <div className="flex gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {moonPhases.slice(0, 2).map((phase, i) => (
             <CelestialObject
-              key={`row1-lua-${i}`}
-              type="lua"
+              key={phase}
+              type={phase}
               interactive
               onClick={(e) =>
                 navigateWithFocus("planetCardStandalone", {
                   event: e,
-                  type: "lua",
+                  type: phase,
                   size: "md",
                 })
               }
-              floatOffset={i * 1.5}
+              floatOffset={-1 + i * 1.2}
             />
           ))}
         </div>
@@ -52,19 +59,19 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         />
 
         <div className="flex gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {moonPhases.slice(2).map((phase, i) => (
             <CelestialObject
-              key={`row2-lua-${i}`}
-              type="lua"
+              key={phase}
+              type={phase}
               interactive
               onClick={(e) =>
                 navigateWithFocus("planetCardStandalone", {
                   event: e,
-                  type: "lua",
+                  type: phase,
                   size: "md",
                 })
               }
-              floatOffset={-i * 1.5}
+              floatOffset={1.2 - i * 1.2}
             />
           ))}
         </div>
