@@ -7,6 +7,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  user?: Record<string, any> | null;
 }
 
 export function useAuth() {
@@ -30,6 +31,7 @@ export function useAuth() {
         ...prev,
         isAuthenticated: data.authenticated || false,
         loading: false,
+        user: data.user ?? null,
       }));
     } catch (error) {
       setState(prev => ({
@@ -62,6 +64,9 @@ export function useAuth() {
         return false;
       }
 
+      // Após login via senha, verificar para obter payload
+      await verifyAuth();
+
       setState(prev => ({
         ...prev,
         isAuthenticated: true,
@@ -88,6 +93,7 @@ export function useAuth() {
         ...prev,
         isAuthenticated: false,
         loading: false,
+        user: null,
       }));
     } catch (error) {
       setState(prev => ({
@@ -98,10 +104,18 @@ export function useAuth() {
     }
   }, []);
 
+  const googleLogin = useCallback(() => {
+    // Inicia fluxo OAuth do Google redirecionando para o servidor
+    if (typeof window !== 'undefined') {
+      window.location.href = '/api/auth/google';
+    }
+  }, []);
+
   return {
     ...state,
     login,
     logout,
     verifyAuth,
+    googleLogin,
   };
 }
