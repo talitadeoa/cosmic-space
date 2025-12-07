@@ -24,13 +24,9 @@ export default function NavMenu() {
       {open && (
         <div className="mt-2 w-56 rounded-xl border border-slate-800 bg-black/60 p-3 shadow-lg backdrop-blur-md">
           <nav className="space-y-2">
-            <Link href="/">Home</Link>
-            <Link href="/universo">Universo</Link>
-            <Link href="/lua">Lua</Link>
-            <Link href="/fases">Fases</Link>
-            <Link href="/registro-fase-lunar">Registrar Fase</Link>
-            <Link href="/exemplo-protegido">Exemplo Protegido</Link>
-            <Link href="/zoom">Zoom</Link>
+            <Link href="/">Home </Link>
+            <Link href="/universo">Universo </Link>
+            <Link href="/cosmos">cosmos</Link>
           </nav>
 
           <div className="mt-3 border-t border-slate-800 pt-3">
