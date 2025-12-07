@@ -60,7 +60,7 @@ export default function AuthGate({ children }: AuthGateProps) {
             </span>
           </h1>
           <p className="mt-3 text-sm text-slate-300 md:text-base">
-            Digite a senha para explorar o universo
+            Digite a senha para explorar o cosmos
           </p>
         </div>
 
@@ -91,14 +91,11 @@ export default function AuthGate({ children }: AuthGateProps) {
           >
             <span className="absolute inset-0 bg-white/15 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span className="relative">
-              {isSubmitting ? 'Entrando...' : 'Entrar na Galáxia'}
+              {isSubmitting ? 'Entrando...' : 'Entrar no cosmos'}
             </span>
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          🔐 Acesso protegido por autenticação
-        </p>
       </div>
     </div>
   );
