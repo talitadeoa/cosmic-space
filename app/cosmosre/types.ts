@@ -12,6 +12,10 @@ export type ScreenId =
 export type CelestialType =
   | "sol"
   | "lua"
+  | "luaNova"
+  | "luaCrescente"
+  | "luaCheia"
+  | "luaMinguante"
   | "planeta"
   | "galaxia"
   | "anel"
