@@ -26,7 +26,7 @@ export default function NavMenu() {
           <nav className="space-y-2">
             <Link href="/">Home </Link>
             <Link href="/universo">Universo </Link>
-            <Link href="/cosmosre">cosmos</Link>
+            <Link href="/cosmos">cosmos</Link>
           </nav>
 
           <div className="mt-3 border-t border-slate-800 pt-3">

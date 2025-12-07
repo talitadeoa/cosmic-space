@@ -54,9 +54,9 @@ export default function AuthGate({ children }: AuthGateProps) {
       <div className="max-w-sm w-full rounded-3xl border border-slate-800 bg-black/40 px-6 py-8 shadow-2xl backdrop-blur-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-semibold md:text-4xl">
-            Acesso à{" "}
+            Acesso ao{" "}
             <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-rose-300 bg-clip-text text-transparent">
-              Galáxia
+              Espaço
             </span>
           </h1>
           <p className="mt-3 text-sm text-slate-300 md:text-base">
