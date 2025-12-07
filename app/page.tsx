@@ -47,11 +47,11 @@ export default function LandingPage() {
           <h1 className="mt-4 text-3xl font-semibold md:text-4xl">
             Um novo jeito de navegar{" "}
             <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-rose-300 bg-clip-text text-transparent">
-              sua constelação
+              sua constelação✨🌙
             </span>
           </h1>
           <p className="mt-3 text-sm text-slate-300 md:text-base">
-            Deixa seu e-mail se quiser acompanhar de perto 👀
+            Deixe seu e-mail se quiser acompanhar de perto 👀
           </p>
         </div>
 
@@ -61,7 +61,6 @@ export default function LandingPage() {
           aria-label="Formulário de captura de e-mail"
         >
           <label className="block text-sm font-medium text-slate-200">
-            Seu e-mail
             <input
               type="email"
               name="email"

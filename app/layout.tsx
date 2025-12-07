@@ -6,8 +6,8 @@ import SfxProvider from '@/components/SfxProvider';
 import AutoSyncLunar from '@/components/AutoSyncLunar';
 
 export const metadata: Metadata = {
-  title: "Cosmic Universe Portal",
-  description: "Mini-portal imersivo com universo 2D/3D interativo."
+  title: "Em breve",
+  description: "Em breve"
 };
 
 export default function RootLayout({
