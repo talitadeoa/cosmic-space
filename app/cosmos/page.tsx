@@ -255,11 +255,11 @@ const CosmosPage: React.FC = () => {
   const renderHome = () => (
     <div className="relative flex h-full w-full items-center justify-center">
       <CelestialObject
-        type="lua"
+        type="sol"
         size="md"
         interactive
         onClick={(e) =>
-          navigateWithFocus("solOrbit", { event: e, type: "lua", size: "md" })
+          navigateWithFocus("solOrbit", { event: e, type: "sol", size: "md" })
         }
         className="absolute top-12 left-10"
         floatOffset={-2}
@@ -311,11 +311,11 @@ const CosmosPage: React.FC = () => {
       />
 
       <CelestialObject
-        type="sol"
+        type="lua"
         size="lg"
         interactive
         onClick={(e) =>
-          navigateWithFocus("luaList", { event: e, type: "sol", size: "lg" })
+          navigateWithFocus("luaList", { event: e, type: "lua", size: "lg" })
         }
         className="absolute bottom-24 left-1/2 -translate-x-1/2"
         floatOffset={0}
