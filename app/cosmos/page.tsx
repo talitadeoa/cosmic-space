@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { AnimatePresence, motion, Transition } from "framer-motion";
 
 type ScreenId =
@@ -176,9 +176,115 @@ const Card: React.FC<{
   );
 };
 
+const StarfieldBackground: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const STAR_COUNT = 250;
+    const stars: Array<{
+      x: number;
+      y: number;
+      radius: number;
+      baseAlpha: number;
+      twinkleSpeed: number;
+      twinklePhase: number;
+    }> = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function normToPixelX(nx: number) {
+      return nx * canvas.width;
+    }
+
+    function normToPixelY(ny: number) {
+      return ny * canvas.height;
+    }
+
+    function normRadiusToPixels(nr: number) {
+      return nr * Math.min(canvas.width, canvas.height);
+    }
+
+    function createStars() {
+      stars.length = 0;
+      for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+          x: Math.random(),
+          y: Math.random(),
+          radius: Math.random() * 0.002 + 0.0005,
+          baseAlpha: Math.random() * 0.6 + 0.2,
+          twinkleSpeed: Math.random() * 2 + 0.5,
+          twinklePhase: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = '#02030a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawStars(time: number) {
+      for (const s of stars) {
+        const x = normToPixelX(s.x);
+        const y = normToPixelY(s.y);
+        const r = normRadiusToPixels(s.radius);
+
+        const twinkle = Math.sin(time * s.twinkleSpeed + s.twinklePhase) * 0.3 + 0.7;
+        const alpha = s.baseAlpha * twinkle;
+
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    let frameId: number | null = null;
+
+    function render(timestamp: number) {
+      const time = timestamp * 0.002;
+      drawBackground();
+      drawStars(time);
+      frameId = requestAnimationFrame(render);
+    }
+
+    function start() {
+      resizeCanvas();
+      createStars();
+      window.addEventListener('resize', resizeCanvas);
+      frameId = requestAnimationFrame(render);
+    }
+
+    function stop() {
+      if (frameId != null) cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', resizeCanvas);
+    }
+
+    start();
+
+    return () => stop();
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none absolute inset-0"
+    />
+  );
+};
+
 const SpaceBackground: React.FC = () => (
   <>
-    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-black" />
+    <StarfieldBackground />
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,#ffffff20_1px,transparent_0)] bg-[length:40px_40px] opacity-40" />
     <div className="pointer-events-none absolute -top-40 -left-40 h-80 w-80 rounded-full bg-fuchsia-500/10 blur-3xl" />
     <div className="pointer-events-none absolute bottom-[-10rem] right-[-6rem] h-96 w-96 rounded-full bg-sky-500/20 blur-3xl" />
