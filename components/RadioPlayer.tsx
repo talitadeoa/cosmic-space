@@ -32,15 +32,15 @@ export default function RadioPlayer() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50">
       {/* Player aberto */}
       {isOpen && (
-        <div className="mb-4 rounded-2xl border border-slate-700 bg-black/60 p-4 shadow-2xl backdrop-blur-md w-72">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-100">🎙️ Rádio</h3>
+        <div className="mb-2 sm:mb-4 rounded-xl sm:rounded-2xl border border-slate-700 bg-black/60 p-3 sm:p-4 shadow-2xl backdrop-blur-md w-64 sm:w-72">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-slate-100">🎙️ Rádio</h3>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-200 transition-colors"
+              className="text-slate-400 hover:text-slate-200 transition-colors text-lg"
             >
               ✕
             </button>
@@ -48,21 +48,21 @@ export default function RadioPlayer() {
 
           {/* Estação atual */}
           {currentStation && (
-            <div className="mb-4 p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+            <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
               <p className="text-xs text-slate-400">Tocando agora:</p>
-              <p className="text-sm font-medium text-indigo-300">
+              <p className="text-xs sm:text-sm font-medium text-indigo-300">
                 {currentStation.name}
               </p>
             </div>
           )}
 
           {/* Lista de estações */}
-          <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
+          <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 max-h-48 overflow-y-auto">
             {RADIO_STATIONS.map((station) => (
               <button
                 key={station.id}
                 onClick={() => toggle(station)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                className={`w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
                   currentStation?.id === station.id
                     ? "bg-indigo-500/30 text-indigo-200 border border-indigo-500/50"
                     : "bg-slate-800/40 text-slate-300 hover:bg-slate-700/40 border border-transparent"
@@ -79,7 +79,7 @@ export default function RadioPlayer() {
           </div>
 
           {/* Controle de volume */}
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs text-slate-400">Volume</label>
               <span className="text-xs text-slate-400">
@@ -107,20 +107,21 @@ export default function RadioPlayer() {
           }
           setIsOpen(!isOpen);
         }}
-        className={`p-4 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
+        className={`p-3 sm:p-4 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
           isPlaying
             ? "bg-gradient-to-r from-indigo-500 to-sky-500 shadow-indigo-500/50"
             : "bg-slate-800 hover:bg-slate-700 shadow-slate-900/50"
         } border ${
           isPlaying ? "border-indigo-400" : "border-slate-700"
         } hover:scale-110 active:scale-95`}
+        aria-label="Player de rádio"
       >
         {isLoading ? (
-          <span className="animate-spin">⏳</span>
+          <span className="animate-spin text-sm sm:text-base">⏳</span>
         ) : isPlaying ? (
-          <span className="text-lg animate-pulse">🎵</span>
+          <span className="text-sm sm:text-base animate-pulse">🎵</span>
         ) : (
-          <span className="text-lg">🎙️</span>
+          <span className="text-sm sm:text-base">🎙️</span>
         )}
       </button>
     </div>
