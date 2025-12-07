@@ -8,17 +8,28 @@ export function LuaView() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn("[LuaView] Canvas ref é nulo");
+      return;
+    }
 
-    const canvasEl = canvas;
+    const canvasEl = canvasRef.current!;
     const ctx = canvasEl.getContext("2d")!;
+    if (!ctx) {
+      console.error("[LuaView] Falha ao obter 2D context do canvas");
+      return;
+    }
+    
+    console.log("[LuaView] Canvas e context inicializados com sucesso");
 
     // ==========================
     // Setup básico do canvas
     // ==========================
     function resizeCanvas() {
-      canvasEl.width = window.innerWidth;
-      canvasEl.height = window.innerHeight;
+      const c = canvasRef.current;
+      if (!c) return;
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
     }
 
     resizeCanvas();
@@ -312,12 +323,7 @@ export function LuaView() {
       ctx.shadowBlur = 40;
       ctx.shadowColor = "rgba(180, 230, 255, 0.9)";
 
-      const grad = ctx.createLinearGradient(
-        0,
-        canvasEl.height,
-        canvasEl.width,
-        0
-      );
+      const grad = ctx.createLinearGradient(0, canvasEl.height, canvasEl.width, 0);
       grad.addColorStop(0.0, "rgba(100, 160, 255, 0)");
       grad.addColorStop(0.2, "rgba(160, 210, 255, 0.8)");
       grad.addColorStop(0.5, "rgba(255, 255, 255, 1)");
@@ -567,8 +573,8 @@ export function LuaView() {
 
       if (focusedMoonId !== null) {
         ctx.save();
-        ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
-        ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+          ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+          ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
 
         const moon = moons.find((m) => m.id === focusedMoonId);
         if (moon) {
@@ -583,12 +589,15 @@ export function LuaView() {
 
     animationFrameId = requestAnimationFrame(render);
 
+    console.log("[LuaView] Loop de animação iniciado com sucesso");
+
     // Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("keydown", handleKeyDown);
-      canvasEl.removeEventListener("click", handleClick);
+      const cr = canvasRef.current;
+      if (cr) cr.removeEventListener("click", handleClick);
     };
   }, []);
 
