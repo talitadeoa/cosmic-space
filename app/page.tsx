@@ -51,7 +51,7 @@ export default function LandingPage() {
             </span>
           </h1>
           <p className="mt-3 text-sm text-slate-300 md:text-base">
-            Deixa seu e-mail se quiser acompanhar de perto 👀
+            Deixe seu e-mail se quiser acompanhar de perto 👀
           </p>
         </div>
 
@@ -61,7 +61,6 @@ export default function LandingPage() {
           aria-label="Formulário de captura de e-mail"
         >
           <label className="block text-sm font-medium text-slate-200">
-            Seu e-mail
             <input
               type="email"
               name="email"
