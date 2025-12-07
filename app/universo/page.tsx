@@ -101,7 +101,7 @@ export default function UniversePage() {
             <p className="text-[0.65rem] uppercase tracking-[0.32em] text-slate-400">
               Universo
             </p>
-            <h1 className="text-lg font-semibold md:text-xl">
+            <h1 className="text-base sm:text-lg font-semibold md:text-xl">
               Portal{" "}
               <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-rose-300 bg-clip-text text-transparent">
                 Imersivo
@@ -110,22 +110,22 @@ export default function UniversePage() {
           </div>
           <Link
             href="/"
-            className="rounded-full border border-slate-700/80 bg-black/60 px-3 py-1.5 text-xs text-slate-200 transition hover:border-indigo-400 hover:bg-indigo-500/20 focus-visible:outline-none"
+            className="rounded-full border border-slate-700/80 bg-black/60 px-3 py-1.5 text-xs sm:text-xs text-slate-200 transition hover:border-indigo-400 hover:bg-indigo-500/20 focus-visible:outline-none"
           >
             ← Voltar à entrada
           </Link>
         </header>
 
         {/* Grade de esferas */}
-        <section className="flex flex-1 flex-col items-center justify-center px-4 pb-10 pt-4 md:px-8">
-          <p className="mb-8 max-w-xl text-center text-xs text-slate-300 md:text-sm">
+        <section className="flex flex-1 flex-col items-center justify-center px-4 pb-8 sm:pb-10 pt-4 md:px-8">
+          <p className="mb-6 sm:mb-8 max-w-xl text-center text-xs sm:text-xs md:text-sm text-slate-300">
             Seis esferas flutuam à sua frente. Cada uma é um pequeno módulo de
             visualização ou prática — uma forma de navegar o cosmos dentro e
             fora de você.
           </p>
 
           <div
-            className="grid w-full max-w-3xl grid-cols-2 gap-8 sm:grid-cols-3 md:gap-10"
+            className="grid w-full max-w-3xl grid-cols-2 gap-4 sm:gap-6 md:gap-8 lg:grid-cols-3"
             aria-label="Esferas principais do universo"
           >
             {SPHERES.map((sphere) => (

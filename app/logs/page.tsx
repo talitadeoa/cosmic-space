@@ -27,25 +27,25 @@ export default function LogsPage() {
 
   return (
     <AuthGate>
-      <div className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Logs de Emails Cadastrados</h2>
+      <div className="p-3 sm:p-6 min-h-screen bg-space-dark">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 text-slate-100">Logs de Emails Cadastrados</h2>
         {loading ? (
-          <div>Carregando...</div>
+          <div className="text-xs sm:text-sm text-slate-400">Carregando...</div>
         ) : (
-          <div className="overflow-auto max-w-full">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto max-w-full rounded-lg border border-slate-800">
+            <table className="w-full text-xs sm:text-sm">
               <thead>
-                <tr className="text-left text-xs text-slate-400">
+                <tr className="text-left text-slate-400 bg-black/40">
                   {rows[0]?.map((_: any, i: number) => (
-                    <th key={i} className="px-2 py-1">Coluna {i + 1}</th>
+                    <th key={i} className="px-2 sm:px-4 py-2 sm:py-3">Coluna {i + 1}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {rows.slice(1).map((r: any, idx: number) => (
-                  <tr key={idx} className="border-t border-slate-800">
+                  <tr key={idx} className="border-t border-slate-800 hover:bg-black/20 transition-colors">
                     {r.map((c: any, ci: number) => (
-                      <td key={ci} className="px-2 py-1 align-top">{c}</td>
+                      <td key={ci} className="px-2 sm:px-4 py-2 sm:py-3 align-top text-slate-200 break-words">{c}</td>
                     ))}
                   </tr>
                 ))}

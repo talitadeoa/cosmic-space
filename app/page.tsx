@@ -38,19 +38,19 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4">
-      <div className="max-w-xl w-full rounded-3xl border border-slate-800 bg-black/40 px-6 py-8 shadow-2xl backdrop-blur-md">
+    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-6 sm:px-6">
+      <div className="w-full max-w-xl rounded-2xl sm:rounded-3xl border border-slate-800 bg-black/40 px-4 py-6 sm:px-6 sm:py-8 shadow-2xl backdrop-blur-md">
         <div className="mb-8 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-indigo-300/80">
             Em breve
           </p>
-          <h1 className="mt-4 text-3xl font-semibold md:text-4xl">
-            Um novo jeito de navegar{" "}
+          <h1 className="mt-4 text-2xl font-semibold sm:text-3xl md:text-4xl leading-tight">
+            Um novo jeito de navegar{" "}
             <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-rose-300 bg-clip-text text-transparent">
               sua constelação 
             </span>✨🌙
           </h1>
-          <p className="mt-3 text-sm text-slate-300 md:text-base">
+          <p className="mt-3 text-xs sm:text-sm text-slate-300 md:text-base">
             Deixe seu e-mail se quiser acompanhar de perto 👀
           </p>
         </div>
@@ -68,20 +68,20 @@ export default function LandingPage() {
               aria-label="Digite seu e-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-2.5 text-sm text-slate-50 shadow-inner shadow-black/40 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+              className="mt-2 w-full rounded-xl sm:rounded-2xl border border-slate-700 bg-black/40 px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm text-slate-50 shadow-inner shadow-black/40 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
               placeholder="seuemail@exemplo.com"
             />
           </label>
 
           {error && (
-            <p className="text-sm text-rose-400" role="alert">
+            <p className="text-xs sm:text-sm text-rose-400" role="alert">
               {error}
             </p>
           )}
 
           {success && (
             <p
-              className="text-sm text-emerald-400"
+              className="text-xs sm:text-sm text-emerald-400"
               role="status"
             >
               Pronto! Vou te avisar quando lançar ✨
@@ -91,7 +91,7 @@ export default function LandingPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-500 via-sky-500 to-rose-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/40 transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-500 via-sky-500 to-rose-500 px-4 py-3 sm:py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/40 transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
           >
             <span className="absolute inset-0 bg-white/15 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span className="relative">
