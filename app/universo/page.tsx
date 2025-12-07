@@ -13,13 +13,10 @@ import {
   SphereId
 } from "@/components/Sphere";
 import { GalaxyInnerView } from "@/components/views/GalaxyInnerView";
-import { LunationsView } from "@/components/views/LunationsView";
-import { SolarOrbitView } from "@/components/views/SolarOrbitView";
 import {
   ChecklistItem,
   PlanetsChecklistView
 } from "@/components/views/PlanetsChecklistView";
-import { ComingSoonView } from "@/components/views/ComingSoonView";
 
 /**
  * Configuração estática das seis esferas do universo inicial.
@@ -150,19 +147,11 @@ export default function UniversePage() {
             onBack={() => setActiveSphere(null)}
           >
             {activeSphere === "galaxy" && <GalaxyInnerView />}
-            {activeSphere === "lunations" && <LunationsView />}
-            {activeSphere === "solar" && <SolarOrbitView />}
             {activeSphere === "planets" && (
               <PlanetsChecklistView
                 items={checklistItems}
                 onToggle={handleToggleChecklist}
               />
-            )}
-            {activeSphere === "soon1" && (
-              <ComingSoonView label="Em Breve I" />
-            )}
-            {activeSphere === "soon2" && (
-              <ComingSoonView label="Em Breve II" />
             )}
           </FocusSphere>
         )}
