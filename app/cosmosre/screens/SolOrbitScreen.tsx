@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CelestialObject } from "../components/CelestialObject";
+import { MoonPhase } from "../components/MoonPhase";
 import { Card } from "../components/Card";
 import type { ScreenProps } from "../types";
 
@@ -294,16 +295,21 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
         <CelestialObject type="sol" size="lg" interactive={false} />
       </Card>
 
-      <CelestialObject
-        type="lua"
+      {/* Lua Cheia - Top */}
+      <MoonPhase
+        phase="cheia"
+        size="md"
         interactive
         onClick={(e) =>
           navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
         }
         className="absolute -top-4 left-1/2 -translate-x-1/2"
       />
-      <CelestialObject
-        type="lua"
+      
+      {/* Lua Nova - Bottom */}
+      <MoonPhase
+        phase="nova"
+        size="md"
         interactive
         onClick={(e) =>
           navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
@@ -311,8 +317,11 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
         className="absolute bottom-0 left-1/2 -translate-x-1/2"
         floatOffset={3}
       />
-      <CelestialObject
-        type="lua"
+      
+      {/* Quarto Crescente - Left */}
+      <MoonPhase
+        phase="quarto_crescente"
+        size="md"
         interactive
         onClick={(e) =>
           navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
@@ -320,8 +329,11 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
         className="absolute left-8 top-1/2 -translate-y-1/2"
         floatOffset={-2}
       />
-      <CelestialObject
-        type="lua"
+      
+      {/* Quarto Minguante - Right */}
+      <MoonPhase
+        phase="quarto_minguante"
+        size="md"
         interactive
         onClick={(e) =>
           navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
