@@ -1,6 +1,6 @@
 "use client";
 
-import { LuaView } from "@/components/html-views/LuaView";
+import { LuaView } from "@/components/views/LuaView";
 
 export default function LuaPage() {
   return (
