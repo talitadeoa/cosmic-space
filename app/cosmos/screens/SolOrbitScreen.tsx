@@ -2,7 +2,6 @@
 
 import React from "react";
 import { CelestialObject } from "../components/CelestialObject";
-import { MoonPhase } from "../components/MoonPhase";
 import type { ScreenProps } from "../types";
 
 const SolOrbitScreen: React.FC<ScreenProps> = ({
@@ -233,51 +232,55 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
         {/* As fases da Lua ao redor do Sol */}
 
         {/* Lua Cheia - Topo */}
-        <MoonPhase
-          phase="cheia"
-          size="md"
-          interactive
-          onClick={(e) =>
-            navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
-          }
-          className="absolute left-1/2 top-[6%] -translate-x-1/2"
-        />
+        <div className="absolute left-1/2 top-[6%] -translate-x-1/2">
+          <CelestialObject
+            type="luaCheia"
+            size="md"
+            interactive
+            onClick={(e) =>
+              navigateWithFocus("luaList", { event: e, type: "luaCheia", size: "md" })
+            }
+          />
+        </div>
 
-        {/* Quarto Crescente - Direita */}
-        <MoonPhase
-          phase="quarto_crescente"
-          size="md"
-          interactive
-          onClick={(e) =>
-            navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
-          }
-          className="absolute right-[6%] top-1/2 -translate-y-1/2"
-          floatOffset={-2}
-        />
+        {/* Lua Crescente - Direita */}
+        <div className="absolute right-[6%] top-1/2 -translate-y-1/2">
+          <CelestialObject
+            type="luaCrescente"
+            size="md"
+            interactive
+            onClick={(e) =>
+              navigateWithFocus("luaList", { event: e, type: "luaCrescente", size: "md" })
+            }
+            floatOffset={-2}
+          />
+        </div>
 
         {/* Lua Nova - Base */}
-        <MoonPhase
-          phase="nova"
-          size="md"
-          interactive
-          onClick={(e) =>
-            navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
-          }
-          className="absolute bottom-[6%] left-1/2 -translate-x-1/2"
-          floatOffset={3}
-        />
+        <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2">
+          <CelestialObject
+            type="luaNova"
+            size="md"
+            interactive
+            onClick={(e) =>
+              navigateWithFocus("luaList", { event: e, type: "luaNova", size: "md" })
+            }
+            floatOffset={3}
+          />
+        </div>
 
-        {/* Quarto Minguante - Esquerda */}
-        <MoonPhase
-          phase="quarto_minguante"
-          size="md"
-          interactive
-          onClick={(e) =>
-            navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
-          }
-          className="absolute left-[6%] top-1/2 -translate-y-1/2"
-          floatOffset={1}
-        />
+        {/* Lua Minguante - Esquerda */}
+        <div className="absolute left-[6%] top-1/2 -translate-y-1/2">
+          <CelestialObject
+            type="luaMinguante"
+            size="md"
+            interactive
+            onClick={(e) =>
+              navigateWithFocus("luaList", { event: e, type: "luaMinguante", size: "md" })
+            }
+            floatOffset={1}
+          />
+        </div>
       </div>
     </div>
   );
