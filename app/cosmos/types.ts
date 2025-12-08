@@ -19,7 +19,7 @@ export type CelestialType =
   | "planeta"
   | "galaxia"
   | "anel"
-  | "buracoNegro";
+  | "eclipse";
 
 export type CelestialSize = "sm" | "md" | "lg";
 

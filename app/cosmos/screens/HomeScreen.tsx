@@ -24,9 +24,9 @@ const HOME_OBJECT_SIZE: CelestialSize = "md";
 const HOME_OBJECTS: HomeCelestial[] = [
   { id: "lua", type: "lua", target: "luaList", floatOffset: -2, row: 1, col: 1 },
   {
-    id: "buracoNegro",
-    type: "buracoNegro",
-    target: "ringGalaxy",
+    id: "eclipse",
+    type: "eclipse",
+    target: "galaxySuns",
     floatOffset: -3,
     row: 1,
     col: 2,
@@ -34,7 +34,7 @@ const HOME_OBJECTS: HomeCelestial[] = [
   {
     id: "galaxiaNorte",
     type: "galaxia",
-    target: "galaxySuns",
+    target: "ringGalaxy",
     floatOffset: 1,
     row: 1,
     col: 3,

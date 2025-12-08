@@ -47,7 +47,7 @@ const CELESTIAL_STYLES: Record<CelestialType, string> = {
     "border border-sky-300/60 bg-[conic-gradient(from_0deg,#7dd3fc,#0ea5e9,#6366f1,#7dd3fc)] shadow-[0_0_40px_rgba(56,189,248,0.7)]",
   anel:
     "border-4 border-violet-300/70 shadow-[0_0_40px_rgba(196,181,253,0.7)] bg-transparent",
-  buracoNegro:
+  eclipse:
     "bg-slate-950 ring-4 ring-indigo-500/60 shadow-[0_0_40px_rgba(129,140,248,0.8)]",
 };
 
