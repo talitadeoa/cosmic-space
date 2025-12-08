@@ -117,8 +117,68 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
   return (
     <div className="relative flex h-full w-full items-center justify-center px-4 py-6 sm:px-8">
       <div className="relative flex w-full max-w-6xl flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+        {/* sol + luas */}
+        <div className="order-1 flex w-full flex-col items-center gap-4 lg:order-2 lg:w-auto lg:flex-row lg:items-center lg:gap-6">
+          <CelestialObject
+            type="sol"
+            size="md"
+            interactive
+            onClick={(e) => {
+              if (isDraggingTodo) return;
+              navigateWithFocus("planetCardBelowSun", {
+                event: e,
+                type: "sol",
+                size: "md",
+              });
+            }}
+            floatOffset={-2}
+            className="order-1 lg:order-2"
+          />
+
+          <div className="order-2 flex w-full flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:order-1 lg:w-auto lg:flex-col lg:items-center">
+            {Array.from({ length: MOON_COUNT }).map((_, i) => {
+              const moonTypes = ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"] as const;
+              const moonType = moonTypes[i % moonTypes.length];
+              const isActiveDrop = activeDrop === moonType;
+              const badgeCount = moonCounts[moonType] ?? 0;
+
+              const floatOffset = i * 1.5 - 3;
+
+              return (
+                <div key={`zigzag-lua-${i}`} className="relative flex items-center justify-center">
+                  {badgeCount > 0 && (
+                    <span className="absolute -right-3 top-1/2 flex h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-full bg-indigo-600 px-2 text-[0.65rem] font-semibold text-white shadow-md">
+                      {badgeCount}
+                    </span>
+                  )}
+                  <CelestialObject
+                    type={moonType}
+                    size="sm"
+                    interactive
+                    onClick={(e) => {
+                      if (isDraggingTodo) return;
+                      navigateWithFocus("planetCardStandalone", {
+                        event: e,
+                        type: moonType,
+                        size: "sm",
+                      });
+                    }}
+                    floatOffset={floatOffset}
+                    onDrop={handleDropOnPhase(moonType)}
+                    onDragOver={handleDragOverPhase(moonType)}
+                    onDragLeave={handleDragLeavePhase}
+                    className={`transition-transform duration-300 ${
+                      isActiveDrop ? "scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]" : ""
+                    }`}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* bloco do planeta + card com painel de to-dos embutido */}
-        <div className="relative w-full lg:max-w-3xl">
+        <div className="relative order-2 w-full lg:order-1 lg:max-w-3xl">
           <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-5 shadow-2xl backdrop-blur-lg sm:p-6">
             <div className="flex max-h-[72vh] flex-col gap-4 overflow-y-auto pr-1 sm:gap-5 lg:max-h-[78vh]">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -217,70 +277,13 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
             </div>
           </Card>
 
-          <CelestialObject
-            type="planeta"
-            size="lg"
-            className="pointer-events-none absolute -left-6 top-4 -z-0 scale-75 sm:-left-10 sm:scale-90 md:-left-16 md:top-6 md:scale-100"
-          />
-        </div>
-
-        {/* bloco luas + sol */}
-        <div className="flex w-full flex-row items-center justify-center gap-6 lg:w-auto">
-          <div className="flex flex-col items-center gap-5 sm:gap-6">
-            {Array.from({ length: MOON_COUNT }).map((_, i) => {
-              const moonTypes = ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"] as const;
-              const moonType = moonTypes[i % moonTypes.length];
-              const isActiveDrop = activeDrop === moonType;
-              const badgeCount = moonCounts[moonType] ?? 0;
-
-              const floatOffset = i * 1.5 - 3;
-
-              return (
-                <div key={`zigzag-lua-${i}`} className="relative flex items-center justify-center">
-                  {badgeCount > 0 && (
-                    <span className="absolute -right-3 top-1/2 flex h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-full bg-indigo-600 px-2 text-[0.65rem] font-semibold text-white shadow-md">
-                      {badgeCount}
-                    </span>
-                  )}
-                  <CelestialObject
-                    type={moonType}
-                    size="sm"
-                    interactive
-                    onClick={(e) => {
-                      if (isDraggingTodo) return;
-                      navigateWithFocus("planetCardStandalone", {
-                        event: e,
-                        type: moonType,
-                        size: "sm",
-                      });
-                    }}
-                    floatOffset={floatOffset}
-                    onDrop={handleDropOnPhase(moonType)}
-                    onDragOver={handleDragOverPhase(moonType)}
-                    onDragLeave={handleDragLeavePhase}
-                    className={`transition-transform duration-300 ${
-                      isActiveDrop ? "scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]" : ""
-                    }`}
-                  />
-                </div>
-              );
-            })}
+          <div className="mt-8 flex justify-center lg:mt-0">
+            <CelestialObject
+              type="planeta"
+              size="lg"
+              className="pointer-events-none scale-90 sm:scale-100 lg:absolute lg:-left-6 lg:top-4 lg:-z-0 lg:scale-75 xl:-left-10 xl:scale-90 2xl:-left-16 2xl:top-6 2xl:scale-100"
+            />
           </div>
-
-          <CelestialObject
-            type="sol"
-            size="md"
-            interactive
-            onClick={(e) => {
-              if (isDraggingTodo) return;
-              navigateWithFocus("planetCardBelowSun", {
-                event: e,
-                type: "sol",
-                size: "md",
-              });
-            }}
-            floatOffset={-2}
-          />
         </div>
       </div>
     </div>
