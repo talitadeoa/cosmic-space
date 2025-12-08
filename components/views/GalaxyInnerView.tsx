@@ -1,6 +1,4 @@
 import type { FC } from "react";
-import DataCollectionForm from "../DataCollectionForm";
-
 /**
  * Visualização de uma "galáxia interior" lembrando um átomo:
  * órbitas elípticas com partículas orbitando um núcleo.
@@ -121,10 +119,6 @@ export const GalaxyInnerView: FC = () => {
         emocional, ciclos, projetos), transformando o átomo em mapa vivo.
       </p>
 
-      {/* Formulário de coleta de dados integrado */}
-      <div className="border-t border-slate-700 pt-6 mt-6">
-        <DataCollectionForm />
-      </div>
     </div>
   );
 };
