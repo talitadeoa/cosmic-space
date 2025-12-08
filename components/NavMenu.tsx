@@ -27,7 +27,7 @@ export default function NavMenu() {
           <nav className="space-y-2">
             <Link href="/" className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm">Home </Link>
             <Link href="/universo" className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm">Universo </Link>
-            <Link href="/cosmosr" className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm">cosmos</Link>
+            <Link href="/cosmos" className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm">Cosmos</Link>
           </nav>
 
           <div className="mt-3 border-t border-slate-800 pt-3">
