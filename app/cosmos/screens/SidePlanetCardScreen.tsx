@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
+import TodoInput from "../../../components/TodoInput";
 import type { ScreenProps } from "../types";
 
 const MOON_COUNT = 4;
@@ -11,6 +12,13 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
   navigateTo,
   navigateWithFocus,
 }) => {
+  const [showTodos, setShowTodos] = useState(false);
+
+  const handleTodoPanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // evita que o clique no painel de to-dos acione o "voltar" do fundo
+    e.stopPropagation();
+  };
+
   return (
     <div className="relative flex h-full w-full items-center justify-center px-10">
       {/* wrapper central para impedir que o card seja puxado pras bordas */}
@@ -19,7 +27,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
         <div className="relative flex items-center justify-center">
           <Card
             interactive
-            onClick={() => navigateTo("columnSolLuaPlaneta")}
+            onClick={() => setShowTodos(!showTodos)}
             className="relative z-10 flex h-64 w-72 items-center justify-center"
           />
           <CelestialObject
@@ -79,6 +87,17 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
           />
         </div>
       </div>
+
+      {/* Painel de To-dos Flutuante */}
+      {showTodos && (
+        <div
+          className="absolute right-0 top-0 z-50 max-h-96 w-96 overflow-y-auto"
+          onClick={handleTodoPanelClick}
+          onMouseDown={handleTodoPanelClick}
+        >
+          <TodoInput className="shadow-lg" />
+        </div>
+      )}
     </div>
   );
 };

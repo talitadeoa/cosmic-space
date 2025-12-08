@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAutosave } from '@/hooks';
 
 interface QuarterlyInsightModalProps {
   isOpen: boolean;
@@ -24,30 +25,31 @@ export default function QuarterlyInsightModal({
   onSubmit,
 }: QuarterlyInsightModalProps) {
   const [insight, setInsight] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { status: autosaveStatus, error: autosaveError } = useAutosave({
+    value: insight,
+    onSave: onSubmit,
+    enabled: isOpen,
+    delayMs: 900,
+    minLength: 3,
+  });
+  const statusLabel = useMemo(() => {
+    if (autosaveStatus === 'saving') return 'Salvando...';
+    if (autosaveStatus === 'saved') return 'Salvo automaticamente';
+    if (autosaveStatus === 'error') return 'Erro ao salvar';
+    if (autosaveStatus === 'typing') return 'Aguardando pausa para salvar';
+    return 'Autosave pronto';
+  }, [autosaveStatus]);
 
   const phaseInfo = moonPhaseInfo[moonPhase];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!insight.trim()) {
-      setError('Por favor, escreva seu insight trimestral');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await onSubmit(insight);
+  useEffect(() => {
+    if (!isOpen) {
       setInsight('');
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar insight');
-    } finally {
-      setIsLoading(false);
     }
+  }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
   };
 
   return (
@@ -98,39 +100,36 @@ export default function QuarterlyInsightModal({
                   value={insight}
                   onChange={(e) => setInsight(e.target.value)}
                   placeholder="Escreva sua reflexão, aprendizado ou insight para este trimestre..."
-                  disabled={isLoading}
                   className="w-full rounded-lg border border-sky-400/20 bg-slate-800/50 px-4 py-3 text-sky-100 placeholder-sky-500/60 transition-colors focus:border-sky-400/50 focus:outline-none focus:ring-1 focus:ring-sky-400/30 disabled:opacity-50"
                   rows={5}
                 />
               </div>
 
               {/* Erro */}
-              {error && (
+              {autosaveError && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
                 >
-                  {error}
+                  {autosaveError}
                 </motion.div>
               )}
 
               {/* Botões */}
-              <div className="flex gap-3 pt-4">
+              <div className="space-y-3 pt-4">
+                <div className="flex items-center justify-between rounded-lg border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-xs text-sky-100">
+                  <span className="font-semibold">Autosave</span>
+                  <span className="rounded-full bg-sky-400/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide">
+                    {statusLabel}
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  disabled={isLoading}
-                  className="flex-1 rounded-lg border border-sky-400/30 bg-transparent px-4 py-2 font-medium text-sky-300 transition-colors hover:bg-sky-400/10 disabled:opacity-50"
+                  className="flex w-full items-center justify-center rounded-lg border border-sky-400 bg-gradient-to-r from-sky-500 to-sky-400 px-4 py-2 font-medium text-slate-900 transition-all hover:shadow-lg hover:shadow-sky-500/50"
                 >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 rounded-lg border border-sky-400 bg-gradient-to-r from-sky-500 to-sky-400 px-4 py-2 font-medium text-slate-900 transition-all hover:shadow-lg hover:shadow-sky-500/50 disabled:opacity-50"
-                >
-                  {isLoading ? 'Salvando...' : 'Salvar Insight'}
+                  Concluído
                 </button>
               </div>
             </form>
