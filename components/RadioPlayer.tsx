@@ -1,43 +1,117 @@
 "use client";
 
 import { useAudioPlayer, RadioStation } from "@/hooks/useAudioPlayer";
-import { useState } from "react";
+import { useYouTubePlayer, YouTubeStation } from "@/hooks/useYouTubePlayer";
+import { useMemo, useState } from "react";
 
-const RADIO_STATIONS: RadioStation[] = [
+type Station =
+  | (RadioStation & { type?: "radio" })
+  | (YouTubeStation & { type: "youtube" });
+
+const STATIONS: Station[] = [
   {
     id: "ambient",
     name: "🌌 Cosmic Ambient",
-    url: "https://stream.zeno.fm/qewbq9kvnqruv"
+    url: "https://stream.zeno.fm/qewbq9kvnqruv",
+    type: "radio"
   },
   {
     id: "lo-fi",
     name: "🎵 Lo-Fi Beats",
-    url: "https://stream.zeno.fm/7npc13b3h5quv"
+    url: "https://stream.zeno.fm/7npc13b3h5quv",
+    type: "radio"
   },
   {
     id: "space-sounds",
     name: "🚀 Space Sounds",
-    url: "https://stream.zeno.fm/1n0xa7yft6zuv"
+    url: "https://stream.zeno.fm/1n0xa7yft6zuv",
+    type: "radio"
   },
   {
     id: "chillwave",
     name: "🌊 Chillwave",
-    url: "https://stream.zeno.fm/kpv77c4tnfruv"
+    url: "https://stream.zeno.fm/kpv77c4tnfruv",
+    type: "radio"
+  },
+  {
+    id: "cyberpunk",
+    name: "🎬 Cyberpunk",
+    videoId: "KyfvIw48V6g",
+    type: "youtube"
   }
 ];
 
 export default function RadioPlayer() {
-  const { isPlaying, currentStation, volume, setVolume, toggle, isLoading } =
-    useAudioPlayer();
+  const {
+    isPlaying: isAudioPlaying,
+    currentStation: currentAudioStation,
+    volume: audioVolume,
+    setVolume: setAudioVolume,
+    toggle: toggleAudio,
+    pause: pauseAudio,
+    isLoading: isAudioLoading
+  } = useAudioPlayer();
+
+  const {
+    isPlaying: isYouTubePlaying,
+    currentStation: currentYouTubeStation,
+    volume: youtubeVolume,
+    setVolume: setYoutubeVolume,
+    toggle: toggleYouTube,
+    pause: pauseYouTube,
+    isLoading: isYouTubeLoading,
+    containerRef: youtubeContainerRef
+  } = useYouTubePlayer();
+
   const [isOpen, setIsOpen] = useState(false);
+  const [currentType, setCurrentType] = useState<"radio" | "youtube" | null>(
+    null
+  );
+
+  const activeStation = useMemo(() => {
+    if (currentType === "youtube") return currentYouTubeStation;
+    if (currentType === "radio") return currentAudioStation;
+    return null;
+  }, [currentAudioStation, currentType, currentYouTubeStation]);
+
+  const isPlaying =
+    currentType === "youtube" ? isYouTubePlaying : isAudioPlaying;
+  const isLoading =
+    currentType === "youtube" ? isYouTubeLoading : isAudioLoading;
+  const volume = currentType === "youtube" ? youtubeVolume : audioVolume;
+
+  const handleSelect = (station: Station) => {
+    if (station.type === "youtube") {
+      pauseAudio();
+      toggleYouTube(station);
+      setCurrentType("youtube");
+    } else {
+      pauseYouTube();
+      toggleAudio(station);
+      setCurrentType("radio");
+    }
+  };
+
+  const handleVolumeChange = (value: number) => {
+    setAudioVolume(value);
+    setYoutubeVolume(value);
+  };
 
   return (
     <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50">
+      <div
+        ref={youtubeContainerRef}
+        className="absolute opacity-0 pointer-events-none w-0 h-0"
+        aria-hidden
+      />
+
       {/* Player aberto */}
       {isOpen && (
         <div className="mb-2 sm:mb-4 rounded-xl sm:rounded-2xl border border-slate-700 bg-black/60 p-3 sm:p-4 shadow-2xl backdrop-blur-md w-64 sm:w-72">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-xs sm:text-sm font-semibold text-slate-100">🎙️ Rádio</h3>
+            <h3 className="text-xs sm:text-sm font-semibold text-slate-100">
+              🎙️ Rádio
+            </h3>
             <button
               onClick={() => setIsOpen(false)}
               className="text-slate-400 hover:text-slate-200 transition-colors text-lg"
@@ -47,35 +121,41 @@ export default function RadioPlayer() {
           </div>
 
           {/* Estação atual */}
-          {currentStation && (
+          {activeStation && (
             <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-              <p className="text-xs text-slate-400">Tocando agora:</p>
+              <p className="text-xs text-slate-400">
+                Tocando agora ({currentType === "youtube" ? "YouTube" : "Rádio"}):
+              </p>
               <p className="text-xs sm:text-sm font-medium text-indigo-300">
-                {currentStation.name}
+                {activeStation.name}
               </p>
             </div>
           )}
 
           {/* Lista de estações */}
           <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 max-h-48 overflow-y-auto">
-            {RADIO_STATIONS.map((station) => (
-              <button
-                key={station.id}
-                onClick={() => toggle(station)}
-                className={`w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
-                  currentStation?.id === station.id
-                    ? "bg-indigo-500/30 text-indigo-200 border border-indigo-500/50"
-                    : "bg-slate-800/40 text-slate-300 hover:bg-slate-700/40 border border-transparent"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span>{station.name}</span>
-                  {currentStation?.id === station.id && isPlaying && (
-                    <span className="text-xs">▶</span>
-                  )}
-                </div>
-              </button>
-            ))}
+            {STATIONS.map((station) => {
+              const isCurrent = activeStation?.id === station.id;
+              return (
+                <button
+                  key={station.id}
+                  onClick={() => handleSelect(station)}
+                  className={`w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
+                    isCurrent
+                      ? "bg-indigo-500/30 text-indigo-200 border border-indigo-500/50"
+                      : "bg-slate-800/40 text-slate-300 hover:bg-slate-700/40 border border-transparent"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      {station.type === "youtube" ? "▶️" : "📡"}
+                      {station.name}
+                    </span>
+                    {isCurrent && isPlaying && <span className="text-xs">▶</span>}
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Controle de volume */}
@@ -92,7 +172,7 @@ export default function RadioPlayer() {
               max="1"
               step="0.1"
               value={volume}
-              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
               className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
             />
           </div>
@@ -102,8 +182,8 @@ export default function RadioPlayer() {
       {/* Botão flutuante */}
       <button
         onClick={() => {
-          if (!isOpen && !currentStation) {
-            toggle(RADIO_STATIONS[0]);
+          if (!isOpen && !activeStation) {
+            handleSelect(STATIONS[0]);
           }
           setIsOpen(!isOpen);
         }}

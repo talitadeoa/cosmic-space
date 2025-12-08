@@ -115,10 +115,10 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
   );
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center px-4 py-6 sm:px-8">
-      <div className="relative flex w-full max-w-6xl flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+    <div className="relative flex h-full w-full items-start justify-center px-4 py-5 sm:px-8">
+      <div className="relative flex w-full max-w-6xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* sol + luas */}
-        <div className="order-1 flex w-full flex-col items-center gap-4 lg:order-2 lg:w-auto lg:flex-row lg:items-center lg:gap-6">
+        <div className="order-1 flex w-full flex-col items-center gap-3 sm:gap-4 lg:order-2 lg:w-auto lg:flex-row lg:items-center lg:gap-6">
           <CelestialObject
             type="sol"
             size="md"
@@ -132,7 +132,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
               });
             }}
             floatOffset={-2}
-            className="order-1 lg:order-2"
+            className="order-1 scale-90 sm:scale-100 lg:order-2"
           />
 
           <div className="order-2 flex w-full flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:order-1 lg:w-auto lg:flex-col lg:items-center">
@@ -179,8 +179,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
 
         {/* bloco do planeta + card com painel de to-dos embutido */}
         <div className="relative order-2 w-full lg:order-1 lg:max-w-3xl">
-          <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-5 shadow-2xl backdrop-blur-lg sm:p-6">
-            <div className="flex max-h-[72vh] flex-col gap-4 overflow-y-auto pr-1 sm:gap-5 lg:max-h-[78vh]">
+          <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-lg sm:p-6">
+            <div className="flex max-h-[64vh] flex-col gap-4 overflow-y-auto pr-1 sm:max-h-[70vh] sm:gap-5 lg:max-h-[78vh]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
@@ -277,11 +277,11 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
             </div>
           </Card>
 
-          <div className="mt-8 flex justify-center lg:mt-0">
+          <div className="mt-6 flex justify-center lg:mt-0">
             <CelestialObject
               type="planeta"
               size="lg"
-              className="pointer-events-none scale-90 sm:scale-100 lg:absolute lg:-left-6 lg:top-4 lg:-z-0 lg:scale-75 xl:-left-10 xl:scale-90 2xl:-left-16 2xl:top-6 2xl:scale-100"
+              className="pointer-events-none scale-80 sm:scale-90 lg:absolute lg:-left-6 lg:top-4 lg:-z-0 lg:scale-75 xl:-left-10 xl:scale-90 2xl:-left-16 2xl:top-6 2xl:scale-100"
             />
           </div>
         </div>

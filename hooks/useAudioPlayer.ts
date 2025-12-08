@@ -19,7 +19,6 @@ export const useAudioPlayer = () => {
   useEffect(() => {
     if (!audioRef.current) {
       const audio = new Audio();
-      audio.crossOrigin = "anonymous";
       audioRef.current = audio;
 
       // Event listeners

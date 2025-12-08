@@ -15,7 +15,10 @@ export async function appendToSheet(data: SheetData): Promise<boolean> {
     const apiKey = process.env.GOOGLE_SHEETS_API_KEY;
 
     if (!spreadsheetId || !apiKey) {
-      console.error('Google Sheets credentials missing');
+      console.error('Google Sheets credentials missing:', {
+        spreadsheetId: !!spreadsheetId,
+        apiKey: !!apiKey,
+      });
       return false;
     }
 
@@ -23,12 +26,17 @@ export async function appendToSheet(data: SheetData): Promise<boolean> {
     // Suporta dois formatos de entrada:
     // - formulário genérico (name, email, message)
     // - payloads arbitrários (ex: registro de fase lunar) — nesses casos serializamos em JSON
-    const valuesRow = (data.name && data.email && data.message)
-      ? [data.timestamp ?? '', data.name ?? '', data.email ?? '', data.message ?? '', new Date().toISOString(), 'Novo registro']
-      : [data.timestamp ?? '', JSON.stringify(data), '', new Date().toISOString(), 'LunarPhase', ''];
+    const nowIso = new Date().toISOString();
+    const timestamp = data.timestamp ?? nowIso;
+    const valuesRow =
+      data.name && data.email && data.message
+        ? [timestamp, data.name ?? '', data.email ?? '', data.message ?? '', nowIso, 'Mensagem']
+        : data.email
+        ? [timestamp, '', data.email, data.source ?? 'landing', nowIso, 'Lead']
+        : [timestamp, JSON.stringify(data), '', data.source ?? '', nowIso, 'Payload'];
 
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Dados!A:F:append?key=${apiKey}`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Dados!A:F/append?valueInputOption=USER_ENTERED&key=${apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -42,7 +50,12 @@ export async function appendToSheet(data: SheetData): Promise<boolean> {
     );
 
     if (!response.ok) {
-      console.error('Erro ao enviar dados para Sheets:', response.statusText);
+      const errorData = await response.json().catch(() => null);
+      console.error('Erro ao enviar dados para Sheets:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
       return false;
     }
 

@@ -14,7 +14,7 @@ export default function LandingPage() {
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
@@ -26,15 +26,30 @@ export default function LandingPage() {
 
     setIsSubmitting(true);
 
-    // Aqui você pode futuramente trocar por uma chamada real de API,
-    // por exemplo: fetch("/api/subscribe", { method: "POST", body: JSON.stringify({ email }) })
-    console.log("E-mail capturado:", email);
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-    // Simula um pequeno delay e depois marca como sucesso.
-    setTimeout(() => {
-      setIsSubmitting(false);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Erro ao registrar email");
+        return;
+      }
+
       setSuccess(true);
-    }, 600);
+      setEmail("");
+    } catch (err) {
+      setError("Erro ao conectar com o servidor");
+      console.error("Erro:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -100,6 +115,9 @@ export default function LandingPage() {
           </button>
         </form>
       </div>
+      <p className="mt-4 text-[11px] text-slate-400/80 text-center">
+        © {new Date().getFullYear()} Cosmic Space. Todos os direitos reservados.
+      </p>
     </main>
   );
 }
