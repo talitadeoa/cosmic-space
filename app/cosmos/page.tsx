@@ -107,7 +107,7 @@ const CosmosPage: React.FC = () => {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden text-slate-50"
+      className="relative min-h-screen overflow-x-hidden text-slate-50"
       onClick={handleBackgroundClick}
     >
       <SpaceBackground />
@@ -150,7 +150,7 @@ const CosmosPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 flex h-screen flex-col">
+      <div className="relative z-10 flex min-h-screen flex-col overflow-y-auto">
         <div className="pointer-events-none absolute top-2 sm:top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-900/60 px-3 sm:px-4 py-1 text-[0.65rem] sm:text-xs text-slate-200/70">
           Tela: <span className="font-semibold">{currentScreen}</span>
         </div>
@@ -163,7 +163,7 @@ const CosmosPage: React.FC = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="relative h-[75vh] sm:h-[80vh] w-full sm:w-[90vw] max-w-5xl"
+              className="relative min-h-[75vh] sm:min-h-[80vh] w-full sm:w-[90vw] max-w-5xl"
             >
               <CurrentScreen
                 navigateTo={navigateTo}
