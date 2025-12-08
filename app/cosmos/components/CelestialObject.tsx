@@ -12,6 +12,9 @@ export interface CelestialObjectProps {
   onClick?: (event?: React.MouseEvent<HTMLDivElement>) => void;
   floatOffset?: number;
   pulseOnMount?: boolean;
+  onDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDragOver?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave?: (event: React.DragEvent<HTMLDivElement>) => void;
 }
 
 const floatTransition: Transition = {
@@ -56,6 +59,9 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
   onClick,
   floatOffset = 0,
   pulseOnMount = false,
+  onDrop,
+  onDragOver,
+  onDragLeave,
 }) => {
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -67,6 +73,9 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
   return (
     <motion.div
       onClick={handleClick}
+      onDrop={onDrop}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
       className={[
         "inline-flex items-center justify-center rounded-full transition-shadow",
         sizeToClass[size],
