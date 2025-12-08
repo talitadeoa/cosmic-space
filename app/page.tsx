@@ -100,6 +100,9 @@ export default function LandingPage() {
           </button>
         </form>
       </div>
+      <p className="mt-4 text-[11px] text-slate-400/80 text-center">
+        © {new Date().getFullYear()} Cosmic Space. Todos os direitos reservados.
+      </p>
     </main>
   );
 }
