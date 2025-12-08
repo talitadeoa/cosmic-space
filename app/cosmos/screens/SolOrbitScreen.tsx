@@ -1,13 +1,40 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { CelestialObject } from "../components/CelestialObject";
+import QuarterlyInsightModal from "@/components/QuarterlyInsightModal";
+import AnnualInsightModal from "@/components/AnnualInsightModal";
+import { useQuarterlyInsights } from "@/hooks/useQuarterlyInsights";
+import { useAnnualInsights } from "@/hooks/useAnnualInsights";
 import type { ScreenProps } from "../types";
 
 const SolOrbitScreen: React.FC<ScreenProps> = ({
   navigateTo,
   navigateWithFocus,
 }) => {
+  const [isQuarterlyModalOpen, setIsQuarterlyModalOpen] = useState(false);
+  const [isAnnualModalOpen, setIsAnnualModalOpen] = useState(false);
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante'>('luaNova');
+  const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
+  const { saveInsight: saveAnnualInsight } = useAnnualInsights();
+
+  const handleMoonClick = (phase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante') => {
+    setSelectedMoonPhase(phase);
+    setIsQuarterlyModalOpen(true);
+  };
+
+  const handleSolClick = () => {
+    setIsAnnualModalOpen(true);
+  };
+
+  const handleQuarterlyInsightSubmit = async (insight: string) => {
+    await saveQuarterlyInsight(selectedMoonPhase, insight);
+  };
+
+  const handleAnnualInsightSubmit = async (insight: string) => {
+    await saveAnnualInsight(insight);
+  };
+
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   React.useEffect(() => {
@@ -210,79 +237,86 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
   }, []);
 
   return (
-    <div className="flex h-full w-full items-center justify-center overflow-hidden">
-      {/* Container quadrado central: tudo orbita em torno dele */}
-      <div className="relative aspect-square w-[min(70vh,70vw)]">
-        <canvas
-          ref={canvasRef}
-          className="pointer-events-none absolute inset-0 bg-transparent"
-          aria-hidden
-        />
+    <>
+      <div className="flex h-full w-full items-center justify-center overflow-hidden">
+        {/* Container quadrado central: tudo orbita em torno dele */}
+        <div className="relative aspect-square w-[min(70vh,70vw)]">
+          <canvas
+            ref={canvasRef}
+            className="pointer-events-none absolute inset-0 bg-transparent"
+            aria-hidden
+          />
 
         {/* Sol bem no centro */}
-        <button
-          type="button"
-          onClick={() => navigateTo("planetCardBelowSun")}
-          className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 focus:outline-none"
-          aria-label="Abrir detalhes do objeto celeste"
-        >
-          <CelestialObject type="sol" size="lg" interactive={false} />
-        </button>
+        <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+          <CelestialObject 
+            type="sol" 
+            size="lg" 
+            interactive={true}
+            onClick={handleSolClick}
+          />
+        </div>
 
         {/* As fases da Lua ao redor do Sol */}
 
-        {/* Lua Cheia - Topo */}
-        <div className="absolute left-1/2 top-[6%] -translate-x-1/2">
-          <CelestialObject
-            type="luaCheia"
-            size="md"
-            interactive
-            onClick={(e) =>
-              navigateWithFocus("luaList", { event: e, type: "luaCheia", size: "md" })
-            }
-          />
-        </div>
+          {/* Lua Cheia - Topo */}
+          <div className="absolute left-1/2 top-[6%] -translate-x-1/2">
+            <CelestialObject
+              type="luaCheia"
+              size="md"
+              interactive
+              onClick={() => handleMoonClick('luaCheia')}
+            />
+          </div>
 
-        {/* Lua Crescente - Direita */}
-        <div className="absolute right-[6%] top-1/2 -translate-y-1/2">
-          <CelestialObject
-            type="luaCrescente"
-            size="md"
-            interactive
-            onClick={(e) =>
-              navigateWithFocus("luaList", { event: e, type: "luaCrescente", size: "md" })
-            }
-            floatOffset={-2}
-          />
-        </div>
+          {/* Lua Crescente - Direita */}
+          <div className="absolute right-[6%] top-1/2 -translate-y-1/2">
+            <CelestialObject
+              type="luaCrescente"
+              size="md"
+              interactive
+              onClick={() => handleMoonClick('luaCrescente')}
+              floatOffset={-2}
+            />
+          </div>
 
-        {/* Lua Nova - Base */}
-        <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2">
-          <CelestialObject
-            type="luaNova"
-            size="md"
-            interactive
-            onClick={(e) =>
-              navigateWithFocus("luaList", { event: e, type: "luaNova", size: "md" })
-            }
-            floatOffset={3}
-          />
-        </div>
+          {/* Lua Nova - Base */}
+          <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2">
+            <CelestialObject
+              type="luaNova"
+              size="md"
+              interactive
+              onClick={() => handleMoonClick('luaNova')}
+              floatOffset={3}
+            />
+          </div>
 
-        {/* Lua Minguante - Esquerda */}
-        <div className="absolute left-[6%] top-1/2 -translate-y-1/2">
-          <CelestialObject
-            type="luaMinguante"
-            size="md"
-            interactive
-            onClick={(e) =>
-              navigateWithFocus("luaList", { event: e, type: "luaMinguante", size: "md" })
-            }
-            floatOffset={1}
-          />
+          {/* Lua Minguante - Esquerda */}
+          <div className="absolute left-[6%] top-1/2 -translate-y-1/2">
+            <CelestialObject
+              type="luaMinguante"
+              size="md"
+              interactive
+              onClick={() => handleMoonClick('luaMinguante')}
+              floatOffset={1}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      <QuarterlyInsightModal
+        isOpen={isQuarterlyModalOpen}
+        moonPhase={selectedMoonPhase}
+        onClose={() => setIsQuarterlyModalOpen(false)}
+        onSubmit={handleQuarterlyInsightSubmit}
+      />
+
+      <AnnualInsightModal
+        isOpen={isAnnualModalOpen}
+        onClose={() => setIsAnnualModalOpen(false)}
+        onSubmit={handleAnnualInsightSubmit}
+      />
+    </>
   );
 };
 

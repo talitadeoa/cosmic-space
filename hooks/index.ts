@@ -12,3 +12,8 @@ export { useAuth } from "./useAuth";
 
 /** Hooks para SFX */
 export { useSfx } from "./useSfx";
+
+/** Hooks para insights */
+export { useQuarterlyInsights } from "./useQuarterlyInsights";
+export { useMonthlyInsights } from "./useMonthlyInsights";
+export { useAnnualInsights } from "./useAnnualInsights";

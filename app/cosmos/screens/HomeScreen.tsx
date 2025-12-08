@@ -90,7 +90,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       />
 
       <div className="absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] uppercase text-slate-300/60 px-2 text-center">
-        Clique em um astro · Clique no espaço para voltar
+        Navegue
       </div>
     </div>
   );
