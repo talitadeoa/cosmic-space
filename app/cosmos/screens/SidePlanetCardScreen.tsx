@@ -15,16 +15,11 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
   navigateTo,
   navigateWithFocus,
 }) => {
-  const [showTodos, setShowTodos] = useState(false);
+  const [showTodos, setShowTodos] = useState(true);
   const [draftTodos, setDraftTodos] = useState<ParsedTodoItem[]>([]);
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
-
-  const handleTodoPanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // evita que o clique no painel de to-dos acione o "voltar" do fundo
-    e.stopPropagation();
-  };
 
   useEffect(() => {
     try {
@@ -120,44 +115,39 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
   );
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center px-10">
-      {/* wrapper central para impedir que o card seja puxado pras bordas */}
-      <div className="relative flex h-80 w-full max-w-5xl items-center justify-center">
-        {/* bloco do planeta + card */}
-        <div className="relative flex items-center justify-center">
-          <Card
-            interactive
-            onClick={() => setShowTodos(!showTodos)}
-            className="relative z-10 flex h-64 w-72 items-center justify-center"
-          />
+    <div className="relative flex h-full w-full items-center justify-center px-4 py-6 sm:px-8">
+      <div className="relative flex w-full max-w-6xl flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+        {/* sol + luas */}
+        <div className="order-1 flex w-full flex-col items-center gap-4 lg:order-2 lg:w-auto lg:flex-row lg:items-center lg:gap-6">
           <CelestialObject
-            type="planeta"
-            size="lg"
-            className="absolute -left-16"
+            type="sol"
+            size="md"
+            interactive
+            onClick={(e) => {
+              if (isDraggingTodo) return;
+              navigateWithFocus("planetCardBelowSun", {
+                event: e,
+                type: "sol",
+                size: "md",
+              });
+            }}
+            floatOffset={-2}
+            className="order-1 lg:order-2"
           />
-        </div>
 
-        {/* bloco luas + sol */}
-        <div className="absolute right-0 flex items-center gap-8 pr-6">
-          <div className="flex flex-col items-center gap-4">
+          <div className="order-2 flex w-full flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:order-1 lg:w-auto lg:flex-col lg:items-center">
             {Array.from({ length: MOON_COUNT }).map((_, i) => {
               const moonTypes = ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"] as const;
               const moonType = moonTypes[i % moonTypes.length];
-              const isEven = i % 2 === 0;
               const isActiveDrop = activeDrop === moonType;
               const badgeCount = moonCounts[moonType] ?? 0;
-
-              // agora o zigzag é mais evidente
-              const horizontalOffset = isEven
-                ? "-translate-x-6"
-                : "translate-x-6";
 
               const floatOffset = i * 1.5 - 3;
 
               return (
-                <div key={`zigzag-lua-${i}`} className="relative">
+                <div key={`zigzag-lua-${i}`} className="relative flex items-center justify-center">
                   {badgeCount > 0 && (
-                    <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-600 px-2 text-[0.65rem] font-semibold text-white shadow-md">
+                    <span className="absolute -right-3 top-1/2 flex h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-full bg-indigo-600 px-2 text-[0.65rem] font-semibold text-white shadow-md">
                       {badgeCount}
                     </span>
                   )}
@@ -177,7 +167,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
                     onDrop={handleDropOnPhase(moonType)}
                     onDragOver={handleDragOverPhase(moonType)}
                     onDragLeave={handleDragLeavePhase}
-                    className={`${horizontalOffset} transition-transform duration-300 ${
+                    className={`transition-transform duration-300 ${
                       isActiveDrop ? "scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]" : ""
                     }`}
                   />
@@ -185,102 +175,117 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
               );
             })}
           </div>
-
-          <CelestialObject
-            type="sol"
-            size="md"
-            interactive
-            onClick={(e) => {
-              if (isDraggingTodo) return;
-              navigateWithFocus("planetCardBelowSun", {
-                event: e,
-                type: "sol",
-                size: "md",
-              });
-            }}
-            floatOffset={-2}
-          />
         </div>
-      </div>
 
-      {/* Painel de To-dos Flutuante */}
-      {showTodos && (
-        <div
-          className="absolute right-0 top-0 z-50 max-h-[32rem] w-[28rem] overflow-y-auto"
-          onClick={handleTodoPanelClick}
-          onMouseDown={handleTodoPanelClick}
-        >
-          <div className="flex flex-col gap-4">
-            <TodoInput
-              className="shadow-lg"
-              onTodosChange={(parsed) => setDraftTodos(parsed)}
-            />
-
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
-              <div className="flex items-start justify-between gap-3">
+        {/* bloco do planeta + card com painel de to-dos embutido */}
+        <div className="relative order-2 w-full lg:order-1 lg:max-w-3xl">
+          <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-5 shadow-2xl backdrop-blur-lg sm:p-6">
+            <div className="flex max-h-[72vh] flex-col gap-4 overflow-y-auto pr-1 sm:gap-5 lg:max-h-[78vh]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
-                    To-dos salvos
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
+                    Painel lunar lateral
                   </p>
-                  <p className="text-[0.75rem] text-slate-400">
-                    Clique em “Salvar lista” e arraste as tarefas para a lua correspondente à fase.
-                  </p>
+                  <h3 className="text-lg font-semibold text-white sm:text-xl">
+                    Organize tarefas por fase
+                  </h3>
                 </div>
                 <button
                   type="button"
-                  onClick={handleSaveDraftTodos}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-700"
-                  disabled={!draftTodos.length}
+                  onClick={() => setShowTodos((prev) => !prev)}
+                  className="rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
                 >
-                  Salvar lista
+                  {showTodos ? "Esconder" : "Mostrar"} painel
                 </button>
               </div>
 
-              <div className="mt-3 space-y-2">
-                {savedTodos.length === 0 ? (
-                  <p className="text-sm text-slate-500">
-                    Nenhum to-do salvo ainda. Converta o texto acima e arraste para uma lua.
-                  </p>
-                ) : (
-                  savedTodos.map((todo) => (
-                    <div
-                      key={todo.id}
-                      draggable
-                      onDragStart={handleDragStart(todo.id)}
-                      onDragEnd={handleDragEnd}
-                      className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`flex h-4 w-4 items-center justify-center rounded-full border text-[0.65rem] ${
-                            todo.completed
-                              ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
-                              : "border-slate-500 bg-slate-900/80 text-slate-400"
-                          }`}
-                        >
-                          {todo.completed && (
-                            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                          )}
-                        </span>
-                        <span
-                          className={`${
-                            todo.completed ? "text-slate-500 line-through" : "text-slate-100"
-                          }`}
-                        >
-                          {todo.text}
-                        </span>
+              {showTodos ? (
+                <div className="flex flex-col gap-4">
+                  <TodoInput
+                    className="shadow-lg"
+                    onTodosChange={(parsed) => setDraftTodos(parsed)}
+                  />
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
+                          To-dos salvos
+                        </p>
+                        <p className="text-[0.75rem] text-slate-400">
+                          Clique em “Salvar lista” e arraste as tarefas para a lua correspondente à fase.
+                        </p>
                       </div>
-                      <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-                        {todo.phase ? moonLabels[todo.phase] : "Sem fase"}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSaveDraftTodos}
+                        className="self-start rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-700"
+                        disabled={!draftTodos.length}
+                      >
+                        Salvar lista
+                      </button>
                     </div>
-                  ))
-                )}
-              </div>
+
+                    <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64">
+                      {savedTodos.length === 0 ? (
+                        <p className="text-sm text-slate-500">
+                          Nenhum to-do salvo ainda. Converta o texto acima e arraste para uma lua.
+                        </p>
+                      ) : (
+                        savedTodos.map((todo) => (
+                          <div
+                            key={todo.id}
+                            draggable
+                            onDragStart={handleDragStart(todo.id)}
+                            onDragEnd={handleDragEnd}
+                            className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`flex h-4 w-4 items-center justify-center rounded-full border text-[0.65rem] ${
+                                  todo.completed
+                                    ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
+                                    : "border-slate-500 bg-slate-900/80 text-slate-400"
+                                }`}
+                              >
+                                {todo.completed && (
+                                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                                )}
+                              </span>
+                              <span
+                                className={`${
+                                  todo.completed ? "text-slate-500 line-through" : "text-slate-100"
+                                }`}
+                              >
+                                {todo.text}
+                              </span>
+                            </div>
+                            <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
+                              {todo.phase ? moonLabels[todo.phase] : "Sem fase"}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-indigo-400/40 bg-slate-900/60 p-4 text-sm text-slate-300">
+                  Use o botão acima para abrir o painel e editar os to-dos dentro do próprio card.
+                </div>
+              )}
             </div>
+          </Card>
+
+          <div className="mt-8 flex justify-center lg:mt-0">
+            <CelestialObject
+              type="planeta"
+              size="lg"
+              className="pointer-events-none scale-90 sm:scale-100 lg:absolute lg:-left-6 lg:top-4 lg:-z-0 lg:scale-75 xl:-left-10 xl:scale-90 2xl:-left-16 2xl:top-6 2xl:scale-100"
+            />
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
