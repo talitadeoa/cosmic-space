@@ -7,12 +7,25 @@ import { LuminousTrail } from "../components/LuminousTrail";
 import type { CelestialType, ScreenProps } from "../types";
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+  // 8 luas. Se você tiver mais fases no seu tipo, pode trocar aqui.
   const moonPhases: CelestialType[] = [
     "luaNova",
     "luaCrescente",
     "luaCheia",
     "luaMinguante",
+    "luaNova",
+    "luaCrescente",
+    "luaCheia",
+    "luaMinguante",
   ];
+
+  const handleMoonClick = (e: React.MouseEvent<HTMLDivElement> | undefined, phase: CelestialType) => {
+    navigateWithFocus("planetCardStandalone", {
+      event: e,
+      type: phase,
+      size: "md",
+    });
+  };
 
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-between py-16">
@@ -34,21 +47,21 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       />
 
       <div className="relative flex flex-col items-center gap-6">
+        {/* LINHA DE CIMA: 4 luas */}
         <div className="flex gap-6">
-          {moonPhases.slice(0, 2).map((phase, i) => (
-            <CelestialObject
-              key={phase}
-              type={phase}
-              interactive
-              onClick={(e) =>
-                navigateWithFocus("planetCardStandalone", {
-                  event: e,
-                  type: phase,
-                  size: "md",
-                })
-              }
-              floatOffset={-1 + i * 1.2}
-            />
+          {moonPhases.slice(0, 4).map((phase, i) => (
+            <motion.div
+              key={`${phase}-${i}-top`}
+              whileHover={{ scale: 1.2 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18 }}
+            >
+              <CelestialObject
+                type={phase}
+                interactive
+                onClick={(e) => handleMoonClick(e, phase)}
+                floatOffset={-1.5 + i * 0.8}
+              />
+            </motion.div>
           ))}
         </div>
 
@@ -58,21 +71,21 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
 
+        {/* LINHA DE BAIXO: 4 luas */}
         <div className="flex gap-6">
-          {moonPhases.slice(2).map((phase, i) => (
-            <CelestialObject
-              key={phase}
-              type={phase}
-              interactive
-              onClick={(e) =>
-                navigateWithFocus("planetCardStandalone", {
-                  event: e,
-                  type: phase,
-                  size: "md",
-                })
-              }
-              floatOffset={1.2 - i * 1.2}
-            />
+          {moonPhases.slice(4).map((phase, i) => (
+            <motion.div
+              key={`${phase}-${i}-bottom`}
+              whileHover={{ scale: 1.2 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18 }}
+            >
+              <CelestialObject
+                type={phase}
+                interactive
+                onClick={(e) => handleMoonClick(e, phase)}
+                floatOffset={1.5 - i * 0.8}
+              />
+            </motion.div>
           ))}
         </div>
       </div>
