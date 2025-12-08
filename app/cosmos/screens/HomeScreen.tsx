@@ -79,7 +79,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         size="lg"
         interactive
         onClick={(e) =>
-          navigateWithFocus("planetCardStandalone", {
+          navigateWithFocus("sidePlanetCard", {
             event: e,
             type: "planeta",
             size: "lg",
