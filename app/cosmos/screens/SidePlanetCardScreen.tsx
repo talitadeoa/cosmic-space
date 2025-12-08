@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
-import TodoInput from "../../../components/TodoInput";
+import TodoInput, { TodoItem as ParsedTodoItem } from "../../../components/TodoInput";
 import type { ScreenProps } from "../types";
 
 const MOON_COUNT = 4;
+type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
+type SavedTodo = ParsedTodoItem & { phase?: MoonPhase };
+const TODO_STORAGE_KEY = "cosmic_space_todos_salvos";
 
 const SidePlanetCardScreen: React.FC<ScreenProps> = ({
   navigateTo,
