@@ -168,3 +168,6 @@ com **coleta de dados automática** em Google Sheets!
 **Versão**: 1.0.0  
 **Data**: 1 de dezembro de 2025  
 **Status**: ✅ COMPLETO E TESTADO
+
+-
+ficou perfeito agora eu so queria que todos os inputs fossem autosave e ficassem guardados ao clicar novamente depois, sem precisar clicar para salvar

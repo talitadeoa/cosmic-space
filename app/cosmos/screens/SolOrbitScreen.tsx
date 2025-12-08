@@ -248,14 +248,16 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
           />
 
         {/* Sol bem no centro */}
-        <button
-          type="button"
-          onClick={handleSolClick}
-          className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 focus:outline-none"
-          aria-label="Abrir insight anual"
-        >
-          <CelestialObject type="sol" size="lg" interactive={true} />
-        </button>          {/* As fases da Lua ao redor do Sol */}
+        <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+          <CelestialObject 
+            type="sol" 
+            size="lg" 
+            interactive={true}
+            onClick={handleSolClick}
+          />
+        </div>
+
+        {/* As fases da Lua ao redor do Sol */}
 
           {/* Lua Cheia - Topo */}
           <div className="absolute left-1/2 top-[6%] -translate-x-1/2">
