@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MoonPhase } from "../components/MoonPhase";
+import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
 import type { ScreenProps } from "../types";
 
@@ -14,10 +14,10 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
   
   // Calcular posições das 4 luas em um círculo (90 graus de distância)
   const moonPositions = [
-    { angle: 0, phase: "cheia", label: "Top" },           // 0° - Top
-    { angle: 90, phase: "quarto_crescente", label: "Right" },    // 90° - Right
-    { angle: 180, phase: "nova", label: "Bottom" },       // 180° - Bottom
-    { angle: 270, phase: "quarto_minguante", label: "Left" },    // 270° - Left
+    { angle: 0, type: "luaCheia" as const, label: "Top" },           // 0° - Top
+    { angle: 90, type: "luaCrescente" as const, label: "Right" },    // 90° - Right
+    { angle: 180, type: "luaNova" as const, label: "Bottom" },       // 180° - Bottom
+    { angle: 270, type: "luaMinguante" as const, label: "Left" },    // 270° - Left
   ];
 
   const getMoonPosition = (angleDegrees: number) => {
@@ -50,14 +50,14 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
               transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
             }}
           >
-            <MoonPhase
-              phase={moon.phase as "cheia" | "nova" | "quarto_crescente" | "quarto_minguante"}
+            <CelestialObject
+              type={moon.type}
               size="sm"
               interactive
               onClick={(e) =>
                 navigateWithFocus("luaList", {
                   event: e,
-                  type: "lua",
+                  type: moon.type,
                   size: "sm",
                 })
               }

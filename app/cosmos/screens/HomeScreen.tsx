@@ -8,11 +8,11 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <CelestialObject
-        type="sol"
-        size="md"
+        type="lua"
+        size="lg"
         interactive
         onClick={(e) =>
-          navigateWithFocus("solOrbit", { event: e, type: "sol", size: "md" })
+          navigateWithFocus("luaList", { event: e, type: "lua", size: "lg" })
         }
         className="absolute top-6 sm:top-12 left-4 sm:left-10"
         floatOffset={-2}
@@ -62,17 +62,17 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         className="absolute bottom-16 sm:bottom-24 left-4 sm:left-14"
         floatOffset={3}
       />
-
       <CelestialObject
-        type="lua"
-        size="lg"
+        type="sol"
+        size="md"
         interactive
         onClick={(e) =>
-          navigateWithFocus("luaList", { event: e, type: "lua", size: "lg" })
+          navigateWithFocus("solOrbit", { event: e, type: "sol", size: "md" })
         }
         className="absolute bottom-16 sm:bottom-24 left-1/2 -translate-x-1/2"
         floatOffset={0}
       />
+
 
       <CelestialObject
         type="planeta"
