@@ -1,12 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { CelestialObject } from "../components/CelestialObject";
 import { LuminousTrail } from "../components/LuminousTrail";
+import MonthlyInsightModal from "@/components/MonthlyInsightModal";
+import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
 import type { CelestialType, ScreenProps } from "../types";
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMoonIndex, setSelectedMoonIndex] = useState(0);
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante'>('luaNova');
+  const { saveInsight } = useMonthlyInsights();
+
   // 8 luas. Se você tiver mais fases no seu tipo, pode trocar aqui.
   const moonPhases: CelestialType[] = [
     "luaNova",
@@ -19,12 +26,14 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     "luaMinguante",
   ];
 
-  const handleMoonClick = (e: React.MouseEvent<HTMLDivElement> | undefined, phase: CelestialType) => {
-    navigateWithFocus("planetCardStandalone", {
-      event: e,
-      type: phase,
-      size: "md",
-    });
+  const handleMoonClick = (index: number, phase: CelestialType) => {
+    setSelectedMoonIndex(index);
+    setSelectedMoonPhase(phase as any);
+    setIsModalOpen(true);
+  };
+
+  const handleInsightSubmit = async (insight: string) => {
+    await saveInsight(selectedMoonPhase, selectedMoonIndex, insight);
   };
 
   return (
@@ -58,7 +67,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               <CelestialObject
                 type={phase}
                 interactive
-                onClick={(e) => handleMoonClick(e, phase)}
+                onClick={() => handleMoonClick(i, phase)}
                 floatOffset={-1.5 + i * 0.8}
               />
             </motion.div>
@@ -82,7 +91,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               <CelestialObject
                 type={phase}
                 interactive
-                onClick={(e) => handleMoonClick(e, phase)}
+                onClick={() => handleMoonClick(i + 4, phase)}
                 floatOffset={1.5 - i * 0.8}
               />
             </motion.div>
@@ -103,6 +112,14 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         }
         className="mb-4"
         floatOffset={2}
+      />
+
+      <MonthlyInsightModal
+        isOpen={isModalOpen}
+        moonIndex={selectedMoonIndex}
+        moonPhase={selectedMoonPhase}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleInsightSubmit}
       />
     </div>
   );
