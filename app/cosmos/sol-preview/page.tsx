@@ -18,7 +18,7 @@ export default function SolPreviewPage() {
       <div className="relative aspect-square w-[min(70vh,72vw)] max-w-xl">
         <div className="absolute inset-0 -z-10 blur-3xl bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.25),rgba(8,47,73,0))]" />
         <div className="absolute inset-[16%] rounded-full border border-sky-100/20" />
-        <CelestialObject type="solTrocoidal" size="md" interactive />
+        <CelestialObject type="sol" size="md" interactive />
       </div>
     </main>
   );
