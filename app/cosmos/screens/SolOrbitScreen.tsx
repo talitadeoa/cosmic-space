@@ -18,11 +18,6 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
   const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
   const { saveInsight: saveAnnualInsight } = useAnnualInsights();
 
-  const handleSpaceClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-    navigateTo("galaxySuns");
-  };
-
   const handleMoonClick = (phase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante') => {
     setSelectedMoonPhase(phase);
     setIsQuarterlyModalOpen(true);
@@ -190,8 +185,8 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
 
     const drawStaticWaveRing = () => {
       const baseRadius = earthOrbitRadius + 36;
-      const waveAmplitude = 14;
-      const waveFrequency = 16;
+      const waveAmplitude = 12;
+      const waveFrequency = 12;
 
       ctx.save();
       ctx.lineWidth = 1.1;
@@ -243,10 +238,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
 
   return (
     <>
-      <div
-        className="flex h-full w-full items-center justify-center overflow-hidden"
-        onClick={handleSpaceClick}
-      >
+      <div className="flex h-full w-full items-center justify-center overflow-hidden">
         {/* Container quadrado central: tudo orbita em torno dele */}
         <div className="relative aspect-square w-[min(70vh,70vw)]">
           <canvas
