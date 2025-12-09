@@ -86,7 +86,7 @@ export default function MonthlyInsightModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -94,13 +94,15 @@ export default function MonthlyInsightModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md rounded-lg border border-sky-400/30 bg-slate-900/95 p-6 shadow-2xl"
+            className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-lg sm:p-8"
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-sky-400/10" />
+
             {/* Fechar */}
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 text-sky-400 transition-colors hover:text-sky-300"
+              className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 p-2 text-indigo-200 transition hover:border-indigo-300/60 hover:bg-indigo-500/20 hover:text-white"
               aria-label="Fechar"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,16 +112,18 @@ export default function MonthlyInsightModal({
 
             {/* Cabeçalho */}
             <div className="mb-6 text-center">
-              <div className="mb-2 text-sm font-medium text-sky-400">{phaseLabel}</div>
-              <h2 className="mb-2 text-2xl font-bold text-sky-300">{monthName}</h2>
-              <p className="text-xs text-sky-400">Mês #{monthNum}</p>
+              <div className="mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-indigo-100/80">
+                {phaseLabel}
+              </div>
+              <h2 className="mb-2 text-2xl font-bold text-white">{monthName}</h2>
+              <p className="text-xs text-slate-200/70">Mês #{monthNum}</p>
             </div>
 
             {/* Formulário */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Input Insight */}
               <div className="space-y-2">
-                <label htmlFor="insight" className="block text-sm font-medium text-sky-300">
+                <label htmlFor="insight" className="block text-sm font-semibold uppercase tracking-[0.14em] text-slate-200/90">
                   Seu Insight do Mês
                 </label>
                 <textarea
@@ -127,7 +131,7 @@ export default function MonthlyInsightModal({
                   value={insight}
                   onChange={(e) => setInsight(e.target.value)}
                   placeholder="Escreva seu insight, reflexão ou aprendizado para este mês..."
-                  className="w-full rounded-lg border border-sky-400/20 bg-slate-800/50 px-4 py-3 text-sky-100 placeholder-sky-500/60 transition-colors focus:border-sky-400/50 focus:outline-none focus:ring-1 focus:ring-sky-400/30 disabled:opacity-50"
+                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-indigo-300/60 focus:outline-none focus:ring-1 focus:ring-indigo-300/40 disabled:opacity-50"
                   rows={5}
                 />
               </div>
@@ -137,7 +141,7 @@ export default function MonthlyInsightModal({
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+                  className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 shadow-inner shadow-black/20"
                 >
                   {autosaveError}
                 </motion.div>
@@ -145,16 +149,16 @@ export default function MonthlyInsightModal({
 
               {/* Botões */}
               <div className="space-y-3 pt-4">
-                <div className="flex items-center justify-between rounded-lg border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-xs text-sky-100">
-                  <span className="font-semibold">Autosave</span>
-                  <span className="rounded-full bg-sky-400/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide">
+                <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-100 shadow-inner shadow-black/10">
+                  <span className="font-semibold uppercase tracking-[0.16em]">Autosave</span>
+                  <span className="rounded-full border border-indigo-300/40 bg-indigo-500/15 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-indigo-50">
                     {statusLabel}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex w-full items-center justify-center rounded-lg border border-sky-400 bg-gradient-to-r from-sky-500 to-sky-400 px-4 py-2 font-medium text-slate-900 transition-all hover:shadow-lg hover:shadow-sky-500/50"
+                  className="flex w-full items-center justify-center rounded-2xl border border-indigo-300/60 bg-indigo-500/30 px-4 py-2 font-semibold text-white shadow-md shadow-indigo-900/40 transition hover:bg-indigo-500/45 hover:shadow-lg hover:shadow-indigo-700/40"
                 >
                   Concluído
                 </button>
