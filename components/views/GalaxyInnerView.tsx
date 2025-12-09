@@ -1,25 +1,39 @@
 import type { FC } from "react";
+
+type GalaxyInnerViewProps = {
+  compact?: boolean;
+};
 /**
  * Visualização de uma "galáxia interior" lembrando um átomo:
  * órbitas elípticas com partículas orbitando um núcleo.
  * Aqui usamos apenas SVG + animações CSS simples (definidas na própria tag).
  */
-export const GalaxyInnerView: FC = () => {
+export const GalaxyInnerView: FC<GalaxyInnerViewProps> = ({
+  compact = false,
+}) => {
+  const titleClass = compact
+    ? "text-xs font-semibold text-indigo-100"
+    : "text-sm font-semibold text-indigo-100";
+  const subtitleClass = compact
+    ? "text-[0.7rem] text-slate-300"
+    : "text-xs text-slate-300";
+  const svgSize = compact ? "h-32 w-32" : "h-48 w-48";
+  const containerSpacing = compact ? "space-y-3 text-center" : "space-y-6";
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-sm font-semibold text-indigo-100">
-          Galáxia Interior
-        </h3>
-        <p className="text-xs text-slate-300">
-          Uma cartografia simbólica do seu universo interno — camadas, órbitas e
-          partículas em constante reorganização.
+    <div className={containerSpacing}>
+      <div className={compact ? "space-y-1" : ""}>
+        <h3 className={titleClass}>Galáxia Interior</h3>
+        <p className={subtitleClass}>
+          {compact
+            ? "Núcleo em órbitas elípticas."
+            : "Uma cartografia simbólica do seu universo interno — camadas, órbitas e partículas em constante reorganização."}
         </p>
       </div>
 
       <div className="mt-2 flex items-center justify-center">
         <svg
-          className="h-48 w-48 text-indigo-200"
+          className={`${svgSize} text-indigo-200`}
           viewBox="0 0 200 200"
           aria-hidden="true"
         >
@@ -115,10 +129,10 @@ export const GalaxyInnerView: FC = () => {
       </div>
 
       <p className="text-[0.7rem] text-slate-400">
-        Você pode futuramente conectar esta visualização a dados reais (estado
-        emocional, ciclos, projetos), transformando o átomo em mapa vivo.
+        {compact
+          ? "Acompanhe o pulso do núcleo diretamente deste card."
+          : "Você pode futuramente conectar esta visualização a dados reais (estado emocional, ciclos, projetos), transformando o átomo em mapa vivo."}
       </p>
-
     </div>
   );
 };

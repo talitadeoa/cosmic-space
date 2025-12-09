@@ -118,11 +118,7 @@ export default function UniversePage() {
 
         {/* Grade de esferas */}
         <section className="flex flex-1 flex-col items-center justify-center px-4 pb-8 sm:pb-10 pt-4 md:px-8">
-          <p className="mb-6 sm:mb-8 max-w-xl text-center text-xs sm:text-xs md:text-sm text-slate-300">
-            Seis esferas flutuam à sua frente. Cada uma é um pequeno módulo de
-            visualização ou prática — uma forma de navegar o cosmos dentro e
-            fora de você.
-          </p>
+  
 
           <div
             className="grid w-full max-w-3xl grid-cols-2 gap-4 sm:gap-6 md:gap-8 lg:grid-cols-3"
