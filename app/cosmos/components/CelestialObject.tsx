@@ -30,9 +30,105 @@ const sizeToClass: Record<CelestialSize, string> = {
   lg: "w-24 h-24",
 };
 
+const sizeToPixels: Record<CelestialSize, number> = {
+  sm: 40,
+  md: 56,
+  lg: 96,
+};
+
+// Config de cores do Sol
+export const sunColors = {
+  sunGlowInner: "rgba(255, 255, 255, 0.95)",
+  sunGlowMid: "rgba(190, 235, 255, 0.9)",
+  sunGlowOuter: "rgba(15, 23, 42, 0)",
+  sunCore: "#f9fafb",
+};
+
+/**
+ * Desenha o Sol em um contexto 2D de canvas.
+ * @param ctx contexto 2D
+ * @param centerX posição X do centro
+ * @param centerY posição Y do centro
+ * @param options opções extras (radius, colors)
+ */
+export function drawSun(
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  options: { radius?: number; colors?: typeof sunColors } = {},
+) {
+  const radius = options.radius ?? 40;
+  const colors = options.colors ?? sunColors;
+
+  ctx.save();
+
+  // Glow ao redor do Sol
+  const gradient = ctx.createRadialGradient(
+    centerX,
+    centerY,
+    0,
+    centerX,
+    centerY,
+    radius * 4,
+  );
+  gradient.addColorStop(0, colors.sunGlowInner);
+  gradient.addColorStop(0.2, colors.sunGlowMid);
+  gradient.addColorStop(1, colors.sunGlowOuter);
+
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius * 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Disco central
+  ctx.shadowBlur = 25;
+  ctx.shadowColor = "#e0f2fe";
+  ctx.fillStyle = colors.sunCore;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+const SunCanvas: React.FC<{ size: CelestialSize }> = ({ size }) => {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const cssSize = sizeToPixels[size];
+    // Canvas maior que o container para não cortar o glow
+    const logicalSize = cssSize * 2.2;
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = logicalSize * dpr;
+    canvas.height = logicalSize * dpr;
+    canvas.style.width = `${cssSize}px`;
+    canvas.style.height = `${cssSize}px`;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, logicalSize, logicalSize);
+
+    const radius = logicalSize * 0.24;
+    drawSun(ctx, logicalSize / 2, logicalSize / 2, { radius });
+  }, [size]);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-visible">
+      <canvas ref={canvasRef} className="overflow-visible" aria-hidden />
+    </div>
+  );
+};
+
 const CELESTIAL_STYLES: Record<CelestialType, string> = {
-  sol: "bg-gradient-to-br from-yellow-300 via-amber-300 to-orange-400 shadow-[0_0_40px_rgba(252,211,77,0.7)]",
-  lua: "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 shadow-[0_0_24px_rgba(148,163,184,0.9)]",
+  sol: "relative isolate overflow-visible bg-transparent",
+  solTrocoidal:
+    "relative isolate overflow-visible bg-[#f9fafb] shadow-[0_0_30px_rgba(224,242,254,0.9)] ring-2 ring-sky-50/70 before:absolute before:-inset-[70%] before:-z-10 before:rounded-full before:opacity-90 before:content-[''] before:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.95)_0%,rgba(190,235,255,0.9)_24%,rgba(15,23,42,0)_100%)] after:absolute after:-inset-[45%] after:-z-20 after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_center,rgba(248,250,252,0.55)_0%,rgba(14,165,233,0.28)_42%,rgba(8,47,73,0)_100%)]",  lua: "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 shadow-[0_0_24px_rgba(148,163,184,0.9)]",
   luaNova:
     "bg-[radial-gradient(circle_at_50%_55%,#111827_10%,#0f172a_55%,#020617_100%)] ring-2 ring-slate-800/70 shadow-[0_0_28px_rgba(148,163,184,0.35)]",
   luaCrescente:
@@ -63,6 +159,7 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
   onDragOver,
   onDragLeave,
 }) => {
+  const isSun = type === "sol";
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     onClick?.(e);
@@ -96,7 +193,9 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
       }}
       transition={floatTransition}
       whileHover={interactive ? { scale: 1.08 } : undefined}
-      whileTap={interactive ? { scale: 0.92 } : undefined}
-    />
+      whileTap={interactive ? { scale: 0.92 } : undefined}>
+      
+      {isSun ? <SunCanvas size={size} /> : null}
+    </motion.div>
   );
 };

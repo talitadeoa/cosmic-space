@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
+import AuthGate from "@/components/AuthGate";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { SpaceBackground } from "./components/SpaceBackground";
@@ -106,74 +107,76 @@ const CosmosPage: React.FC = () => {
   const CurrentScreen = screens[currentScreen];
 
   return (
-    <div
-      className="relative min-h-screen overflow-hidden text-slate-50"
-      onClick={handleBackgroundClick}
-    >
-      <SpaceBackground />
+    <AuthGate>
+      <div
+        className="relative min-h-screen overflow-hidden text-slate-50"
+        onClick={handleBackgroundClick}
+      >
+        <SpaceBackground />
 
-      <AnimatePresence>
-        {focus && (
-          <motion.div
-            className="fixed inset-0 z-40 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+        <AnimatePresence>
+          {focus && (
             <motion.div
-              className="absolute inset-0 bg-slate-950/70 backdrop-blur-lg"
+              className="fixed inset-0 z-40 pointer-events-none"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-            />
-
-            <motion.div
-              className="absolute"
-              initial={{ x: focus.x, y: focus.y, scale: 1 }}
-              animate={{
-                x: focus.centerX,
-                y: focus.centerY,
-                scale: 3,
-              }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              <CelestialObject
-                type={focus.type as CelestialType}
-                size={focus.size as CelestialSize}
-                interactive={false}
-                pulseOnMount={false}
+              <motion.div
+                className="absolute inset-0 bg-slate-950/70 backdrop-blur-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
               />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      <div className="relative z-10 flex h-screen flex-col">
-        <div className="pointer-events-none absolute top-2 sm:top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-900/60 px-3 sm:px-4 py-1 text-[0.65rem] sm:text-xs text-slate-200/70">
-          Tela: <span className="font-semibold">{currentScreen}</span>
-        </div>
-
-        <div className="relative flex flex-1 items-center justify-center px-2 sm:px-4">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentScreen}
-              variants={screenVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="relative h-[75vh] sm:h-[80vh] w-full sm:w-[90vw] max-w-5xl"
-            >
-              <CurrentScreen
-                navigateTo={navigateTo}
-                navigateWithFocus={navigateWithFocus}
-              />
+              <motion.div
+                className="absolute"
+                initial={{ x: focus.x, y: focus.y, scale: 1 }}
+                animate={{
+                  x: focus.centerX,
+                  y: focus.centerY,
+                  scale: 3,
+                }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              >
+                <CelestialObject
+                  type={focus.type as CelestialType}
+                  size={focus.size as CelestialSize}
+                  interactive={false}
+                  pulseOnMount={false}
+                />
+              </motion.div>
             </motion.div>
-          </AnimatePresence>
+          )}
+        </AnimatePresence>
+
+        <div className="relative z-10 flex h-screen flex-col">
+          <div className="pointer-events-none absolute top-2 sm:top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-900/60 px-3 sm:px-4 py-1 text-[0.65rem] sm:text-xs text-slate-200/70">
+            Tela: <span className="font-semibold">{currentScreen}</span>
+          </div>
+
+          <div className="relative flex flex-1 items-center justify-center px-2 sm:px-4">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentScreen}
+                variants={screenVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="relative h-[75vh] sm:h-[80vh] w-full sm:w-[90vw] max-w-5xl"
+              >
+                <CurrentScreen
+                  navigateTo={navigateTo}
+                  navigateWithFocus={navigateWithFocus}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
-    </div>
+    </AuthGate>
   );
 };
 
