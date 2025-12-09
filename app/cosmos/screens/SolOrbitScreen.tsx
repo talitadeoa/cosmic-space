@@ -185,8 +185,8 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
 
     const drawStaticWaveRing = () => {
       const baseRadius = earthOrbitRadius + 36;
-      const waveAmplitude = 14;
-      const waveFrequency = 16;
+      const waveAmplitude = 12;
+      const waveFrequency = 12;
 
       ctx.save();
       ctx.lineWidth = 1.1;
