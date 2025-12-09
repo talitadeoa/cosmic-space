@@ -129,7 +129,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
       ctx.save();
       ctx.lineWidth = config.lineWidthTrail;
       ctx.strokeStyle = "#7dd3fc";
-      ctx.globalAlpha = 0.8;
+      ctx.globalAlpha = 0.12;
       ctx.beginPath();
 
       for (let i = 0; i < moonTrail.length; i++) {
