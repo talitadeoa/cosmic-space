@@ -170,4 +170,3 @@ com **coleta de dados automática** em Google Sheets!
 **Status**: ✅ COMPLETO E TESTADO
 
 -
-ficou perfeito agora eu so queria que todos os inputs fossem autosave e ficassem guardados ao clicar novamente depois, sem precisar clicar para salvar

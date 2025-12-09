@@ -18,11 +18,6 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
   const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
   const { saveInsight: saveAnnualInsight } = useAnnualInsights();
 
-  const handleSpaceClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-    navigateTo("galaxySuns");
-  };
-
   const handleMoonClick = (phase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante') => {
     setSelectedMoonPhase(phase);
     setIsQuarterlyModalOpen(true);
@@ -243,10 +238,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
 
   return (
     <>
-      <div
-        className="flex h-full w-full items-center justify-center overflow-hidden"
-        onClick={handleSpaceClick}
-      >
+      <div className="flex h-full w-full items-center justify-center overflow-hidden">
         {/* Container quadrado central: tudo orbita em torno dele */}
         <div className="relative aspect-square w-[min(70vh,70vw)]">
           <canvas
