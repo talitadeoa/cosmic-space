@@ -7,6 +7,7 @@ export type ScreenId =
   | "galaxySuns"
   | "ringGalaxy"
   | "sidePlanetCard"
+  | "eclipseProductivity"
   | "columnSolLuaPlaneta";
 
 export type CelestialType =
