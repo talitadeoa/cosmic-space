@@ -50,7 +50,7 @@ export default function AnnualInsightModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-md"
           onClick={onClose}
         >
           <motion.div
@@ -58,13 +58,16 @@ export default function AnnualInsightModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md rounded-lg border border-amber-400/30 bg-slate-900/95 p-6 shadow-2xl"
+            className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-amber-400/10 via-orange-400/5 to-slate-950/60" />
+            <div className="pointer-events-none absolute inset-x-6 top-6 h-28 rounded-2xl bg-gradient-to-br from-white/10 via-white/5 to-transparent blur-xl" />
+
             {/* Fechar */}
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 text-amber-400 transition-colors hover:text-amber-300"
+              className="absolute right-5 top-5 rounded-full border border-white/10 bg-slate-900/60 p-1 text-amber-100 shadow-lg transition hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-50"
               aria-label="Fechar"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,17 +76,20 @@ export default function AnnualInsightModal({
             </button>
 
             {/* Cabeçalho */}
-            <div className="mb-6 text-center">
-              <div className="mb-2 text-lg font-semibold text-amber-300">☀️ Sol</div>
-              <h2 className="mb-2 text-3xl font-bold text-amber-200">{currentYear}</h2>
-              <p className="text-sm text-amber-400">Seu Insight Anual</p>
+            <div className="relative mb-6 flex flex-col items-center gap-1 text-center">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
+                Insight Anual
+              </p>
+              <div className="text-lg font-semibold text-amber-100">☀️ Sol</div>
+              <h2 className="text-3xl font-bold text-white">{currentYear}</h2>
+              <p className="text-sm text-amber-100/90">Seu insight do ano</p>
             </div>
 
             {/* Formulário */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Input Insight */}
               <div className="space-y-2">
-                <label htmlFor="insight" className="block text-sm font-medium text-amber-300">
+                <label htmlFor="insight" className="block text-sm font-semibold text-amber-50">
                   Reflita Sobre o Ano
                 </label>
                 <textarea
@@ -91,7 +97,7 @@ export default function AnnualInsightModal({
                   value={insight}
                   onChange={(e) => setInsight(e.target.value)}
                   placeholder="Escreva sua reflexão, aprendizados e conquistas do ano..."
-                  className="w-full rounded-lg border border-amber-400/20 bg-slate-800/50 px-4 py-3 text-amber-50 placeholder-amber-600/60 transition-colors focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 disabled:opacity-50"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-amber-50 placeholder-amber-600/60 shadow-inner shadow-black/30 transition focus:border-amber-400/50 focus:outline-none focus:ring-2 focus:ring-amber-400/20 disabled:opacity-50"
                   rows={6}
                 />
               </div>
@@ -101,7 +107,7 @@ export default function AnnualInsightModal({
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+                  className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 shadow-inner shadow-red-500/20"
                 >
                   {autosaveError}
                 </motion.div>
@@ -109,16 +115,16 @@ export default function AnnualInsightModal({
 
               {/* Botões */}
               <div className="space-y-3 pt-4">
-                <div className="flex items-center justify-between rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
-                  <span className="font-semibold">Autosave</span>
-                  <span className="rounded-full bg-amber-400/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide">
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/60 px-3 py-2 text-xs text-amber-100 shadow-inner shadow-black/30">
+                  <span className="font-semibold text-amber-50">Autosave</span>
+                  <span className="rounded-full bg-amber-400/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-50 shadow shadow-amber-500/30">
                     {statusLabel}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex w-full items-center justify-center rounded-lg border border-amber-400 bg-gradient-to-r from-amber-500 to-amber-400 px-4 py-2 font-medium text-slate-900 transition-all hover:shadow-lg hover:shadow-amber-500/50"
+                  className="flex w-full items-center justify-center rounded-xl border border-amber-400/60 bg-gradient-to-r from-amber-500 via-orange-400 to-amber-300 px-4 py-2 font-semibold text-slate-950 shadow-lg shadow-amber-500/30 transition hover:-translate-y-0.5 hover:shadow-amber-400/50"
                 >
                   Concluído
                 </button>
