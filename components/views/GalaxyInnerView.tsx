@@ -23,10 +23,10 @@ export const GalaxyInnerView: FC<GalaxyInnerViewProps> = ({
   return (
     <div className={containerSpacing}>
       <div className={compact ? "space-y-1" : ""}>
-        <h3 className={titleClass}>Galáxia Interior</h3>
+        <h3 className={titleClass}>-</h3>
         <p className={subtitleClass}>
           {compact
-            ? "Núcleo em órbitas elípticas."
+            ? "-"
             : "Uma cartografia simbólica do seu universo interno — camadas, órbitas e partículas em constante reorganização."}
         </p>
       </div>
@@ -130,8 +130,8 @@ export const GalaxyInnerView: FC<GalaxyInnerViewProps> = ({
 
       <p className="text-[0.7rem] text-slate-400">
         {compact
-          ? "Acompanhe o pulso do núcleo diretamente deste card."
-          : "Você pode futuramente conectar esta visualização a dados reais (estado emocional, ciclos, projetos), transformando o átomo em mapa vivo."}
+          ? "-"
+          : "-"}
       </p>
     </div>
   );
