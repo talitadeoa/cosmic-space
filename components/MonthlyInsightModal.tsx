@@ -8,6 +8,7 @@ interface MonthlyInsightModalProps {
   isOpen: boolean;
   moonIndex: number;
   moonPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
+  moonSignLabel?: string;
   onClose: () => void;
   onSubmit: (insight: string) => Promise<void>;
 }
@@ -19,9 +20,20 @@ const moonPhaseLabels: Record<string, string> = {
   luaMinguante: 'Lua Minguante',
 };
 
-const getMonthNumber = (index: number): number => {
-  // 8 luas = 8 meses do ano (índice 0-7 = mês 1-8, depois cicla)
-  return (index % 8) + 1;
+const getMonthNumber = (monthNumber: number): number => {
+  // Recebemos o mês já calculado (1-12); garante ciclo de 12 meses
+  return ((monthNumber - 1) % 12) + 1;
+};
+
+const phasePrompts: Record<string, { label: string; placeholder: string }> = {
+  luaNova: {
+    label: 'O que você gostaria de plantar nesta fase?',
+    placeholder: 'Intenções, sementes, inícios que você quer colocar no mundo...',
+  },
+  luaCheia: {
+    label: 'O que você gostaria de colher nesta fase?',
+    placeholder: 'Resultados, colheitas, celebrações do que foi plantado...',
+  },
 };
 
 const getMonthName = (monthNum: number): string => {
@@ -46,6 +58,7 @@ export default function MonthlyInsightModal({
   isOpen,
   moonIndex,
   moonPhase,
+  moonSignLabel,
   onClose,
   onSubmit,
 }: MonthlyInsightModalProps) {
@@ -68,6 +81,11 @@ export default function MonthlyInsightModal({
   const monthNum = getMonthNumber(moonIndex);
   const monthName = getMonthName(monthNum);
   const phaseLabel = moonPhaseLabels[moonPhase];
+  const prompt = phasePrompts[moonPhase] ?? {
+    label: 'Seu insight do mês',
+    placeholder: 'Escreva seu insight, reflexão ou aprendizado para este mês...',
+  };
+  const signLabel = moonSignLabel?.trim() && moonSignLabel.trim().length > 0 ? moonSignLabel : '— signo em breve';
 
   useEffect(() => {
     if (!isOpen) {
@@ -117,6 +135,10 @@ export default function MonthlyInsightModal({
               </div>
               <h2 className="mb-2 text-2xl font-bold text-white">{monthName}</h2>
               <p className="text-xs text-slate-200/70">Mês #{monthNum}</p>
+              <div className="mt-3 inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-indigo-50">
+                <span>Signo</span>
+                <span className="text-slate-100/90">{signLabel}</span>
+              </div>
             </div>
 
             {/* Formulário */}
@@ -124,13 +146,13 @@ export default function MonthlyInsightModal({
               {/* Input Insight */}
               <div className="space-y-2">
                 <label htmlFor="insight" className="block text-sm font-semibold uppercase tracking-[0.14em] text-slate-200/90">
-                  Seu Insight do Mês
+                  {prompt.label}
                 </label>
                 <textarea
                   id="insight"
                   value={insight}
                   onChange={(e) => setInsight(e.target.value)}
-                  placeholder="Escreva seu insight, reflexão ou aprendizado para este mês..."
+                  placeholder={prompt.placeholder}
                   className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-indigo-300/60 focus:outline-none focus:ring-1 focus:ring-indigo-300/40 disabled:opacity-50"
                   rows={5}
                 />
