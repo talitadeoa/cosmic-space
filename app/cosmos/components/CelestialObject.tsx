@@ -104,6 +104,35 @@ export function drawSun(
   ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
   ctx.fill();
 
+  // Anel quente no contorno
+  ctx.strokeStyle = "rgba(252, 211, 77, 0.42)";
+  ctx.lineWidth = radius * 0.18;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius * 1.08, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Textura leve de plasma
+  const spots = [
+    { x: -0.22, y: -0.18, r: 0.14, a: 0.24 },
+    { x: 0.18, y: -0.12, r: 0.12, a: 0.2 },
+    { x: -0.12, y: 0.16, r: 0.1, a: 0.16 },
+    { x: 0.22, y: 0.18, r: 0.13, a: 0.18 },
+  ];
+
+  spots.forEach(({ x, y, r, a }) => {
+    const sx = centerX + x * radius * 1.6;
+    const sy = centerY + y * radius * 1.6;
+    const sr = radius * r;
+    const spotGradient = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 1.8);
+    spotGradient.addColorStop(0, `rgba(255, 241, 220, ${a + 0.08})`);
+    spotGradient.addColorStop(0.45, `rgba(251, 191, 36, ${a})`);
+    spotGradient.addColorStop(1, "rgba(232, 121, 0, 0)");
+    ctx.fillStyle = spotGradient;
+    ctx.beginPath();
+    ctx.arc(sx, sy, sr * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
   // Destaque central
   ctx.shadowColor = "rgba(255, 255, 255, 0.72)";
   ctx.shadowBlur = radius * 0.48;
@@ -155,18 +184,18 @@ const SHARED_OVERFLOW = "overflow-visible";
 const SHARED_ABSOLUTE = "absolute inset-0";
 
 const CELESTIAL_STYLES: Record<CelestialType, string> = {
-  sol: "bg-[radial-gradient(circle_at_32%_30%,#fff8ec_14%,#ffe2a1_52%,#f7b86a_76%,#f4c16e_100%)] shadow-[0_0_28px_rgba(247,166,78,0.42)] before:absolute before:-inset-[24%] before:-z-10 before:rounded-full before:opacity-70 before:blur-[14px] before:content-[''] before:bg-[radial-gradient(circle_at_center,rgba(255,245,224,0.7),rgba(249,168,38,0.32),rgba(228,120,34,0))] after:absolute after:-inset-[12%] after:-z-20 after:rounded-full after:opacity-70 after:blur-[8px] after:content-[''] after:bg-[conic-gradient(from_25deg,rgba(255,255,255,0.16)_0deg,rgba(253,224,138,0.2)_120deg,rgba(248,153,62,0.14)_240deg,rgba(255,255,255,0.16)_360deg)]",
+  sol: "bg-[radial-gradient(circle_at_38%_34%,#fffaf0_16%,#ffe3a3_48%,#f9b756_72%,#f59a2c_100%)] shadow-[0_0_34px_rgba(249,168,38,0.55)] ring-1 ring-amber-100/60 before:absolute before:-inset-[26%] before:-z-10 before:rounded-full before:blur-[22px] before:content-[''] before:opacity-85 before:bg-[radial-gradient(circle_at_center,rgba(255,245,224,0.85)_0%,rgba(251,191,36,0.55)_42%,rgba(234,88,12,0.12)_100%)] after:absolute after:-inset-[18%] after:-z-20 after:rounded-full after:content-[''] after:opacity-85 after:blur-[10px] after:bg-[conic-gradient(from_32deg,rgba(255,255,255,0.18)_0deg,rgba(253,224,138,0.26)_120deg,rgba(248,153,62,0.2)_210deg,rgba(255,255,255,0.18)_360deg)] after:animate-[spin_38s_linear_infinite]",
   solTrocoidal:
     "bg-[#f9fafb] shadow-[0_0_30px_rgba(224,242,254,0.9)] ring-2 ring-sky-50/70 before:absolute before:-inset-[70%] before:-z-10 before:rounded-full before:opacity-90 before:content-[''] before:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.95)_0%,rgba(190,235,255,0.9)_24%,rgba(15,23,42,0)_100%)] after:absolute after:-inset-[45%] after:-z-20 after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_center,rgba(248,250,252,0.55)_0%,rgba(14,165,233,0.28)_42%,rgba(8,47,73,0)_100%)]",
   lua: "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 shadow-[0_0_24px_rgba(148,163,184,0.9)]",
   luaNova:
     "bg-[radial-gradient(circle_at_30%_30%,rgba(30,41,59,0.9),rgba(100,116,139,0.9))] shadow-[0_0_18px_rgba(148,163,184,0.5)]",
   luaCrescente:
-    "bg-[conic-gradient(from_0deg,rgba(30,41,59,0.95)_0deg,rgba(30,41,59,0.95)_90deg,rgba(148,163,184,0.9)_90deg,rgba(148,163,184,0.9)_180deg,rgba(30,41,59,0.95)_180deg,rgba(30,41,59,0.95)_360deg)] shadow-[0_0_22px_rgba(148,163,184,0.6)]",
+    "bg-[radial-gradient(circle_at_48%_52%,#0f172a_35%,#111827_65%,#0b1220_82%,#030712_100%)] shadow-[0_0_24px_rgba(148,163,184,0.65)] before:absolute before:-inset-[18%] before:rounded-full before:content-[''] before:bg-[radial-gradient(circle_at_78%_50%,rgba(226,232,240,0.96)_0%,rgba(203,213,225,0.85)_18%,rgba(148,163,184,0.5)_36%,rgba(51,65,85,0.05)_54%,rgba(15,23,42,0)_70%)] before:opacity-95 after:absolute after:-inset-[14%] after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_32%_50%,rgba(15,23,42,0.55)_0%,rgba(15,23,42,0)_60%)] after:mix-blend-soft-light after:opacity-75",
   luaCheia:
     "bg-[radial-gradient(circle_at_35%_35%,rgba(226,232,240,0.95),rgba(148,163,184,0.9))] shadow-[0_0_24px_rgba(148,163,184,0.9)]",
   luaMinguante:
-    "bg-[conic-gradient(from_0deg,rgba(148,163,184,0.95)_0deg,rgba(148,163,184,0.95)_90deg,rgba(30,41,59,0.95)_90deg,rgba(30,41,59,0.95)_180deg,rgba(148,163,184,0.95)_180deg,rgba(148,163,184,0.95)_360deg)] shadow-[0_0_22px_rgba(148,163,184,0.6)]",
+    "bg-[radial-gradient(circle_at_52%_52%,#0f172a_35%,#111827_65%,#0b1220_82%,#030712_100%)] shadow-[0_0_24px_rgba(148,163,184,0.65)] before:absolute before:-inset-[18%] before:rounded-full before:content-[''] before:bg-[radial-gradient(circle_at_22%_50%,rgba(226,232,240,0.96)_0%,rgba(203,213,225,0.85)_18%,rgba(148,163,184,0.5)_36%,rgba(51,65,85,0.05)_54%,rgba(15,23,42,0)_70%)] before:opacity-95 after:absolute after:-inset-[14%] after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_68%_50%,rgba(15,23,42,0.55)_0%,rgba(15,23,42,0)_60%)] after:mix-blend-soft-light after:opacity-75",
   planeta:
     "bg-gradient-to-br from-sky-300 via-indigo-400 to-indigo-600 shadow-[0_0_30px_rgba(99,102,241,0.45)] ring-2 ring-white/20",
   galaxia:
