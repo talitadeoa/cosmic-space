@@ -26,7 +26,7 @@ const HOME_OBJECTS: HomeCelestial[] = [
   {
     id: "eclipse",
     type: "eclipse",
-    target: "galaxySuns",
+    target: "eclipseProductivity",
     floatOffset: -3,
     row: 1,
     col: 2,
