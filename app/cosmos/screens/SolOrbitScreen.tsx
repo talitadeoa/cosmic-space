@@ -55,7 +55,8 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
 
     const config = {
       earthAngularSpeed: 0.0025,
-      moonAngularSpeed: 0.02,
+      // Relação 12:1 com a Terra para gerar 12 voltas/pétalas na mandala
+      moonAngularSpeed: 0.03,
       moonTrailMaxPoints: 2200,
       lineWidthOrbits: 1.2,
       lineWidthTrail: 1.6,
@@ -124,7 +125,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
       ctx.save();
       ctx.lineWidth = config.lineWidthTrail;
       ctx.strokeStyle = "#7dd3fc";
-      ctx.globalAlpha = 0.12;
+      ctx.globalAlpha = 0.8;
       ctx.beginPath();
 
       for (let i = 0; i < moonTrail.length; i++) {
@@ -184,8 +185,8 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
     };
 
     const drawStaticWaveRing = () => {
-      const baseRadius = earthOrbitRadius + 36;
-      const waveAmplitude = 12;
+      const baseRadius = earthOrbitRadius + 42;
+      const waveAmplitude = 16;
       const waveFrequency = 12;
 
       ctx.save();

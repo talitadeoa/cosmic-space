@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { GalaxyInnerView } from "@/components/views/GalaxyInnerView";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
 import type { ScreenProps } from "../types";
@@ -90,8 +91,10 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
         <Card
           interactive
           onClick={() => navigateTo("columnSolLuaPlaneta")}
-          className="w-40"
-        />
+          className="w-52 text-center"
+        >
+          <GalaxyInnerView compact />
+        </Card>
       </div>
 
       {/* Luas posicionadas em círculo orbital */}
