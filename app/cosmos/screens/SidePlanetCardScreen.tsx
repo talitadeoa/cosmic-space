@@ -3,18 +3,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
-import TodoInput, { TodoItem as ParsedTodoItem } from "../../../components/TodoInput";
+import TodoInput, { TodoItem as ParsedTodoItem } from "@/components/TodoInput";
+import {
+  TODO_STORAGE_KEY,
+  loadSavedTodos,
+  phaseLabels,
+  type MoonPhase,
+  type SavedTodo,
+} from "../utils/todoStorage";
 import type { ScreenProps } from "../types";
 
 const MOON_COUNT = 4;
-type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
-type SavedTodo = ParsedTodoItem & { phase?: MoonPhase };
-const TODO_STORAGE_KEY = "cosmic_space_todos_salvos";
 
-const SidePlanetCardScreen: React.FC<ScreenProps> = ({
-  navigateTo,
-  navigateWithFocus,
-}) => {
+const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [showTodos, setShowTodos] = useState(true);
   const [draftTodos, setDraftTodos] = useState<ParsedTodoItem[]>([]);
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
@@ -22,12 +23,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(TODO_STORAGE_KEY);
-      if (stored) {
-        setSavedTodos(JSON.parse(stored));
-      }
-    } catch (error) {}
+    setSavedTodos(loadSavedTodos());
   }, []);
 
   useEffect(() => {
@@ -35,13 +31,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
       localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(savedTodos));
     } catch (error) {}
   }, [savedTodos]);
-
-  const moonLabels: Record<MoonPhase, string> = {
-    luaNova: "Lua Nova",
-    luaCrescente: "Lua Crescente",
-    luaCheia: "Lua Cheia",
-    luaMinguante: "Lua Minguante",
-  };
 
   const handleSaveDraftTodos = () => {
     if (!draftTodos.length) return;
@@ -261,7 +250,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({
                               </span>
                             </div>
                             <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-                              {todo.phase ? moonLabels[todo.phase] : "Sem fase"}
+                              {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
                             </span>
                           </div>
                         ))
