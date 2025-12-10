@@ -24,6 +24,7 @@ import GalaxySunsScreen from "./screens/GalaxySunsScreen";
 import RingGalaxyScreen from "./screens/RingGalaxyScreen";
 import SidePlanetCardScreen from "./screens/SidePlanetCardScreen";
 import ColumnSolLuaPlanetaScreen from "./screens/ColumnSolLuaPlanetaScreen";
+import EclipseProductivityScreen from "./screens/EclipseProductivityScreen";
 
 const screenVariants = {
   initial: { opacity: 0, scale: 0.96 },
@@ -48,6 +49,7 @@ const screens: Record<ScreenId, React.FC<ScreenProps>> = {
   galaxySuns: GalaxySunsScreen,
   ringGalaxy: RingGalaxyScreen,
   sidePlanetCard: SidePlanetCardScreen,
+  eclipseProductivity: EclipseProductivityScreen,
   columnSolLuaPlaneta: ColumnSolLuaPlanetaScreen,
 };
 
