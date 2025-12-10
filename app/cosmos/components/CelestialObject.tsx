@@ -32,21 +32,21 @@ const sizeToPixels: Record<CelestialSize, number> = {
 const mergeClasses = (...classes: Array<string | false | undefined>) =>
   classes.filter(Boolean).join(" ");
 
+// Constantes do Sol simplificadas
+const SUN_RADIUS_MULTIPLIERS = {
+  glowStart: 0.4,
+  glowEnd: 2.8,
+  coreRadius: 1.2,
+  highlightRadius: 0.55,
+} as const;
+
 // Config de cores do Sol
 export const sunColors = {
-  sunGlowInner: "rgba(255, 248, 237, 0.98)",
-  sunGlowMid: "rgba(253, 224, 125, 0.7)",
-  sunGlowOuter: "rgba(249, 168, 38, 0.06)",
+  sunGlowInner: "rgba(255, 248, 237, 0.95)",
+  sunGlowMid: "rgba(253, 224, 125, 0.55)",
+  sunGlowOuter: "rgba(249, 168, 38, 0.08)",
   sunCore: "#fffaf0",
-};
-
-/**
- * Desenha o Sol em um contexto 2D de canvas. - opções extras (radius, colors)
- * @param ctx contexto 2D
- * @param centerX posição X do centro
- * @param centerY posição Y do centro
- * @param options opções extras (radius, colors)
- */
+} as const;
 
 export function drawSun(
   ctx: CanvasRenderingContext2D,
@@ -59,118 +59,46 @@ export function drawSun(
 
   ctx.save();
 
-  // Glow ao redor do Sol
+  // Glow suave ao redor do Sol
   const gradient = ctx.createRadialGradient(
     centerX,
     centerY,
-    radius * 0.35,
+    radius * SUN_RADIUS_MULTIPLIERS.glowStart,
     centerX,
     centerY,
-    radius * 3.3,
+    radius * SUN_RADIUS_MULTIPLIERS.glowEnd,
   );
   gradient.addColorStop(0, colors.sunGlowInner);
-  gradient.addColorStop(0.35, colors.sunGlowMid);
-  gradient.addColorStop(0.72, "rgba(251, 191, 36, 0.22)");
+  gradient.addColorStop(0.5, colors.sunGlowMid);
   gradient.addColorStop(1, colors.sunGlowOuter);
 
   ctx.fillStyle = gradient;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * 2.1, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, radius * 2.0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Halo brilhante e quente
-  ctx.globalCompositeOperation = "lighter";
-  ctx.filter = "blur(18px)";
-  ctx.strokeStyle = "rgba(252, 211, 77, 0.22)";
-  ctx.lineWidth = radius * 0.22;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * 1.46, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.filter = "none";
-  ctx.globalCompositeOperation = "source-over";
-
-  // Núcleo do Sol
+  // Núcleo do Sol - gradiente suave e homogêneo
   const coreGradient = ctx.createRadialGradient(
     centerX,
     centerY,
     0,
     centerX,
     centerY,
-    radius,
+    radius * SUN_RADIUS_MULTIPLIERS.coreRadius,
   );
-  coreGradient.addColorStop(0, colors.sunCore);
-  coreGradient.addColorStop(0.55, "#fde68a");
-  coreGradient.addColorStop(0.92, "#f6c452");
-  coreGradient.addColorStop(1, "#f59a2c");
+  coreGradient.addColorStop(0, "#fef3c7");
+  coreGradient.addColorStop(0.6, "#fcd34d");
+  coreGradient.addColorStop(1, "#fbbf24");
 
   ctx.fillStyle = coreGradient;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, radius * SUN_RADIUS_MULTIPLIERS.coreRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  // Anel quente no contorno
-  ctx.strokeStyle = "rgba(252, 211, 77, 0.42)";
-  ctx.lineWidth = radius * 0.18;
+  // Destaque central - discreto
+  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * 1.08, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Flares arqueados na coroa
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  const flareAngles = [0.2, 1.1, 2.1, 3.0, 3.8, 4.6];
-  flareAngles.forEach((angle, idx) => {
-    ctx.save();
-    ctx.rotate(angle);
-    const arcGradient = ctx.createLinearGradient(
-      radius * 1.05,
-      0,
-      radius * 1.9,
-      0,
-    );
-    arcGradient.addColorStop(0, "rgba(255, 255, 255, 0)");
-    arcGradient.addColorStop(
-      0.38,
-      `rgba(255, 241, 214, ${0.6 - idx * 0.06})`,
-    );
-    arcGradient.addColorStop(1, "rgba(253, 186, 116, 0)");
-    ctx.strokeStyle = arcGradient;
-    ctx.lineWidth = radius * 0.1;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius * (1.4 + idx * 0.04), -0.42, 0.42);
-    ctx.stroke();
-    ctx.restore();
-  });
-  ctx.restore();
-
-  // Textura leve de plasma
-  const spots = [
-    { x: -0.22, y: -0.18, r: 0.14, a: 0.24 },
-    { x: 0.18, y: -0.12, r: 0.12, a: 0.2 },
-    { x: -0.12, y: 0.16, r: 0.1, a: 0.16 },
-    { x: 0.22, y: 0.18, r: 0.13, a: 0.18 },
-  ];
-
-  spots.forEach(({ x, y, r, a }) => {
-    const sx = centerX + x * radius * 1.6;
-    const sy = centerY + y * radius * 1.6;
-    const sr = radius * r;
-    const spotGradient = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 1.8);
-    spotGradient.addColorStop(0, `rgba(255, 241, 220, ${a + 0.08})`);
-    spotGradient.addColorStop(0.45, `rgba(251, 191, 36, ${a})`);
-    spotGradient.addColorStop(1, "rgba(232, 121, 0, 0)");
-    ctx.fillStyle = spotGradient;
-    ctx.beginPath();
-    ctx.arc(sx, sy, sr * 1.8, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // Destaque central
-  ctx.shadowColor = "rgba(255, 255, 255, 0.72)";
-  ctx.shadowBlur = radius * 0.48;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * 0.52, 0, Math.PI * 2);
+  ctx.arc(centerX - radius * 0.15, centerY - radius * 0.15, radius * SUN_RADIUS_MULTIPLIERS.highlightRadius, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();
@@ -216,30 +144,41 @@ const SUN_RAY_INSETS: Record<CelestialSize, string> = {
   lg: "-inset-[16%]",
 };
 
-// Camadas de raios em conic-gradient para dar dinamismo ao Sol
+const SUN_RAY_LAYER_CONFIGS = [
+  {
+    blur: "blur-[6px]",
+    opacity: "opacity-75",
+    animation: "animate-[spin_28s_linear_infinite]",
+    gradient: "bg-[conic-gradient(from_8deg,rgba(255,237,213,0)_0deg,rgba(255,247,237,0.34)_14deg,rgba(253,224,138,0)_24deg,rgba(255,255,255,0.42)_36deg,rgba(253,186,116,0)_50deg,rgba(255,241,214,0.3)_64deg,rgba(253,224,138,0)_78deg,rgba(255,255,255,0.32)_94deg,rgba(255,237,213,0)_100deg)]",
+  },
+  {
+    blur: "blur-[10px]",
+    opacity: "opacity-55",
+    animation: "animate-[spin_46s_linear_infinite]",
+    gradient: "bg-[conic-gradient(from_120deg,rgba(255,255,255,0)_0deg,rgba(253,224,138,0.24)_18deg,rgba(255,255,255,0)_36deg,rgba(248,173,79,0.3)_52deg,rgba(255,255,255,0)_70deg,rgba(253,213,141,0.24)_86deg,rgba(255,255,255,0)_100deg)]",
+  },
+] as const;
+
 const SunRays: React.FC<{ size: CelestialSize }> = ({ size }) => (
   <>
-    <div
-      className={mergeClasses(
-        "pointer-events-none absolute rounded-full blur-[6px] mix-blend-screen opacity-75 animate-[spin_28s_linear_infinite]",
-        SUN_RAY_INSETS[size],
-        "bg-[conic-gradient(from_8deg,rgba(255,237,213,0)_0deg,rgba(255,247,237,0.34)_14deg,rgba(253,224,138,0)_24deg,rgba(255,255,255,0.42)_36deg,rgba(253,186,116,0)_50deg,rgba(255,241,214,0.3)_64deg,rgba(253,224,138,0)_78deg,rgba(255,255,255,0.32)_94deg,rgba(255,237,213,0)_100deg)]",
-      )}
-    />
-    <div
-      className={mergeClasses(
-        "pointer-events-none absolute rounded-full blur-[10px] mix-blend-screen opacity-55 animate-[spin_46s_linear_infinite]",
-        SUN_RAY_INSETS[size],
-        "bg-[conic-gradient(from_120deg,rgba(255,255,255,0)_0deg,rgba(253,224,138,0.24)_18deg,rgba(255,255,255,0)_36deg,rgba(248,173,79,0.3)_52deg,rgba(255,255,255,0)_70deg,rgba(253,213,141,0.24)_86deg,rgba(255,255,255,0)_100deg)]",
-      )}
-    />
+    {SUN_RAY_LAYER_CONFIGS.map((config, idx) => (
+      <div
+        key={idx}
+        className={mergeClasses(
+          "pointer-events-none absolute rounded-full mix-blend-screen",
+          SUN_RAY_INSETS[size],
+          config.blur,
+          config.opacity,
+          config.animation,
+          config.gradient,
+        )}
+      />
+    ))}
   </>
 );
 
 // Constantes para reutilização de estilos
 const SHARED_ROUNDED = "rounded-full";
-const SHARED_OVERFLOW = "overflow-visible";
-const SHARED_ABSOLUTE = "absolute inset-0";
 
 const CELESTIAL_STYLES: Record<CelestialType, string> = {
   sol: "bg-[radial-gradient(circle_at_42%_36%,#fffaf0_12%,#ffe4ae_46%,#f6b347_72%,#f08a1a_94%)] shadow-[0_0_32px_rgba(249,168,38,0.6)] ring-1 ring-amber-100/70 before:absolute before:-inset-[26%] before:-z-10 before:rounded-full before:blur-[22px] before:content-[''] before:opacity-80 before:bg-[radial-gradient(circle_at_center,rgba(255,245,224,0.9)_0%,rgba(251,191,36,0.48)_46%,rgba(249,115,22,0.16)_90%)] after:absolute after:-inset-[12%] after:-z-20 after:rounded-full after:content-[''] after:opacity-80 after:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0)_70%)]",
@@ -279,18 +218,17 @@ type CelestialObjectProps = {
 
 const buildMotionConfig = (pulseOnMount: boolean, floatOffset: number) => {
   const floatKeyframes = [floatOffset - 4, floatOffset + 4];
+  const baseConfig = {
+    initial: { y: floatKeyframes[0] },
+    animate: { y: floatKeyframes },
+    transition: { y: motionFloat },
+  };
 
-  if (!pulseOnMount) {
-    return {
-      initial: { y: floatKeyframes[0] },
-      animate: { y: floatKeyframes },
-      transition: { y: motionFloat },
-    };
-  }
+  if (!pulseOnMount) return baseConfig;
 
   return {
-    initial: { opacity: 0, scale: 0.92, y: floatKeyframes[0] },
-    animate: { opacity: 1, scale: 1, y: floatKeyframes },
+    initial: { opacity: 0, scale: 0.92, ...baseConfig.initial },
+    animate: { opacity: 1, scale: 1, ...baseConfig.animate },
     transition: {
       opacity: { duration: 0.35, ease: "easeOut" },
       scale: { duration: 0.35, ease: "easeOut" },
@@ -312,45 +250,38 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
   pulseOnMount = true,
 }) => {
   const isSun = type === "sol";
-
   const { initial, animate, transition } = React.useMemo(
     () => buildMotionConfig(pulseOnMount, floatOffset),
     [floatOffset, pulseOnMount],
   );
 
   const handleClick = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      event.stopPropagation();
-      onClick?.(event);
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      onClick?.(e);
     },
     [onClick],
   );
 
   const handleDrop = React.useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => {
-      if (!onDrop) return;
-      event.preventDefault();
-      event.stopPropagation();
-      onDrop(event);
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onDrop?.(e);
     },
     [onDrop],
   );
 
   const handleDragOver = React.useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => {
-      if (!onDragOver) return;
-      event.preventDefault();
-      onDragOver(event);
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      onDragOver?.(e);
     },
     [onDragOver],
   );
 
-  const handleDragLeave = React.useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => {
-      onDragLeave?.(event);
-    },
-    [onDragLeave],
-  );
+  const hoverScale = interactive ? { scale: 1.08 } : undefined;
+  const tapScale = interactive ? { scale: 0.92 } : undefined;
 
   return (
     <motion.div
@@ -363,27 +294,20 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
       onClick={handleClick}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+      onDragLeave={onDragLeave}
       initial={initial}
       animate={animate}
       transition={transition}
-      whileHover={interactive ? { scale: 1.08 } : undefined}
-      whileTap={interactive ? { scale: 0.92 } : undefined}
+      whileHover={hoverScale}
+      whileTap={tapScale}
     >
-      <div
-        className={[
-          "absolute inset-0 overflow-visible rounded-full",
-          CELESTIAL_STYLES[type],
-        ].join(" ")}
-      />
-
-      {isSun ? (
+      <div className={`absolute inset-0 overflow-visible rounded-full ${CELESTIAL_STYLES[type]}`} />
+      {isSun && (
         <>
           <SunCanvas size={size} />
           <SunRays size={size} />
         </>
-      ) : null}
-
+      )}
       <div className={ringOutline} />
     </motion.div>
   );

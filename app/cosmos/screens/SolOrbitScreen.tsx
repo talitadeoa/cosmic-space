@@ -185,9 +185,9 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
     };
 
     const drawStaticWaveRing = () => {
+      const waveFrequency = 12;
       const baseRadius = earthOrbitRadius + 42;
       const waveAmplitude = 16;
-      const waveFrequency = 12;
 
       ctx.save();
       ctx.lineWidth = 1.1;
@@ -197,7 +197,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
       const steps = 720;
       for (let i = 0; i <= steps; i++) {
         const theta = (i / steps) * Math.PI * 2;
-        const offset = Math.sin(theta * waveFrequency) * waveAmplitude;
+        const offset = Math.sin(theta * waveFrequency + Math.PI / 2) * waveAmplitude;
         const r = baseRadius + offset;
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
@@ -239,9 +239,9 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
 
   return (
     <>
-      <div className="flex h-full w-full items-center justify-center overflow-hidden">
+      <div className="flex h-full w-full items-center justify-center overflow-hidden px-4">
         {/* Container quadrado central: tudo orbita em torno dele */}
-        <div className="relative aspect-square w-[min(70vh,70vw)]">
+        <div className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]">
           <canvas
             ref={canvasRef}
             className="pointer-events-none absolute inset-0 bg-transparent"
@@ -261,7 +261,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
         {/* As fases da Lua ao redor do Sol */}
 
           {/* Lua Cheia - Topo */}
-          <div className="absolute left-1/2 top-[6%] -translate-x-1/2">
+          <div className="absolute left-1/2 top-[3%] -translate-x-1/2">
             <CelestialObject
               type="luaCheia"
               size="md"
@@ -271,7 +271,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
           </div>
 
           {/* Lua Crescente - Direita */}
-          <div className="absolute right-[6%] top-1/2 -translate-y-1/2">
+          <div className="absolute right-[3%] top-1/2 -translate-y-1/2">
             <CelestialObject
               type="luaCrescente"
               size="md"
@@ -282,7 +282,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
           </div>
 
           {/* Lua Nova - Base */}
-          <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2">
+          <div className="absolute bottom-[3%] left-1/2 -translate-x-1/2">
             <CelestialObject
               type="luaNova"
               size="md"
@@ -293,7 +293,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
           </div>
 
           {/* Lua Minguante - Esquerda */}
-          <div className="absolute left-[6%] top-1/2 -translate-y-1/2">
+          <div className="absolute left-[3%] top-1/2 -translate-y-1/2">
             <CelestialObject
               type="luaMinguante"
               size="md"
