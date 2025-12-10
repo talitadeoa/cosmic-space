@@ -10,7 +10,6 @@ type YearSun = {
   label: string;
   year: number;
   orbitIndex: number;
-  angle: number;
 };
 
 const BASE_ORBIT_SIZE = 240;
@@ -26,16 +25,17 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const yearSuns = useMemo<YearSun[]>(() => {
     return [
-      { id: "past", label: "Ano passado", year: currentYear - 1, orbitIndex: 0, angle: -70 },
-      { id: "present", label: "Ano presente", year: currentYear, orbitIndex: 1, angle: 35 },
-      { id: "next1", label: "Próximo ano", year: currentYear + 1, orbitIndex: 2, angle: 165 },
-      { id: "next2", label: "Daqui a 2 anos", year: currentYear + 2, orbitIndex: 3, angle: -15 },
+      { id: "past", label: "Ano passado", year: currentYear - 1, orbitIndex: 0 },
+      { id: "present", label: "Ano presente", year: currentYear, orbitIndex: 1 },
+      { id: "next1", label: "Próximo ano", year: currentYear + 1, orbitIndex: 2 },
+      { id: "next2", label: "Daqui a 2 anos", year: currentYear + 2, orbitIndex: 3 },
     ];
   }, [currentYear]);
 
   const largestOrbit = orbitSizes[orbitSizes.length - 1];
   const stagePadding = 120;
   const stageSize = largestOrbit + stagePadding;
+  const angleStep = 360 / yearSuns.length;
 
   const polarToCartesian = (orbitIndex: number, angle: number) => {
     const orbitSize = orbitSizes[orbitIndex] ?? orbitSizes[orbitSizes.length - 1];
@@ -112,24 +112,18 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               {yearSuns.map((sun, idx) => {
-                const radius = (orbitSizes[sun.orbitIndex] ?? orbitSizes[orbitSizes.length - 1]) / 2;
                 const floatOffset = idx % 2 === 0 ? -2 : 2;
+                const angle = idx * angleStep;
+                const { x, y } = polarToCartesian(sun.orbitIndex, angle);
 
                 return (
                   <motion.div
                     key={sun.id}
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                    initial={{ rotate: sun.angle }}
-                    animate={{ rotate: sun.angle + 360 }}
-                    transition={{
-                      duration: 18 + idx * 4,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
+                    className="absolute left-1/2 top-1/2"
+                    style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
                   >
                     <motion.div
                       className="flex flex-col items-center"
-                      style={{ transform: `translateX(${radius}px)` }}
                       animate={{ y: [0, floatOffset, 0] }}
                       transition={{
                         duration: 6 + idx,
