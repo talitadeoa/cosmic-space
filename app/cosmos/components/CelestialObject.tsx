@@ -77,23 +77,6 @@ export function drawSun(
   ctx.arc(centerX, centerY, radius * 2.2, 0, Math.PI * 2);
   ctx.fill();
 
-  // Núcleo do Sol - cor sólida e uniforme
-  const coreGradient = ctx.createRadialGradient(
-    centerX,
-    centerY,
-    0,
-    centerX,
-    centerY,
-    radius * SUN_RADIUS_MULTIPLIERS.coreRadius,
-  );
-  coreGradient.addColorStop(0, "#ffd966");
-  coreGradient.addColorStop(1, "#fdaa1f");
-
-  ctx.fillStyle = coreGradient;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * SUN_RADIUS_MULTIPLIERS.coreRadius, 0, Math.PI * 2);
-  ctx.fill();
-
   // Destaque central - discreto e uniforme
   ctx.fillStyle = "rgba(255, 255, 255, 0.28)";
   ctx.beginPath();
@@ -180,26 +163,26 @@ const SunRays: React.FC<{ size: CelestialSize }> = ({ size }) => (
 const SHARED_ROUNDED = "rounded-full";
 
 const CELESTIAL_STYLES: Record<CelestialType, string> = {
-  sol: "bg-[radial-gradient(circle_at_35%_35%,#ffd966_8%,#ffc840_28%,#fdaa1f_60%,#f59c00_85%)] shadow-[0_0_28px_rgba(253,170,31,0.5)] ring-1 ring-yellow-200/50 before:absolute before:-inset-[24%] before:-z-10 before:rounded-full before:blur-[20px] before:content-[''] before:opacity-85 before:bg-[radial-gradient(circle_at_center,rgba(255,245,220,0.85)_0%,rgba(254,210,100,0.45)_45%,rgba(249,160,30,0.08)_90%)] after:absolute after:-inset-[10%] after:-z-20 after:rounded-full after:content-[''] after:opacity-60 after:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_65%)]",
+  sol: "bg-[radial-gradient(circle_at_35%_35%,#ffc840_0%,#fdaa1f_35%,#f59c00_85%)] shadow-[0_0_28px_rgba(253,170,31,0.5)] before:absolute before:-inset-[24%] before:-z-10 before:rounded-full before:blur-[20px] before:content-[''] before:opacity-85 before:bg-[radial-gradient(circle_at_center,rgba(255,245,220,0.85)_0%,rgba(254,210,100,0.45)_45%,rgba(249,160,30,0.08)_90%)] after:absolute after:-inset-[10%] after:-z-20 after:rounded-full after:content-[''] after:opacity-60 after:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_65%)]",
   solTrocoidal:
     "bg-[#f9fafb] shadow-[0_0_30px_rgba(224,242,254,0.9)] ring-2 ring-sky-50/70 before:absolute before:-inset-[70%] before:-z-10 before:rounded-full before:opacity-90 before:content-[''] before:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.95)_0%,rgba(190,235,255,0.9)_24%,rgba(15,23,42,0)_100%)] after:absolute after:-inset-[45%] after:-z-20 after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_center,rgba(248,250,252,0.55)_0%,rgba(14,165,233,0.28)_42%,rgba(8,47,73,0)_100%)]",
   lua: "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 shadow-[0_0_24px_rgba(148,163,184,0.9)]",
   luaNova:
-    "bg-[radial-gradient(circle_at_30%_30%,rgba(30,41,59,0.9),rgba(100,116,139,0.9))] shadow-[0_0_18px_rgba(148,163,184,0.5)]",
+    "bg-[radial-gradient(circle_at_center,#0f172a_0%,#111827_50%,#0b1220_75%,#030712_100%)] shadow-[0_0_24px_rgba(148,163,184,0.65)] before:absolute before:-inset-[18%] before:rounded-full before:content-[''] before:bg-[radial-gradient(circle_at_50%_50%,rgba(226,232,240,0.3)_0%,rgba(203,213,225,0.15)_25%,rgba(148,163,184,0.05)_50%,rgba(15,23,42,0)_75%)] before:opacity-60 after:absolute after:-inset-[14%] after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0.4)_0%,rgba(15,23,42,0)_60%)] after:mix-blend-soft-light after:opacity-50",
   luaCrescente:
     "bg-[radial-gradient(circle_at_48%_52%,#0f172a_35%,#111827_65%,#0b1220_82%,#030712_100%)] shadow-[0_0_24px_rgba(148,163,184,0.65)] before:absolute before:-inset-[18%] before:rounded-full before:content-[''] before:bg-[radial-gradient(circle_at_78%_50%,rgba(226,232,240,0.96)_0%,rgba(203,213,225,0.85)_18%,rgba(148,163,184,0.5)_36%,rgba(51,65,85,0.05)_54%,rgba(15,23,42,0)_70%)] before:opacity-95 after:absolute after:-inset-[14%] after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_32%_50%,rgba(15,23,42,0.55)_0%,rgba(15,23,42,0)_60%)] after:mix-blend-soft-light after:opacity-75",
   luaCheia:
-    "bg-[radial-gradient(circle_at_35%_35%,rgba(226,232,240,0.95),rgba(148,163,184,0.9))] shadow-[0_0_24px_rgba(148,163,184,0.9)]",
+    "bg-[radial-gradient(circle_at_35%_35%,#f5f5f7_0%,#e8e8f0_15%,rgba(226,232,240,0.95)_30%,rgba(203,213,225,0.88)_50%,rgba(148,163,184,0.82)_70%,rgba(100,116,139,0.75)_90%,rgba(71,85,105,0.65)_100%)] shadow-[0_0_32px_rgba(148,163,184,0.95)] ring-1 ring-slate-400/40 before:absolute before:-inset-[18%] before:rounded-full before:content-[''] before:bg-[radial-gradient(circle_at_40%_35%,rgba(255,255,255,0.45)_0%,rgba(241,245,250,0.3)_15%,rgba(226,232,240,0.15)_30%,rgba(148,163,184,0.05)_50%,rgba(15,23,42,0)_70%)] before:opacity-85 after:absolute after:-inset-[10%] after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_38%_32%,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0.08)_25%,rgba(15,23,42,0.1)_50%,rgba(15,23,42,0)_75%)] after:mix-blend-overlay after:opacity-70",
   luaMinguante:
     "bg-[radial-gradient(circle_at_52%_52%,#0f172a_35%,#111827_65%,#0b1220_82%,#030712_100%)] shadow-[0_0_24px_rgba(148,163,184,0.65)] before:absolute before:-inset-[18%] before:rounded-full before:content-[''] before:bg-[radial-gradient(circle_at_22%_50%,rgba(226,232,240,0.96)_0%,rgba(203,213,225,0.85)_18%,rgba(148,163,184,0.5)_36%,rgba(51,65,85,0.05)_54%,rgba(15,23,42,0)_70%)] before:opacity-95 after:absolute after:-inset-[14%] after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_68%_50%,rgba(15,23,42,0.55)_0%,rgba(15,23,42,0)_60%)] after:mix-blend-soft-light after:opacity-75",
   planeta:
-    "bg-gradient-to-br from-sky-300 via-indigo-400 to-indigo-600 shadow-[0_0_30px_rgba(99,102,241,0.45)] ring-2 ring-white/20",
+    "bg-[radial-gradient(circle_at_35%_30%,#7dd3fc_0%,#60a5fa_18%,#3b82f6_35%,#2563eb_55%,#1d4ed8_75%,#1e3a8a_100%)] shadow-[0_0_32px_rgba(59,130,246,0.6)] ring-2 ring-white/30 before:absolute before:-inset-[16%] before:-z-10 before:rounded-full before:content-[''] before:bg-[radial-gradient(circle_at_55%_45%,rgba(255,255,255,0.35)_0%,rgba(148,163,184,0.15)_30%,rgba(30,41,59,0.08)_60%,rgba(15,23,42,0)_85%)] before:opacity-75 after:absolute after:-inset-[12%] after:-z-20 after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_40%_35%,rgba(226,232,240,0.2)_0%,rgba(100,116,139,0.1)_35%,rgba(15,23,42,0)_65%)] after:mix-blend-soft-light after:opacity-60",
   galaxia:
     "bg-[radial-gradient(circle_at_center,rgba(216,180,254,0.55),rgba(147,51,234,0.26),rgba(59,7,100,0.12))] shadow-[0_0_36px_rgba(168,85,247,0.32)] backdrop-blur-[2px]",
   anel:
     "bg-gradient-to-br from-slate-200/90 via-slate-300/90 to-slate-50/70 ring-2 ring-sky-200/60 shadow-[0_0_22px_rgba(186,230,253,0.75)]",
   eclipse:
-    "bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.95),rgba(30,41,59,0.8),rgba(15,23,42,0.5))] ring-2 ring-amber-200/30 shadow-[0_0_24px_rgba(251,191,36,0.35)]",
+    "bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.98),rgba(10,15,30,0.95),rgba(5,8,15,0.8))] ring-2 ring-amber-200/30 shadow-[0_0_24px_rgba(251,191,36,0.35)]",
 };
 
 type CelestialObjectProps = {
@@ -307,7 +290,6 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
           <SunRays size={size} />
         </>
       )}
-      <div className={ringOutline} />
     </motion.div>
   );
 };
