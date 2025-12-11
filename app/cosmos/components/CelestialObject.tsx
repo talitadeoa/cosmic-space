@@ -32,20 +32,20 @@ const sizeToPixels: Record<CelestialSize, number> = {
 const mergeClasses = (...classes: Array<string | false | undefined>) =>
   classes.filter(Boolean).join(" ");
 
-// Constantes do Sol simplificadas
+// Constantes do Sol - Uniforme e consistente
 const SUN_RADIUS_MULTIPLIERS = {
-  glowStart: 0.4,
-  glowEnd: 2.8,
-  coreRadius: 1.2,
-  highlightRadius: 0.55,
+  glowStart: 0.35,
+  glowEnd: 2.5,
+  coreRadius: 1.0,
+  highlightRadius: 0.45,
 } as const;
 
-// Config de cores do Sol
+// Config de cores do Sol - Paleta uniforme
 export const sunColors = {
-  sunGlowInner: "rgba(255, 248, 237, 0.95)",
-  sunGlowMid: "rgba(253, 224, 125, 0.55)",
-  sunGlowOuter: "rgba(249, 168, 38, 0.08)",
-  sunCore: "#fffaf0",
+  sunGlowInner: "rgba(255, 245, 220, 0.9)",
+  sunGlowMid: "rgba(254, 210, 100, 0.5)",
+  sunGlowOuter: "rgba(249, 160, 30, 0.06)",
+  sunCore: "#ffeaa7",
 } as const;
 
 export function drawSun(
@@ -59,7 +59,7 @@ export function drawSun(
 
   ctx.save();
 
-  // Glow suave ao redor do Sol
+  // Glow suave e uniforme ao redor do Sol
   const gradient = ctx.createRadialGradient(
     centerX,
     centerY,
@@ -69,15 +69,15 @@ export function drawSun(
     radius * SUN_RADIUS_MULTIPLIERS.glowEnd,
   );
   gradient.addColorStop(0, colors.sunGlowInner);
-  gradient.addColorStop(0.5, colors.sunGlowMid);
+  gradient.addColorStop(0.6, colors.sunGlowMid);
   gradient.addColorStop(1, colors.sunGlowOuter);
 
   ctx.fillStyle = gradient;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * 2.0, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, radius * 2.2, 0, Math.PI * 2);
   ctx.fill();
 
-  // Núcleo do Sol - gradiente suave e homogêneo
+  // Núcleo do Sol - cor sólida e uniforme
   const coreGradient = ctx.createRadialGradient(
     centerX,
     centerY,
@@ -86,19 +86,18 @@ export function drawSun(
     centerY,
     radius * SUN_RADIUS_MULTIPLIERS.coreRadius,
   );
-  coreGradient.addColorStop(0, "#fef3c7");
-  coreGradient.addColorStop(0.6, "#fcd34d");
-  coreGradient.addColorStop(1, "#fbbf24");
+  coreGradient.addColorStop(0, "#ffd966");
+  coreGradient.addColorStop(1, "#fdaa1f");
 
   ctx.fillStyle = coreGradient;
   ctx.beginPath();
   ctx.arc(centerX, centerY, radius * SUN_RADIUS_MULTIPLIERS.coreRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  // Destaque central - discreto
-  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+  // Destaque central - discreto e uniforme
+  ctx.fillStyle = "rgba(255, 255, 255, 0.28)";
   ctx.beginPath();
-  ctx.arc(centerX - radius * 0.15, centerY - radius * 0.15, radius * SUN_RADIUS_MULTIPLIERS.highlightRadius, 0, Math.PI * 2);
+  ctx.arc(centerX - radius * 0.12, centerY - radius * 0.12, radius * SUN_RADIUS_MULTIPLIERS.highlightRadius, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();
@@ -146,16 +145,16 @@ const SUN_RAY_INSETS: Record<CelestialSize, string> = {
 
 const SUN_RAY_LAYER_CONFIGS = [
   {
-    blur: "blur-[6px]",
-    opacity: "opacity-75",
+    blur: "blur-[5px]",
+    opacity: "opacity-70",
     animation: "animate-[spin_28s_linear_infinite]",
-    gradient: "bg-[conic-gradient(from_8deg,rgba(255,237,213,0)_0deg,rgba(255,247,237,0.34)_14deg,rgba(253,224,138,0)_24deg,rgba(255,255,255,0.42)_36deg,rgba(253,186,116,0)_50deg,rgba(255,241,214,0.3)_64deg,rgba(253,224,138,0)_78deg,rgba(255,255,255,0.32)_94deg,rgba(255,237,213,0)_100deg)]",
+    gradient: "bg-[conic-gradient(from_8deg,rgba(255,237,213,0)_0deg,rgba(254,210,100,0.3)_14deg,rgba(253,180,90,0)_24deg,rgba(255,250,220,0.38)_36deg,rgba(253,170,31,0)_50deg,rgba(255,240,200,0.28)_64deg,rgba(253,180,90,0)_78deg,rgba(255,250,220,0.3)_94deg,rgba(255,237,213,0)_100deg)]",
   },
   {
-    blur: "blur-[10px]",
-    opacity: "opacity-55",
+    blur: "blur-[9px]",
+    opacity: "opacity-50",
     animation: "animate-[spin_46s_linear_infinite]",
-    gradient: "bg-[conic-gradient(from_120deg,rgba(255,255,255,0)_0deg,rgba(253,224,138,0.24)_18deg,rgba(255,255,255,0)_36deg,rgba(248,173,79,0.3)_52deg,rgba(255,255,255,0)_70deg,rgba(253,213,141,0.24)_86deg,rgba(255,255,255,0)_100deg)]",
+    gradient: "bg-[conic-gradient(from_120deg,rgba(255,255,255,0)_0deg,rgba(254,210,100,0.2)_18deg,rgba(255,255,255,0)_36deg,rgba(253,170,31,0.25)_52deg,rgba(255,255,255,0)_70deg,rgba(254,210,100,0.2)_86deg,rgba(255,255,255,0)_100deg)]",
   },
 ] as const;
 
@@ -181,7 +180,7 @@ const SunRays: React.FC<{ size: CelestialSize }> = ({ size }) => (
 const SHARED_ROUNDED = "rounded-full";
 
 const CELESTIAL_STYLES: Record<CelestialType, string> = {
-  sol: "bg-[radial-gradient(circle_at_42%_36%,#fffaf0_12%,#ffe4ae_46%,#f6b347_72%,#f08a1a_94%)] shadow-[0_0_32px_rgba(249,168,38,0.6)] ring-1 ring-amber-100/70 before:absolute before:-inset-[26%] before:-z-10 before:rounded-full before:blur-[22px] before:content-[''] before:opacity-80 before:bg-[radial-gradient(circle_at_center,rgba(255,245,224,0.9)_0%,rgba(251,191,36,0.48)_46%,rgba(249,115,22,0.16)_90%)] after:absolute after:-inset-[12%] after:-z-20 after:rounded-full after:content-[''] after:opacity-80 after:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0)_70%)]",
+  sol: "bg-[radial-gradient(circle_at_35%_35%,#ffd966_8%,#ffc840_28%,#fdaa1f_60%,#f59c00_85%)] shadow-[0_0_28px_rgba(253,170,31,0.5)] ring-1 ring-yellow-200/50 before:absolute before:-inset-[24%] before:-z-10 before:rounded-full before:blur-[20px] before:content-[''] before:opacity-85 before:bg-[radial-gradient(circle_at_center,rgba(255,245,220,0.85)_0%,rgba(254,210,100,0.45)_45%,rgba(249,160,30,0.08)_90%)] after:absolute after:-inset-[10%] after:-z-20 after:rounded-full after:content-[''] after:opacity-60 after:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_65%)]",
   solTrocoidal:
     "bg-[#f9fafb] shadow-[0_0_30px_rgba(224,242,254,0.9)] ring-2 ring-sky-50/70 before:absolute before:-inset-[70%] before:-z-10 before:rounded-full before:opacity-90 before:content-[''] before:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.95)_0%,rgba(190,235,255,0.9)_24%,rgba(15,23,42,0)_100%)] after:absolute after:-inset-[45%] after:-z-20 after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_center,rgba(248,250,252,0.55)_0%,rgba(14,165,233,0.28)_42%,rgba(8,47,73,0)_100%)]",
   lua: "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 shadow-[0_0_24px_rgba(148,163,184,0.9)]",
