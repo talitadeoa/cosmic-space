@@ -8,6 +8,7 @@ const nextConfig = {
     config.resolve.alias['@'] = projectRoot;
     return config;
   },
+  turbopack: {},
 };
 
 export default nextConfig;

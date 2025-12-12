@@ -1,12 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { CelestialObject } from "../components/CelestialObject";
 import { LuminousTrail } from "../components/LuminousTrail";
 import MonthlyInsightModal from "@/components/MonthlyInsightModal";
 import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
+import { useMoonCalendar } from "@/hooks/useMoonCalendar";
 import type { CelestialType, ScreenProps } from "../types";
+
+const MONTH_NAMES = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+];
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,6 +31,21 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isHoveringMoons, setIsHoveringMoons] = useState(false);
   const [hoveredMoon, setHoveredMoon] = useState<{ monthNumber: number; phase: CelestialType } | null>(null);
   const { saveInsight } = useMonthlyInsights();
+  const timezone = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC";
+  const currentYear = new Date().getFullYear();
+  const startDate = `${currentYear}-01-01`;
+  const endDate = `${currentYear}-12-31`;
+  const {
+    calendar: moonCalendar,
+    generatedAt,
+    isLoading: isCalendarLoading,
+    error: calendarError,
+  } = useMoonCalendar({
+    start: startDate,
+    end: endDate,
+    tz: timezone,
+    autoRefreshMs: 1000 * 60 * 60 * 6, // revalida a cada 6h
+  });
 
   // 24 luas: 12 novas (cima) + 12 cheias (baixo), 6 visíveis por linha e o restante surge no hover.
   const topMoons: CelestialType[] = new Array(12).fill("luaNova");
@@ -22,39 +53,65 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const visiblePerRow = 4; // 8 visíveis (4 em cada linha), posicionados no centro
   const centerStart = Math.floor((topMoons.length - visiblePerRow) / 2); // 4
 
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-
-  // Espaço para sincronizar signos por mês e fase (edite quando tiver os dados reais)
-  const moonSignData: Array<{ month: string; newMoonSign?: string; fullMoonSign?: string }> = monthNames.map(
-    (month) => ({
+  const moonSignData = useMemo(() => {
+    const base = MONTH_NAMES.map((month) => ({
       month,
       newMoonSign: "",
       fullMoonSign: "",
-    }),
-  );
+      newMoonDate: "",
+      fullMoonDate: "",
+    }));
+
+    moonCalendar.forEach((day) => {
+      const date = new Date(`${day.date}T00:00:00Z`);
+      const monthIndex = Number.isNaN(date.getTime()) ? null : date.getUTCMonth();
+      if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
+
+      const sign = day.sign?.trim() || "";
+
+      if (day.normalizedPhase === "luaNova" && !base[monthIndex].newMoonSign) {
+        base[monthIndex].newMoonSign = sign;
+        base[monthIndex].newMoonDate = day.date;
+      }
+
+      if (day.normalizedPhase === "luaCheia" && !base[monthIndex].fullMoonSign) {
+        base[monthIndex].fullMoonSign = sign;
+        base[monthIndex].fullMoonDate = day.date;
+      }
+    });
+
+    return base;
+  }, [moonCalendar]);
+
+  const formatDateLabel = (isoDate?: string) => {
+    if (!isoDate) return "";
+    try {
+      return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "short",
+        timeZone: "UTC",
+      }).format(new Date(`${isoDate}T00:00:00Z`));
+    } catch (error) {
+      return isoDate;
+    }
+  };
 
   const getMoonInfo = (monthNumber: number, phase: CelestialType) => {
     const index = ((monthNumber - 1) % 12 + 12) % 12;
     const data = moonSignData[index];
-    const monthName = data?.month ?? monthNames[index];
+    const monthName = data?.month ?? MONTH_NAMES[index];
     const signRaw = phase === "luaNova" ? data?.newMoonSign : data?.fullMoonSign;
+    const dateRaw = phase === "luaNova" ? data?.newMoonDate : data?.fullMoonDate;
     const sign = signRaw?.trim();
+    const dateLabel = formatDateLabel(dateRaw);
+    const signParts = [
+      sign && sign.length > 0 ? `em ${sign}` : null,
+      dateLabel ? `• ${dateLabel}` : null,
+    ].filter(Boolean);
+
     return {
       monthName,
-      signLabel: sign && sign.length > 0 ? `em ${sign}` : "— signo em breve",
+      signLabel: signParts.length > 0 ? signParts.join(" ") : "— aguardando sincronização",
       phaseLabel: phase === "luaNova" ? "Lua Nova" : "Lua Cheia",
     };
   };
@@ -74,6 +131,11 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-between py-16">
       <LuminousTrail />
+      <div className="absolute right-4 top-4 rounded-full border border-white/5 bg-slate-900/60 px-4 py-2 text-[11px] text-slate-100 shadow-lg shadow-sky-900/30 backdrop-blur-md">
+        {isCalendarLoading && "Sincronizando calendário lunar..."}
+        {!isCalendarLoading && calendarError && `Erro ao sincronizar: ${calendarError}`}
+        {!isCalendarLoading && !calendarError && (generatedAt ? `Dados gerados em ${formatDateLabel(generatedAt)}` : "Calendário lunar pronto")}
+      </div>
 
       <CelestialObject
         type="sol"
