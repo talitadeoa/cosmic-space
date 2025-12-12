@@ -1,0 +1,294 @@
+.page {
+  min-height: 100vh;
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #ffe9b8 0, #0b1726 55%, #02040a 100%);
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 40px;
+  gap: 24px;
+}
+
+.page * {
+  box-sizing: border-box;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  text-align: center;
+  color: #fef3c7;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.subtitle {
+  margin: 0;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+  max-width: 680px;
+}
+
+.appGrid {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2.5fr);
+  gap: 24px;
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .appGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mapWrapper {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(148, 163, 184, 0.25);
+}
+
+.mapInner {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.mapInner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.islandMarker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow:
+    0 10px 20px rgba(15, 23, 42, 0.7),
+    0 0 0 1px rgba(148, 163, 184, 0.6);
+  backdrop-filter: blur(6px);
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
+              background 0.15s ease-out, color 0.15s ease-out;
+}
+
+.markerLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+.markerDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #f97316;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.9);
+  flex-shrink: 0;
+}
+
+.islandMarker:hover {
+  transform: translate(-50%, -50%) scale(1.05) translateY(-1px);
+  box-shadow:
+    0 16px 30px rgba(15, 23, 42, 0.9),
+    0 0 0 1px rgba(248, 250, 252, 0.8);
+  background: #f97316;
+  color: #111827;
+}
+
+.islandMarkerActive {
+  background: #f97316;
+  color: #111827;
+  box-shadow:
+    0 18px 32px rgba(248, 153, 47, 0.75),
+    0 0 0 1px rgba(248, 250, 252, 0.9);
+}
+
+.islandMarker[data-id="ilha1"] {
+  left: 70%;
+  top: 76%;
+}
+
+.islandMarker[data-id="ilha2"] {
+  left: 23%;
+  top: 77%;
+}
+
+.islandMarker[data-id="ilha3"] {
+  left: 56%;
+  top: 49%;
+}
+
+.islandMarker[data-id="ilha4"] {
+  left: 80%;
+  top: 25%;
+}
+
+.panel {
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 18px;
+  padding: 18px 18px 20px;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(148, 163, 184, 0.25);
+  color: #e5e7eb;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.panelPill {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  color: #9ca3af;
+  background: rgba(15, 23, 42, 0.5);
+  white-space: nowrap;
+}
+
+.panelSubtitle {
+  margin: 0 0 12px;
+  font-size: 0.86rem;
+  color: #9ca3af;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.formLabel {
+  font-size: 0.82rem;
+  color: #cbd5f5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 10px;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  padding: 7px 10px;
+  color: #f9fafb;
+  font-size: 0.86rem;
+  outline: none;
+  transition: border 0.12s ease-out, box-shadow 0.12s ease-out,
+              background 0.12s ease-out;
+  min-height: 34px;
+}
+
+.field::placeholder {
+  color: #6b7280;
+}
+
+.field:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.6);
+  background: rgba(15, 23, 42, 1);
+}
+
+.textArea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.panelRow {
+  display: flex;
+  gap: 10px;
+}
+
+.panelRow > * {
+  flex: 1;
+}
+
+.submitButton {
+  margin-top: 2px;
+  border-radius: 999px;
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f97316, #facc15);
+  color: #111827;
+  cursor: pointer;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow:
+    0 12px 24px rgba(248, 181, 55, 0.55),
+    0 0 0 1px rgba(248, 250, 252, 0.9);
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out,
+              filter 0.1s ease-out;
+}
+
+.submitButton:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 18px 32px rgba(248, 181, 55, 0.75),
+    0 0 0 1px rgba(248, 250, 252, 1);
+  filter: brightness(1.03);
+}
+
+.submitButton:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    0 8px 18px rgba(248, 181, 55, 0.65),
+    0 0 0 1px rgba(248, 250, 252, 0.9);
+}
+
+.result {
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px dashed rgba(75, 85, 99, 0.9);
+  padding: 8px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.78rem;
+  color: #e5e7eb;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre;
+}
+
+.resultPlaceholder {
+  color: #6b7280;
+}
+
+.islandNameHighlight {
+  color: #fbbf24;
+  font-weight: 600;
+}

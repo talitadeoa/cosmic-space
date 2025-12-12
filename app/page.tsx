@@ -69,7 +69,6 @@ export default function LandingPage() {
             Deixe seu e-mail se quiser acompanhar de perto 👀
           </p>
         </div>
-
         <form
           onSubmit={handleSubmit}
           className="space-y-4"
