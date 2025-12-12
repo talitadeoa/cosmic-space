@@ -9,6 +9,15 @@ import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
 import { fetchMoonCalendar, MoonCalendarDay } from "@/lib/api/moonCalendar";
 import type { CelestialType, ScreenProps } from "../types";
 
+type LunarPhase = Extract<
+  CelestialType,
+  "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante"
+>;
+type HighlightablePhase = Extract<LunarPhase, "luaNova" | "luaCheia">;
+const HIGHLIGHTABLE_PHASES: readonly HighlightablePhase[] = ["luaNova", "luaCheia"];
+const isHighlightablePhase = (phase?: string | null): phase is HighlightablePhase =>
+  !!phase && HIGHLIGHTABLE_PHASES.includes(phase as HighlightablePhase);
+
 const MONTH_NAMES = [
   "Janeiro",
   "Fevereiro",
@@ -57,18 +66,18 @@ type HighlightTarget = {
   fullMoonSign: string;
   newMoonDate: string;
   fullMoonDate: string;
-  phase: "luaNova" | "luaCheia";
+  phase: HighlightablePhase;
   date: string;
 };
 
 type MoonRowProps = {
-  phase: CelestialType;
+  phase: HighlightablePhase;
   direction: "up" | "down";
   months: MonthEntry[];
   highlightTarget: HighlightTarget | null;
   trackWidth: number;
   virtualOffsetPx: number;
-  onMoonClick: (month: MonthEntry, phase: CelestialType) => void;
+  onMoonClick: (month: MonthEntry, phase: HighlightablePhase) => void;
 };
 
 const formatDateInTimezone = (date: Date, timeZone: string) => {
@@ -147,11 +156,6 @@ const findMonthEntryByDate = (monthEntries: MonthEntry[], isoDate: string) => {
   return monthEntries.find((m) => m.year === year && m.monthNumber === monthNumber) || null;
 };
 
-const HIGHLIGHTABLE_PHASES = ["luaNova", "luaCheia"] as const;
-type HighlightablePhase = (typeof HIGHLIGHTABLE_PHASES)[number];
-const isHighlightablePhase = (phase?: string | null): phase is HighlightablePhase =>
-  !!phase && HIGHLIGHTABLE_PHASES.includes(phase as HighlightablePhase);
-
 const deriveHighlightTarget = (
   allDays: MoonCalendarDay[],
   todayIso: string,
@@ -177,7 +181,7 @@ const deriveHighlightTarget = (
   };
 };
 
-const buildMoonInfo = (month: MonthEntry | null, phase: CelestialType) => {
+const buildMoonInfo = (month: MonthEntry | null, phase: LunarPhase) => {
   const monthName = month?.monthName ?? "Mês";
   const isNewMoon = phase === "luaNova";
   const isFullMoon = phase === "luaCheia";
@@ -397,7 +401,7 @@ const MoonRow: React.FC<MoonRowProps> = ({
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
-  const [selectedMoonPhase, setSelectedMoonPhase] = useState<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante'>('luaNova');
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<LunarPhase>("luaNova");
   const { saveInsight } = useMonthlyInsights();
   const timezone = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC";
   const currentYear = new Date().getFullYear();
@@ -413,6 +417,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const pendingPrependPxRef = useRef(0);
   const previousStartRef = useRef(range.startYear);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const scrollRafRef = useRef<number | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewportFraction, setViewportFraction] = useState(0);
   const [virtualWindow, setVirtualWindow] = useState({ start: 0, end: 40 });
@@ -521,9 +526,9 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     }
   }, [findMonthEntry, highlightTarget, monthEntries, selectedMonth, todayIso]);
 
-  const handleMoonClick = (month: MonthEntry, phase: CelestialType) => {
+  const handleMoonClick = (month: MonthEntry, phase: HighlightablePhase) => {
     setSelectedMonth(month);
-    setSelectedMoonPhase(phase as any);
+    setSelectedMoonPhase(phase);
     setIsModalOpen(true);
   };
 
@@ -626,13 +631,23 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     }
   }, [extendFuture, extendPast, isCalendarLoading]);
 
+  const scheduleScrollUpdate = useCallback(() => {
+    if (scrollRafRef.current !== null) {
+      cancelAnimationFrame(scrollRafRef.current);
+    }
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      updateScrollMetrics();
+      maybeExtendRange();
+    });
+  }, [maybeExtendRange, updateScrollMetrics]);
+
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
     const handleScroll = () => {
-      updateScrollMetrics();
-      maybeExtendRange();
+      scheduleScrollUpdate();
     };
 
     updateScrollMetrics();
@@ -646,8 +661,11 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     return () => {
       scroller.removeEventListener("scroll", handleScroll);
       resizeObserver.disconnect();
+      if (scrollRafRef.current !== null) {
+        cancelAnimationFrame(scrollRafRef.current);
+      }
     };
-  }, [maybeExtendRange, updateScrollMetrics]);
+  }, [maybeExtendRange, scheduleScrollUpdate, updateScrollMetrics]);
 
   useEffect(() => {
     updateScrollMetrics();
