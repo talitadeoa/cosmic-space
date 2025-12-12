@@ -16,19 +16,15 @@ import type { ScreenProps } from "../types";
 import type { MoonPhase } from "../utils/todoStorage";
 import {
   ANIMATION_CONFIG,
-  BASE_VISIBLE_COLUMNS,
   buildMoonInfo,
   buildMonthEntries,
   deriveHighlightTarget,
   flattenCalendarDays,
   formatDateInTimezone,
   findMonthEntryByDate,
-  MOON_TILE_GAP,
-  MOON_TILE_WIDTH,
   MONTHS_PER_YEAR,
   MonthEntry,
-  SCROLLER_PADDING,
-  TILE_SPAN,
+  getResponsiveLayout,
 } from "../utils/luaList";
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
@@ -52,12 +48,16 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewportFraction, setViewportFraction] = useState(0);
   const [virtualWindow, setVirtualWindow] = useState({ start: 0, end: 40 });
+  const [layout, setLayout] = useState(() =>
+    getResponsiveLayout(typeof window !== "undefined" ? window.innerWidth : undefined),
+  );
+  const tileSpan = layout.tileWidth + layout.gap;
+  const isCompactLayout = layout.tileWidth <= 90;
 
-  const visibleColumns = BASE_VISIBLE_COLUMNS;
   const scrollerMaxWidth = useMemo(() => {
-    const visibleWindowWidthPx = visibleColumns * TILE_SPAN - MOON_TILE_GAP;
-    return visibleWindowWidthPx + SCROLLER_PADDING * 2;
-  }, [visibleColumns]);
+    const visibleWindowWidthPx = layout.visibleColumns * tileSpan - layout.gap;
+    return Math.max(320, visibleWindowWidthPx + layout.padding * 2);
+  }, [layout.gap, layout.padding, layout.visibleColumns, tileSpan]);
 
   const todayIso = useMemo(() => formatDateInTimezone(new Date(), timezone), [timezone]);
 
@@ -109,10 +109,10 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   useEffect(() => {
     if (range.startYear < previousStartRef.current) {
       const addedYears = previousStartRef.current - range.startYear;
-      pendingPrependPxRef.current += addedYears * MONTHS_PER_YEAR * TILE_SPAN;
+      pendingPrependPxRef.current += addedYears * MONTHS_PER_YEAR * tileSpan;
     }
     previousStartRef.current = range.startYear;
-  }, [range.startYear]);
+  }, [range.startYear, tileSpan]);
 
   const monthEntries = useMemo(() => buildMonthEntries(calendarByYear), [calendarByYear]);
 
@@ -203,15 +203,14 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       if (columnIndex === null) return;
       const scroller = scrollerRef.current;
       if (!scroller) return;
-      const columnCenter =
-        SCROLLER_PADDING + columnIndex * TILE_SPAN + MOON_TILE_WIDTH / 2;
+      const columnCenter = layout.padding + columnIndex * tileSpan + layout.tileWidth / 2;
       const target = columnCenter - scroller.clientWidth / 2;
       scroller.scrollTo({
         left: Math.max(0, target),
         behavior: "smooth",
       });
     },
-    [],
+    [layout.padding, layout.tileWidth, tileSpan],
   );
 
   const updateScrollMetrics = useCallback(() => {
@@ -227,11 +226,11 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setViewportFraction(fraction);
 
     const bufferTiles = 6;
-    const start = Math.max(0, Math.floor(scroller.scrollLeft / TILE_SPAN) - bufferTiles);
-    const visibleTiles = Math.ceil(scroller.clientWidth / TILE_SPAN) + bufferTiles * 2;
+    const start = Math.max(0, Math.floor(scroller.scrollLeft / tileSpan) - bufferTiles);
+    const visibleTiles = Math.ceil(scroller.clientWidth / tileSpan) + bufferTiles * 2;
     const end = Math.min(monthEntries.length, start + visibleTiles);
     setVirtualWindow((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
-  }, [monthEntries.length]);
+  }, [monthEntries.length, tileSpan]);
 
   useEffect(() => {
     const column = getColumnIndex(highlightTarget);
@@ -251,7 +250,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (!scroller || isCalendarLoading) return;
 
     const max = scroller.scrollWidth - scroller.clientWidth;
-    const threshold = TILE_SPAN * 4;
+    const threshold = tileSpan * 4;
 
     if (scroller.scrollLeft < threshold) {
       extendPast();
@@ -259,7 +258,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (max - scroller.scrollLeft < threshold) {
       extendFuture();
     }
-  }, [extendFuture, extendPast, isCalendarLoading]);
+  }, [extendFuture, extendPast, isCalendarLoading, tileSpan]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -286,7 +285,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   useEffect(() => {
     updateScrollMetrics();
-  }, [updateScrollMetrics, visibleColumns, monthEntries.length]);
+  }, [layout.visibleColumns, monthEntries.length, updateScrollMetrics]);
 
   const scrollToProgress = useCallback((value: number) => {
     setScrollProgress(value);
@@ -301,7 +300,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       const scroller = scrollerRef.current;
       if (!scroller) return;
 
-      const step = TILE_SPAN * visibleColumns;
+      const step = tileSpan * layout.visibleColumns;
       const max = scroller.scrollWidth - scroller.clientWidth;
       const targetLeft =
         direction === "left"
@@ -311,7 +310,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       scroller.scrollTo({ left: targetLeft, behavior: "smooth" });
       setScrollProgress(max > 0 ? targetLeft / max : 0);
     },
-    [visibleColumns],
+    [layout.visibleColumns, tileSpan],
   );
 
   const handleScrollerKeyDown = useCallback(
@@ -342,19 +341,48 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const trackWidth = useMemo(() => {
     const monthCount = Math.max(1, monthEntries.length);
-    return monthCount * TILE_SPAN - MOON_TILE_GAP;
-  }, [monthEntries.length]);
+    return monthCount * tileSpan - layout.gap;
+  }, [layout.gap, monthEntries.length, tileSpan]);
 
   const virtualizedMonths = useMemo(
     () => monthEntries.slice(virtualWindow.start, virtualWindow.end),
     [monthEntries, virtualWindow.end, virtualWindow.start],
   );
-  const virtualOffsetPx = virtualWindow.start * TILE_SPAN;
+  const virtualOffsetPx = virtualWindow.start * tileSpan;
   const isInitialLoading = isCalendarLoading && monthEntries.length === 0;
-  const skeletonCount = useMemo(() => Math.max(visibleColumns + 2, 8), [visibleColumns]);
+  const skeletonCount = useMemo(
+    () => Math.max(Math.ceil(layout.visibleColumns) + 2, 8),
+    [layout.visibleColumns],
+  );
+  const diagonalStep = Math.max(8, Math.min(18, Math.round(layout.tileWidth * 0.15)));
+  const topBaseOffset = diagonalStep * 2.2;
+  const bottomBaseOffset = diagonalStep * 6.4;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const handleResize = () => {
+      setLayout((prev) => {
+        const next = getResponsiveLayout(window.innerWidth);
+        if (
+          prev.tileWidth === next.tileWidth &&
+          prev.gap === next.gap &&
+          prev.padding === next.padding &&
+          prev.visibleColumns === next.visibleColumns
+        ) {
+          return prev;
+        }
+        return next;
+      });
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center justify-between py-16">
+    <div className="relative flex h-full w-full flex-col items-center justify-between py-10 sm:py-14 lg:py-16">
       <LuminousTrail />
       <CalendarStatus
         isLoading={isCalendarLoading}
@@ -364,7 +392,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
       <CelestialObject
         type="sol"
-        size="lg"
+        size={isCompactLayout ? "md" : "lg"}
         interactive
         onClick={(e) =>
           navigateWithFocus("planetCardBelowSun", {
@@ -377,7 +405,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         floatOffset={-3}
       />
 
-      <div className="relative w-full max-w-5xl px-4">
+      <div className="relative w-full max-w-5xl px-3 sm:px-4">
         {highlightTarget && highlightedMoonInfo && (
           <div className="mb-4 flex justify-center">
             <button
@@ -397,11 +425,17 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
         <div
           ref={scrollerRef}
-          className="group relative w-full overflow-x-auto overflow-y-visible rounded-3xl px-10 py-6 transition-[max-width] duration-200"
+          className="group relative w-full overflow-x-auto overflow-y-visible rounded-3xl py-6 transition-[max-width] duration-200"
           onKeyDown={handleScrollerKeyDown}
           tabIndex={0}
           aria-label="Carrossel de luas"
-          style={{ maxWidth: scrollerMaxWidth, marginLeft: "auto", marginRight: "auto" }}
+          style={{
+            maxWidth: scrollerMaxWidth,
+            paddingLeft: layout.padding,
+            paddingRight: layout.padding,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
         >
           <ArrowButton
             direction="left"
@@ -416,14 +450,24 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             label="Ver próximas luas"
           />
 
-          {isInitialLoading && <MoonRowSkeleton count={skeletonCount} trackWidth={trackWidth} />}
+          {isInitialLoading && (
+            <MoonRowSkeleton
+              count={skeletonCount}
+              trackWidth={trackWidth}
+              tileWidth={layout.tileWidth}
+              gap={layout.gap}
+            />
+          )}
 
           {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
             <EmptyState onRetry={handleRetry} />
           )}
 
           {!isInitialLoading && monthEntries.length > 0 && (
-            <div className="flex min-w-max flex-col items-center gap-6" style={{ minWidth: trackWidth }}>
+            <div
+              className="flex min-w-max flex-col items-center gap-10"
+              style={{ minWidth: trackWidth }}
+            >
               {/* LINHA DE CIMA */}
               <MoonRow
                 phase="luaNova"
@@ -433,6 +477,10 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 trackWidth={trackWidth}
                 virtualOffsetPx={virtualOffsetPx}
                 onMoonClick={handleMoonClick}
+                tileWidth={layout.tileWidth}
+                gap={layout.gap}
+                diagonalStep={diagonalStep}
+                baseYOffset={topBaseOffset}
               />
 
               <motion.div
@@ -451,6 +499,10 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 trackWidth={trackWidth}
                 virtualOffsetPx={virtualOffsetPx}
                 onMoonClick={handleMoonClick}
+                tileWidth={layout.tileWidth}
+                gap={layout.gap}
+                diagonalStep={diagonalStep}
+                baseYOffset={bottomBaseOffset}
               />
             </div>
           )}
@@ -460,7 +512,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
       <CelestialObject
         type="planeta"
-        size="lg"
+        size={isCompactLayout ? "md" : "lg"}
         interactive
         onClick={(e) =>
           navigateWithFocus("planetCardStandalone", {

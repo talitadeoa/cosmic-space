@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { CelestialObject } from "../CelestialObject";
 import type { HighlightTarget, MonthEntry } from "../../utils/luaList";
-import { ANIMATION_CONFIG, getFloatOffset, MOON_TILE_WIDTH } from "../../utils/luaList";
+import { ANIMATION_CONFIG, getFloatOffset } from "../../utils/luaList";
 import type { MoonPhase } from "../../utils/todoStorage";
 
 type MoonRowProps = {
@@ -12,6 +12,10 @@ type MoonRowProps = {
   highlightTarget: HighlightTarget | null;
   trackWidth: number;
   virtualOffsetPx: number;
+  tileWidth: number;
+  gap: number;
+  diagonalStep: number;
+  baseYOffset: number;
   onMoonClick: (month: MonthEntry, phase: MoonPhase) => void;
 };
 
@@ -22,11 +26,19 @@ const MoonRow: React.FC<MoonRowProps> = ({
   highlightTarget,
   trackWidth,
   virtualOffsetPx,
+  tileWidth,
+  gap,
+  diagonalStep,
+  baseYOffset,
   onMoonClick,
 }) => (
   <div
-    className="flex min-w-max items-center gap-3"
-    style={{ minWidth: trackWidth, paddingLeft: virtualOffsetPx }}
+    className="flex min-w-max items-center"
+    style={{
+      minWidth: trackWidth,
+      paddingLeft: virtualOffsetPx,
+      columnGap: gap,
+    }}
   >
     {months.map((month, idx) => {
       const isHighlighted =
@@ -37,6 +49,7 @@ const MoonRow: React.FC<MoonRowProps> = ({
 
       const floatOffset = getFloatOffset(direction, idx);
       const delay = idx * 0.018;
+      const diagonalOffset = baseYOffset - idx * diagonalStep;
 
       return (
         <motion.div
@@ -47,10 +60,11 @@ const MoonRow: React.FC<MoonRowProps> = ({
           }}
           animate={{
             opacity: 1,
-            y: 0,
+            y: diagonalOffset,
             scale: 1,
           }}
-          style={{ width: MOON_TILE_WIDTH }}
+          initial={{ opacity: 0, y: diagonalOffset + 10, scale: 0.95 }}
+          style={{ width: tileWidth }}
         >
           <div className="relative flex items-center justify-center">
             {isHighlighted && (
