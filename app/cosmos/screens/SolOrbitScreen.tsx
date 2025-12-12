@@ -8,17 +8,31 @@ import { useQuarterlyInsights } from "@/hooks/useQuarterlyInsights";
 import { useAnnualInsights } from "@/hooks/useAnnualInsights";
 import type { ScreenProps } from "../types";
 
+type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
+
+const MOON_RING_RADIUS_PERCENT = 42;
+const DIAGONAL_MOONS: Array<{
+  phase: MoonPhase;
+  angleDeg: number;
+  floatOffset: number;
+}> = [
+  { phase: "luaCheia", angleDeg: -45, floatOffset: -1 },
+  { phase: "luaCrescente", angleDeg: 45, floatOffset: -2 },
+  { phase: "luaNova", angleDeg: 135, floatOffset: 3 },
+  { phase: "luaMinguante", angleDeg: 225, floatOffset: 1 },
+];
+
 const SolOrbitScreen: React.FC<ScreenProps> = ({
   navigateTo,
   navigateWithFocus,
 }) => {
   const [isQuarterlyModalOpen, setIsQuarterlyModalOpen] = useState(false);
   const [isAnnualModalOpen, setIsAnnualModalOpen] = useState(false);
-  const [selectedMoonPhase, setSelectedMoonPhase] = useState<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante'>('luaNova');
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
   const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
   const { saveInsight: saveAnnualInsight } = useAnnualInsights();
 
-  const handleMoonClick = (phase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante') => {
+  const handleMoonClick = (phase: MoonPhase) => {
     setSelectedMoonPhase(phase);
     setIsQuarterlyModalOpen(true);
   };
@@ -185,9 +199,9 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
     };
 
     const drawStaticWaveRing = () => {
+      const waveFrequency = 12;
       const baseRadius = earthOrbitRadius + 42;
       const waveAmplitude = 16;
-      const waveFrequency = 12;
 
       ctx.save();
       ctx.lineWidth = 1.1;
@@ -197,7 +211,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
       const steps = 720;
       for (let i = 0; i <= steps; i++) {
         const theta = (i / steps) * Math.PI * 2;
-        const offset = Math.sin(theta * waveFrequency) * waveAmplitude;
+        const offset = Math.sin(theta * waveFrequency + Math.PI / 2) * waveAmplitude;
         const r = baseRadius + offset;
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
@@ -239,69 +253,47 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
 
   return (
     <>
-      <div className="flex h-full w-full items-center justify-center overflow-hidden">
+      <div className="flex h-full w-full items-center justify-center overflow-hidden px-4">
         {/* Container quadrado central: tudo orbita em torno dele */}
-        <div className="relative aspect-square w-[min(70vh,70vw)]">
+        <div className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]">
           <canvas
             ref={canvasRef}
             className="pointer-events-none absolute inset-0 bg-transparent"
             aria-hidden
           />
 
-        {/* Sol bem no centro */}
-        <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <CelestialObject 
-            type="sol" 
-            size="lg" 
-            interactive={true}
-            onClick={handleSolClick}
-          />
-        </div>
-
-        {/* As fases da Lua ao redor do Sol */}
-
-          {/* Lua Cheia - Topo */}
-          <div className="absolute left-1/2 top-[6%] -translate-x-1/2">
+          {/* Sol bem no centro */}
+          <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
             <CelestialObject
-              type="luaCheia"
-              size="md"
-              interactive
-              onClick={() => handleMoonClick('luaCheia')}
+              type="sol"
+              size="lg"
+              interactive={true}
+              onClick={handleSolClick}
             />
           </div>
 
-          {/* Lua Crescente - Direita */}
-          <div className="absolute right-[6%] top-1/2 -translate-y-1/2">
-            <CelestialObject
-              type="luaCrescente"
-              size="md"
-              interactive
-              onClick={() => handleMoonClick('luaCrescente')}
-              floatOffset={-2}
-            />
-          </div>
+          {/* As fases da Lua ao redor do Sol, em diagonal e sem plano de fundo */}
+          {DIAGONAL_MOONS.map(({ phase, angleDeg, floatOffset }) => {
+            const rad = (angleDeg * Math.PI) / 180;
+            const x = 50 + MOON_RING_RADIUS_PERCENT * Math.cos(rad);
+            const y = 50 + MOON_RING_RADIUS_PERCENT * Math.sin(rad);
 
-          {/* Lua Nova - Base */}
-          <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2">
-            <CelestialObject
-              type="luaNova"
-              size="md"
-              interactive
-              onClick={() => handleMoonClick('luaNova')}
-              floatOffset={3}
-            />
-          </div>
-
-          {/* Lua Minguante - Esquerda */}
-          <div className="absolute left-[6%] top-1/2 -translate-y-1/2">
-            <CelestialObject
-              type="luaMinguante"
-              size="md"
-              interactive
-              onClick={() => handleMoonClick('luaMinguante')}
-              floatOffset={1}
-            />
-          </div>
+            return (
+              <div
+                key={phase}
+                className="absolute -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${x}%`, top: `${y}%` }}
+              >
+                <CelestialObject
+                  type={phase}
+                  size="md"
+                  interactive
+                  onClick={() => handleMoonClick(phase)}
+                  floatOffset={floatOffset}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
