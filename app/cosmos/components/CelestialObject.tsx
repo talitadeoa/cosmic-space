@@ -5,7 +5,14 @@ import { motion, Transition } from "framer-motion";
 import type { CelestialSize, CelestialType } from "../types";
 
 const motionFloat: Transition = {
-  duration: 4.6,
+  duration: 4,
+  repeat: Infinity,
+  repeatType: "reverse",
+  ease: "easeInOut",
+};
+
+const motionBreathing: Transition = {
+  duration: 1.8,
   repeat: Infinity,
   repeatType: "reverse",
   ease: "easeInOut",
@@ -74,7 +81,7 @@ export function drawSun(
 
   ctx.fillStyle = gradient;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * 2.2, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, radius * 1.9, 0, Math.PI * 2);
   ctx.fill();
 
   // Destaque central - discreto e uniforme
@@ -163,7 +170,7 @@ const SunRays: React.FC<{ size: CelestialSize }> = ({ size }) => (
 const SHARED_ROUNDED = "rounded-full";
 
 const CELESTIAL_STYLES: Record<CelestialType, string> = {
-  sol: "bg-[radial-gradient(circle_at_35%_35%,#ffc840_0%,#fdaa1f_35%,#f59c00_85%)] shadow-[0_0_28px_rgba(253,170,31,0.5)] before:absolute before:-inset-[24%] before:-z-10 before:rounded-full before:blur-[20px] before:content-[''] before:opacity-85 before:bg-[radial-gradient(circle_at_center,rgba(255,245,220,0.85)_0%,rgba(254,210,100,0.45)_45%,rgba(249,160,30,0.08)_90%)] after:absolute after:-inset-[10%] after:-z-20 after:rounded-full after:content-[''] after:opacity-60 after:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_65%)]",
+  sol: "bg-[radial-gradient(circle_at_35%_35%,#ffdb70_0%,#fdca4d_35%,#fcb034_85%)] shadow-[0_0_48px_rgba(253,170,31,0.7)] ring-2 ring-white/70 before:absolute before:-inset-[24%] before:-z-10 before:rounded-full before:blur-[20px] before:content-[''] before:opacity-85 before:bg-[radial-gradient(circle_at_center,rgba(255,245,220,0.85)_0%,rgba(254,210,100,0.45)_45%,rgba(249,160,30,0.08)_90%)] after:absolute after:-inset-[10%] after:-z-20 after:rounded-full after:content-[''] after:opacity-60 after:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_65%)]",
   solTrocoidal:
     "bg-[#f9fafb] shadow-[0_0_30px_rgba(224,242,254,0.9)] ring-2 ring-sky-50/70 before:absolute before:-inset-[70%] before:-z-10 before:rounded-full before:opacity-90 before:content-[''] before:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.95)_0%,rgba(190,235,255,0.9)_24%,rgba(15,23,42,0)_100%)] after:absolute after:-inset-[45%] after:-z-20 after:rounded-full after:content-[''] after:bg-[radial-gradient(circle_at_center,rgba(248,250,252,0.55)_0%,rgba(14,165,233,0.28)_42%,rgba(8,47,73,0)_100%)]",
   lua: "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 shadow-[0_0_24px_rgba(148,163,184,0.9)]",
@@ -196,14 +203,16 @@ type CelestialObjectProps = {
   onDragOver?: React.DragEventHandler<HTMLDivElement>;
   onDragLeave?: React.DragEventHandler<HTMLDivElement>;
   pulseOnMount?: boolean;
+  breathing?: boolean;
 };
 
-const buildMotionConfig = (pulseOnMount: boolean, floatOffset: number) => {
-  const floatKeyframes = [floatOffset - 4, floatOffset + 4];
+const buildMotionConfig = (pulseOnMount: boolean, floatOffset: number, breathing: boolean = false) => {
+  const floatKeyframes = breathing ? [floatOffset - 8, floatOffset + 8] : [floatOffset - 6, floatOffset + 6];
+  const floatTransition = breathing ? motionBreathing : motionFloat;
   const baseConfig = {
     initial: { y: floatKeyframes[0] },
     animate: { y: floatKeyframes },
-    transition: { y: motionFloat },
+    transition: { y: floatTransition },
   };
 
   if (!pulseOnMount) return baseConfig;
@@ -214,7 +223,7 @@ const buildMotionConfig = (pulseOnMount: boolean, floatOffset: number) => {
     transition: {
       opacity: { duration: 0.35, ease: "easeOut" },
       scale: { duration: 0.35, ease: "easeOut" },
-      y: motionFloat,
+      y: floatTransition,
     },
   };
 };
@@ -230,11 +239,12 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
   onDragOver,
   onDragLeave,
   pulseOnMount = true,
+  breathing = false,
 }) => {
   const isSun = type === "sol";
   const { initial, animate, transition } = React.useMemo(
-    () => buildMotionConfig(pulseOnMount, floatOffset),
-    [floatOffset, pulseOnMount],
+    () => buildMotionConfig(pulseOnMount, floatOffset, breathing),
+    [floatOffset, pulseOnMount, breathing],
   );
 
   const handleClick = React.useCallback(
@@ -262,8 +272,8 @@ export const CelestialObject: React.FC<CelestialObjectProps> = ({
     [onDragOver],
   );
 
-  const hoverScale = interactive ? { scale: 1.08 } : undefined;
-  const tapScale = interactive ? { scale: 0.92 } : undefined;
+    const hoverScale = interactive ? { scale: 1.08 } : undefined;
+    const tapScale = interactive ? { scale: 0.92 } : undefined;
 
   return (
     <motion.div
