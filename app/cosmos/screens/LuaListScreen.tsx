@@ -45,7 +45,6 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const pendingPrependPxRef = useRef(0);
   const previousStartRef = useRef(range.startYear);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const scrollRafRef = useRef<number | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewportFraction, setViewportFraction] = useState(0);
   const [virtualWindow, setVirtualWindow] = useState({ start: 0, end: 40 });
@@ -265,7 +264,8 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (!scroller) return;
 
     const handleScroll = () => {
-      scheduleScrollUpdate();
+      updateScrollMetrics();
+      maybeExtendRange();
     };
 
     updateScrollMetrics();
@@ -279,11 +279,8 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     return () => {
       scroller.removeEventListener("scroll", handleScroll);
       resizeObserver.disconnect();
-      if (scrollRafRef.current !== null) {
-        cancelAnimationFrame(scrollRafRef.current);
-      }
     };
-  }, [maybeExtendRange, scheduleScrollUpdate, updateScrollMetrics]);
+  }, [maybeExtendRange, updateScrollMetrics]);
 
   useEffect(() => {
     updateScrollMetrics();
