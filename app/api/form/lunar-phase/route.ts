@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateToken } from '@/lib/auth';
+import { validateToken, getTokenPayload } from '@/lib/auth';
+import { saveLunarPhase } from '@/lib/forms';
 import { appendToSheet } from '@/lib/sheets';
 
 export const dynamic = 'force-dynamic';
@@ -49,7 +50,30 @@ export async function POST(request: NextRequest) {
     const progressBar = Math.ceil(progressPercentage / 12.5); // 8 barras (100 / 12.5)
     const progressMoons = Array(progressBar).fill('🌕').join('') + Array(8 - progressBar).fill('🌑').join('');
 
-    // Estrutura dos dados para Google Sheets
+    // Extrair user_id do token
+    const tokenPayload = getTokenPayload(token);
+    const userId = tokenPayload?.userId || tokenPayload?.id || Math.random().toString();
+
+    // 1. Salvar no Neon
+    try {
+      await saveLunarPhase(userId, {
+        data: dataFase,
+        faseLua,
+        signo,
+        energia,
+        checks,
+        observacoes,
+        energiaDaFase,
+        intencoesLua,
+        intencoesSemana,
+        intencoesAno,
+      });
+    } catch (neonError) {
+      console.error('Erro ao salvar no Neon:', neonError);
+      // Continua para salvar no Sheets mesmo se Neon falhar
+    }
+
+    // 2. Salvar no Google Sheets (manter compatibilidade)
     const sheetData = {
       data: dataFase,
       faseLua,
@@ -94,3 +118,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
