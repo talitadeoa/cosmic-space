@@ -28,7 +28,7 @@ export type MoonCalendarResponse = {
 };
 
 const REMOTE_ENDPOINT = "/v1/moons";
-const FALLBACK_ENDPOINT = "/api/moons";
+const FALLBACK_ENDPOINT = "/api/moons/lunations";
 const BASE_URL = (process.env.NEXT_PUBLIC_MOON_API_URL || process.env.NEXT_PUBLIC_BASE_URL || "").replace(/\/$/, "");
 
 const buildEndpoint = () => (BASE_URL ? `${BASE_URL}${REMOTE_ENDPOINT}` : FALLBACK_ENDPOINT);
@@ -36,13 +36,16 @@ const buildEndpoint = () => (BASE_URL ? `${BASE_URL}${REMOTE_ENDPOINT}` : FALLBA
 const toIso = (value: string | undefined) => (value ? value.slice(0, 10) : "");
 
 const coerceDay = (input: any): MoonCalendarDay | null => {
-  if (!input) return null;
+  if (!input || typeof input !== 'object') return null;
 
   const date = toIso(input.date || input.data || input.day);
-  const moonPhase = (input.moonPhase || input.phase || input.fase || input.faseLua || "").toString();
-  const sign = (input.sign || input.signo || input.zodiac || "").toString();
+  const moonPhase = (input.moonPhase || input.phase || input.fase || input.faseLua || "").toString().trim();
+  const sign = (input.sign || input.signo || input.zodiac || "").toString().trim();
 
-  if (!date || !moonPhase) return null;
+  // Validação: precisa de data E fase lunar
+  if (!date || !moonPhase) {
+    return null;
+  }
 
   return {
     date,
