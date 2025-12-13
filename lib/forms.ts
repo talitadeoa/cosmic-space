@@ -423,7 +423,9 @@ export async function saveIsland(
 export interface LunationData {
   lunation_date: string; // ISO YYYY-MM-DD
   moon_phase: string;
+  moon_emoji?: string;
   zodiac_sign: string;
+  zodiac_emoji?: string;
   illumination?: number;
   age_days?: number;
   description?: string;
@@ -439,16 +441,18 @@ export async function saveLunations(lunations: LunationData[]): Promise<any[]> {
     
     for (const l of lunations) {
       const rows = (await db`
-        INSERT INTO lunations (lunation_date, moon_phase, zodiac_sign, illumination, age_days, description, source)
-        VALUES (${l.lunation_date}, ${l.moon_phase}, ${l.zodiac_sign}, ${l.illumination ?? null}, ${l.age_days ?? null}, ${l.description ?? null}, ${l.source ?? 'generated'})
+        INSERT INTO lunations (lunation_date, moon_phase, moon_emoji, zodiac_sign, zodiac_emoji, illumination, age_days, description, source)
+        VALUES (${l.lunation_date}, ${l.moon_phase}, ${l.moon_emoji ?? null}, ${l.zodiac_sign}, ${l.zodiac_emoji ?? null}, ${l.illumination ?? null}, ${l.age_days ?? null}, ${l.description ?? null}, ${l.source ?? 'generated'})
         ON CONFLICT (lunation_date) DO UPDATE SET
           moon_phase = EXCLUDED.moon_phase,
+          moon_emoji = EXCLUDED.moon_emoji,
           zodiac_sign = EXCLUDED.zodiac_sign,
+          zodiac_emoji = EXCLUDED.zodiac_emoji,
           illumination = EXCLUDED.illumination,
           age_days = EXCLUDED.age_days,
           description = EXCLUDED.description,
           updated_at = NOW()
-        RETURNING id, lunation_date, moon_phase, zodiac_sign, illumination, age_days, description, created_at, updated_at
+        RETURNING id, lunation_date, moon_phase, moon_emoji, zodiac_sign, zodiac_emoji, illumination, age_days, description, created_at, updated_at
       `) as any[];
       
       if (rows.length > 0) {
@@ -472,8 +476,10 @@ export async function getLunations(
     const rows = (await db`
       SELECT 
         lunation_date, 
-        moon_phase, 
-        zodiac_sign, 
+        moon_phase,
+        moon_emoji,
+        zodiac_sign,
+        zodiac_emoji,
         illumination, 
         age_days, 
         description,
