@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateToken } from '@/lib/auth';
+import { validateToken, getTokenPayload } from '@/lib/auth';
+import { saveQuarterlyInsight } from '@/lib/forms';
 import { appendToSheet } from '@/lib/sheets';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,19 @@ export async function POST(request: NextRequest) {
       luaMinguante: 'Lua Minguante (Out-Dez)',
     };
 
+    // Extrair user_id do token
+    const tokenPayload = getTokenPayload(token);
+    const userId = tokenPayload?.userId || tokenPayload?.id || Math.random().toString();
+
+    // 1. Salvar no Neon
+    try {
+      await saveQuarterlyInsight(userId, moonPhase, insight);
+    } catch (neonError) {
+      console.error('Erro ao salvar no Neon:', neonError);
+      // Continua para salvar no Sheets mesmo se Neon falhar
+    }
+
+    // 2. Salvar no Google Sheets (manter compatibilidade)
     const data = {
       timestamp: new Date().toISOString(),
       fase: phaseMap[moonPhase] || moonPhase,
@@ -44,3 +58,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
+
