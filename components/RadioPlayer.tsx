@@ -148,7 +148,7 @@ export default function RadioPlayer() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      {station.type === "youtube" ? "▶️" : "📡"}
+                      {station.type === "youtube" ? "" : ""}
                       {station.name}
                     </span>
                     {isCurrent && isPlaying && <span className="text-xs">▶</span>}
