@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { success: true, message: 'Email registrado com sucesso!' },
+      { success: true, message: 'Vou te avisar quando estiver pronto! 😉' },
       { status: 200 }
     );
   } catch (error) {
