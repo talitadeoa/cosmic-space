@@ -21,3 +21,14 @@ CREATE TABLE IF NOT EXISTS form_entries (
 );
 
 CREATE INDEX IF NOT EXISTS idx_form_entries_type_created_at ON form_entries (type, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  provider TEXT DEFAULT 'password',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_login TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users (created_at DESC);
