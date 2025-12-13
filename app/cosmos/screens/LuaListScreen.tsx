@@ -174,7 +174,6 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     loadingYearsRef.current.clear();
     setCalendarByYear({});
     setCalendarError(null);
-    setGeneratedAt(undefined);
     setIsCalendarLoading(true);
 
     for (let year = range.startYear; year <= range.endYear; year += 1) {
