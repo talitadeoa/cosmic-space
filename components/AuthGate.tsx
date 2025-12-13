@@ -10,6 +10,7 @@ interface AuthGateProps {
 
 export default function AuthGate({ children }: AuthGateProps) {
   const { isAuthenticated, loading, error, login } = useAuth();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -34,17 +35,24 @@ export default function AuthGate({ children }: AuthGateProps) {
     setLocalError(null);
     setIsSubmitting(true);
 
+    if (!email) {
+      setLocalError('Insira um email');
+      setIsSubmitting(false);
+      return;
+    }
+
     if (!password) {
       setLocalError('Insira uma senha');
       setIsSubmitting(false);
       return;
     }
 
-    const success = await login(password);
+    const success = await login(email, password);
     setIsSubmitting(false);
 
     if (!success) {
-      setLocalError('Senha incorreta');
+      setLocalError('Email ou senha incorretos');
+      setEmail('');
       setPassword('');
     }
   };
@@ -65,6 +73,19 @@ export default function AuthGate({ children }: AuthGateProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block text-sm font-medium text-slate-200">
+            Email
+            <input
+              type="email"
+              name="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-2.5 text-sm text-slate-50 shadow-inner shadow-black/40 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+              placeholder="seu@email.com"
+            />
+          </label>
+
           <label className="block text-sm font-medium text-slate-200">
             Senha
             <input

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { appendToSheet } from '@/lib/sheets';
+import { saveFormEntry } from '@/lib/forms';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,21 +25,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Enviar para Google Sheets
-    const sheetData = {
-      email: email.toLowerCase().trim(),
+    const normalizedEmail = email.toLowerCase().trim();
+    await saveFormEntry({
+      type: 'subscribe',
+      email: normalizedEmail,
       source: 'landing',
-      timestamp: new Date().toISOString(),
-    };
-
-    const success = await appendToSheet(sheetData);
-
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Erro ao salvar email' },
-        { status: 500 }
-      );
-    }
+      payload: {
+        captured_at: new Date().toISOString(),
+      },
+    });
 
     return NextResponse.json(
       { success: true, message: 'Email registrado com sucesso!' },
