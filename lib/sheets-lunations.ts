@@ -152,7 +152,7 @@ export async function getLunationsFromSheets(
           zodiac_sign: row[3].trim(),
           zodiac_emoji: row[4]?.trim() || undefined,
           source: "google-sheets",
-        };
+        } as LunationData;
       })
       .filter((l): l is LunationData => l !== null);
 

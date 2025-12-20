@@ -9,16 +9,14 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDb();
 
-    const lunations = await db
-      .selectFrom("lunations")
-      .selectAll()
-      .orderBy("lunation_date", "asc")
-      .execute();
+    const lunations = await db`SELECT * FROM lunations ORDER BY lunation_date ASC`;
+
+    const results = Array.isArray(lunations) ? lunations : [];
 
     return NextResponse.json({
       success: true,
-      count: lunations.length,
-      data: lunations,
+      count: results.length,
+      data: results,
     });
   } catch (error) {
     console.error("Erro ao buscar lunações:", error);
@@ -40,13 +38,10 @@ export async function getByDate(date: string) {
   try {
     const db = getDb();
 
-    const lunation = await db
-      .selectFrom("lunations")
-      .selectAll()
-      .where("lunation_date", "=", date)
-      .executeTakeFirst();
+    const result = await db`SELECT * FROM lunations WHERE lunation_date = ${date}`;
 
-    return lunation || null;
+    const results = Array.isArray(result) ? result : [];
+    return results.length > 0 ? results[0] : null;
   } catch (error) {
     console.error("Erro ao buscar lunação:", error);
     return null;
