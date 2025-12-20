@@ -17,6 +17,13 @@ export async function GET(request: NextRequest) {
 
     const payload = getTokenPayload(token);
 
+    if (!payload?.userId) {
+      return NextResponse.json(
+        { authenticated: false },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
       { authenticated: true, user: payload ?? null },
       { status: 200 }

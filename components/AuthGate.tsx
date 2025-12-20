@@ -9,11 +9,12 @@ interface AuthGateProps {
 }
 
 export default function AuthGate({ children }: AuthGateProps) {
-  const { isAuthenticated, loading, error, login } = useAuth();
+  const { isAuthenticated, loading, error, login, signup } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
 
   if (loading) {
     return (
@@ -47,11 +48,13 @@ export default function AuthGate({ children }: AuthGateProps) {
       return;
     }
 
-    const success = await login(email, password);
+    const success = mode === 'login'
+      ? await login(email, password)
+      : await signup(email, password);
     setIsSubmitting(false);
 
     if (!success) {
-      setLocalError('Email ou senha incorretos');
+      setLocalError(mode === 'login' ? 'Email ou senha incorretos' : 'Não foi possível criar a conta');
       setEmail('');
       setPassword('');
     }
@@ -68,7 +71,7 @@ export default function AuthGate({ children }: AuthGateProps) {
             </span>
           </h1>
           <p className="mt-3 text-sm text-slate-300 md:text-base">
-            Digite a senha para explorar o cosmos
+            {mode === 'login' ? 'Digite a senha para explorar o cosmos' : 'Crie seu acesso ao cosmos'}
           </p>
         </div>
 
@@ -91,7 +94,7 @@ export default function AuthGate({ children }: AuthGateProps) {
             <input
               type="password"
               name="password"
-              autoComplete="current-password"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-2.5 text-sm text-slate-50 shadow-inner shadow-black/40 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
@@ -112,11 +115,30 @@ export default function AuthGate({ children }: AuthGateProps) {
           >
             <span className="absolute inset-0 bg-white/15 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span className="relative">
-              {isSubmitting ? 'Entrando...' : 'Entrar no cosmos'}
+              {isSubmitting
+                ? mode === 'login'
+                  ? 'Entrando...'
+                  : 'Criando conta...'
+                : mode === 'login'
+                  ? 'Entrar no cosmos'
+                  : 'Criar conta'}
             </span>
           </button>
         </form>
 
+        <div className="mt-6 text-center text-sm text-slate-300">
+          {mode === 'login' ? 'Ainda não tem conta?' : 'Já tem uma conta?'}
+          <button
+            type="button"
+            onClick={() => {
+              setMode(mode === 'login' ? 'signup' : 'login');
+              setLocalError(null);
+            }}
+            className="ml-2 text-indigo-300 hover:text-indigo-200"
+          >
+            {mode === 'login' ? 'Criar agora' : 'Fazer login'}
+          </button>
+        </div>
       </div>
     </div>
   );

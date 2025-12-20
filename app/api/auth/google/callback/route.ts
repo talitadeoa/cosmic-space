@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAuthToken } from '@/lib/auth';
+import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,8 +55,27 @@ export async function GET(request: NextRequest) {
 
     const profile = await userResp.json();
 
+    const db = getDb();
+    const userRows = await db`
+      INSERT INTO users (email, provider, last_login)
+      VALUES (${profile.email}, 'google', NOW())
+      ON CONFLICT (email) DO UPDATE
+      SET last_login = NOW()
+      RETURNING id
+    `;
+    const userId = userRows?.[0]?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Não foi possível identificar o usuário' }, { status: 500 });
+    }
+
     // Criar token de sessão local
-    const token = createAuthToken({ email: profile.email, name: profile.name, provider: 'google' });
+    const token = createAuthToken({
+      email: profile.email,
+      name: profile.name,
+      provider: 'google',
+      userId,
+    });
 
     const response = NextResponse.redirect(`${base}`);
     response.cookies.set('auth_token', token, {
