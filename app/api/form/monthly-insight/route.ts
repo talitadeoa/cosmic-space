@@ -41,9 +41,8 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Usuário não identificado' }, { status: 401 });
     }
-    const moonPhase = resolvePhaseName(moonPhaseParam);
 
-    const item = await getMonthlyInsight(userId, moonPhase, monthNumber);
+    const item = await getMonthlyInsight(userId, moonPhaseParam, monthNumber);
 
     if (!item) {
       return NextResponse.json({ item: null }, { status: 200 });
@@ -111,9 +110,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Usuário não identificado' }, { status: 401 });
     }
 
-    // 1. Salvar no Neon
+    // 1. Salvar no Neon (usando camelCase como chave, português para leitura)
     try {
-      await saveMonthlyInsight(userId, phaseName, monthNumber, insight);
+      await saveMonthlyInsight(userId, moonPhase, monthNumber, insight);
     } catch (neonError) {
       console.error('Erro ao salvar no Neon:', neonError);
       // Continua para salvar no Sheets mesmo se Neon falhar
