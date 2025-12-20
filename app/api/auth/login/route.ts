@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       ON CONFLICT (email) DO UPDATE
       SET last_login = NOW()
       RETURNING id
-    `;
+    ` as Array<{ id: string }>;
     const userId = userRows?.[0]?.id;
 
     if (!userId) {

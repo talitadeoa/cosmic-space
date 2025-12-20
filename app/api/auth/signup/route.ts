@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     const db = getDb();
-    const existing = await db`SELECT id FROM users WHERE email = ${email}`;
+    const existing = await db`SELECT id FROM users WHERE email = ${email}` as Array<{ id: string }>;
 
     if (existing.length > 0) {
       return NextResponse.json(
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       INSERT INTO users (email, provider, last_login)
       VALUES (${email}, 'password', NOW())
       RETURNING id
-    `;
+    ` as Array<{ id: string }>;
     const userId = userRows?.[0]?.id;
 
     if (!userId) {
