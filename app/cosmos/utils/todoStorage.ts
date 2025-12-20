@@ -3,8 +3,9 @@
 import type { TodoItem as ParsedTodoItem } from "@/components/TodoInput";
 
 export type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
+export type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
 
-export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase };
+export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase; islandId?: IslandId };
 
 export const TODO_STORAGE_KEY = "cosmic_space_todos_salvos";
 
@@ -19,6 +20,8 @@ export const phaseOrder: MoonPhase[] = ["luaNova", "luaCrescente", "luaCheia", "
 
 const isValidPhase = (phase: unknown): phase is MoonPhase =>
   phase === "luaNova" || phase === "luaCrescente" || phase === "luaCheia" || phase === "luaMinguante";
+const isValidIsland = (island: unknown): island is IslandId =>
+  island === "ilha1" || island === "ilha2" || island === "ilha3" || island === "ilha4";
 
 export function loadSavedTodos(): SavedTodo[] {
   if (typeof window === "undefined") return [];
@@ -36,6 +39,11 @@ export function loadSavedTodos(): SavedTodo[] {
         text: typeof item.text === "string" ? item.text : "",
         completed: Boolean(item.completed),
         depth: Number.isFinite(item.depth) ? Number(item.depth) : 0,
+        milestone:
+          typeof item.milestone === "string" && item.milestone.trim().length > 0
+            ? item.milestone
+            : undefined,
+        islandId: isValidIsland(item.islandId) ? item.islandId : undefined,
         phase: isValidPhase(item.phase) ? item.phase : undefined,
       }))
       .filter((item) => item.text.trim().length > 0);

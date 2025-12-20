@@ -7,10 +7,21 @@ export interface MonthlyInsight {
   timestamp: string;
 }
 
+export interface MonthlyInsightRecord {
+  id: number;
+  moonPhase: string;
+  monthNumber: number;
+  insight: string;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
 export function useMonthlyInsights() {
   const [insights, setInsights] = useState<MonthlyInsight[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const saveInsight = useCallback(
     async (moonPhase: string, monthNumber: number, insight: string) => {
@@ -50,5 +61,35 @@ export function useMonthlyInsights() {
     []
   );
 
-  return { insights, isLoading, error, saveInsight };
+  const loadInsight = useCallback(async (moonPhase: string, monthNumber: number) => {
+    setIsFetching(true);
+    setFetchError(null);
+
+    try {
+      const params = new URLSearchParams({
+        moonPhase,
+        monthNumber: String(monthNumber),
+      });
+      const response = await fetch(`/api/form/monthly-insight?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Erro ao carregar insight');
+      }
+
+      const data = await response.json();
+      return (data.item as MonthlyInsightRecord | null) ?? null;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      setFetchError(errorMessage);
+      throw err;
+    } finally {
+      setIsFetching(false);
+    }
+  }, []);
+
+  return { insights, isLoading, error, saveInsight, loadInsight, isFetching, fetchError };
 }

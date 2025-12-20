@@ -8,16 +8,22 @@ import {
   TODO_STORAGE_KEY,
   loadSavedTodos,
   phaseLabels,
+  type IslandId,
   type MoonPhase,
   type SavedTodo,
 } from "../utils/todoStorage";
 import type { ScreenProps } from "../types";
 
 const MOON_COUNT = 4;
+const ISLANDS: { id: IslandId; label: string; name: string }[] = [
+  { id: "ilha1", label: "ILHA 1", name: "Plataforma Criativa" },
+  { id: "ilha2", label: "ILHA 2", name: "Pier da Comunidade" },
+  { id: "ilha3", label: "ILHA 3", name: "Ilha Central" },
+  { id: "ilha4", label: "ILHA 4", name: "Ilha da Visão" },
+];
 
 const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [showTodos, setShowTodos] = useState(true);
-  const [draftTodos, setDraftTodos] = useState<ParsedTodoItem[]>([]);
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
@@ -32,33 +38,15 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     } catch (error) {}
   }, [savedTodos]);
 
-  const handleSaveDraftTodos = () => {
-    if (!draftTodos.length) return;
-
-    const now = Date.now();
-    const savedByKey = new Map(
-      savedTodos.map((todo) => [`${todo.text}|${todo.depth}`, todo]),
-    );
-
-    const merged: SavedTodo[] = [];
-    draftTodos.forEach((todo, idx) => {
-      const key = `${todo.text}|${todo.depth}`;
-      const existing = savedByKey.get(key);
-      merged.push(
-        existing
-          ? { ...existing, completed: todo.completed }
-          : { ...todo, id: `todo-${now}-${idx}` },
-      );
-      savedByKey.delete(key);
-    });
-
-    const leftovers = Array.from(savedByKey.values());
-    setSavedTodos([...merged, ...leftovers]);
-  };
-
   const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
     setSavedTodos((prev) =>
       prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)),
+    );
+  };
+
+  const assignTodoToIsland = (todoId: string, islandId?: IslandId) => {
+    setSavedTodos((prev) =>
+      prev.map((todo) => (todo.id === todoId ? { ...todo, islandId } : todo)),
     );
   };
 
@@ -192,33 +180,27 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 <div className="flex flex-col gap-4">
                   <TodoInput
                     className="shadow-lg"
-                    onTodosChange={(parsed) => setDraftTodos(parsed)}
+                    value={savedTodos as ParsedTodoItem[]}
+                    onTodosChange={(parsed) => setSavedTodos(parsed as SavedTodo[])}
+                    showPreview={false}
                   />
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
-                          To-dos salvos
+                          Relacionar com ilhas
                         </p>
                         <p className="text-[0.75rem] text-slate-400">
-                          Clique em “Salvar lista” e arraste as tarefas para a lua correspondente à fase.
+                          Atribua cada tarefa a uma ilha e depois arraste para a lua correspondente.
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleSaveDraftTodos}
-                        className="self-start rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-700"
-                        disabled={!draftTodos.length}
-                      >
-                        Salvar lista
-                      </button>
                     </div>
 
                     <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64">
                       {savedTodos.length === 0 ? (
                         <p className="text-sm text-slate-500">
-                          Nenhum to-do salvo ainda. Converta o texto acima e arraste para uma lua.
+                          Nenhuma tarefa ainda. Adicione acima e relacione com uma ilha.
                         </p>
                       ) : (
                         savedTodos.map((todo) => (
@@ -241,17 +223,45 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                                   <span className="h-2 w-2 rounded-full bg-emerald-400" />
                                 )}
                               </span>
-                              <span
-                                className={`${
-                                  todo.completed ? "text-slate-500 line-through" : "text-slate-100"
-                                }`}
+                              <div className="flex flex-col">
+                                {todo.milestone && (
+                                  <span className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-indigo-300/80">
+                                    {todo.milestone}
+                                  </span>
+                                )}
+                                <span
+                                  className={`${
+                                    todo.completed
+                                      ? "text-slate-500 line-through"
+                                      : "text-slate-100"
+                                  }`}
+                                >
+                                  {todo.text}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={todo.islandId ?? ""}
+                                onChange={(e) =>
+                                  assignTodoToIsland(
+                                    todo.id,
+                                    (e.target.value as IslandId) || undefined,
+                                  )
+                                }
+                                className="rounded-full border border-slate-800 bg-slate-900/80 px-2 py-1 text-[0.65rem] text-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                               >
-                                {todo.text}
+                                <option value="">Sem ilha</option>
+                                {ISLANDS.map((island) => (
+                                  <option key={island.id} value={island.id}>
+                                    {island.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
+                                {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
                               </span>
                             </div>
-                            <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-                              {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
-                            </span>
                           </div>
                         ))
                       )}

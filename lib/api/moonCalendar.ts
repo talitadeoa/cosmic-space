@@ -30,6 +30,7 @@ export type MoonCalendarResponse = {
 const REMOTE_ENDPOINT = "/v1/moons";
 const FALLBACK_ENDPOINT = "/api/moons/lunations";
 const BASE_URL = (process.env.NEXT_PUBLIC_MOON_API_URL || process.env.NEXT_PUBLIC_BASE_URL || "").replace(/\/$/, "");
+const REQUEST_TIMEOUT_MS = 12000;
 
 const buildEndpoint = () => (BASE_URL ? `${BASE_URL}${REMOTE_ENDPOINT}` : FALLBACK_ENDPOINT);
 
@@ -93,11 +94,32 @@ export async function fetchMoonCalendar(params: {
   if (params.tz) searchParams.set("tz", params.tz);
 
   const url = `${endpoint}?${searchParams.toString()}`;
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-    signal: params.signal,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const onAbort = () => controller.abort();
+  if (params.signal) {
+    if (params.signal.aborted) controller.abort();
+    params.signal.addEventListener("abort", onAbort, { once: true });
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (controller.signal.aborted && !params.signal?.aborted) {
+      throw new Error("Tempo limite ao consultar fases da lua.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+    if (params.signal) {
+      params.signal.removeEventListener("abort", onAbort);
+    }
+  }
 
   if (!response.ok) {
     const reason = await parseBackendError(response);

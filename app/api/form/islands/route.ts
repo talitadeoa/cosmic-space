@@ -28,7 +28,11 @@ export async function POST(request: NextRequest) {
 
     // Extrair user_id do token
     const tokenPayload = getTokenPayload(token);
-    const userId = tokenPayload?.userId || tokenPayload?.id || Math.random().toString();
+    const userId = tokenPayload?.userId;
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Usuário não identificado' }, { status: 401 });
+    }
 
     // 1. Salvar no Neon
     try {
@@ -74,4 +78,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

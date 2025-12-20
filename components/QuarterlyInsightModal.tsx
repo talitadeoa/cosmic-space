@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAutosave } from '@/hooks';
 
 interface QuarterlyInsightModalProps {
   isOpen: boolean;
@@ -25,31 +24,36 @@ export default function QuarterlyInsightModal({
   onSubmit,
 }: QuarterlyInsightModalProps) {
   const [insight, setInsight] = useState('');
-  const { status: autosaveStatus, error: autosaveError } = useAutosave({
-    value: insight,
-    onSave: onSubmit,
-    enabled: isOpen,
-    delayMs: 900,
-    minLength: 3,
-  });
-  const statusLabel = useMemo(() => {
-    if (autosaveStatus === 'saving') return 'Salvando...';
-    if (autosaveStatus === 'saved') return 'Salvo automaticamente';
-    if (autosaveStatus === 'error') return 'Erro ao salvar';
-    if (autosaveStatus === 'typing') return 'Aguardando pausa para salvar';
-    return 'Autosave pronto';
-  }, [autosaveStatus]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const phaseInfo = moonPhaseInfo[moonPhase];
 
   useEffect(() => {
     if (!isOpen) {
       setInsight('');
+      setSubmitError(null);
+      setIsSaving(false);
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = insight.trim();
+    if (trimmed.length < 3) {
+      setSubmitError('Escreva pelo menos 3 caracteres para salvar.');
+      return;
+    }
+    setIsSaving(true);
+    setSubmitError(null);
+    try {
+      await onSubmit(trimmed);
+      onClose();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -114,30 +118,24 @@ export default function QuarterlyInsightModal({
               </div>
 
               {/* Erro */}
-              {autosaveError && (
+              {submitError && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 shadow-inner shadow-red-500/20"
                 >
-                  {autosaveError}
+                  {submitError}
                 </motion.div>
               )}
 
               {/* Botões */}
               <div className="space-y-3 pt-4">
-                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/60 px-3 py-2 text-xs text-slate-200 shadow-inner shadow-black/30">
-                  <span className="font-semibold text-slate-100">Autosave</span>
-                  <span className="rounded-full bg-sky-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-100 shadow shadow-sky-500/30">
-                    {statusLabel}
-                  </span>
-                </div>
                 <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex w-full items-center justify-center rounded-xl border border-sky-400/60 bg-gradient-to-r from-sky-500 via-indigo-500 to-sky-400 px-4 py-2 font-semibold text-slate-950 shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5 hover:shadow-sky-400/50"
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex w-full items-center justify-center rounded-xl border border-sky-400/60 bg-gradient-to-r from-sky-500 via-indigo-500 to-sky-400 px-4 py-2 font-semibold text-slate-950 shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5 hover:shadow-sky-400/50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Concluído
+                  {isSaving ? 'Salvando...' : 'Concluído'}
                 </button>
               </div>
             </form>

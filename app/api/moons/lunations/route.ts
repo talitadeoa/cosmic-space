@@ -161,9 +161,7 @@ export async function GET(request: NextRequest) {
             days: dbLunations.map((l: any) => ({
               date: l.lunation_date,
               moonPhase: l.moon_phase,
-              moonEmoji: l.moon_emoji,
               sign: l.zodiac_sign,
-              signEmoji: l.zodiac_emoji,
               illumination: l.illumination,
               ageDays: l.age_days,
               description: l.description,

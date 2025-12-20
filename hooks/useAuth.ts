@@ -85,6 +85,47 @@ export function useAuth() {
     }
   }, []);
 
+  const signup = useCallback(async (email: string, password: string) => {
+    try {
+      setState(prev => ({ ...prev, loading: true, error: null }));
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: data.error || 'Erro ao criar conta',
+          isAuthenticated: false,
+        }));
+        return false;
+      }
+
+      await verifyAuth();
+
+      setState(prev => ({
+        ...prev,
+        isAuthenticated: true,
+        loading: false,
+        error: null,
+      }));
+      return true;
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Erro ao criar conta',
+        isAuthenticated: false,
+      }));
+      return false;
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
@@ -114,6 +155,7 @@ export function useAuth() {
   return {
     ...state,
     login,
+    signup,
     logout,
     verifyAuth,
     googleLogin,

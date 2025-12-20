@@ -4,7 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { motion } from "framer-motion";
 import MonthlyInsightModal from "@/components/MonthlyInsightModal";
 import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
-import { fetchMoonCalendar, type MoonCalendarDay } from "@/lib/api/moonCalendar";
+import { fetchLunations } from "@/hooks/useLunations";
+import { normalizeMoonPhase, type MoonCalendarDay } from "@/lib/api/moonCalendar";
 import ArrowButton from "../components/lua-list/ArrowButton";
 import CalendarStatus from "../components/lua-list/CalendarStatus";
 import EmptyState from "../components/lua-list/EmptyState";
@@ -22,7 +23,6 @@ import {
   flattenCalendarDays,
   formatDateInTimezone,
   findMonthEntryByDate,
-  MONTHS_PER_YEAR,
   MonthEntry,
   getResponsiveLayout,
 } from "../utils/luaList";
@@ -31,19 +31,19 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
-  const { saveInsight } = useMonthlyInsights();
+  const { saveInsight, loadInsight } = useMonthlyInsights();
+  const [existingInsight, setExistingInsight] = useState("");
+  const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const timezone = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC";
-  const currentYear = new Date().getFullYear();
-  const [range, setRange] = useState({ startYear: currentYear - 1, endYear: currentYear + 1 });
+  const MIN_YEAR = 2025;
+  const MAX_YEAR = 2028;
+  const rangeStart = `${MIN_YEAR}-01-01`;
+  const rangeEnd = `${MAX_YEAR}-12-31`;
   const [calendarByYear, setCalendarByYear] = useState<Record<number, MoonCalendarDay[]>>({});
   const [isCalendarLoading, setIsCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState<string | null>(null);
-  const loadedYearsRef = useRef<Set<number>>(new Set());
-  const loadingYearsRef = useRef<Set<number>>(new Set());
-  const pendingControllersRef = useRef<Map<number, AbortController>>(new Map());
-  const loadingCounterRef = useRef(0);
-  const pendingPrependPxRef = useRef(0);
-  const previousStartRef = useRef(range.startYear);
+  const pendingControllerRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewportFraction, setViewportFraction] = useState(0);
@@ -61,75 +61,55 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const todayIso = useMemo(() => formatDateInTimezone(new Date(), timezone), [timezone]);
 
-  const ensureYearLoaded = useCallback(
-    async (year: number) => {
-      if (loadedYearsRef.current.has(year) || loadingYearsRef.current.has(year)) return;
-      loadingYearsRef.current.add(year);
-      loadingCounterRef.current += 1;
-      setIsCalendarLoading(true);
+  const loadCalendar = useCallback(async () => {
+    pendingControllerRef.current?.abort();
+    const controller = new AbortController();
+    pendingControllerRef.current = controller;
+    setIsCalendarLoading(true);
+    setCalendarError(null);
 
-      const controller = new AbortController();
-      pendingControllersRef.current.set(year, controller);
+    try {
+      const response = await fetchLunations({
+        start: rangeStart,
+        end: rangeEnd,
+        source: "db",
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
 
-      try {
-        const response = await fetchMoonCalendar({
-          start: `${year}-01-01`,
-          end: `${year}-12-31`,
-          tz: timezone,
-          signal: controller.signal,
+      const grouped: Record<number, MoonCalendarDay[]> = {};
+      response.days.forEach((day) => {
+        const year = Number(day.date.slice(0, 4));
+        if (!grouped[year]) grouped[year] = [];
+        grouped[year].push({
+          date: day.date,
+          moonPhase: day.moonPhase,
+          sign: day.sign,
+          normalizedPhase: normalizeMoonPhase(day.moonPhase),
         });
+      });
 
-        loadedYearsRef.current.add(year);
-        setCalendarByYear((prev) => ({ ...prev, [year]: response.days }));
-        setCalendarError(null);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        const message = err instanceof Error ? err.message : "Erro ao carregar calendário lunar";
-        setCalendarError(message);
-      } finally {
-        loadingYearsRef.current.delete(year);
-        pendingControllersRef.current.delete(year);
-        loadingCounterRef.current = Math.max(0, loadingCounterRef.current - 1);
-        if (loadingCounterRef.current === 0) {
-          setIsCalendarLoading(false);
-        }
+      setCalendarByYear(grouped);
+      setCalendarError(null);
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      const message = err instanceof Error ? err.message : "Erro ao carregar calendário lunar";
+      setCalendarError(message);
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsCalendarLoading(false);
       }
-    },
-    [timezone],
-  );
-
-  useEffect(() => {
-    const years: number[] = [];
-    for (let year = range.startYear; year <= range.endYear; year += 1) {
-      years.push(year);
     }
-    years.forEach((year) => ensureYearLoaded(year));
-  }, [ensureYearLoaded, range.endYear, range.startYear]);
-
-  useEffect(() => {
-    if (range.startYear < previousStartRef.current) {
-      const addedYears = previousStartRef.current - range.startYear;
-      pendingPrependPxRef.current += addedYears * MONTHS_PER_YEAR * tileSpan;
-    }
-    previousStartRef.current = range.startYear;
-  }, [range.startYear, tileSpan]);
+  }, [rangeEnd, rangeStart]);
 
   const monthEntries = useMemo(() => buildMonthEntries(calendarByYear), [calendarByYear]);
 
   useEffect(() => {
-    if (pendingPrependPxRef.current > 0 && scrollerRef.current) {
-      scrollerRef.current.scrollLeft += pendingPrependPxRef.current;
-      pendingPrependPxRef.current = 0;
-    }
-  }, [monthEntries.length]);
-
-  useEffect(
-    () => () => {
-      pendingControllersRef.current.forEach((controller) => controller.abort());
-      pendingControllersRef.current.clear();
-    },
-    [],
-  );
+    loadCalendar();
+    return () => {
+      pendingControllerRef.current?.abort();
+    };
+  }, [loadCalendar]);
 
   const allDays = useMemo(() => flattenCalendarDays(calendarByYear), [calendarByYear]);
 
@@ -162,24 +142,46 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchExistingInsight = async () => {
+      if (!isModalOpen || !selectedMonth) return;
+      setIsLoadingInsight(true);
+      setExistingInsight("");
+      setExistingInsightUpdatedAt(null);
+
+      try {
+        const item = await loadInsight(selectedMoonPhase, selectedMonth.monthNumber);
+        if (!isActive) return;
+        setExistingInsight(item?.insight ?? "");
+        setExistingInsightUpdatedAt(item?.updatedAt ?? item?.createdAt ?? null);
+      } catch {
+        if (!isActive) return;
+        setExistingInsight("");
+        setExistingInsightUpdatedAt(null);
+      } finally {
+        if (isActive) setIsLoadingInsight(false);
+      }
+    };
+
+    fetchExistingInsight();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isModalOpen, loadInsight, selectedMonth, selectedMoonPhase]);
+
   const handleInsightSubmit = async (insight: string) => {
     const monthNumber = selectedMonth?.monthNumber ?? 1;
     await saveInsight(selectedMoonPhase, monthNumber, insight);
   };
 
   const handleRetry = useCallback(() => {
-    pendingControllersRef.current.forEach((controller) => controller.abort());
-    pendingControllersRef.current.clear();
-    loadedYearsRef.current.clear();
-    loadingYearsRef.current.clear();
     setCalendarByYear({});
     setCalendarError(null);
-    setIsCalendarLoading(true);
-
-    for (let year = range.startYear; year <= range.endYear; year += 1) {
-      ensureYearLoaded(year);
-    }
-  }, [ensureYearLoaded, range.endYear, range.startYear]);
+    loadCalendar();
+  }, [loadCalendar]);
 
   const selectedMoonInfo = buildMoonInfo(selectedMonth, selectedMoonPhase);
   const highlightedMoonInfo = highlightTarget
@@ -236,40 +238,15 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     centerOnColumn(column);
   }, [centerOnColumn, getColumnIndex, highlightTarget]);
 
-  const extendPast = useCallback(() => {
-    setRange((prev) => ({ ...prev, startYear: prev.startYear - 1 }));
-  }, []);
-
-  const extendFuture = useCallback(() => {
-    setRange((prev) => ({ ...prev, endYear: prev.endYear + 1 }));
-  }, []);
-
-  const maybeExtendRange = useCallback(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller || isCalendarLoading) return;
-
-    const max = scroller.scrollWidth - scroller.clientWidth;
-    const threshold = tileSpan * 4;
-
-    if (scroller.scrollLeft < threshold) {
-      extendPast();
-    }
-    if (max - scroller.scrollLeft < threshold) {
-      extendFuture();
-    }
-  }, [extendFuture, extendPast, isCalendarLoading, tileSpan]);
-
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
     const handleScroll = () => {
       updateScrollMetrics();
-      maybeExtendRange();
     };
 
     updateScrollMetrics();
-    maybeExtendRange();
 
     scroller.addEventListener("scroll", handleScroll);
 
@@ -280,7 +257,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       scroller.removeEventListener("scroll", handleScroll);
       resizeObserver.disconnect();
     };
-  }, [maybeExtendRange, updateScrollMetrics]);
+  }, [updateScrollMetrics]);
 
   useEffect(() => {
     updateScrollMetrics();
@@ -529,6 +506,9 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         moonIndex={selectedMonth?.monthNumber ?? 1}
         moonPhase={selectedMoonPhase}
         moonSignLabel={selectedMoonInfo.signLabel}
+        initialInsight={existingInsight}
+        lastSavedAt={existingInsightUpdatedAt}
+        isLoadingInsight={isLoadingInsight}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleInsightSubmit}
       />
