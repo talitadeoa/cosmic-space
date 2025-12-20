@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "generate:moons": "node scripts/generate-moon-calendar.js",
-    "import:lunations": "node scripts/import-lunations-csv.js"
+    "import:lunations": "node scripts/import-lunations-csv.js",
+    "sync:csv": "npx tsx scripts/sync-csv-to-db.ts",
+    "sync:sheets": "npx tsx scripts/sync-sheets.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

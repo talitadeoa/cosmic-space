@@ -423,7 +423,9 @@ export async function saveIsland(
 export interface LunationData {
   lunation_date: string; // ISO YYYY-MM-DD
   moon_phase: string;
+  moon_emoji?: string;
   zodiac_sign: string;
+  zodiac_emoji?: string;
   illumination?: number;
   age_days?: number;
   description?: string;
