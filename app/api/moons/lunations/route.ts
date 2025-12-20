@@ -234,15 +234,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Salvar lunações
-    const lunationsData = days.map((d: any) => ({
-      lunation_date: d.date || d.lunation_date,
-      moon_phase: d.moonPhase || d.moon_phase,
-      zodiac_sign: d.sign || d.zodiac_sign,
-      illumination: d.illumination ?? null,
-      age_days: d.ageDays ?? d.age_days ?? null,
-      description: d.description ?? null,
-      source: d.source || 'synced',
-    }));
+    const lunationsData = days.map((d: any) => {
+      // Normalizar nomes de campos que podem vir de diferentes fontes
+      const lunation_date = d.date || d.lunation_date;
+      const moon_phase = d.moonPhase || d.moon_phase;
+      const zodiac_sign = d.sign || d.zodiac_sign;
+      
+      // Validar dados obrigatórios
+      if (!lunation_date || !moon_phase || !zodiac_sign) {
+        console.warn('Lunação com dados incompletos:', d);
+      }
+      
+      return {
+        lunation_date,
+        moon_phase,
+        zodiac_sign,
+        illumination: d.illumination ?? null,
+        age_days: d.ageDays ?? d.age_days ?? null,
+        description: d.description ?? null,
+        source: d.source || 'synced',
+      };
+    });
 
     const saved = await saveLunations(lunationsData);
 

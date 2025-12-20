@@ -64,6 +64,7 @@ export function LunationSync({
           if (existingData?.days?.length > 0) {
             if (verbose) console.log(`✅ ${year} já sincronizado (${existingData.days.length} dias)`);
             setSyncedYears((prev) => new Set([...prev, year]));
+            if (onSuccess) onSuccess(existingData.days.length);
             continue;
           }
 
@@ -92,7 +93,8 @@ export function LunationSync({
           });
 
           if (!saveResponse.ok) {
-            throw new Error(`Erro ao salvar: ${saveResponse.status}`);
+            const errorData = await saveResponse.json().catch(() => ({}));
+            throw new Error(`Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`);
           }
 
           const saveResult = await saveResponse.json();
@@ -139,9 +141,12 @@ export function useSyncLunations() {
         `/api/moons/lunations?start=${startDate}&end=${endDate}&source=generated`
       );
 
-      if (!generateResponse.ok) throw new Error('Erro ao gerar dados');
+      if (!generateResponse.ok) {
+        throw new Error(`Erro ao gerar dados: ${generateResponse.status}`);
+      }
 
       const { days } = await generateResponse.json();
+      if (verbose) console.log(`✨ ${days.length} dias gerados`);
 
       // Salvar
       const saveResponse = await fetch('/api/moons/lunations', {
@@ -150,7 +155,10 @@ export function useSyncLunations() {
         body: JSON.stringify({ days, action: 'replace' }),
       });
 
-      if (!saveResponse.ok) throw new Error('Erro ao salvar');
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json().catch(() => ({}));
+        throw new Error(`Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`);
+      }
 
       const result = await saveResponse.json();
       if (verbose) console.log(`✅ ${result.message}`);
@@ -159,6 +167,7 @@ export function useSyncLunations() {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro desconhecido';
       setLastError(message);
+      console.error(`❌ Erro ao sincronizar ${year}:`, message);
       throw error;
     } finally {
       setIsSyncing(false);
