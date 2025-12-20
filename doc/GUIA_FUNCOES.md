@@ -45,7 +45,6 @@ Resumo rápido das principais funções, rotas e módulos — onde ficam e o que
   - `app/api/logs/emails` — lê dados do Sheets (auth obrigatório).
 - Hooks para enviar e manter estado local:  
   - `hooks/useMonthlyInsights.ts`, `useQuarterlyInsights.ts`, `useAnnualInsights.ts` → `saveInsight(...)`, `isLoading`, `error`, `insights`.  
-  - `hooks/useAutosave.ts` → debounce salvamento (status `idle|typing|saving|saved|error`).
 - Componentes de checklist/entrada:  
   - `components/TodoInput.tsx` parseia texto estilo `[ ]`/`[x]`, mostra progresso.  
   - `app/cosmos/utils/todoStorage.ts` carrega to-dos salvos (`localStorage`).

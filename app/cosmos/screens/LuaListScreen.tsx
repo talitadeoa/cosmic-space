@@ -31,10 +31,14 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
-  const { saveInsight } = useMonthlyInsights();
+  const { saveInsight, loadInsight } = useMonthlyInsights();
+  const [existingInsight, setExistingInsight] = useState("");
+  const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const timezone = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC";
-  const currentYear = new Date().getFullYear();
-  const [range, setRange] = useState({ startYear: currentYear - 1, endYear: currentYear + 1 });
+  const MIN_YEAR = 2025;
+  const MAX_YEAR = 2028;
+  const [range, setRange] = useState({ startYear: MIN_YEAR, endYear: MAX_YEAR });
   const [calendarByYear, setCalendarByYear] = useState<Record<number, MoonCalendarDay[]>>({});
   const [isCalendarLoading, setIsCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState<string | null>(null);
@@ -162,6 +166,36 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchExistingInsight = async () => {
+      if (!isModalOpen || !selectedMonth) return;
+      setIsLoadingInsight(true);
+      setExistingInsight("");
+      setExistingInsightUpdatedAt(null);
+
+      try {
+        const item = await loadInsight(selectedMoonPhase, selectedMonth.monthNumber);
+        if (!isActive) return;
+        setExistingInsight(item?.insight ?? "");
+        setExistingInsightUpdatedAt(item?.updatedAt ?? item?.createdAt ?? null);
+      } catch {
+        if (!isActive) return;
+        setExistingInsight("");
+        setExistingInsightUpdatedAt(null);
+      } finally {
+        if (isActive) setIsLoadingInsight(false);
+      }
+    };
+
+    fetchExistingInsight();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isModalOpen, loadInsight, selectedMonth, selectedMoonPhase]);
+
   const handleInsightSubmit = async (insight: string) => {
     const monthNumber = selectedMonth?.monthNumber ?? 1;
     await saveInsight(selectedMoonPhase, monthNumber, insight);
@@ -237,12 +271,18 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   }, [centerOnColumn, getColumnIndex, highlightTarget]);
 
   const extendPast = useCallback(() => {
-    setRange((prev) => ({ ...prev, startYear: prev.startYear - 1 }));
-  }, []);
+    setRange((prev) => ({
+      ...prev,
+      startYear: Math.max(MIN_YEAR, prev.startYear - 1),
+    }));
+  }, [MIN_YEAR]);
 
   const extendFuture = useCallback(() => {
-    setRange((prev) => ({ ...prev, endYear: prev.endYear + 1 }));
-  }, []);
+    setRange((prev) => ({
+      ...prev,
+      endYear: Math.min(MAX_YEAR, prev.endYear + 1),
+    }));
+  }, [MAX_YEAR]);
 
   const maybeExtendRange = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -251,13 +291,13 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     const max = scroller.scrollWidth - scroller.clientWidth;
     const threshold = tileSpan * 4;
 
-    if (scroller.scrollLeft < threshold) {
+    if (scroller.scrollLeft < threshold && range.startYear > MIN_YEAR) {
       extendPast();
     }
-    if (max - scroller.scrollLeft < threshold) {
+    if (max - scroller.scrollLeft < threshold && range.endYear < MAX_YEAR) {
       extendFuture();
     }
-  }, [extendFuture, extendPast, isCalendarLoading, tileSpan]);
+  }, [extendFuture, extendPast, isCalendarLoading, range.endYear, range.startYear, tileSpan]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -529,6 +569,9 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         moonIndex={selectedMonth?.monthNumber ?? 1}
         moonPhase={selectedMoonPhase}
         moonSignLabel={selectedMoonInfo.signLabel}
+        initialInsight={existingInsight}
+        lastSavedAt={existingInsightUpdatedAt}
+        isLoadingInsight={isLoadingInsight}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleInsightSubmit}
       />

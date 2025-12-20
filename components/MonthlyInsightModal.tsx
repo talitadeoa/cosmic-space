@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAutosave } from '@/hooks';
+import InputWindow from './InputWindow';
 
 interface MonthlyInsightModalProps {
   isOpen: boolean;
   moonIndex: number;
   moonPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
   moonSignLabel?: string;
+  initialInsight?: string;
+  lastSavedAt?: string | null;
+  isLoadingInsight?: boolean;
   onClose: () => void;
   onSubmit: (insight: string) => Promise<void>;
 }
@@ -59,24 +62,16 @@ export default function MonthlyInsightModal({
   moonIndex,
   moonPhase,
   moonSignLabel,
+  initialInsight = '',
+  lastSavedAt = null,
+  isLoadingInsight = false,
   onClose,
   onSubmit,
 }: MonthlyInsightModalProps) {
   const [insight, setInsight] = useState('');
-  const { status: autosaveStatus, error: autosaveError } = useAutosave({
-    value: insight,
-    onSave: onSubmit,
-    enabled: isOpen,
-    delayMs: 900,
-    minLength: 3,
-  });
-  const statusLabel = useMemo(() => {
-    if (autosaveStatus === 'saving') return 'Salvando...';
-    if (autosaveStatus === 'saved') return 'Salvo automaticamente';
-    if (autosaveStatus === 'error') return 'Erro ao salvar';
-    if (autosaveStatus === 'typing') return 'Aguardando pausa para salvar';
-    return 'Autosave pronto';
-  }, [autosaveStatus]);
+  const [hasUserEdited, setHasUserEdited] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const monthNum = getMonthNumber(moonIndex);
   const monthName = getMonthName(monthNum);
@@ -86,15 +81,44 @@ export default function MonthlyInsightModal({
     placeholder: 'Escreva seu insight, reflexão ou aprendizado para este mês...',
   };
   const signLabel = moonSignLabel?.trim() && moonSignLabel.trim().length > 0 ? moonSignLabel : '— signo em breve';
+  const formattedSavedAt = lastSavedAt
+    ? new Date(lastSavedAt).toLocaleString('pt-BR', { dateStyle: 'medium', timeStyle: 'short' })
+    : null;
 
   useEffect(() => {
     if (!isOpen) {
       setInsight('');
+      setHasUserEdited(false);
+      setSubmitError(null);
+      setIsSaving(false);
+    } else {
+      setHasUserEdited(false);
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    if (hasUserEdited) return;
+    setInsight(initialInsight);
+  }, [hasUserEdited, initialInsight, isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = insight.trim();
+    if (trimmed.length < 3) {
+      setSubmitError('Escreva pelo menos 3 caracteres para salvar.');
+      return;
+    }
+    setIsSaving(true);
+    setSubmitError(null);
+    try {
+      await onSubmit(trimmed);
+      onClose();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -112,15 +136,14 @@ export default function MonthlyInsightModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-lg sm:p-8"
+            className="w-full max-w-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-sky-400/10" />
-
-            {/* Fechar */}
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 p-2 text-indigo-200 transition hover:border-indigo-300/60 hover:bg-indigo-500/20 hover:text-white"
+            <InputWindow variant="glass" size="md" radius="lg" showAccent>
+              {/* Fechar */}
+              <button
+                onClick={onClose}
+                className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 p-2 text-indigo-200 transition hover:border-indigo-300/60 hover:bg-indigo-500/20 hover:text-white"
               aria-label="Fechar"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,44 +171,57 @@ export default function MonthlyInsightModal({
                 <label htmlFor="insight" className="block text-sm font-semibold uppercase tracking-[0.14em] text-slate-200/90">
                   {prompt.label}
                 </label>
+                <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-slate-200/70">
+                  <span>
+                    {isLoadingInsight
+                      ? 'Carregando insight salvo...'
+                      : initialInsight.trim().length > 0
+                        ? 'Insight salvo encontrado'
+                        : 'Ainda sem insight salvo'}
+                  </span>
+                  {formattedSavedAt && !isLoadingInsight && (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] tracking-[0.2em] text-indigo-100/80">
+                      {formattedSavedAt}
+                    </span>
+                  )}
+                </div>
                 <textarea
                   id="insight"
                   value={insight}
-                  onChange={(e) => setInsight(e.target.value)}
+                  onChange={(e) => {
+                    setInsight(e.target.value);
+                    setHasUserEdited(true);
+                  }}
                   placeholder={prompt.placeholder}
                   className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-indigo-300/60 focus:outline-none focus:ring-1 focus:ring-indigo-300/40 disabled:opacity-50"
                   rows={5}
+                  disabled={isLoadingInsight}
                 />
               </div>
 
               {/* Erro */}
-              {autosaveError && (
+              {submitError && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 shadow-inner shadow-black/20"
                 >
-                  {autosaveError}
+                  {submitError}
                 </motion.div>
               )}
 
               {/* Botões */}
               <div className="space-y-3 pt-4">
-                <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-100 shadow-inner shadow-black/10">
-                  <span className="font-semibold uppercase tracking-[0.16em]">Autosave</span>
-                  <span className="rounded-full border border-indigo-300/40 bg-indigo-500/15 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-indigo-50">
-                    {statusLabel}
-                  </span>
-                </div>
                 <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex w-full items-center justify-center rounded-2xl border border-indigo-300/60 bg-indigo-500/30 px-4 py-2 font-semibold text-white shadow-md shadow-indigo-900/40 transition hover:bg-indigo-500/45 hover:shadow-lg hover:shadow-indigo-700/40"
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex w-full items-center justify-center rounded-2xl border border-indigo-300/60 bg-indigo-500/30 px-4 py-2 font-semibold text-white shadow-md shadow-indigo-900/40 transition hover:bg-indigo-500/45 hover:shadow-lg hover:shadow-indigo-700/40 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Concluído
+                  {isSaving ? 'Salvando...' : 'Concluído'}
                 </button>
               </div>
             </form>
+            </InputWindow>
           </motion.div>
         </motion.div>
       )}
