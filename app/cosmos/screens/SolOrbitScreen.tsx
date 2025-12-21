@@ -5,65 +5,13 @@ import { CelestialObject } from "../components/CelestialObject";
 import CosmosChatModal from "@/components/CosmosChatModal";
 import { useQuarterlyInsights } from "@/hooks/useQuarterlyInsights";
 import { useAnnualInsights } from "@/hooks/useAnnualInsights";
+import {
+  QUARTERLY_INFO,
+  QUARTERLY_PROMPTS,
+  QUARTERLY_RESPONSES,
+} from "../utils/insightChatPresets";
+import type { MoonPhase } from "../utils/todoStorage";
 import type { ScreenProps } from "../types";
-
-type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
-
-const quarterlyInfo: Record<
-  MoonPhase,
-  { name: string; quarter: string; months: string }
-> = {
-  luaNova: { name: "Lua Nova", quarter: "1º Trimestre", months: "Jan - Mar" },
-  luaCrescente: { name: "Lua Crescente", quarter: "2º Trimestre", months: "Abr - Jun" },
-  luaCheia: { name: "Lua Cheia", quarter: "3º Trimestre", months: "Jul - Set" },
-  luaMinguante: { name: "Lua Minguante", quarter: "4º Trimestre", months: "Out - Dez" },
-};
-
-const quarterlyPrompts: Record<MoonPhase, { greeting: string; question: string; placeholder: string }> = {
-  luaNova: {
-    greeting: "Insight do 1º Trimestre",
-    question: "O que nasce para você neste trimestre? 🌱",
-    placeholder: "Intenções, sementes e direção para os próximos meses...",
-  },
-  luaCrescente: {
-    greeting: "Insight do 2º Trimestre",
-    question: "Como seu ritmo cresce neste trimestre? 📈",
-    placeholder: "Ações, ajustes e evolução do seu caminho...",
-  },
-  luaCheia: {
-    greeting: "Insight do 3º Trimestre",
-    question: "O que floresce no auge do ciclo? 🌕",
-    placeholder: "Resultados, conquistas e aprendizados do período...",
-  },
-  luaMinguante: {
-    greeting: "Insight do 4º Trimestre",
-    question: "O que pede pausa ou liberação agora? 🍂",
-    placeholder: "Encerramentos, limpeza e preparação para o próximo ciclo...",
-  },
-};
-
-const quarterlyResponses: Record<MoonPhase, string[]> = {
-  luaNova: [
-    "Que começo lindo para o trimestre! 🌱",
-    "Suas intenções estão bem claras. ✨",
-    "Ótima direção para este ciclo. 🌙",
-  ],
-  luaCrescente: [
-    "Seu ritmo está consistente! 📈",
-    "Que evolução poderosa! 🌟",
-    "Continue expandindo com confiança. ✨",
-  ],
-  luaCheia: [
-    "Quanta realização neste trimestre! 🌕",
-    "Colheita linda, celebre! ✨",
-    "Seu caminho está iluminado. 🙏",
-  ],
-  luaMinguante: [
-    "Liberar também é crescer. 🌙",
-    "Que maturidade para fechar o ciclo. ✨",
-    "Excelente fechamento do trimestre. 🍂",
-  ],
-};
 
 const MOON_RING_RADIUS_PERCENT = 42;
 const DIAGONAL_MOONS: Array<{
@@ -86,7 +34,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
   const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
   const { saveInsight: saveAnnualInsight } = useAnnualInsights();
-  const phaseInfo = quarterlyInfo[selectedMoonPhase];
+  const phaseInfo = QUARTERLY_INFO[selectedMoonPhase];
   const currentYear = new Date().getFullYear();
   const quarterlyStorageKey = `insight-trimestral-${currentYear}-${selectedMoonPhase}`;
   const annualStorageKey = `insight-anual-${currentYear}`;
@@ -363,12 +311,12 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
         eyebrow="Insight Trimestral"
         subtitle={phaseInfo.quarter}
         badge={phaseInfo.months}
-        placeholder={quarterlyPrompts[selectedMoonPhase].placeholder}
-        systemGreeting={quarterlyPrompts[selectedMoonPhase].greeting}
-        systemQuestion={quarterlyPrompts[selectedMoonPhase].question}
+        placeholder={QUARTERLY_PROMPTS[selectedMoonPhase].placeholder}
+        systemGreeting={QUARTERLY_PROMPTS[selectedMoonPhase].greeting}
+        systemQuestion={QUARTERLY_PROMPTS[selectedMoonPhase].question}
         submitLabel="✨ Concluir insight trimestral"
         tone="sky"
-        systemResponses={quarterlyResponses[selectedMoonPhase]}
+        systemResponses={QUARTERLY_RESPONSES[selectedMoonPhase]}
         onClose={() => setIsQuarterlyModalOpen(false)}
         onSubmit={async (value) => {
           await handleQuarterlyInsightSubmit(value);

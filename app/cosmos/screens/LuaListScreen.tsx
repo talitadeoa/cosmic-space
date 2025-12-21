@@ -6,6 +6,12 @@ import CosmosChatModal from "@/components/CosmosChatModal";
 import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
 import { fetchLunations } from "@/hooks/useLunations";
 import { normalizeMoonPhase, type MoonCalendarDay } from "@/lib/api/moonCalendar";
+import {
+  MONTHLY_INSIGHT_LABELS,
+  MONTHLY_PROMPTS,
+  MONTHLY_RESPONSES,
+  MONTHLY_TONES,
+} from "../utils/insightChatPresets";
 import ArrowButton from "../components/lua-list/ArrowButton";
 import CalendarStatus from "../components/lua-list/CalendarStatus";
 import EmptyState from "../components/lua-list/EmptyState";
@@ -26,69 +32,6 @@ import {
   MonthEntry,
   getResponsiveLayout,
 } from "../utils/luaList";
-
-const moonPhaseLabels: Record<MoonPhase, string> = {
-  luaNova: "🌑 Lua Nova",
-  luaCrescente: "🌓 Lua Crescente",
-  luaCheia: "🌕 Lua Cheia",
-  luaMinguante: "🌗 Lua Minguante",
-};
-
-const phasePrompts: Record<
-  MoonPhase,
-  { greeting: string; systemQuestion: string; placeholder: string }
-> = {
-  luaNova: {
-    greeting: "Bem-vindo à Lua Nova de {month}",
-    systemQuestion: "O que você gostaria de plantar nesta fase? 🌱",
-    placeholder: "Intenções, sementes, inícios que você quer colocar no mundo...",
-  },
-  luaCrescente: {
-    greeting: "Bem-vindo à Lua Crescente de {month}",
-    systemQuestion: "Como você está crescendo nesta fase? 📈",
-    placeholder: "Ações, crescimento e desenvolvimento que você está vivendo...",
-  },
-  luaCheia: {
-    greeting: "Bem-vindo à Lua Cheia de {month}",
-    systemQuestion: "O que você gostaria de colher nesta fase? 🌕",
-    placeholder: "Resultados, colheitas e celebrações do que foi plantado...",
-  },
-  luaMinguante: {
-    greeting: "Bem-vindo à Lua Minguante de {month}",
-    systemQuestion: "O que você gostaria de liberar nesta fase? 🍂",
-    placeholder: "Aprendizados, sombras e padrões que você quer soltar...",
-  },
-};
-
-const phaseResponses: Record<MoonPhase, string[]> = {
-  luaNova: [
-    "Que intenções poderosas! 🌱 Você está pronto para este novo ciclo.",
-    "Excelente! Essas sementes do seu coração estão plantadas. ✨",
-    "Que lindo! Você já está abrindo caminhos para o novo. 🌙",
-  ],
-  luaCrescente: [
-    "Seu crescimento é inspirador! Continuamos em movimento. 📈",
-    "Ótimo! Você está honrando seu próprio desenvolvimento. 🌟",
-    "Que ritmo maravilhoso! Siga este caminho. ✨",
-  ],
-  luaCheia: [
-    "Que colheita magnífica! Você está celebrando o ciclo completo. 🌕",
-    "Incrível! Veja tudo que você realizou. ✨",
-    "A plenitude é sua! Que beleza neste momento. 🙏",
-  ],
-  luaMinguante: [
-    "Que libertação! Você está honrando o fim do ciclo. 🌙",
-    "Profundo! Soltar é tão poderoso quanto plantar. ✨",
-    "Excelente insight! Você está trazendo sabedoria para casa. 🍂",
-  ],
-};
-
-const phaseTones: Record<MoonPhase, "indigo" | "sky" | "amber" | "violet"> = {
-  luaNova: "indigo",
-  luaCrescente: "sky",
-  luaCheia: "amber",
-  luaMinguante: "violet",
-};
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -251,7 +194,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     ? buildMoonInfo(highlightTarget, highlightTarget.phase)
     : null;
   const selectedMonthName = selectedMonth?.monthName ?? "Mês";
-  const prompt = phasePrompts[selectedMoonPhase];
+  const prompt = MONTHLY_PROMPTS[selectedMoonPhase];
   const formattedSavedAt = existingInsightUpdatedAt
     ? new Date(existingInsightUpdatedAt).toLocaleString("pt-BR", {
         dateStyle: "medium",
@@ -584,7 +527,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         isOpen={isModalOpen}
         storageKey={chatStorageKey}
         title={selectedMonthName}
-        eyebrow={moonPhaseLabels[selectedMoonPhase]}
+        eyebrow={MONTHLY_INSIGHT_LABELS[selectedMoonPhase]}
         subtitle={`Mês #${selectedMonth?.monthNumber ?? 1}`}
         badge={signBadge}
         placeholder={chatPlaceholder}
@@ -593,8 +536,8 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         initialValue={existingInsight}
         initialValueLabel={formattedSavedAt ? `salvo em ${formattedSavedAt}` : undefined}
         submitLabel="✨ Concluir insight"
-        tone={phaseTones[selectedMoonPhase]}
-        systemResponses={phaseResponses[selectedMoonPhase]}
+        tone={MONTHLY_TONES[selectedMoonPhase]}
+        systemResponses={MONTHLY_RESPONSES[selectedMoonPhase]}
         onClose={() => setIsModalOpen(false)}
         onSubmit={async (value) => {
           await handleInsightSubmit(value);

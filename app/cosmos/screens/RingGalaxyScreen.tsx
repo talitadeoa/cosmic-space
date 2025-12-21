@@ -6,14 +6,17 @@ import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
 import CosmosChatModal from "@/components/CosmosChatModal";
 import { getLatestUserMessageFromHistory } from "@/lib/chatHistory";
+import {
+  RING_ENERGY_PROMPTS,
+  RING_ENERGY_RESPONSES,
+} from "../utils/insightChatPresets";
+import type { MoonPhase } from "../utils/todoStorage";
 import type { ScreenProps } from "../types";
 
 const RingGalaxyScreen: React.FC<ScreenProps> = ({
   navigateTo,
   navigateWithFocus,
 }) => {
-  type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
-
   const [selectedMoon, setSelectedMoon] = useState<MoonPhase | null>(null);
   const [energyNotes, setEnergyNotes] = useState<Record<MoonPhase, string>>({
     luaNova: "",
@@ -48,29 +51,6 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
     const x = Math.cos(angleRad) * orbitRadius;
     const y = Math.sin(angleRad) * orbitRadius;
     return { x, y };
-  };
-
-  const moonEnergyPrompts: Record<MoonPhase, { title: string; question: string; placeholder: string }> = {
-    luaNova: {
-      title: "Energia da Lua Nova",
-      question: "Como você se sente na Nova, no início das coisas?",
-      placeholder: "Ex.: curiosa, aberta a experimentar, em modo rascunho...",
-    },
-    luaCrescente: {
-      title: "Energia da Lua Crescente",
-      question: "Que impulso está crescendo e pedindo movimento?",
-      placeholder: "Ex.: disciplinada, com vontade de testar, buscando ritmo...",
-    },
-    luaCheia: {
-      title: "Energia da Lua Cheia",
-      question: "Como sua energia transborda quando tudo aparece?",
-      placeholder: "Ex.: expansiva, cheia de ideias, querendo celebrar...",
-    },
-    luaMinguante: {
-      title: "Energia da Lua Minguante",
-      question: "O que pede pausa ou liberação agora?",
-      placeholder: "Ex.: cansada, pronta para simplificar, recolhendo energia...",
-    },
   };
 
   const handleMoonClick = (moonType: MoonPhase) => {
@@ -117,21 +97,17 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
         <CosmosChatModal
           isOpen={Boolean(selectedMoon)}
           storageKey={`energia-ring-${selectedMoon}`}
-          title={moonEnergyPrompts[selectedMoon].title}
+          title={RING_ENERGY_PROMPTS[selectedMoon].title}
           eyebrow="Energia da fase"
-          subtitle={moonEnergyPrompts[selectedMoon].question}
-          placeholder={moonEnergyPrompts[selectedMoon].placeholder}
-          systemGreeting={moonEnergyPrompts[selectedMoon].title}
-          systemQuestion={moonEnergyPrompts[selectedMoon].question}
+          subtitle={RING_ENERGY_PROMPTS[selectedMoon].question}
+          placeholder={RING_ENERGY_PROMPTS[selectedMoon].placeholder}
+          systemGreeting={RING_ENERGY_PROMPTS[selectedMoon].title}
+          systemQuestion={RING_ENERGY_PROMPTS[selectedMoon].question}
           initialValue={energyNotes[selectedMoon]}
           submitLabel="✨ Concluir energia"
           tone="violet"
           submitStrategy="last"
-          systemResponses={[
-            "Energia registrada com clareza. ✨",
-            "Seu corpo falou, e você ouviu. 🌙",
-            "Que leitura honesta do momento. 💫",
-          ]}
+          systemResponses={RING_ENERGY_RESPONSES}
           headerExtra={
             <div className="mt-3 text-xs text-violet-200/70">
               <button
