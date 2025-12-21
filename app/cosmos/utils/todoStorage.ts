@@ -1,8 +1,9 @@
 "use client";
 
-import type { TodoItem as ParsedTodoItem } from "@/components/TodoInput";
+import type { TodoItem as ParsedTodoItem } from "../components/TodoInput";
+import { MOON_PHASE_LABELS, MOON_PHASES, type MoonPhase } from "./moonPhases";
 
-export type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
+export type { MoonPhase } from "./moonPhases";
 export type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
 
 export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase; islandId?: IslandId; project?: string };
@@ -10,14 +11,8 @@ export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase; islandId?: IslandI
 export const TODO_STORAGE_KEY = "cosmic_space_todos_salvos";
 export const PROJECTS_STORAGE_KEY = "cosmic_space_projects";
 
-export const phaseLabels: Record<MoonPhase, string> = {
-  luaNova: "Lua Nova",
-  luaCrescente: "Lua Crescente",
-  luaCheia: "Lua Cheia",
-  luaMinguante: "Lua Minguante",
-};
-
-export const phaseOrder: MoonPhase[] = ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"];
+export const phaseLabels: Record<MoonPhase, string> = MOON_PHASE_LABELS;
+export const phaseOrder: MoonPhase[] = MOON_PHASES;
 
 const isValidPhase = (phase: unknown): phase is MoonPhase =>
   phase === "luaNova" || phase === "luaCrescente" || phase === "luaCheia" || phase === "luaMinguante";
@@ -70,5 +65,25 @@ export function loadSavedProjects(): string[] {
   } catch (error) {
     console.warn("Falha ao ler projetos salvos", error);
     return [];
+  }
+}
+
+export function saveSavedTodos(todos: SavedTodo[]) {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos));
+  } catch (error) {
+    console.warn("Falha ao salvar to-dos", error);
+  }
+}
+
+export function saveSavedProjects(projects: string[]) {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+  } catch (error) {
+    console.warn("Falha ao salvar projetos", error);
   }
 }

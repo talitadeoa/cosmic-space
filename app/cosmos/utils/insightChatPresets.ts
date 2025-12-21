@@ -1,11 +1,9 @@
-import type { MoonPhase } from "./todoStorage";
+import {
+  MOON_PHASE_EMOJI_LABELS,
+  type MoonPhase,
+} from "./moonPhases";
 
-export const MONTHLY_INSIGHT_LABELS: Record<MoonPhase, string> = {
-  luaNova: "🌑 Lua Nova",
-  luaCrescente: "🌓 Lua Crescente",
-  luaCheia: "🌕 Lua Cheia",
-  luaMinguante: "🌗 Lua Minguante",
-};
+export const MONTHLY_INSIGHT_LABELS: Record<MoonPhase, string> = MOON_PHASE_EMOJI_LABELS;
 
 export const MONTHLY_PROMPTS: Record<
   MoonPhase,
@@ -153,3 +151,17 @@ export const RING_ENERGY_RESPONSES = [
   "Seu corpo falou, e você ouviu. 🌙",
   "Que leitura honesta do momento. 💫",
 ];
+
+export const buildMonthlyStorageKey = (
+  year: number | string,
+  monthNumber: number,
+  phase: MoonPhase,
+) => `insight-mensal-${year}-${monthNumber}-${phase}`;
+
+export const buildQuarterlyStorageKey = (year: number, phase: MoonPhase) =>
+  `insight-trimestral-${year}-${phase}`;
+
+export const buildAnnualStorageKey = (year: number) => `insight-anual-${year}`;
+
+export const buildRingEnergyStorageKey = (phase: MoonPhase) =>
+  `energia-ring-${phase}`;

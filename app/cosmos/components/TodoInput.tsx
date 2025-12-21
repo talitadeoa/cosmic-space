@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import InputWindow from "./InputWindow";
 import CosmosChatModal from "./CosmosChatModal";
 
@@ -13,48 +13,37 @@ export interface TodoItem {
 }
 
 interface TodoInputProps {
-  onTodoSubmit?: (todo: TodoItem) => void;
-  projectOptions?: string[];
-  projectValue?: string;
-  onProjectChange?: (value: string) => void;
+  onTodoSubmit: (todo: TodoItem) => void;
+  projectOptions: string[];
+  projectValue: string;
+  onProjectChange: (value: string) => void;
   className?: string;
   chatInline?: boolean;
 }
 
 const TodoInput: React.FC<TodoInputProps> = ({
   onTodoSubmit,
-  projectOptions = [],
   projectValue,
+  projectOptions,
   onProjectChange,
   className = "",
   chatInline = true,
 }) => {
-  const [currentProject, setCurrentProject] = useState(projectValue ?? "");
   const [taskDraft, setTaskDraft] = useState("");
   const [newDepth, setNewDepth] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const isProjectControlled = projectValue !== undefined;
-  const activeProject = isProjectControlled ? projectValue : currentProject;
+  const activeProject = projectValue;
 
   const updateProject = (value: string) => {
-    if (!isProjectControlled) {
-      setCurrentProject(value);
-    }
-    onProjectChange?.(value);
+    onProjectChange(value);
   };
-
-  React.useEffect(() => {
-    if (projectValue !== undefined) {
-      setCurrentProject(projectValue);
-    }
-  }, [projectValue]);
 
   const handleAddTodo = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    const trimmedProject = activeProject?.trim();
+    const trimmedProject = activeProject.trim();
 
-    onTodoSubmit?.({
+    onTodoSubmit({
       id: `todo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       text: trimmed,
       completed: false,

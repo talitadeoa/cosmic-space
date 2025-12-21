@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { GalaxyInnerView } from "@/components/views/GalaxyInnerView";
+import { GalaxyInnerView } from "../components/GalaxyInnerView";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
-import CosmosChatModal from "@/components/CosmosChatModal";
+import CosmosChatModal from "../components/CosmosChatModal";
 import { getLatestUserMessageFromHistory } from "@/lib/chatHistory";
 import {
   RING_ENERGY_PROMPTS,
   RING_ENERGY_RESPONSES,
+  buildRingEnergyStorageKey,
 } from "../utils/insightChatPresets";
-import type { MoonPhase } from "../utils/todoStorage";
+import type { MoonPhase } from "../utils/moonPhases";
 import type { ScreenProps } from "../types";
 
 const RingGalaxyScreen: React.FC<ScreenProps> = ({
@@ -27,10 +28,10 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
 
   useEffect(() => {
     const next: Record<MoonPhase, string> = {
-      luaNova: getLatestUserMessageFromHistory("energia-ring-luaNova"),
-      luaCrescente: getLatestUserMessageFromHistory("energia-ring-luaCrescente"),
-      luaCheia: getLatestUserMessageFromHistory("energia-ring-luaCheia"),
-      luaMinguante: getLatestUserMessageFromHistory("energia-ring-luaMinguante"),
+      luaNova: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaNova")),
+      luaCrescente: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaCrescente")),
+      luaCheia: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaCheia")),
+      luaMinguante: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaMinguante")),
     };
     setEnergyNotes(next);
   }, []);
@@ -96,7 +97,7 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
       {selectedMoon && (
         <CosmosChatModal
           isOpen={Boolean(selectedMoon)}
-          storageKey={`energia-ring-${selectedMoon}`}
+          storageKey={buildRingEnergyStorageKey(selectedMoon)}
           title={RING_ENERGY_PROMPTS[selectedMoon].title}
           eyebrow="Energia da fase"
           subtitle={RING_ENERGY_PROMPTS[selectedMoon].question}

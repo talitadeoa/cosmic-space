@@ -2,15 +2,17 @@
 
 import React, { useState } from "react";
 import { CelestialObject } from "../components/CelestialObject";
-import CosmosChatModal from "@/components/CosmosChatModal";
+import CosmosChatModal from "../components/CosmosChatModal";
 import { useQuarterlyInsights } from "@/hooks/useQuarterlyInsights";
 import { useAnnualInsights } from "@/hooks/useAnnualInsights";
 import {
   QUARTERLY_INFO,
   QUARTERLY_PROMPTS,
   QUARTERLY_RESPONSES,
+  buildAnnualStorageKey,
+  buildQuarterlyStorageKey,
 } from "../utils/insightChatPresets";
-import type { MoonPhase } from "../utils/todoStorage";
+import type { MoonPhase } from "../utils/moonPhases";
 import type { ScreenProps } from "../types";
 
 const MOON_RING_RADIUS_PERCENT = 42;
@@ -25,37 +27,12 @@ const DIAGONAL_MOONS: Array<{
   { phase: "luaMinguante", angleDeg: 270, floatOffset: 1 },
 ];
 
-const SolOrbitScreen: React.FC<ScreenProps> = ({
-  navigateTo,
-  navigateWithFocus,
-}) => {
-  const [isQuarterlyModalOpen, setIsQuarterlyModalOpen] = useState(false);
-  const [isAnnualModalOpen, setIsAnnualModalOpen] = useState(false);
-  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
-  const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
-  const { saveInsight: saveAnnualInsight } = useAnnualInsights();
-  const phaseInfo = QUARTERLY_INFO[selectedMoonPhase];
-  const currentYear = new Date().getFullYear();
-  const quarterlyStorageKey = `insight-trimestral-${currentYear}-${selectedMoonPhase}`;
-  const annualStorageKey = `insight-anual-${currentYear}`;
+type SolOrbitStageProps = {
+  onSolClick: () => void;
+  onMoonClick: (phase: MoonPhase) => void;
+};
 
-  const handleMoonClick = (phase: MoonPhase) => {
-    setSelectedMoonPhase(phase);
-    setIsQuarterlyModalOpen(true);
-  };
-
-  const handleSolClick = () => {
-    setIsAnnualModalOpen(true);
-  };
-
-  const handleQuarterlyInsightSubmit = async (insight: string) => {
-    await saveQuarterlyInsight(selectedMoonPhase, insight);
-  };
-
-  const handleAnnualInsightSubmit = async (insight: string) => {
-    await saveAnnualInsight(insight);
-  };
-
+const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   React.useEffect(() => {
@@ -259,50 +236,75 @@ const SolOrbitScreen: React.FC<ScreenProps> = ({
   }, []);
 
   return (
-    <>
-      <div className="flex h-full w-full items-center justify-center overflow-hidden px-4">
-        {/* Container quadrado central: tudo orbita em torno dele */}
-        <div className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]">
-          <canvas
-            ref={canvasRef}
-            className="pointer-events-none absolute inset-0 bg-transparent"
-            aria-hidden
-          />
+    <div className="flex h-full w-full items-center justify-center overflow-hidden px-4">
+      <div className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]">
+        <canvas
+          ref={canvasRef}
+          className="pointer-events-none absolute inset-0 bg-transparent"
+          aria-hidden
+        />
 
-          {/* Sol bem no centro */}
-          <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-            <CelestialObject
-              type="sol"
-              size="lg"
-              interactive={true}
-              onClick={handleSolClick}
-            />
-          </div>
-
-          {/* As fases da Lua ao redor do Sol, em diagonal e sem plano de fundo */}
-          {DIAGONAL_MOONS.map(({ phase, angleDeg, floatOffset }) => {
-            const rad = (angleDeg * Math.PI) / 180;
-            const x = 50 + MOON_RING_RADIUS_PERCENT * Math.cos(rad);
-            const y = 50 + MOON_RING_RADIUS_PERCENT * Math.sin(rad);
-
-            return (
-              <div
-                key={phase}
-                className="absolute -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${x}%`, top: `${y}%` }}
-              >
-                <CelestialObject
-                  type={phase}
-                  size="md"
-                  interactive
-                  onClick={() => handleMoonClick(phase)}
-                  floatOffset={floatOffset}
-                />
-              </div>
-            );
-          })}
+        <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+          <CelestialObject type="sol" size="lg" interactive onClick={onSolClick} />
         </div>
+
+        {DIAGONAL_MOONS.map(({ phase, angleDeg, floatOffset }) => {
+          const rad = (angleDeg * Math.PI) / 180;
+          const x = 50 + MOON_RING_RADIUS_PERCENT * Math.cos(rad);
+          const y = 50 + MOON_RING_RADIUS_PERCENT * Math.sin(rad);
+
+          return (
+            <div
+              key={phase}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${x}%`, top: `${y}%` }}
+            >
+              <CelestialObject
+                type={phase}
+                size="md"
+                interactive
+                onClick={() => onMoonClick(phase)}
+                floatOffset={floatOffset}
+              />
+            </div>
+          );
+        })}
       </div>
+    </div>
+  );
+};
+
+const SolOrbitScreen: React.FC<ScreenProps> = () => {
+  const [isQuarterlyModalOpen, setIsQuarterlyModalOpen] = useState(false);
+  const [isAnnualModalOpen, setIsAnnualModalOpen] = useState(false);
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
+  const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
+  const { saveInsight: saveAnnualInsight } = useAnnualInsights();
+  const phaseInfo = QUARTERLY_INFO[selectedMoonPhase];
+  const currentYear = new Date().getFullYear();
+  const quarterlyStorageKey = buildQuarterlyStorageKey(currentYear, selectedMoonPhase);
+  const annualStorageKey = buildAnnualStorageKey(currentYear);
+
+  const handleMoonClick = (phase: MoonPhase) => {
+    setSelectedMoonPhase(phase);
+    setIsQuarterlyModalOpen(true);
+  };
+
+  const handleSolClick = () => {
+    setIsAnnualModalOpen(true);
+  };
+
+  const handleQuarterlyInsightSubmit = async (insight: string) => {
+    await saveQuarterlyInsight(selectedMoonPhase, insight);
+  };
+
+  const handleAnnualInsightSubmit = async (insight: string) => {
+    await saveAnnualInsight(insight);
+  };
+
+  return (
+    <>
+      <SolOrbitStage onSolClick={handleSolClick} onMoonClick={handleMoonClick} />
 
       <CosmosChatModal
         isOpen={isQuarterlyModalOpen}

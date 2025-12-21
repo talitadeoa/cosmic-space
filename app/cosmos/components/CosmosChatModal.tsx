@@ -9,6 +9,7 @@ import { ChatMessage, loadChatHistory, saveChatHistory } from "@/lib/chatHistory
 type SubmitStrategy = "concat" | "last";
 
 type Tone = "indigo" | "violet" | "amber" | "sky";
+type ChatStyles = (typeof toneStyles)["indigo"];
 
 interface CosmosChatModalProps {
   isOpen: boolean;
@@ -99,6 +100,170 @@ const buildUserMessage = (content: string): ChatMessage => ({
   content,
   timestamp: new Date().toISOString(),
 });
+
+interface ChatHeaderProps {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  headerExtra?: React.ReactNode;
+  inline: boolean;
+  styles: ChatStyles;
+}
+
+function ChatHeader({
+  eyebrow,
+  title,
+  subtitle,
+  badge,
+  headerExtra,
+  inline,
+  styles,
+}: ChatHeaderProps) {
+  return (
+    <div className={`border-b ${styles.headerBorder} ${inline ? "pb-3" : "pb-4"}`}>
+      {eyebrow && (
+        <div
+          className={`mb-2 font-semibold uppercase tracking-[0.24em] ${styles.eyebrowText} ${
+            inline ? "text-[0.65rem]" : "text-sm"
+          }`}
+        >
+          {eyebrow}
+        </div>
+      )}
+      <h2 className={`${inline ? "text-lg" : "text-2xl"} font-bold text-white`}>{title}</h2>
+      {subtitle && (
+        <p className={`${inline ? "text-[0.7rem]" : "text-xs"} text-slate-200/70`}>
+          {subtitle}
+        </p>
+      )}
+      {badge && (
+        <div
+          className={`mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] ${styles.badge}`}
+        >
+          {badge}
+        </div>
+      )}
+      {headerExtra}
+    </div>
+  );
+}
+
+interface ChatMessagesProps {
+  messages: ChatMessage[];
+  styles: ChatStyles;
+  inline: boolean;
+  messagesEndRef: React.RefObject<HTMLDivElement>;
+}
+
+function ChatMessages({ messages, styles, inline, messagesEndRef }: ChatMessagesProps) {
+  const messagesClassName = inline
+    ? "flex-1 min-h-0 space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20"
+    : "flex-1 space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20";
+
+  return (
+    <div className={messagesClassName}>
+      {messages.map((message, index) => (
+        <motion.div
+          key={message.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
+          className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+        >
+          <div
+            className={`max-w-xs whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
+              message.role === "user" ? styles.userBubble : styles.systemBubble
+            }`}
+          >
+            {message.content}
+          </div>
+        </motion.div>
+      ))}
+      <div ref={messagesEndRef} />
+    </div>
+  );
+}
+
+interface ChatComposerProps {
+  inputValue: string;
+  setInputValue: (value: string) => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onSend: () => void;
+  onSave: () => void;
+  placeholder: string;
+  submitLabel: string;
+  inline: boolean;
+  styles: ChatStyles;
+  isSaving: boolean;
+  hasUserMessage: boolean;
+  submitError: string | null;
+}
+
+function ChatComposer({
+  inputValue,
+  setInputValue,
+  onKeyDown,
+  onSend,
+  onSave,
+  placeholder,
+  submitLabel,
+  inline,
+  styles,
+  isSaving,
+  hasUserMessage,
+  submitError,
+}: ChatComposerProps) {
+  return (
+    <div className="space-y-3 border-t border-white/10 pt-4">
+      {submitError && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 shadow-inner shadow-black/20"
+        >
+          {submitError}
+        </motion.div>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder={placeholder}
+          disabled={isSaving}
+          className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50"
+        />
+        <button
+          type="button"
+          onClick={onSend}
+          disabled={isSaving || inputValue.trim().length < 3}
+          className={`rounded-2xl border px-4 py-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.sendButton}`}
+          aria-label="Enviar mensagem"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </div>
+
+      {hasUserMessage && (
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          type="button"
+          onClick={onSave}
+          disabled={isSaving}
+          className={`w-full rounded-2xl border px-4 py-3 font-semibold shadow-md transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.submitButton}`}
+        >
+          {isSaving ? "Salvando..." : submitLabel}
+        </motion.button>
+      )}
+    </div>
+  );
+}
 
 export default function CosmosChatModal({
   isOpen,
@@ -282,10 +447,6 @@ export default function CosmosChatModal({
 
   if (!isMounted) return null;
 
-  const messagesClassName = inline
-    ? "flex-1 min-h-0 space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20"
-    : "flex-1 space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20";
-
   const chatWindow = (
     <InputWindow
       variant="glass"
@@ -308,48 +469,22 @@ export default function CosmosChatModal({
         </button>
       )}
 
-      <div className={`border-b ${styles.headerBorder} ${inline ? "pb-3" : "pb-4"}`}>
-        {eyebrow && (
-          <div
-            className={`mb-2 font-semibold uppercase tracking-[0.24em] ${styles.eyebrowText} ${
-              inline ? "text-[0.65rem]" : "text-sm"
-            }`}
-          >
-            {eyebrow}
-          </div>
-        )}
-        <h2 className={`${inline ? "text-lg" : "text-2xl"} font-bold text-white`}>{title}</h2>
-        {subtitle && (
-          <p className={`${inline ? "text-[0.7rem]" : "text-xs"} text-slate-200/70`}>{subtitle}</p>
-        )}
-        {badge && (
-          <div className={`mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] ${styles.badge}`}>
-            {badge}
-          </div>
-        )}
-        {headerExtra}
-      </div>
+      <ChatHeader
+        eyebrow={eyebrow}
+        title={title}
+        subtitle={subtitle}
+        badge={badge}
+        headerExtra={headerExtra}
+        inline={inline}
+        styles={styles}
+      />
 
-      <div className={messagesClassName}>
-        {messages.map((message, index) => (
-          <motion.div
-            key={message.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-xs whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
-                message.role === "user" ? styles.userBubble : styles.systemBubble
-              }`}
-            >
-              {message.content}
-            </div>
-          </motion.div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+      <ChatMessages
+        messages={messages}
+        styles={styles}
+        inline={inline}
+        messagesEndRef={messagesEndRef}
+      />
 
       {hasUserMessage && !inline && (
         <motion.div
@@ -362,53 +497,20 @@ export default function CosmosChatModal({
         </motion.div>
       )}
 
-      <div className="space-y-3 border-t border-white/10 pt-4">
-        {submitError && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 shadow-inner shadow-black/20"
-          >
-            {submitError}
-          </motion.div>
-        )}
-
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={isSaving}
-            className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50"
-          />
-          <button
-            type="button"
-            onClick={handleSendMessage}
-            disabled={isSaving || inputValue.trim().length < 3}
-            className={`rounded-2xl border px-4 py-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.sendButton}`}
-            aria-label="Enviar mensagem"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
-        </div>
-
-        {hasUserMessage && (
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving}
-            className={`w-full rounded-2xl border px-4 py-3 font-semibold shadow-md transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.submitButton}`}
-          >
-            {isSaving ? "Salvando..." : submitLabel}
-          </motion.button>
-        )}
-      </div>
+      <ChatComposer
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        onKeyDown={handleKeyDown}
+        onSend={handleSendMessage}
+        onSave={handleSave}
+        placeholder={placeholder}
+        submitLabel={submitLabel}
+        inline={inline}
+        styles={styles}
+        isSaving={isSaving}
+        hasUserMessage={hasUserMessage}
+        submitError={submitError}
+      />
     </InputWindow>
   );
 

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import CosmosChatModal from "@/components/CosmosChatModal";
+import CosmosChatModal from "../components/CosmosChatModal";
 import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
 import { fetchLunations } from "@/hooks/useLunations";
 import { normalizeMoonPhase, type MoonCalendarDay } from "@/lib/api/moonCalendar";
@@ -11,6 +11,7 @@ import {
   MONTHLY_PROMPTS,
   MONTHLY_RESPONSES,
   MONTHLY_TONES,
+  buildMonthlyStorageKey,
 } from "../utils/insightChatPresets";
 import ArrowButton from "../components/lua-list/ArrowButton";
 import CalendarStatus from "../components/lua-list/CalendarStatus";
@@ -20,7 +21,8 @@ import MoonRowSkeleton from "../components/lua-list/MoonRowSkeleton";
 import { CelestialObject } from "../components/CelestialObject";
 import { LuminousTrail } from "../components/LuminousTrail";
 import type { ScreenProps } from "../types";
-import type { MoonPhase } from "../utils/todoStorage";
+import type { MoonPhase } from "../utils/moonPhases";
+import { formatSavedAtLabel, getResolvedTimezone } from "@/lib/utils/format";
 import {
   ANIMATION_CONFIG,
   buildMoonInfo,
@@ -29,9 +31,159 @@ import {
   flattenCalendarDays,
   formatDateInTimezone,
   findMonthEntryByDate,
+  type HighlightTarget,
   MonthEntry,
   getResponsiveLayout,
 } from "../utils/luaList";
+
+type HighlightBannerProps = {
+  info: ReturnType<typeof buildMoonInfo>;
+  onClick: () => void;
+};
+
+const HighlightBanner = ({ info, onClick }: HighlightBannerProps) => (
+  <div className="mb-4 flex justify-center">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-full border border-sky-300/30 bg-slate-900/80 px-4 py-3 text-[11px] text-slate-100 shadow-lg shadow-sky-900/40 backdrop-blur focus:outline-none focus:ring-2 focus:ring-sky-300/60"
+    >
+      <span className="flex h-2.5 w-2.5 items-center justify-center">
+        <span className="h-2.5 w-2.5 rounded-full bg-sky-300/90 shadow-[0_0_12px_rgba(125,211,252,0.9)] animate-pulse" />
+      </span>
+      <span className="font-semibold">{info.phaseLabel}</span>
+      <span className="text-slate-300/80">{info.monthName}</span>
+      <span className="text-slate-300/80">{info.signLabel}</span>
+    </button>
+  </div>
+);
+
+type MoonCarouselProps = {
+  scrollerRef: React.RefObject<HTMLDivElement>;
+  scrollerMaxWidth: number;
+  onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  layoutPadding: number;
+  tileWidth: number;
+  gap: number;
+  canScrollLeft: boolean;
+  canScrollRight: boolean;
+  onScrollLeft: () => void;
+  onScrollRight: () => void;
+  onRetry: () => void;
+  isInitialLoading: boolean;
+  monthEntries: MonthEntry[];
+  calendarError: string | null;
+  skeletonCount: number;
+  trackWidth: number;
+  virtualizedMonths: MonthEntry[];
+  highlightTarget: HighlightTarget | null;
+  virtualOffsetPx: number;
+  onMoonClick: (month: MonthEntry, phase: MoonPhase) => void;
+  diagonalStep: number;
+  topBaseOffset: number;
+  bottomBaseOffset: number;
+};
+
+const MoonCarousel = ({
+  scrollerRef,
+  scrollerMaxWidth,
+  onKeyDown,
+  layoutPadding,
+  tileWidth,
+  gap,
+  canScrollLeft,
+  canScrollRight,
+  onScrollLeft,
+  onScrollRight,
+  onRetry,
+  isInitialLoading,
+  monthEntries,
+  calendarError,
+  skeletonCount,
+  trackWidth,
+  virtualizedMonths,
+  highlightTarget,
+  virtualOffsetPx,
+  onMoonClick,
+  diagonalStep,
+  topBaseOffset,
+  bottomBaseOffset,
+}: MoonCarouselProps) => (
+  <div
+    ref={scrollerRef}
+    className="group relative w-full overflow-x-auto overflow-y-visible rounded-3xl py-6 transition-[max-width] duration-200"
+    onKeyDown={onKeyDown}
+    tabIndex={0}
+    aria-label="Carrossel de luas"
+    style={{
+      maxWidth: scrollerMaxWidth,
+      paddingLeft: layoutPadding,
+      paddingRight: layoutPadding,
+      marginLeft: "auto",
+      marginRight: "auto",
+    }}
+  >
+    <ArrowButton
+      direction="left"
+      disabled={!canScrollLeft}
+      onClick={onScrollLeft}
+      label="Ver luas anteriores"
+    />
+    <ArrowButton
+      direction="right"
+      disabled={!canScrollRight}
+      onClick={onScrollRight}
+      label="Ver próximas luas"
+    />
+
+    {isInitialLoading && (
+      <MoonRowSkeleton count={skeletonCount} trackWidth={trackWidth} tileWidth={tileWidth} gap={gap} />
+    )}
+
+    {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
+      <EmptyState onRetry={onRetry} />
+    )}
+
+    {!isInitialLoading && monthEntries.length > 0 && (
+      <div className="flex min-w-max flex-col items-center gap-10" style={{ minWidth: trackWidth }}>
+        <MoonRow
+          phase="luaNova"
+          direction="up"
+          months={virtualizedMonths}
+          highlightTarget={highlightTarget}
+          trackWidth={trackWidth}
+          virtualOffsetPx={virtualOffsetPx}
+          onMoonClick={onMoonClick}
+          tileWidth={tileWidth}
+          gap={gap}
+          diagonalStep={diagonalStep}
+          baseYOffset={topBaseOffset}
+        />
+
+        <motion.div
+          className="h-0.5 w-full bg-gradient-to-r from-sky-300/60 via-sky-500/80 to-sky-300/60"
+          style={{ minWidth: trackWidth, marginLeft: virtualOffsetPx }}
+          animate={{ x: [-10, 10, -10] }}
+          transition={ANIMATION_CONFIG.float}
+        />
+
+        <MoonRow
+          phase="luaCheia"
+          direction="down"
+          months={virtualizedMonths}
+          highlightTarget={highlightTarget}
+          trackWidth={trackWidth}
+          virtualOffsetPx={virtualOffsetPx}
+          onMoonClick={onMoonClick}
+          tileWidth={tileWidth}
+          gap={gap}
+          diagonalStep={diagonalStep}
+          baseYOffset={bottomBaseOffset}
+        />
+      </div>
+    )}
+  </div>
+);
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,7 +193,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [existingInsight, setExistingInsight] = useState("");
   const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
-  const timezone = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC";
+  const timezone = getResolvedTimezone();
   const MIN_YEAR = 2025;
   const MAX_YEAR = 2028;
   const rangeStart = `${MIN_YEAR}-01-01`;
@@ -195,15 +347,12 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     : null;
   const selectedMonthName = selectedMonth?.monthName ?? "Mês";
   const prompt = MONTHLY_PROMPTS[selectedMoonPhase];
-  const formattedSavedAt = existingInsightUpdatedAt
-    ? new Date(existingInsightUpdatedAt).toLocaleString("pt-BR", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "";
-  const chatStorageKey = `insight-mensal-${selectedMonth?.year ?? "ano"}-${
-    selectedMonth?.monthNumber ?? 1
-  }-${selectedMoonPhase}`;
+  const savedAtLabel = formatSavedAtLabel(existingInsightUpdatedAt);
+  const chatStorageKey = buildMonthlyStorageKey(
+    selectedMonth?.year ?? "ano",
+    selectedMonth?.monthNumber ?? 1,
+    selectedMoonPhase,
+  );
   const signBadge =
     selectedMoonInfo.signLabel && selectedMoonInfo.signLabel.trim().length > 0
       ? `Signo ${selectedMoonInfo.signLabel}`
@@ -405,106 +554,37 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
       <div className="relative w-full max-w-5xl px-3 sm:px-4">
         {highlightTarget && highlightedMoonInfo && (
-          <div className="mb-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => centerOnColumn(getColumnIndex(highlightTarget))}
-              className="flex items-center gap-2 rounded-full border border-sky-300/30 bg-slate-900/80 px-4 py-3 text-[11px] text-slate-100 shadow-lg shadow-sky-900/40 backdrop-blur focus:outline-none focus:ring-2 focus:ring-sky-300/60"
-            >
-              <span className="flex h-2.5 w-2.5 items-center justify-center">
-                <span className="h-2.5 w-2.5 rounded-full bg-sky-300/90 shadow-[0_0_12px_rgba(125,211,252,0.9)] animate-pulse" />
-              </span>
-              <span className="font-semibold">{highlightedMoonInfo.phaseLabel}</span>
-              <span className="text-slate-300/80">{highlightedMoonInfo.monthName}</span>
-              <span className="text-slate-300/80">{highlightedMoonInfo.signLabel}</span>
-            </button>
-          </div>
+          <HighlightBanner
+            info={highlightedMoonInfo}
+            onClick={() => centerOnColumn(getColumnIndex(highlightTarget))}
+          />
         )}
 
-        <div
-          ref={scrollerRef}
-          className="group relative w-full overflow-x-auto overflow-y-visible rounded-3xl py-6 transition-[max-width] duration-200"
+        <MoonCarousel
+          scrollerRef={scrollerRef}
+          scrollerMaxWidth={scrollerMaxWidth}
           onKeyDown={handleScrollerKeyDown}
-          tabIndex={0}
-          aria-label="Carrossel de luas"
-          style={{
-            maxWidth: scrollerMaxWidth,
-            paddingLeft: layout.padding,
-            paddingRight: layout.padding,
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
-          <ArrowButton
-            direction="left"
-            disabled={!canScrollLeft}
-            onClick={() => scrollByStep("left")}
-            label="Ver luas anteriores"
-          />
-          <ArrowButton
-            direction="right"
-            disabled={!canScrollRight}
-            onClick={() => scrollByStep("right")}
-            label="Ver próximas luas"
-          />
-
-          {isInitialLoading && (
-            <MoonRowSkeleton
-              count={skeletonCount}
-              trackWidth={trackWidth}
-              tileWidth={layout.tileWidth}
-              gap={layout.gap}
-            />
-          )}
-
-          {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
-            <EmptyState onRetry={handleRetry} />
-          )}
-
-          {!isInitialLoading && monthEntries.length > 0 && (
-            <div
-              className="flex min-w-max flex-col items-center gap-10"
-              style={{ minWidth: trackWidth }}
-            >
-              {/* LINHA DE CIMA */}
-              <MoonRow
-                phase="luaNova"
-                direction="up"
-                months={virtualizedMonths}
-                highlightTarget={highlightTarget}
-                trackWidth={trackWidth}
-                virtualOffsetPx={virtualOffsetPx}
-                onMoonClick={handleMoonClick}
-                tileWidth={layout.tileWidth}
-                gap={layout.gap}
-                diagonalStep={diagonalStep}
-                baseYOffset={topBaseOffset}
-              />
-
-              <motion.div
-                className="h-0.5 w-full bg-gradient-to-r from-sky-300/60 via-sky-500/80 to-sky-300/60"
-                style={{ minWidth: trackWidth, marginLeft: virtualOffsetPx }}
-                animate={{ x: [-10, 10, -10] }}
-                transition={ANIMATION_CONFIG.float}
-              />
-
-              {/* LINHA DE BAIXO */}
-              <MoonRow
-                phase="luaCheia"
-                direction="down"
-                months={virtualizedMonths}
-                highlightTarget={highlightTarget}
-                trackWidth={trackWidth}
-                virtualOffsetPx={virtualOffsetPx}
-                onMoonClick={handleMoonClick}
-                tileWidth={layout.tileWidth}
-                gap={layout.gap}
-                diagonalStep={diagonalStep}
-                baseYOffset={bottomBaseOffset}
-              />
-            </div>
-          )}
-        </div>
+          layoutPadding={layout.padding}
+          tileWidth={layout.tileWidth}
+          gap={layout.gap}
+          canScrollLeft={canScrollLeft}
+          canScrollRight={canScrollRight}
+          onScrollLeft={() => scrollByStep("left")}
+          onScrollRight={() => scrollByStep("right")}
+          onRetry={handleRetry}
+          isInitialLoading={isInitialLoading}
+          monthEntries={monthEntries}
+          calendarError={calendarError}
+          skeletonCount={skeletonCount}
+          trackWidth={trackWidth}
+          virtualizedMonths={virtualizedMonths}
+          highlightTarget={highlightTarget}
+          virtualOffsetPx={virtualOffsetPx}
+          onMoonClick={handleMoonClick}
+          diagonalStep={diagonalStep}
+          topBaseOffset={topBaseOffset}
+          bottomBaseOffset={bottomBaseOffset}
+        />
 
       </div>
 
@@ -534,7 +614,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         systemGreeting={prompt.greeting.replace("{month}", selectedMonthName)}
         systemQuestion={prompt.systemQuestion}
         initialValue={existingInsight}
-        initialValueLabel={formattedSavedAt ? `salvo em ${formattedSavedAt}` : undefined}
+        initialValueLabel={savedAtLabel || undefined}
         submitLabel="✨ Concluir insight"
         tone={MONTHLY_TONES[selectedMoonPhase]}
         systemResponses={MONTHLY_RESPONSES[selectedMoonPhase]}

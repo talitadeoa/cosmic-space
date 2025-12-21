@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { CelestialObject } from "../CelestialObject";
 import type { HighlightTarget, MonthEntry } from "../../utils/luaList";
 import { ANIMATION_CONFIG, getFloatOffset } from "../../utils/luaList";
-import type { MoonPhase } from "../../utils/todoStorage";
+import type { MoonPhase } from "../../utils/moonPhases";
 
 type MoonRowProps = {
   phase: MoonPhase;
