@@ -10,6 +10,8 @@ export interface TodoItem {
   completed: boolean;
   depth: number;
   project?: string;
+  category?: string;
+  dueDate?: string;
 }
 
 interface TodoInputProps {
@@ -38,7 +40,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
     onProjectChange(value);
   };
 
-  const handleAddTodo = (text: string) => {
+  const handleAddTodo = (text: string, meta?: { category?: string; date?: string }) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     const trimmedProject = activeProject.trim();
@@ -49,6 +51,8 @@ const TodoInput: React.FC<TodoInputProps> = ({
       completed: false,
       depth: newDepth,
       project: trimmedProject ? trimmedProject : undefined,
+      category: meta?.category,
+      dueDate: meta?.date,
     });
     setTaskDraft("");
   };
@@ -57,6 +61,13 @@ const TodoInput: React.FC<TodoInputProps> = ({
     if (!taskDraft.trim()) return;
     handleAddTodo(taskDraft);
   };
+
+  const formatDate = (date: Date) => date.toISOString().slice(0, 10);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const nextWeek = new Date(today);
+  nextWeek.setDate(today.getDate() + 7);
 
   return (
     <InputWindow
@@ -173,9 +184,16 @@ const TodoInput: React.FC<TodoInputProps> = ({
             "Checklist atualizado com sucesso. ✅",
             "Mais um passo concluído. 🚀",
           ]}
+          suggestions={[
+            { id: "categoria-pessoal", label: "Categoria: Pessoal", meta: { category: "Pessoal" } },
+            { id: "categoria-trabalho", label: "Categoria: Trabalho", meta: { category: "Trabalho" } },
+            { id: "data-hoje", label: "Hoje", meta: { date: formatDate(today) }, tone: "sky" },
+            { id: "data-amanha", label: "Amanhã", meta: { date: formatDate(tomorrow) }, tone: "sky" },
+            { id: "data-proxima-semana", label: "Próx. semana", meta: { date: formatDate(nextWeek) }, tone: "sky" },
+          ]}
           onClose={() => setIsChatOpen(false)}
-          onSubmit={async (value) => {
-            handleAddTodo(value);
+          onSubmit={async (value, _messages, meta) => {
+            handleAddTodo(value, { category: meta?.category, date: meta?.date });
           }}
         />
       </div>

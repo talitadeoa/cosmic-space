@@ -1,10 +1,17 @@
 export type ChatRole = "system" | "user";
 
+export type ChatMessageMeta = {
+  category?: string;
+  date?: string;
+  tags?: string[];
+};
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
   timestamp: string;
+  meta?: ChatMessageMeta;
 }
 
 const STORAGE_PREFIX = "cosmos_chat";
@@ -16,7 +23,9 @@ const safeParse = (value: string | null): ChatMessage[] => {
   try {
     const parsed = JSON.parse(value) as ChatMessage[];
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item) => typeof item?.content === "string" && typeof item?.role === "string");
+    return parsed.filter(
+      (item) => typeof item?.content === "string" && typeof item?.role === "string",
+    );
   } catch {
     return [];
   }

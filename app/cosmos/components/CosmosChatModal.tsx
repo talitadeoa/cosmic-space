@@ -4,7 +4,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import InputWindow from "./InputWindow";
-import { ChatMessage, loadChatHistory, saveChatHistory } from "@/lib/chatHistory";
+import {
+  ChatMessage,
+  ChatMessageMeta,
+  loadChatHistory,
+  saveChatHistory,
+} from "@/lib/chatHistory";
 
 type SubmitStrategy = "concat" | "last";
 
@@ -29,8 +34,15 @@ interface CosmosChatModalProps {
   systemResponses?: string[];
   submitStrategy?: SubmitStrategy;
   onClose: () => void;
-  onSubmit: (value: string, messages: ChatMessage[]) => Promise<void>;
+  onSubmit: (value: string, messages: ChatMessage[], meta?: ChatMessageMeta) => Promise<void>;
   headerExtra?: React.ReactNode;
+  suggestions?: Array<{
+    id: string;
+    label: string;
+    value?: string;
+    meta?: ChatMessageMeta;
+    tone?: Tone;
+  }>;
 }
 
 const toneStyles: Record<
@@ -171,12 +183,28 @@ function ChatMessages({ messages, styles, inline, messagesEndRef }: ChatMessages
           transition={{ duration: 0.3, delay: index * 0.05 }}
           className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
         >
-          <div
-            className={`max-w-xs whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
-              message.role === "user" ? styles.userBubble : styles.systemBubble
-            }`}
-          >
-            {message.content}
+          <div className="flex max-w-xs flex-col gap-1">
+            {message.meta && (message.meta.category || message.meta.date) && (
+              <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-200/80">
+                {message.meta.category && (
+                  <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
+                    {message.meta.category}
+                  </span>
+                )}
+                {message.meta.date && (
+                  <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
+                    {message.meta.date}
+                  </span>
+                )}
+              </div>
+            )}
+            <div
+              className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
+                message.role === "user" ? styles.userBubble : styles.systemBubble
+              }`}
+            >
+              {message.content}
+            </div>
           </div>
         </motion.div>
       ))}
@@ -198,6 +226,10 @@ interface ChatComposerProps {
   isSaving: boolean;
   hasUserMessage: boolean;
   submitError: string | null;
+  suggestions?: CosmosChatModalProps["suggestions"];
+  metaDraft: ChatMessageMeta;
+  onSuggestionClick: (suggestion: NonNullable<CosmosChatModalProps["suggestions"]>[number]) => void;
+  onClearMeta: (key: keyof ChatMessageMeta) => void;
 }
 
 function ChatComposer({
@@ -213,9 +245,63 @@ function ChatComposer({
   isSaving,
   hasUserMessage,
   submitError,
+  suggestions,
+  metaDraft,
+  onSuggestionClick,
+  onClearMeta,
 }: ChatComposerProps) {
   return (
     <div className="space-y-3 border-t border-white/10 pt-4">
+      {(metaDraft.category || metaDraft.date || metaDraft.tags?.length) && (
+        <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-slate-200/80">
+          {metaDraft.category && (
+            <button
+              type="button"
+              onClick={() => onClearMeta("category")}
+              className="rounded-full border border-white/15 bg-white/10 px-2 py-1 transition hover:bg-white/20"
+            >
+              {metaDraft.category} ✕
+            </button>
+          )}
+          {metaDraft.date && (
+            <button
+              type="button"
+              onClick={() => onClearMeta("date")}
+              className="rounded-full border border-white/15 bg-white/10 px-2 py-1 transition hover:bg-white/20"
+            >
+              {metaDraft.date} ✕
+            </button>
+          )}
+          {metaDraft.tags?.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-white/10 bg-white/5 px-2 py-1"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {suggestions && suggestions.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {suggestions.map((suggestion) => {
+            const suggestionTone = suggestion.tone ?? "indigo";
+            const toneStyle = toneStyles[suggestionTone];
+            return (
+              <button
+                key={suggestion.id}
+                type="button"
+                onClick={() => onSuggestionClick(suggestion)}
+                className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold transition ${toneStyle.sendButton}`}
+              >
+                {suggestion.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {submitError && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -285,11 +371,13 @@ export default function CosmosChatModal({
   onClose,
   onSubmit,
   headerExtra,
+  suggestions = [],
 }: CosmosChatModalProps) {
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [metaDraft, setMetaDraft] = useState<ChatMessageMeta>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -348,6 +436,7 @@ export default function CosmosChatModal({
       setInputValue("");
       setSubmitError(null);
       setIsSaving(false);
+      setMetaDraft({});
       return;
     }
 
@@ -377,6 +466,7 @@ export default function CosmosChatModal({
     }
 
     persistMessages(seed);
+    setMetaDraft({});
   }, [initialValue, initialValueLabel, isOpen, storageKey, systemGreeting, systemQuestion]);
 
   const handleSendMessage = () => {
@@ -386,8 +476,12 @@ export default function CosmosChatModal({
       return;
     }
 
-    const userMessage = buildUserMessage(trimmed);
+    const userMessage: ChatMessage = {
+      ...buildUserMessage(trimmed),
+      meta: metaDraft.category || metaDraft.date || metaDraft.tags ? metaDraft : undefined,
+    };
     setInputValue("");
+    setMetaDraft({});
     setSubmitError(null);
 
     setMessages((prev) => {
@@ -418,6 +512,15 @@ export default function CosmosChatModal({
     return userMessages.join("\n\n");
   };
 
+  const getLastUserMeta = () => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i].role === "user") {
+        return messages[i].meta;
+      }
+    }
+    return undefined;
+  };
+
   const handleSave = async () => {
     const value = buildSubmitValue();
     if (value.trim().length < 3) {
@@ -429,13 +532,36 @@ export default function CosmosChatModal({
     setSubmitError(null);
 
     try {
-      await onSubmit(value, messages);
+      await onSubmit(value, messages, getLastUserMeta());
       onClose();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Erro ao salvar.");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSuggestionClick = (
+    suggestion: NonNullable<CosmosChatModalProps["suggestions"]>[number],
+  ) => {
+    if (suggestion.value) {
+      setInputValue((prev) => (prev ? `${prev} ${suggestion.value}` : suggestion.value));
+    }
+    if (suggestion.meta) {
+      setMetaDraft((prev) => ({
+        ...prev,
+        ...suggestion.meta,
+        tags: suggestion.meta.tags ?? prev.tags,
+      }));
+    }
+  };
+
+  const handleClearMeta = (key: keyof ChatMessageMeta) => {
+    setMetaDraft((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -510,6 +636,10 @@ export default function CosmosChatModal({
         isSaving={isSaving}
         hasUserMessage={hasUserMessage}
         submitError={submitError}
+        suggestions={suggestions}
+        metaDraft={metaDraft}
+        onSuggestionClick={handleSuggestionClick}
+        onClearMeta={handleClearMeta}
       />
     </InputWindow>
   );

@@ -270,9 +270,29 @@ const SavedTodosPanel = ({ savedTodos, onDragStart, onDragEnd }: SavedTodosPanel
               >
                 {todo.completed && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
               </span>
-              <span className={`${todo.completed ? "text-slate-500 line-through" : "text-slate-100"}`}>
-                {todo.text}
-              </span>
+              <div className="flex flex-col gap-1">
+                <span
+                  className={`${
+                    todo.completed ? "text-slate-500 line-through" : "text-slate-100"
+                  }`}
+                >
+                  {todo.text}
+                </span>
+                {(todo.category || todo.dueDate) && (
+                  <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-400">
+                    {todo.category && (
+                      <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                        {todo.category}
+                      </span>
+                    )}
+                    {todo.dueDate && (
+                      <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                        {todo.dueDate}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
               {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
