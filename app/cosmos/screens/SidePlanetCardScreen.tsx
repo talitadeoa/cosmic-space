@@ -13,7 +13,9 @@ import {
   type MoonPhase,
   type SavedTodo,
 } from "../utils/todoStorage";
+import { PHASE_VIBES } from "../utils/phaseVibes";
 import type { ScreenProps } from "../types";
+import { usePhaseInputs } from "@/hooks/usePhaseInputs";
 
 const MOON_COUNT = 4;
 const normalizeProjectName = (value: string) => value.trim();
@@ -313,6 +315,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
+  const { saveInput } = usePhaseInputs();
 
   useEffect(() => {
     setSavedTodos(loadSavedTodos());
@@ -355,9 +358,30 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   };
 
   const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
+    const target = savedTodos.find((todo) => todo.id === todoId);
+    if (!target) return;
+    if (target.phase === phase) return;
+
     setSavedTodos((prev) =>
       prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)),
     );
+
+    saveInput({
+      moonPhase: phase,
+      inputType: "tarefa",
+      sourceId: target.id,
+      content: target.text,
+      vibe: PHASE_VIBES[phase].label,
+      metadata: {
+        project: target.project ?? null,
+        category: target.category ?? null,
+        dueDate: target.dueDate ?? null,
+        depth: target.depth,
+        completed: target.completed,
+      },
+    }).catch((error) => {
+      console.warn("Falha ao salvar tarefa na fase:", error);
+    });
   };
 
   const handleDragStart = (todoId: string) => (e: React.DragEvent) => {

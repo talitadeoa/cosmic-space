@@ -126,23 +126,23 @@ export const RING_ENERGY_PROMPTS: Record<
 > = {
   luaNova: {
     title: "Energia da Lua Nova",
-    question: "Como você se sente na Nova, no início das coisas?",
-    placeholder: "Ex.: curiosa, aberta a experimentar, em modo rascunho...",
+    question: "Que ideias, intenções e sementes nascem na Lua Nova?",
+    placeholder: "Ideias, intenções, sementes — como esse início vibra em você?",
   },
   luaCrescente: {
     title: "Energia da Lua Crescente",
-    question: "Que impulso está crescendo e pedindo movimento?",
-    placeholder: "Ex.: disciplinada, com vontade de testar, buscando ritmo...",
+    question: "Que checklists, rituais e ações pedem espaço agora?",
+    placeholder: "Checklists, rituais, planejamento, ação — o que ganha ritmo?",
   },
   luaCheia: {
     title: "Energia da Lua Cheia",
-    question: "Como sua energia transborda quando tudo aparece?",
-    placeholder: "Ex.: expansiva, cheia de ideias, querendo celebrar...",
+    question: "Quais tesouros e frutos você reconhece na Lua Cheia?",
+    placeholder: "Tesouros, recompensas, colheitas — o que transborda?",
   },
   luaMinguante: {
     title: "Energia da Lua Minguante",
-    question: "O que pede pausa ou liberação agora?",
-    placeholder: "Ex.: cansada, pronta para simplificar, recolhendo energia...",
+    question: "Quais aprendizados e desapegos pedem espaço?",
+    placeholder: "Aprendizados, desapegos — o que precisa descansar ou ir?",
   },
 };
 

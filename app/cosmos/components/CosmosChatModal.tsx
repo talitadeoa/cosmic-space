@@ -36,6 +36,12 @@ interface CosmosChatModalProps {
   onClose: () => void;
   onSubmit: (value: string, messages: ChatMessage[], meta?: ChatMessageMeta) => Promise<void>;
   headerExtra?: React.ReactNode;
+  contextTitle?: string;
+  contextEntries?: Array<{
+    id: string;
+    label: string;
+    content: string;
+  }>;
   suggestions?: Array<{
     id: string;
     label: string;
@@ -371,6 +377,8 @@ export default function CosmosChatModal({
   onClose,
   onSubmit,
   headerExtra,
+  contextTitle,
+  contextEntries = [],
   suggestions = [],
 }: CosmosChatModalProps) {
   const [inputValue, setInputValue] = useState("");
@@ -605,6 +613,31 @@ export default function CosmosChatModal({
         inline={inline}
         styles={styles}
       />
+
+      {contextEntries.length > 0 && (
+        <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-200/80 shadow-inner shadow-black/10">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-semibold uppercase tracking-[0.18em] text-[0.65rem] text-slate-200/80">
+              {contextTitle ?? "Inputs conectados"}
+            </span>
+          </div>
+          <div className="mt-2 space-y-2">
+            {contextEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[0.7rem] text-slate-100"
+              >
+                <div className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-slate-300/80">
+                  {entry.label}
+                </div>
+                <div className="mt-1 whitespace-pre-wrap text-xs text-slate-100/90">
+                  {entry.content}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ChatMessages
         messages={messages}
