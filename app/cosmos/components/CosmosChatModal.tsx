@@ -545,13 +545,14 @@ export default function CosmosChatModal({
     suggestion: NonNullable<CosmosChatModalProps["suggestions"]>[number],
   ) => {
     if (suggestion.value) {
-      setInputValue((prev) => (prev ? `${prev} ${suggestion.value}` : suggestion.value));
+      setInputValue((prev) => prev ? `${prev} ${suggestion.value}` : (suggestion.value as string));
     }
     if (suggestion.meta) {
+      const meta = suggestion.meta;
       setMetaDraft((prev) => ({
         ...prev,
-        ...suggestion.meta,
-        tags: suggestion.meta.tags ?? prev.tags,
+        ...meta,
+        tags: meta.tags ?? prev.tags,
       }));
     }
   };
