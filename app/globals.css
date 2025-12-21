@@ -5,11 +5,17 @@
 /* Cosmic body baseline */
 body {
   @apply bg-space-dark text-slate-100 antialiased;
+  min-height: 100dvh;
 }
 
-/* Smooth scroll for softer navigation */
 html {
   scroll-behavior: smooth;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+html[style*="overflow: hidden"] {
+  overflow-y: scroll !important;
 }
 
 /* Hides the default outline but reintroduces an accessible focus ring */
@@ -19,3 +25,4 @@ input:focus-visible {
   outline: none;
   @apply ring-2 ring-indigo-400 ring-offset-2 ring-offset-space-dark;
 }
+

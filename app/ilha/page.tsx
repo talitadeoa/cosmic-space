@@ -54,6 +54,7 @@ export default function IlhaPage() {
   const [formState, setFormState] = useState<FormState>(emptyFormState);
   const [ilhaSelecionada, setIlhaSelecionada] = useState<IslandId | null>(null);
   const [hasSaved, setHasSaved] = useState(false);
+  const isLocked = !ilhaSelecionada;
 
   const selectedMarker = useMemo(
     () => markers.find((marker) => marker.id === ilhaSelecionada),
@@ -83,7 +84,6 @@ export default function IlhaPage() {
     event.preventDefault();
 
     if (!ilhaSelecionada) {
-      alert("Escolha uma ilha antes de salvar 🏝️");
       return;
     }
 
@@ -176,7 +176,12 @@ export default function IlhaPage() {
               : "Clique em um marcador no mapa para começar a editar as informações daquela ilha."}
           </p>
 
-          <form id="form-ilha" className={styles.form} onSubmit={handleSubmit}>
+          <form
+            id="form-ilha"
+            className={`${styles.form} ${isLocked ? styles.formLocked : ""}`}
+            onSubmit={handleSubmit}
+            aria-disabled={isLocked}
+          >
             <div className={styles.panelRow}>
               <label className={styles.formLabel}>
                 Título da ilha
@@ -188,6 +193,7 @@ export default function IlhaPage() {
                   value={formState.titulo}
                   onChange={handleChange("titulo")}
                   className={styles.field}
+                  disabled={isLocked}
                 />
               </label>
               <label className={styles.formLabel}>
@@ -200,6 +206,7 @@ export default function IlhaPage() {
                   value={formState.tag}
                   onChange={handleChange("tag")}
                   className={styles.field}
+                  disabled={isLocked}
                 />
               </label>
             </div>
@@ -213,6 +220,7 @@ export default function IlhaPage() {
                 value={formState.descricao}
                 onChange={handleChange("descricao")}
                 className={`${styles.field} ${styles.textArea}`}
+                disabled={isLocked}
               />
             </label>
 
@@ -228,6 +236,7 @@ export default function IlhaPage() {
                   value={formState.energia}
                   onChange={handleChange("energia")}
                   className={styles.field}
+                  disabled={isLocked}
                 />
               </label>
               <label className={styles.formLabel}>
@@ -241,12 +250,17 @@ export default function IlhaPage() {
                   value={formState.prioridade}
                   onChange={handleChange("prioridade")}
                   className={styles.field}
+                  disabled={isLocked}
                 />
               </label>
             </div>
 
-            <button type="submit" className={styles.submitButton}>
-              Salvar dados da ilha
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={isLocked}
+            >
+              {ilhaSelecionada ? "Salvar dados da ilha" : "Selecione uma ilha"}
               <span aria-hidden>➜</span>
             </button>
           </form>

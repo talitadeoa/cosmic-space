@@ -107,11 +107,12 @@ const CosmosPage: React.FC = () => {
   }, []);
 
   const CurrentScreen = screens[currentScreen];
+  const isSidePlanetCard = currentScreen === "sidePlanetCard";
 
   return (
     <AuthGate>
       <div
-        className="relative min-h-screen overflow-hidden text-slate-50"
+        className="relative min-h-[100dvh] overflow-hidden text-slate-50"
         onClick={handleBackgroundClick}
       >
         <SpaceBackground />
@@ -154,12 +155,16 @@ const CosmosPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        <div className="relative z-10 flex h-screen flex-col">
+        <div className="relative z-10 flex min-h-[100dvh] flex-col">
           <div className="pointer-events-none absolute top-2 sm:top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-900/60 px-3 sm:px-4 py-1 text-[0.65rem] sm:text-xs text-slate-200/70">
             Tela: <span className="font-semibold">{currentScreen}</span>
           </div>
 
-          <div className="relative flex flex-1 items-center justify-center px-2 sm:px-4">
+          <div
+            className={`relative flex flex-1 justify-center px-2 sm:px-4 ${
+              isSidePlanetCard ? "items-start overflow-y-auto py-6" : "items-center"
+            }`}
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentScreen}
@@ -167,7 +172,9 @@ const CosmosPage: React.FC = () => {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="relative h-[75vh] sm:h-[80vh] w-full sm:w-[90vw] max-w-5xl"
+                className={`relative w-full sm:w-[90vw] max-w-5xl ${
+                  isSidePlanetCard ? "w-full" : "h-[75vh] sm:h-[80vh]"
+                }`}
               >
                 <CurrentScreen
                   navigateTo={navigateTo}

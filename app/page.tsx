@@ -115,7 +115,7 @@ export default function LandingPage() {
         </form>
       </div>
       <p className="mt-4 text-[11px] text-slate-400/80 text-center">
-        © 2025 {new Date().getFullYear()} Construido no hiperespaço
+        © {new Date().getFullYear()} Construido no hiperespaço
       </p>
     </main>
   );

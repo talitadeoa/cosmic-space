@@ -4,6 +4,7 @@ import RadioPlayer from "@/components/RadioPlayer";
 import NavMenu from '@/components/NavMenu';
 import SfxProvider from '@/components/SfxProvider';
 import AutoSyncLunar from '@/components/AutoSyncLunar';
+import { GalaxySunsSync } from '@/components/GalaxySunsSync';
 
 export const metadata: Metadata = {
   title: "Em breve",
@@ -17,10 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen bg-space-dark bg-cosmic-gradient text-slate-100">
+      <body className="min-h-[100dvh] bg-space-dark bg-cosmic-gradient text-slate-100">
         <SfxProvider>
           <NavMenu />
           <AutoSyncLunar />
+          <GalaxySunsSync autoSync={true} />
           {children}
           <RadioPlayer />
         </SfxProvider>

@@ -8,25 +8,21 @@ import {
   TODO_STORAGE_KEY,
   loadSavedTodos,
   phaseLabels,
-  type IslandId,
   type MoonPhase,
   type SavedTodo,
 } from "../utils/todoStorage";
 import type { ScreenProps } from "../types";
 
 const MOON_COUNT = 4;
-const ISLANDS: { id: IslandId; label: string; name: string }[] = [
-  { id: "ilha1", label: "ILHA 1", name: "Plataforma Criativa" },
-  { id: "ilha2", label: "ILHA 2", name: "Pier da Comunidade" },
-  { id: "ilha3", label: "ILHA 3", name: "Ilha Central" },
-  { id: "ilha4", label: "ILHA 4", name: "Ilha da Visão" },
-];
+const ALL_PROJECTS = "__all__";
+const NO_PROJECT = "__none__";
 
 const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [showTodos, setShowTodos] = useState(true);
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<string>(ALL_PROJECTS);
 
   useEffect(() => {
     setSavedTodos(loadSavedTodos());
@@ -38,15 +34,24 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     } catch (error) {}
   }, [savedTodos]);
 
+  const handleTodoSubmit = (todo: ParsedTodoItem) => {
+    setSavedTodos((prev) => {
+      const key = `${todo.text}|${todo.depth}|${todo.project ?? ""}`;
+      const existingIndex = prev.findIndex(
+        (item) => `${item.text}|${item.depth}|${item.project ?? ""}` === key,
+      );
+      if (existingIndex === -1) {
+        return [...prev, todo];
+      }
+      const updated = [...prev];
+      updated[existingIndex] = { ...updated[existingIndex], completed: todo.completed };
+      return updated;
+    });
+  };
+
   const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
     setSavedTodos((prev) =>
       prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)),
-    );
-  };
-
-  const assignTodoToIsland = (todoId: string, islandId?: IslandId) => {
-    setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, islandId } : todo)),
     );
   };
 
@@ -91,8 +96,58 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     [savedTodos],
   );
 
+  const groupedTodos = useMemo(() => {
+    const groups = new Map<string, SavedTodo[]>();
+    const fallback = "Sem projeto";
+
+    savedTodos.forEach((todo) => {
+      const key = todo.project?.trim() || fallback;
+      const bucket = groups.get(key) ?? [];
+      bucket.push(todo);
+      groups.set(key, bucket);
+    });
+
+    const entries = Array.from(groups.entries());
+    entries.sort((a, b) => {
+      if (a[0] === fallback) return 1;
+      if (b[0] === fallback) return -1;
+      return a[0].localeCompare(b[0]);
+    });
+    return entries;
+  }, [savedTodos]);
+
+  const projectTabs = useMemo(() => {
+    const unique = new Set<string>();
+    let hasNoProject = false;
+
+    savedTodos.forEach((todo) => {
+      if (todo.project?.trim()) {
+        unique.add(todo.project.trim());
+      } else {
+        hasNoProject = true;
+      }
+    });
+
+    const tabs = [ALL_PROJECTS, ...Array.from(unique).sort((a, b) => a.localeCompare(b))];
+    if (hasNoProject) tabs.push(NO_PROJECT);
+    return tabs;
+  }, [savedTodos]);
+
+  useEffect(() => {
+    if (selectedProject === ALL_PROJECTS) return;
+    if (selectedProject === NO_PROJECT && projectTabs.includes(NO_PROJECT)) return;
+    if (projectTabs.includes(selectedProject)) return;
+    setSelectedProject(ALL_PROJECTS);
+  }, [projectTabs, selectedProject]);
+
+  const filteredTodos = useMemo(() => {
+    if (selectedProject === ALL_PROJECTS) return savedTodos;
+    if (selectedProject === NO_PROJECT) return savedTodos.filter((todo) => !todo.project?.trim());
+    return savedTodos.filter((todo) => todo.project?.trim() === selectedProject);
+  }, [savedTodos, selectedProject]);
+
   return (
-    <div className="relative flex h-full w-full items-start justify-center px-4 py-5 sm:px-8">
+    <div className="relative flex w-full items-start justify-center overflow-y-auto px-4 py-5 sm:px-8">
       <div className="relative flex w-full max-w-6xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* sol + luas */}
         <div className="order-1 flex w-full flex-col items-center gap-3 sm:gap-4 lg:order-2 lg:w-auto lg:flex-row lg:items-center lg:gap-6">
@@ -157,14 +212,14 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         {/* bloco do planeta + card com painel de to-dos embutido */}
         <div className="relative order-2 w-full lg:order-1 lg:max-w-3xl">
           <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-lg sm:p-6">
-            <div className="flex max-h-[64vh] flex-col gap-4 overflow-y-auto pr-1 sm:max-h-[70vh] sm:gap-5 lg:max-h-[78vh]">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
                 <div>
                   <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
                     Painel lunar lateral
                   </p>
                   <h3 className="text-lg font-semibold text-white sm:text-xl">
-                    Organize tarefas por fase
+                    Organize tarefas por fase e projeto
                   </h3>
                 </div>
                 <button
@@ -177,93 +232,119 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               </div>
 
               {showTodos ? (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 flex-shrink-0">
                   <TodoInput
-                    className="shadow-lg"
-                    value={savedTodos as ParsedTodoItem[]}
-                    onTodosChange={(parsed) => setSavedTodos(parsed as SavedTodo[])}
-                    showPreview={false}
+                    className="shadow-lg flex-shrink-0"
+                    onTodoSubmit={handleTodoSubmit}
+                    projectOptions={projectTabs.filter(
+                      (tab) => tab !== ALL_PROJECTS && tab !== NO_PROJECT,
+                    )}
                   />
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-col gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
-                          Relacionar com ilhas
+                          To-dos salvos
                         </p>
                         <p className="text-[0.75rem] text-slate-400">
-                          Atribua cada tarefa a uma ilha e depois arraste para a lua correspondente.
+                          Adicione tarefas e arraste para a fase lunar desejada.
                         </p>
                       </div>
+                      {projectTabs.length > 1 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          {projectTabs.map((tab) => {
+                            const isActive = tab === selectedProject;
+                            const label =
+                              tab === ALL_PROJECTS
+                                ? "Todos"
+                                : tab === NO_PROJECT
+                                  ? "Sem projeto"
+                                  : tab;
+
+                            return (
+                              <button
+                                key={tab}
+                                type="button"
+                                onClick={() => setSelectedProject(tab)}
+                                className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold transition ${
+                                  isActive
+                                    ? "border-indigo-400 bg-indigo-500/20 text-indigo-100"
+                                    : "border-slate-800 bg-slate-900/60 text-slate-300 hover:border-indigo-400/70"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64">
                       {savedTodos.length === 0 ? (
                         <p className="text-sm text-slate-500">
-                          Nenhuma tarefa ainda. Adicione acima e relacione com uma ilha.
+                          Nenhum to-do salvo ainda. Crie tarefas e organize por projeto.
                         </p>
                       ) : (
-                        savedTodos.map((todo) => (
-                          <div
-                            key={todo.id}
-                            draggable
-                            onDragStart={handleDragStart(todo.id)}
-                            onDragEnd={handleDragEnd}
-                            className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span
-                                className={`flex h-4 w-4 items-center justify-center rounded-full border text-[0.65rem] ${
-                                  todo.completed
-                                    ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
-                                    : "border-slate-500 bg-slate-900/80 text-slate-400"
-                                }`}
-                              >
-                                {todo.completed && (
-                                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                        (selectedProject === ALL_PROJECTS
+                          ? groupedTodos
+                          : [["__filtered__" as const, filteredTodos]] as Array<[string, SavedTodo[]]>).map(([project, todos]) => {
+                            const showHeader = selectedProject === ALL_PROJECTS;
+                            return (
+                              <div key={project} className="space-y-2">
+                                {showHeader && (
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                      {project}
+                                    </p>
+                                    <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[0.6rem] text-slate-300">
+                                      {todos.length} tarefas
+                                    </span>
+                                  </div>
                                 )}
-                              </span>
-                              <div className="flex flex-col">
-                                {todo.milestone && (
-                                  <span className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-indigo-300/80">
-                                    {todo.milestone}
-                                  </span>
+                                {todos.length === 0 ? (
+                                  <p className="text-sm text-slate-500">
+                                    Nenhuma tarefa nesse projeto ainda.
+                                  </p>
+                                ) : (
+                                  todos.map((todo) => (
+                                    <div
+                                      key={todo.id}
+                                      draggable
+                                      onDragStart={handleDragStart(todo.id)}
+                                      onDragEnd={handleDragEnd}
+                                      className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <span
+                                          className={`flex h-4 w-4 items-center justify-center rounded-full border text-[0.65rem] ${
+                                            todo.completed
+                                              ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
+                                              : "border-slate-500 bg-slate-900/80 text-slate-400"
+                                          }`}
+                                        >
+                                          {todo.completed && (
+                                            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                                          )}
+                                        </span>
+                                        <span
+                                          className={`${
+                                            todo.completed ? "text-slate-500 line-through" : "text-slate-100"
+                                          }`}
+                                        >
+                                          {todo.text}
+                                        </span>
+                                      </div>
+                                      <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
+                                        {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
+                                      </span>
+                                    </div>
+                                  ))
                                 )}
-                                <span
-                                  className={`${
-                                    todo.completed
-                                      ? "text-slate-500 line-through"
-                                      : "text-slate-100"
-                                  }`}
-                                >
-                                  {todo.text}
-                                </span>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <select
-                                value={todo.islandId ?? ""}
-                                onChange={(e) =>
-                                  assignTodoToIsland(
-                                    todo.id,
-                                    (e.target.value as IslandId) || undefined,
-                                  )
-                                }
-                                className="rounded-full border border-slate-800 bg-slate-900/80 px-2 py-1 text-[0.65rem] text-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                              >
-                                <option value="">Sem ilha</option>
-                                {ISLANDS.map((island) => (
-                                  <option key={island.id} value={island.id}>
-                                    {island.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-                                {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
-                              </span>
-                            </div>
-                          </div>
-                        ))
+                            );
+                          })
                       )}
                     </div>
                   </div>

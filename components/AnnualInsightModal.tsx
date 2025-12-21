@@ -71,7 +71,7 @@ export default function AnnualInsightModal({
             {/* Fechar */}
             <button
               onClick={onClose}
-              className="absolute right-5 top-5 rounded-full border border-white/10 bg-slate-900/60 p-1 text-amber-100 shadow-lg transition hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-50"
+              className="pointer-events-auto absolute right-5 top-5 rounded-full border border-white/10 bg-slate-900/60 p-1 text-amber-100 shadow-lg transition hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-50"
               aria-label="Fechar"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

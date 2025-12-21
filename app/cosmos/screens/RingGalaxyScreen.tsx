@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GalaxyInnerView } from "@/components/views/GalaxyInnerView";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
+import CosmosChatModal from "@/components/CosmosChatModal";
+import { getLatestUserMessageFromHistory } from "@/lib/chatHistory";
 import type { ScreenProps } from "../types";
 
 const RingGalaxyScreen: React.FC<ScreenProps> = ({
@@ -19,8 +21,16 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
     luaCheia: "",
     luaMinguante: "",
   });
-  const [inputValue, setInputValue] = useState("");
-  const [initialEnergyValue, setInitialEnergyValue] = useState("");
+
+  useEffect(() => {
+    const next: Record<MoonPhase, string> = {
+      luaNova: getLatestUserMessageFromHistory("energia-ring-luaNova"),
+      luaCrescente: getLatestUserMessageFromHistory("energia-ring-luaCrescente"),
+      luaCheia: getLatestUserMessageFromHistory("energia-ring-luaCheia"),
+      luaMinguante: getLatestUserMessageFromHistory("energia-ring-luaMinguante"),
+    };
+    setEnergyNotes(next);
+  }, []);
 
   // Raio da órbita das luas (distância do centro)
   const orbitRadius = 180;
@@ -65,24 +75,6 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
 
   const handleMoonClick = (moonType: MoonPhase) => {
     setSelectedMoon(moonType);
-    const currentValue = energyNotes[moonType] ?? "";
-    setInputValue(currentValue);
-    setInitialEnergyValue(currentValue);
-  };
-
-  const handleEnergyChange = (value: string) => {
-    setInputValue(value);
-    if (selectedMoon) {
-      setEnergyNotes((prev) => ({ ...prev, [selectedMoon]: value }));
-    }
-  };
-
-  const handleDiscardChanges = () => {
-    if (selectedMoon) {
-      setEnergyNotes((prev) => ({ ...prev, [selectedMoon]: initialEnergyValue }));
-      setInputValue(initialEnergyValue);
-    }
-    setSelectedMoon(null);
   };
 
   return (
@@ -122,69 +114,26 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
       })}
 
       {selectedMoon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setSelectedMoon(null)}>
-          <div
-            className="w-full max-w-md rounded-2xl border border-violet-300/30 bg-slate-900/95 p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-wide text-violet-300">
-                  {moonEnergyPrompts[selectedMoon].title}
-                </p>
-                <p className="text-xs text-violet-200/80">
-                  {moonEnergyPrompts[selectedMoon].question}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedMoon(null)}
-                className="rounded-full p-1 text-violet-200 transition hover:bg-violet-300/10 hover:text-white"
-                aria-label="Fechar"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
-                </svg>
-              </button>
-            </div>
-
-            <textarea
-              className="w-full rounded-xl border border-violet-300/30 bg-slate-800/70 p-3 text-sm text-violet-50 placeholder:text-violet-200/60 focus:border-violet-300/60 focus:outline-none focus:ring-1 focus:ring-violet-300/60"
-              rows={4}
-              value={inputValue}
-              onChange={(e) => handleEnergyChange(e.target.value)}
-              placeholder={moonEnergyPrompts[selectedMoon].placeholder}
-            />
-
-            <div className="mt-4 flex gap-3">
-              <button
-                className="flex-1 rounded-xl border border-violet-300/50 bg-transparent px-4 py-2 text-sm font-medium text-violet-100 transition hover:bg-violet-300/10"
-                onClick={handleDiscardChanges}
-              >
-                Descartar alterações
-              </button>
-              <button
-                className="flex-1 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/60"
-                onClick={() => setSelectedMoon(null)}
-              >
-                Concluído
-              </button>
-            </div>
-
+        <CosmosChatModal
+          isOpen={Boolean(selectedMoon)}
+          storageKey={`energia-ring-${selectedMoon}`}
+          title={moonEnergyPrompts[selectedMoon].title}
+          eyebrow="Energia da fase"
+          subtitle={moonEnergyPrompts[selectedMoon].question}
+          placeholder={moonEnergyPrompts[selectedMoon].placeholder}
+          systemGreeting={moonEnergyPrompts[selectedMoon].title}
+          systemQuestion={moonEnergyPrompts[selectedMoon].question}
+          initialValue={energyNotes[selectedMoon]}
+          submitLabel="✨ Concluir energia"
+          tone="violet"
+          submitStrategy="last"
+          systemResponses={[
+            "Energia registrada com clareza. ✨",
+            "Seu corpo falou, e você ouviu. 🌙",
+            "Que leitura honesta do momento. 💫",
+          ]}
+          headerExtra={
             <div className="mt-3 text-xs text-violet-200/70">
-              <p className="font-medium">Valor atual:</p>
-              <p className="mt-1 rounded-lg border border-violet-300/20 bg-slate-800/40 p-2 min-h-[48px]">
-                {energyNotes[selectedMoon]?.trim() || "Ainda não registrado"}
-              </p>
-            </div>
-
-            <div className="mt-3 text-xs text-emerald-200/80">
-              <p className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
-                Salvando automaticamente enquanto você digita
-              </p>
-            </div>
-
-            <div className="mt-4 text-xs text-violet-200/70">
               <button
                 className="underline underline-offset-2 transition hover:text-white"
                 onClick={() =>
@@ -197,8 +146,12 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
                 Ir para insights da Lua
               </button>
             </div>
-          </div>
-        </div>
+          }
+          onClose={() => setSelectedMoon(null)}
+          onSubmit={async (value) => {
+            setEnergyNotes((prev) => ({ ...prev, [selectedMoon]: value }));
+          }}
+        />
       )}
     </div>
   );

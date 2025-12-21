@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { CelestialObject } from "../components/CelestialObject";
+import { useGalaxySunsSync } from "@/hooks/useGalaxySunsSync";
 import type { ScreenProps } from "../types";
 
 type YearSun = {
@@ -17,6 +18,7 @@ const ORBIT_STEP = 78;
 
 const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const currentYear = new Date().getFullYear();
+  const { data: moonData, isLoading } = useGalaxySunsSync();
 
   const orbitSizes = useMemo(
     () => Array.from({ length: 4 }, (_, idx) => BASE_ORBIT_SIZE + idx * ORBIT_STEP),
@@ -25,10 +27,10 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const yearSuns = useMemo<YearSun[]>(() => {
     return [
-      { id: "past", label: "Ano passado", year: currentYear - 1, orbitIndex: 0 },
-      { id: "present", label: "Ano presente", year: currentYear, orbitIndex: 1 },
-      { id: "next1", label: "Próximo ano", year: currentYear + 1, orbitIndex: 2 },
-      { id: "next2", label: "Daqui a 2 anos", year: currentYear + 2, orbitIndex: 3 },
+      { id: "past", label: "Ano", year: currentYear - 1, orbitIndex: 0 },
+      { id: "present", label: "Ano", year: currentYear, orbitIndex: 1 },
+      { id: "next1", label: "Ano", year: currentYear + 1, orbitIndex: 2 },
+      { id: "next2", label: "Ano", year: currentYear + 2, orbitIndex: 3 },
     ];
   }, [currentYear]);
 
@@ -61,8 +63,7 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           Um sol para cada ano, orbitando o núcleo da galáxia
         </h3>
         <p className="text-sm text-slate-300">
-          Clique em um sol para focar a órbita daquele ano. As órbitas externas marcam os próximos
-          ciclos; as internas, o passado e o presente.
+          Clique em um sol para focar a órbita daquele ano. Cada órbita representa um ciclo anual.
         </p>
       </div>
 
@@ -115,6 +116,7 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 const floatOffset = idx % 2 === 0 ? -2 : 2;
                 const angle = idx * angleStep;
                 const { x, y } = polarToCartesian(sun.orbitIndex, angle);
+                const yearData = moonData[sun.year];
 
                 return (
                   <motion.div
@@ -151,6 +153,14 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                           {sun.label}
                         </span>
                         <span className="text-[0.7rem] text-slate-300">{sun.year}</span>
+                        {yearData && yearData.dominantPhase && (
+                          <span className="text-[0.6rem] text-slate-400">
+                            {yearData.dominantPhase === "luaNova" && "🌑"}
+                            {yearData.dominantPhase === "luaCrescente" && "🌓"}
+                            {yearData.dominantPhase === "luaCheia" && "🌕"}
+                            {yearData.dominantPhase === "luaMinguante" && "🌗"}
+                          </span>
+                        )}
                       </div>
                     </motion.div>
                   </motion.div>

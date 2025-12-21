@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchMoonCalendar, MoonCalendarDay, MoonCalendarResponse } from "@/lib/api/moonCalendar";
 
 type UseMoonCalendarParams = {
@@ -33,33 +33,9 @@ export function useMoonCalendar({
   const [error, setError] = useState<string | null>(null);
 
   const mountedRef = useRef(true);
-  const cacheKey = useMemo(() => buildCacheKey({ start, end, tz }), [start, end, tz]);
+  const cacheKey = buildCacheKey({ start, end, tz });
 
-  const readCache = useCallback((): MoonCalendarResponse | null => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = localStorage.getItem(cacheKey);
-      if (!raw) return null;
-      return JSON.parse(raw) as MoonCalendarResponse;
-    } catch (err) {
-      console.warn("Falha ao ler cache de calendário lunar", err);
-      return null;
-    }
-  }, [cacheKey]);
-
-  const writeCache = useCallback(
-    (payload: MoonCalendarResponse) => {
-      if (typeof window === "undefined") return;
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify(payload));
-      } catch (err) {
-        console.warn("Falha ao salvar cache de calendário lunar", err);
-      }
-    },
-    [cacheKey],
-  );
-
-  const load = useCallback(
+  const loadData = useCallback(
     async (signal?: AbortSignal) => {
       setIsLoading(true);
       setError(null);
@@ -70,12 +46,28 @@ export function useMoonCalendar({
 
         setCalendar(response.days);
         setGeneratedAt(response.generatedAt);
-        writeCache(response);
+        
+        // Cache response
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(response));
+          } catch (err) {
+            console.warn("Falha ao salvar cache", err);
+          }
+        }
       } catch (err) {
-        const fallback = readCache();
-        if (fallback && !signal?.aborted && mountedRef.current) {
-          setCalendar(fallback.days);
-          setGeneratedAt(fallback.generatedAt);
+        // Tenta ler cache em caso de erro
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem(cacheKey);
+            const fallback = raw ? JSON.parse(raw) : null;
+            if (fallback && !signal?.aborted && mountedRef.current) {
+              setCalendar(fallback.days);
+              setGeneratedAt(fallback.generatedAt);
+            }
+          } catch (cacheErr) {
+            console.warn("Falha ao ler cache", cacheErr);
+          }
         }
 
         const message = err instanceof Error ? err.message : "Erro desconhecido ao carregar calendário lunar";
@@ -88,31 +80,37 @@ export function useMoonCalendar({
         }
       }
     },
-    [end, readCache, start, tz, writeCache],
+    [start, end, tz, cacheKey],
   );
 
+  // Carrega dados quando start, end ou tz mudam
   useEffect(() => {
     const controller = new AbortController();
     mountedRef.current = true;
 
-    load(controller.signal);
+    loadData(controller.signal);
 
     return () => {
       mountedRef.current = false;
       controller.abort();
     };
-  }, [load]);
+  }, [start, end, tz]);
 
+  // Auto-refresh em intervalo
   useEffect(() => {
     if (!autoRefreshMs || autoRefreshMs < 5_000) return;
-    const id = setInterval(() => load(), autoRefreshMs);
+    
+    const id = setInterval(() => {
+      loadData();
+    }, autoRefreshMs);
+    
     return () => clearInterval(id);
-  }, [autoRefreshMs, load]);
+  }, [autoRefreshMs, loadData]);
 
   const refresh = useCallback(async () => {
     const controller = new AbortController();
-    await load(controller.signal);
-  }, [load]);
+    await loadData(controller.signal);
+  }, [loadData]);
 
   return {
     calendar,

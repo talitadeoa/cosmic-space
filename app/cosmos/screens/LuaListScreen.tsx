@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import MonthlyInsightModal from "@/components/MonthlyInsightModal";
+import CosmosChatModal from "@/components/CosmosChatModal";
 import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
 import { fetchLunations } from "@/hooks/useLunations";
 import { normalizeMoonPhase, type MoonCalendarDay } from "@/lib/api/moonCalendar";
@@ -26,6 +26,69 @@ import {
   MonthEntry,
   getResponsiveLayout,
 } from "../utils/luaList";
+
+const moonPhaseLabels: Record<MoonPhase, string> = {
+  luaNova: "🌑 Lua Nova",
+  luaCrescente: "🌓 Lua Crescente",
+  luaCheia: "🌕 Lua Cheia",
+  luaMinguante: "🌗 Lua Minguante",
+};
+
+const phasePrompts: Record<
+  MoonPhase,
+  { greeting: string; systemQuestion: string; placeholder: string }
+> = {
+  luaNova: {
+    greeting: "Bem-vindo à Lua Nova de {month}",
+    systemQuestion: "O que você gostaria de plantar nesta fase? 🌱",
+    placeholder: "Intenções, sementes, inícios que você quer colocar no mundo...",
+  },
+  luaCrescente: {
+    greeting: "Bem-vindo à Lua Crescente de {month}",
+    systemQuestion: "Como você está crescendo nesta fase? 📈",
+    placeholder: "Ações, crescimento e desenvolvimento que você está vivendo...",
+  },
+  luaCheia: {
+    greeting: "Bem-vindo à Lua Cheia de {month}",
+    systemQuestion: "O que você gostaria de colher nesta fase? 🌕",
+    placeholder: "Resultados, colheitas e celebrações do que foi plantado...",
+  },
+  luaMinguante: {
+    greeting: "Bem-vindo à Lua Minguante de {month}",
+    systemQuestion: "O que você gostaria de liberar nesta fase? 🍂",
+    placeholder: "Aprendizados, sombras e padrões que você quer soltar...",
+  },
+};
+
+const phaseResponses: Record<MoonPhase, string[]> = {
+  luaNova: [
+    "Que intenções poderosas! 🌱 Você está pronto para este novo ciclo.",
+    "Excelente! Essas sementes do seu coração estão plantadas. ✨",
+    "Que lindo! Você já está abrindo caminhos para o novo. 🌙",
+  ],
+  luaCrescente: [
+    "Seu crescimento é inspirador! Continuamos em movimento. 📈",
+    "Ótimo! Você está honrando seu próprio desenvolvimento. 🌟",
+    "Que ritmo maravilhoso! Siga este caminho. ✨",
+  ],
+  luaCheia: [
+    "Que colheita magnífica! Você está celebrando o ciclo completo. 🌕",
+    "Incrível! Veja tudo que você realizou. ✨",
+    "A plenitude é sua! Que beleza neste momento. 🙏",
+  ],
+  luaMinguante: [
+    "Que libertação! Você está honrando o fim do ciclo. 🌙",
+    "Profundo! Soltar é tão poderoso quanto plantar. ✨",
+    "Excelente insight! Você está trazendo sabedoria para casa. 🍂",
+  ],
+};
+
+const phaseTones: Record<MoonPhase, "indigo" | "sky" | "amber" | "violet"> = {
+  luaNova: "indigo",
+  luaCrescente: "sky",
+  luaCheia: "amber",
+  luaMinguante: "violet",
+};
 
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -187,6 +250,22 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const highlightedMoonInfo = highlightTarget
     ? buildMoonInfo(highlightTarget, highlightTarget.phase)
     : null;
+  const selectedMonthName = selectedMonth?.monthName ?? "Mês";
+  const prompt = phasePrompts[selectedMoonPhase];
+  const formattedSavedAt = existingInsightUpdatedAt
+    ? new Date(existingInsightUpdatedAt).toLocaleString("pt-BR", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : "";
+  const chatStorageKey = `insight-mensal-${selectedMonth?.year ?? "ano"}-${
+    selectedMonth?.monthNumber ?? 1
+  }-${selectedMoonPhase}`;
+  const signBadge =
+    selectedMoonInfo.signLabel && selectedMoonInfo.signLabel.trim().length > 0
+      ? `Signo ${selectedMoonInfo.signLabel}`
+      : undefined;
+  const chatPlaceholder = isLoadingInsight ? "Carregando insight salvo..." : prompt.placeholder;
 
   const getColumnIndex = useCallback(
     (target: typeof highlightTarget) => {
@@ -501,16 +580,25 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         floatOffset={2}
       />
 
-      <MonthlyInsightModal
+      <CosmosChatModal
         isOpen={isModalOpen}
-        moonIndex={selectedMonth?.monthNumber ?? 1}
-        moonPhase={selectedMoonPhase}
-        moonSignLabel={selectedMoonInfo.signLabel}
-        initialInsight={existingInsight}
-        lastSavedAt={existingInsightUpdatedAt}
-        isLoadingInsight={isLoadingInsight}
+        storageKey={chatStorageKey}
+        title={selectedMonthName}
+        eyebrow={moonPhaseLabels[selectedMoonPhase]}
+        subtitle={`Mês #${selectedMonth?.monthNumber ?? 1}`}
+        badge={signBadge}
+        placeholder={chatPlaceholder}
+        systemGreeting={prompt.greeting.replace("{month}", selectedMonthName)}
+        systemQuestion={prompt.systemQuestion}
+        initialValue={existingInsight}
+        initialValueLabel={formattedSavedAt ? `salvo em ${formattedSavedAt}` : undefined}
+        submitLabel="✨ Concluir insight"
+        tone={phaseTones[selectedMoonPhase]}
+        systemResponses={phaseResponses[selectedMoonPhase]}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleInsightSubmit}
+        onSubmit={async (value) => {
+          await handleInsightSubmit(value);
+        }}
       />
     </div>
   );
