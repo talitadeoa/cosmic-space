@@ -1,4 +1,5 @@
 // lib/auth.ts
+import "server-only";
 import crypto from 'crypto';
 
 // Em memória: map token -> payload (ex: { email, provider })

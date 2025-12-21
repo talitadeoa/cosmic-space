@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -11,6 +12,7 @@ interface AuthState {
 }
 
 export function useAuth() {
+  const router = useRouter();
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
     loading: true,
@@ -18,10 +20,6 @@ export function useAuth() {
   });
 
   // Verificar autenticação ao montar
-  useEffect(() => {
-    verifyAuth();
-  }, []);
-
   const verifyAuth = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
@@ -42,6 +40,10 @@ export function useAuth() {
       }));
     }
   }, []);
+
+  useEffect(() => {
+    verifyAuth();
+  }, [verifyAuth]);
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -73,6 +75,7 @@ export function useAuth() {
         loading: false,
         error: null,
       }));
+      router.refresh();
       return true;
     } catch (error) {
       setState(prev => ({
@@ -83,7 +86,7 @@ export function useAuth() {
       }));
       return false;
     }
-  }, []);
+  }, [router, verifyAuth]);
 
   const signup = useCallback(async (email: string, password: string) => {
     try {
@@ -114,6 +117,7 @@ export function useAuth() {
         loading: false,
         error: null,
       }));
+      router.refresh();
       return true;
     } catch (error) {
       setState(prev => ({
@@ -124,7 +128,7 @@ export function useAuth() {
       }));
       return false;
     }
-  }, []);
+  }, [router, verifyAuth]);
 
   const logout = useCallback(async () => {
     try {
@@ -136,6 +140,7 @@ export function useAuth() {
         loading: false,
         user: null,
       }));
+      router.refresh();
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -143,7 +148,7 @@ export function useAuth() {
         error: 'Erro ao fazer logout',
       }));
     }
-  }, []);
+  }, [router]);
 
   const googleLogin = useCallback(() => {
     // Inicia fluxo OAuth do Google redirecionando para o servidor

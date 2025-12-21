@@ -1,3 +1,4 @@
+import "server-only";
 import { getDb } from "./db";
 
 export type FormEntryType =
@@ -505,4 +506,3 @@ export async function deleteLunations(startDate: string, endDate: string): Promi
     throw error;
   }
 }
-

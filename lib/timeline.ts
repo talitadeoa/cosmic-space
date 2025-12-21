@@ -1,3 +1,4 @@
+import "server-only";
 import { getDb } from "./db";
 import type { TimelineItem, TimelineItemType } from "@/types/timeline";
 

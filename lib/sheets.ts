@@ -1,3 +1,4 @@
+import "server-only";
 import { createSign } from "crypto";
 
 // Integração com Google Sheets API usando Service Account (Bearer token)
