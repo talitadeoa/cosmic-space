@@ -18,6 +18,7 @@ interface TodoInputProps {
   projectValue?: string;
   onProjectChange?: (value: string) => void;
   className?: string;
+  chatInline?: boolean;
 }
 
 const TodoInput: React.FC<TodoInputProps> = ({
@@ -26,6 +27,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
   projectValue,
   onProjectChange,
   className = "",
+  chatInline = true,
 }) => {
   const [currentProject, setCurrentProject] = useState(projectValue ?? "");
   const [taskDraft, setTaskDraft] = useState("");
@@ -165,7 +167,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
           </div>
         </div>
         <CosmosChatModal
-          inline
+          inline={chatInline}
           isOpen={isChatOpen}
           storageKey="todo-input"
           title="Checklist Orbital"
