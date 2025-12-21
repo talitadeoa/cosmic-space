@@ -109,55 +109,62 @@ type ProjectMenuPanelProps = {
   isOpen: boolean;
   projectOptions: string[];
   projectCounts: Map<string, number>;
+  totalCount: number;
   selectedProject: string;
   isAddingProject: boolean;
   newProjectDraft: string;
   onSelectProject: (project: string) => void;
   onDraftChange: (value: string) => void;
   onCreateProject: () => void;
-  onCloseMenu: () => void;
   onStartAdd: () => void;
   onCancelAdd: () => void;
+  onClearProject: () => void;
 };
 
 const ProjectMenuPanel = ({
   isOpen,
   projectOptions,
   projectCounts,
+  totalCount,
   selectedProject,
   isAddingProject,
   newProjectDraft,
   onSelectProject,
   onDraftChange,
   onCreateProject,
-  onCloseMenu,
   onStartAdd,
   onCancelAdd,
+  onClearProject,
 }: ProjectMenuPanelProps) => (
   <div
     className={`overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-950/70 shadow-xl shadow-indigo-900/20 transition-[max-height,opacity,transform] duration-300 ${
-      isOpen ? "max-h-72 opacity-100 translate-y-0 p-3" : "max-h-0 opacity-0 -translate-y-2 p-0"
+      isOpen ? "max-h-80 opacity-100 translate-y-0 p-3" : "max-h-0 opacity-0 -translate-y-2 p-0"
     }`}
   >
-    <div className="flex items-start justify-between gap-2">
-      <div>
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
-          Projetos
-        </p>
-        <p className="text-[0.75rem] text-slate-400">
-          Escolha um projeto para focar as tarefas.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onCloseMenu}
-        className="text-xs font-semibold text-slate-400 transition hover:text-slate-200"
-      >
-        Fechar
-      </button>
+    <div>
+      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
+        Agrupamento por projeto
+      </p>
+      <p className="text-[0.75rem] text-slate-400">
+        Selecione um projeto para filtrar as tarefas.
+      </p>
     </div>
 
     <div className="mt-3 flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={onClearProject}
+        className={`flex items-center gap-2 rounded-full border px-3 py-1 text-[0.7rem] font-semibold transition ${
+          selectedProject.trim()
+            ? "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
+            : "border-indigo-300/80 bg-indigo-500/20 text-indigo-100"
+        }`}
+      >
+        <span>Todos</span>
+        <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[0.6rem] text-slate-300">
+          {totalCount}
+        </span>
+      </button>
       {projectOptions.length === 0 ? (
         <span className="text-xs text-slate-500">Nenhum projeto criado ainda.</span>
       ) : (
@@ -233,9 +240,17 @@ type SavedTodosPanelProps = {
   savedTodos: SavedTodo[];
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
+  onToggleComplete: (todoId: string) => void;
+  filterLabel?: string;
 };
 
-const SavedTodosPanel = ({ savedTodos, onDragStart, onDragEnd }: SavedTodosPanelProps) => (
+const SavedTodosPanel = ({
+  savedTodos,
+  onDragStart,
+  onDragEnd,
+  onToggleComplete,
+  filterLabel,
+}: SavedTodosPanelProps) => (
   <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
     <div className="flex flex-col gap-3">
       <div>
@@ -251,7 +266,9 @@ const SavedTodosPanel = ({ savedTodos, onDragStart, onDragEnd }: SavedTodosPanel
     <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64">
       {savedTodos.length === 0 ? (
         <p className="text-sm text-slate-500">
-          Nenhum to-do salvo ainda. Crie tarefas e organize por fase lunar.
+          {filterLabel
+            ? `Nenhuma tarefa no projeto ${filterLabel}.`
+            : "Nenhum to-do salvo ainda. Crie tarefas e organize por fase lunar."}
         </p>
       ) : (
         savedTodos.map((todo) => (
@@ -263,15 +280,22 @@ const SavedTodosPanel = ({ savedTodos, onDragStart, onDragEnd }: SavedTodosPanel
             className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
           >
             <div className="flex items-center gap-3">
-              <span
-                className={`flex h-4 w-4 items-center justify-center rounded-full border text-[0.65rem] ${
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleComplete(todo.id);
+                  }}
+                aria-pressed={todo.completed}
+                aria-label={todo.completed ? "Marcar como pendente" : "Marcar como concluída"}
+                className={`flex h-5 w-5 items-center justify-center rounded-full border text-[0.65rem] transition ${
                   todo.completed
                     ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
-                    : "border-slate-500 bg-slate-900/80 text-slate-400"
+                    : "border-slate-500 bg-slate-900/80 text-slate-400 hover:border-emerald-400/70"
                 }`}
               >
                 {todo.completed && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
-              </span>
+              </button>
               <div className="flex flex-col gap-1">
                 <span
                   className={`${
@@ -357,6 +381,14 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setIsAddingProject(false);
   };
 
+  const handleToggleComplete = (todoId: string) => {
+    setSavedTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === todoId ? { ...todo, completed: !todo.completed } : todo,
+      ),
+    );
+  };
+
   const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
     const target = savedTodos.find((todo) => todo.id === todoId);
     if (!target) return;
@@ -413,16 +445,25 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setActiveDrop(null);
   };
 
+  const filteredTodos = useMemo(() => {
+    const trimmed = selectedProject.trim();
+    if (!trimmed) return savedTodos;
+    const target = trimmed.toLowerCase();
+    return savedTodos.filter(
+      (todo) => (todo.project ?? "").trim().toLowerCase() === target,
+    );
+  }, [savedTodos, selectedProject]);
+
   const moonCounts = useMemo(
     () =>
-      savedTodos.reduce(
+      filteredTodos.reduce(
         (acc, todo) => {
           if (todo.phase) acc[todo.phase] = (acc[todo.phase] ?? 0) + 1;
           return acc;
         },
         {} as Record<MoonPhase, number>,
       ),
-    [savedTodos],
+    [filteredTodos],
   );
 
   const projectOptions = useMemo(
@@ -463,7 +504,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           onDragLeave={handleDragLeavePhase}
         />
 
-        {/* bloco do planeta + card com painel de to-dos embutido */}
+        {/* card com painel de to-dos embutido */}
         <div className="relative order-2 w-full lg:order-1 lg:max-w-3xl lg:pl-16">
           <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-lg sm:p-6">
             <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
@@ -476,15 +517,34 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                     Organize tarefas por fase lunar
                   </h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsProjectMenuOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-slate-200 transition hover:border-indigo-400/60 hover:text-white lg:hidden"
-                  aria-expanded={isProjectMenuOpen}
-                >
-                  Projetos
-                  <span className="text-sm text-indigo-200">◦</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedProject.trim() && (
+                    <span className="rounded-full border border-indigo-400/60 bg-indigo-500/15 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-indigo-100">
+                      {selectedProject}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isProjectMenuOpen) {
+                        setIsAddingProject(false);
+                        setNewProjectDraft("");
+                      }
+                      setIsProjectMenuOpen((prev) => !prev);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-200 transition hover:border-indigo-400/60 hover:text-white"
+                    aria-expanded={isProjectMenuOpen}
+                  >
+                    Projetos
+                    <span
+                      className={`text-sm text-indigo-200 transition-transform ${
+                        isProjectMenuOpen ? "rotate-180" : ""
+                      }`}
+                    >
+                      v
+                    </span>
+                  </button>
+                </div>
               </div>
 
               <div className="flex flex-col gap-4 flex-shrink-0">
@@ -492,18 +552,19 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   isOpen={isProjectMenuOpen}
                   projectOptions={projectOptions}
                   projectCounts={projectCounts}
+                  totalCount={savedTodos.length}
                   selectedProject={selectedProject}
                   isAddingProject={isAddingProject}
                   newProjectDraft={newProjectDraft}
                   onSelectProject={setSelectedProject}
                   onDraftChange={setNewProjectDraft}
                   onCreateProject={handleCreateProject}
-                  onCloseMenu={() => setIsProjectMenuOpen(false)}
                   onStartAdd={() => setIsAddingProject(true)}
                   onCancelAdd={() => {
                     setIsAddingProject(false);
                     setNewProjectDraft("");
                   }}
+                  onClearProject={() => setSelectedProject("")}
                 />
 
                 <TodoInput
@@ -516,9 +577,11 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 />
 
                 <SavedTodosPanel
-                  savedTodos={savedTodos}
+                  savedTodos={filteredTodos}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
+                  onToggleComplete={handleToggleComplete}
+                  filterLabel={selectedProject.trim() || undefined}
                 />
               </div>
             </div>
@@ -528,11 +591,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             <CelestialObject
               type="planeta"
               size="lg"
-              interactive
-              onClick={() => setIsProjectMenuOpen((prev) => !prev)}
-              className={`scale-75 transition-transform xl:scale-90 2xl:scale-100 ${
-                isProjectMenuOpen ? "drop-shadow-[0_0_18px_rgba(99,102,241,0.65)]" : ""
-              }`}
+              className="scale-75 transition-transform xl:scale-90 2xl:scale-100"
             />
           </div>
         </div>
