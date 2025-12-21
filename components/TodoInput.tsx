@@ -15,29 +15,49 @@ export interface TodoItem {
 interface TodoInputProps {
   onTodoSubmit?: (todo: TodoItem) => void;
   projectOptions?: string[];
+  projectValue?: string;
+  onProjectChange?: (value: string) => void;
   className?: string;
 }
 
 const TodoInput: React.FC<TodoInputProps> = ({
   onTodoSubmit,
   projectOptions = [],
+  projectValue,
+  onProjectChange,
   className = "",
 }) => {
-  const [currentProject, setCurrentProject] = useState("");
+  const [currentProject, setCurrentProject] = useState(projectValue ?? "");
   const [taskDraft, setTaskDraft] = useState("");
   const [newDepth, setNewDepth] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const isProjectControlled = projectValue !== undefined;
+  const activeProject = isProjectControlled ? projectValue : currentProject;
+
+  const updateProject = (value: string) => {
+    if (!isProjectControlled) {
+      setCurrentProject(value);
+    }
+    onProjectChange?.(value);
+  };
+
+  React.useEffect(() => {
+    if (projectValue !== undefined) {
+      setCurrentProject(projectValue);
+    }
+  }, [projectValue]);
 
   const handleAddTodo = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    const trimmedProject = activeProject?.trim();
 
     onTodoSubmit?.({
       id: `todo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       text: trimmed,
       completed: false,
       depth: newDepth,
-      project: currentProject.trim() ? currentProject.trim() : undefined,
+      project: trimmedProject ? trimmedProject : undefined,
     });
     setTaskDraft("");
   };
@@ -71,8 +91,8 @@ const TodoInput: React.FC<TodoInputProps> = ({
         <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/50 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <input
-              value={currentProject}
-              onChange={(e) => setCurrentProject(e.target.value)}
+              value={activeProject}
+              onChange={(e) => updateProject(e.target.value)}
               placeholder="Projeto (opcional)"
               className="min-w-[180px] flex-1 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs text-indigo-50 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
             />
@@ -82,9 +102,9 @@ const TodoInput: React.FC<TodoInputProps> = ({
                   <button
                     key={project}
                     type="button"
-                    onClick={() => setCurrentProject(project)}
+                    onClick={() => updateProject(project)}
                     className={`rounded-full border px-2 py-1 text-[0.65rem] transition ${
-                      project === currentProject.trim()
+                      project === activeProject?.trim()
                         ? "border-indigo-400 bg-indigo-500/20 text-indigo-100"
                         : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/70"
                     }`}
@@ -111,10 +131,10 @@ const TodoInput: React.FC<TodoInputProps> = ({
             >
               {isChatOpen ? "Esconder chat" : "Mostrar chat"}
             </button>
-            {currentProject && (
+            {activeProject && (
               <button
                 type="button"
-                onClick={() => setCurrentProject("")}
+                onClick={() => updateProject("")}
                 className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-900"
               >
                 Limpar projeto

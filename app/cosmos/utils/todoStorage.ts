@@ -8,6 +8,7 @@ export type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
 export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase; islandId?: IslandId; project?: string };
 
 export const TODO_STORAGE_KEY = "cosmic_space_todos_salvos";
+export const PROJECTS_STORAGE_KEY = "cosmic_space_projects";
 
 export const phaseLabels: Record<MoonPhase, string> = {
   luaNova: "Lua Nova",
@@ -49,6 +50,25 @@ export function loadSavedTodos(): SavedTodo[] {
       .filter((item) => item.text.trim().length > 0);
   } catch (error) {
     console.warn("Falha ao ler to-dos salvos", error);
+    return [];
+  }
+}
+
+export function loadSavedProjects(): string[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored) as string[];
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter((item) => item.length > 0);
+  } catch (error) {
+    console.warn("Falha ao ler projetos salvos", error);
     return [];
   }
 }
