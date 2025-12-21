@@ -127,8 +127,25 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
 
   const contextEntries = useMemo(() => {
     if (!selectedMoon) return [];
-    const tasks = phaseInputs[selectedMoon].filter((item) => item.inputType === "tarefa");
-    return tasks.slice(0, 6).map((item) => {
+    const entries: Array<{ id: string; label: string; content: string }> = [];
+    const items = phaseInputs[selectedMoon] ?? [];
+    const quarterly = items.find((item) => item.inputType === "insight_trimestral");
+    if (quarterly) {
+      const meta = quarterly.metadata ?? {};
+      const quarterLabel =
+        typeof meta.quarterLabel === "string" && meta.quarterLabel.trim()
+          ? meta.quarterLabel
+          : "";
+      entries.push({
+        id: `quarter-${quarterly.id}`,
+        label: quarterLabel ? `Insight Trimestral • ${quarterLabel}` : "Insight Trimestral",
+        content: quarterly.content,
+      });
+    }
+
+    const tasks = items.filter((item) => item.inputType === "tarefa");
+    tasks.forEach((item) => {
+      if (entries.length >= 6) return;
       const meta = item.metadata ?? {};
       const label =
         (typeof meta.project === "string" && meta.project.trim()) ||
@@ -137,12 +154,14 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
       const suffix = typeof meta.dueDate === "string" && meta.dueDate.trim()
         ? ` • ${meta.dueDate}`
         : "";
-      return {
+      entries.push({
         id: `task-${item.id}`,
         label: `${label}${suffix}`,
         content: item.content,
-      };
+      });
     });
+
+    return entries;
   }, [phaseInputs, selectedMoon]);
 
   const energySuggestions = useMemo(() => {

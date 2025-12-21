@@ -1,7 +1,7 @@
 import { getDb } from "./db";
 
 export type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
-export type PhaseInputType = "energia" | "tarefa";
+export type PhaseInputType = "energia" | "tarefa" | "insight_trimestral";
 
 export interface PhaseInputRecord {
   id: number;

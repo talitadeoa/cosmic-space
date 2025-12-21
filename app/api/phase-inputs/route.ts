@@ -7,7 +7,8 @@ export const dynamic = "force-dynamic";
 const isValidMoonPhase = (value: string | null) =>
   value === "luaNova" || value === "luaCrescente" || value === "luaCheia" || value === "luaMinguante";
 
-const isValidInputType = (value: string | null) => value === "energia" || value === "tarefa";
+const isValidInputType = (value: string | null) =>
+  value === "energia" || value === "tarefa" || value === "insight_trimestral";
 
 export async function GET(request: NextRequest) {
   try {

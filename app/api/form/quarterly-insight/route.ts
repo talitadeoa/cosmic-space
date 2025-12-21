@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateToken, getTokenPayload } from '@/lib/auth';
 import { saveQuarterlyInsight } from '@/lib/forms';
+import { savePhaseInput } from '@/lib/phaseInputs';
 import { appendToSheet } from '@/lib/sheets';
 
 export const dynamic = 'force-dynamic';
@@ -37,6 +38,13 @@ export async function POST(request: NextRequest) {
       luaMinguante: 'Lua Minguante',
     };
 
+    const phaseVibes: Record<string, string> = {
+      luaNova: "Ideias · Intenções · Sementes",
+      luaCrescente: "Checklists · Rituais · To-dos · Planejamento · Ação",
+      luaCheia: "Tesouros · Recompensas · Frutos · Colheita",
+      luaMinguante: "Aprendizados · Desapegos",
+    };
+
     const quarterMap: Record<number, string> = {
       1: '1º Trimestre (Jan-Mar)',
       2: '2º Trimestre (Abr-Jun)',
@@ -58,6 +66,26 @@ export async function POST(request: NextRequest) {
     } catch (neonError) {
       console.error('Erro ao salvar no Neon:', neonError);
       // Continua para salvar no Sheets mesmo se Neon falhar
+    }
+
+    // 1.1 Salvar input trimestral agregado
+    try {
+      const currentYear = new Date().getFullYear();
+      const sourceId = `${currentYear}-q${quarter}-${moonPhase}`;
+      await savePhaseInput(userId, {
+        moonPhase,
+        inputType: "insight_trimestral",
+        sourceId,
+        content: insight,
+        vibe: phaseVibes[moonPhase] || null,
+        metadata: {
+          quarter,
+          quarterLabel: quarterMap[quarter] || `Trimestre ${quarter}`,
+          year: currentYear,
+        },
+      });
+    } catch (phaseError) {
+      console.error("Erro ao salvar input trimestral agregado:", phaseError);
     }
 
     // 2. Salvar no Google Sheets (manter compatibilidade)
