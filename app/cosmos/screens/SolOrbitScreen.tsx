@@ -27,13 +27,6 @@ const DIAGONAL_MOONS: Array<{
   { phase: "luaMinguante", angleDeg: 270, floatOffset: 1 },
 ];
 
-const QUARTER_BY_PHASE: Record<MoonPhase, number> = {
-  luaNova: 1,
-  luaCrescente: 2,
-  luaCheia: 3,
-  luaMinguante: 4,
-};
-
 type SolOrbitStageProps = {
   onSolClick: () => void;
   onMoonClick: (phase: MoonPhase) => void;
@@ -302,11 +295,7 @@ const SolOrbitScreen: React.FC<ScreenProps> = () => {
   };
 
   const handleQuarterlyInsightSubmit = async (insight: string) => {
-    await saveQuarterlyInsight(
-      selectedMoonPhase,
-      insight,
-      QUARTER_BY_PHASE[selectedMoonPhase],
-    );
+    await saveQuarterlyInsight(selectedMoonPhase, insight);
   };
 
   const handleAnnualInsightSubmit = async (insight: string) => {

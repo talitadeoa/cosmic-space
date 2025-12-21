@@ -6,13 +6,7 @@ import { MOON_PHASE_LABELS, MOON_PHASES, type MoonPhase } from "./moonPhases";
 export type { MoonPhase } from "./moonPhases";
 export type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
 
-export type SavedTodo = ParsedTodoItem & {
-  phase?: MoonPhase;
-  islandId?: IslandId;
-  project?: string;
-  category?: string;
-  dueDate?: string;
-};
+export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase; islandId?: IslandId; project?: string };
 
 export const TODO_STORAGE_KEY = "cosmic_space_todos_salvos";
 export const PROJECTS_STORAGE_KEY = "cosmic_space_projects";
@@ -44,14 +38,6 @@ export function loadSavedTodos(): SavedTodo[] {
         project:
           typeof item.project === "string" && item.project.trim().length > 0
             ? item.project
-            : undefined,
-        category:
-          typeof item.category === "string" && item.category.trim().length > 0
-            ? item.category
-            : undefined,
-        dueDate:
-          typeof item.dueDate === "string" && item.dueDate.trim().length > 0
-            ? item.dueDate
             : undefined,
         islandId: isValidIsland(item.islandId) ? item.islandId : undefined,
         phase: isValidPhase(item.phase) ? item.phase : undefined,

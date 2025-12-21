@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GalaxyInnerView } from "../components/GalaxyInnerView";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
@@ -11,11 +11,8 @@ import {
   RING_ENERGY_RESPONSES,
   buildRingEnergyStorageKey,
 } from "../utils/insightChatPresets";
-import { PHASE_VIBES } from "../utils/phaseVibes";
 import type { MoonPhase } from "../utils/moonPhases";
 import type { ScreenProps } from "../types";
-import { usePhaseInputs } from "@/hooks/usePhaseInputs";
-import type { PhaseInputRecord } from "@/lib/phaseInputs";
 
 const RingGalaxyScreen: React.FC<ScreenProps> = ({
   navigateTo,
@@ -28,80 +25,16 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
     luaCheia: "",
     luaMinguante: "",
   });
-  const [phaseInputs, setPhaseInputs] = useState<Record<MoonPhase, PhaseInputRecord[]>>({
-    luaNova: [],
-    luaCrescente: [],
-    luaCheia: [],
-    luaMinguante: [],
-  });
-  const { loadInputs, saveInput } = usePhaseInputs();
 
   useEffect(() => {
-    let isActive = true;
-
-    const fallbackNotes: Record<MoonPhase, string> = {
+    const next: Record<MoonPhase, string> = {
       luaNova: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaNova")),
       luaCrescente: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaCrescente")),
       luaCheia: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaCheia")),
       luaMinguante: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaMinguante")),
     };
-
-    const loadPhaseInputs = async () => {
-      try {
-        const items = await loadInputs({ limit: 200 });
-        if (!isActive) return;
-
-        const grouped: Record<MoonPhase, PhaseInputRecord[]> = {
-          luaNova: [],
-          luaCrescente: [],
-          luaCheia: [],
-          luaMinguante: [],
-        };
-
-        items.forEach((item) => {
-          grouped[item.moonPhase].push(item);
-        });
-
-        const nextNotes: Record<MoonPhase, string> = { ...fallbackNotes };
-        (Object.keys(grouped) as MoonPhase[]).forEach((phase) => {
-          const latestEnergy = grouped[phase].find(
-            (item) => item.inputType === "energia" && item.sourceId === "ring",
-          );
-          if (latestEnergy?.content) {
-            nextNotes[phase] = latestEnergy.content;
-          }
-        });
-
-        setPhaseInputs(grouped);
-        setEnergyNotes(nextNotes);
-      } catch (error) {
-        console.warn("Falha ao carregar inputs da fase, usando histórico local.", error);
-        setEnergyNotes(fallbackNotes);
-      }
-    };
-
-    loadPhaseInputs();
-
-    return () => {
-      isActive = false;
-    };
-  }, [loadInputs]);
-
-  const upsertPhaseInput = (item: PhaseInputRecord) => {
-    setPhaseInputs((prev) => {
-      const next = { ...prev };
-      const list = next[item.moonPhase] ?? [];
-      const index = list.findIndex((entry) => entry.id === item.id);
-      if (index >= 0) {
-        const updated = [...list];
-        updated[index] = item;
-        next[item.moonPhase] = updated;
-      } else {
-        next[item.moonPhase] = [item, ...list];
-      }
-      return next;
-    });
-  };
+    setEnergyNotes(next);
+  }, []);
 
   // Raio da órbita das luas (distância do centro)
   const orbitRadius = 180;
@@ -124,54 +57,6 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
   const handleMoonClick = (moonType: MoonPhase) => {
     setSelectedMoon(moonType);
   };
-
-  const contextEntries = useMemo(() => {
-    if (!selectedMoon) return [];
-    const entries: Array<{ id: string; label: string; content: string }> = [];
-    const items = phaseInputs[selectedMoon] ?? [];
-    const quarterly = items.find((item) => item.inputType === "insight_trimestral");
-    if (quarterly) {
-      const meta = quarterly.metadata ?? {};
-      const quarterLabel =
-        typeof meta.quarterLabel === "string" && meta.quarterLabel.trim()
-          ? meta.quarterLabel
-          : "";
-      entries.push({
-        id: `quarter-${quarterly.id}`,
-        label: quarterLabel ? `Insight Trimestral • ${quarterLabel}` : "Insight Trimestral",
-        content: quarterly.content,
-      });
-    }
-
-    const tasks = items.filter((item) => item.inputType === "tarefa");
-    tasks.forEach((item) => {
-      if (entries.length >= 6) return;
-      const meta = item.metadata ?? {};
-      const label =
-        (typeof meta.project === "string" && meta.project.trim()) ||
-        (typeof meta.category === "string" && meta.category.trim()) ||
-        "Tarefa";
-      const suffix = typeof meta.dueDate === "string" && meta.dueDate.trim()
-        ? ` • ${meta.dueDate}`
-        : "";
-      entries.push({
-        id: `task-${item.id}`,
-        label: `${label}${suffix}`,
-        content: item.content,
-      });
-    });
-
-    return entries;
-  }, [phaseInputs, selectedMoon]);
-
-  const energySuggestions = useMemo(() => {
-    if (!selectedMoon) return [];
-    return PHASE_VIBES[selectedMoon].tags.map((tag) => ({
-      id: `tag-${selectedMoon}-${tag}`,
-      label: tag,
-      meta: { tags: [tag] },
-    }));
-  }, [selectedMoon]);
 
   return (
     <div className="relative flex h-full w-full items-center justify-center">
@@ -216,8 +101,6 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
           title={RING_ENERGY_PROMPTS[selectedMoon].title}
           eyebrow="Energia da fase"
           subtitle={RING_ENERGY_PROMPTS[selectedMoon].question}
-          contextTitle={`Vibe ${PHASE_VIBES[selectedMoon].label}`}
-          contextEntries={contextEntries}
           placeholder={RING_ENERGY_PROMPTS[selectedMoon].placeholder}
           systemGreeting={RING_ENERGY_PROMPTS[selectedMoon].title}
           systemQuestion={RING_ENERGY_PROMPTS[selectedMoon].question}
@@ -226,12 +109,8 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
           tone="violet"
           submitStrategy="last"
           systemResponses={RING_ENERGY_RESPONSES}
-          suggestions={energySuggestions}
           headerExtra={
             <div className="mt-3 text-xs text-violet-200/70">
-              <div className="mb-2 text-[0.65rem] uppercase tracking-[0.22em] text-violet-100/80">
-                {PHASE_VIBES[selectedMoon].label}
-              </div>
               <button
                 className="underline underline-offset-2 transition hover:text-white"
                 onClick={() =>
@@ -248,15 +127,6 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
           onClose={() => setSelectedMoon(null)}
           onSubmit={async (value) => {
             setEnergyNotes((prev) => ({ ...prev, [selectedMoon]: value }));
-            const saved = await saveInput({
-              moonPhase: selectedMoon,
-              inputType: "energia",
-              sourceId: "ring",
-              content: value,
-              vibe: PHASE_VIBES[selectedMoon].label,
-              metadata: { source: "ring-galaxy" },
-            });
-            upsertPhaseInput(saved);
           }}
         />
       )}
