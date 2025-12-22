@@ -517,34 +517,19 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                     Organize tarefas por fase lunar
                   </h3>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {selectedProject.trim() && (
-                    <span className="rounded-full border border-indigo-400/60 bg-indigo-500/15 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-indigo-100">
-                      {selectedProject}
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isProjectMenuOpen) {
-                        setIsAddingProject(false);
-                        setNewProjectDraft("");
-                      }
-                      setIsProjectMenuOpen((prev) => !prev);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-200 transition hover:border-indigo-400/60 hover:text-white"
-                    aria-expanded={isProjectMenuOpen}
-                  >
-                    Projetos
-                    <span
-                      className={`text-sm text-indigo-200 transition-transform ${
-                        isProjectMenuOpen ? "rotate-180" : ""
-                      }`}
-                    >
-                      v
-                    </span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isProjectMenuOpen) {
+                      setIsAddingProject(false);
+                      setNewProjectDraft("");
+                    }
+                    setIsProjectMenuOpen((prev) => !prev);
+                  }}
+                  className="rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
+                >
+                  {isProjectMenuOpen ? "Esconder" : "Mostrar"} painel
+                </button>
               </div>
 
               <div className="flex flex-col gap-4 flex-shrink-0">
