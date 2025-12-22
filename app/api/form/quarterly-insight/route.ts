@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { moonPhase, insight, quarterNumber } = body;
+    const { moonPhase, insight, quarterNumber, year } = body;
 
     if (!moonPhase || !insight) {
       return NextResponse.json({ error: 'Fase da lua e insight são obrigatórios' }, { status: 400 });
@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
       const month = new Date().getMonth() + 1;
       quarter = Math.ceil(month / 3);
     }
+
+    const selectedYear = year ?? new Date().getFullYear();
 
     if (quarter < 1 || quarter > 4) {
       return NextResponse.json({ error: 'Trimestre deve estar entre 1 e 4' }, { status: 400 });
@@ -70,8 +72,7 @@ export async function POST(request: NextRequest) {
 
     // 1.1 Salvar input trimestral agregado
     try {
-      const currentYear = new Date().getFullYear();
-      const sourceId = `${currentYear}-q${quarter}-${moonPhase}`;
+      const sourceId = `${selectedYear}-q${quarter}-${moonPhase}`;
       await savePhaseInput(userId, {
         moonPhase,
         inputType: "insight_trimestral",
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           quarter,
           quarterLabel: quarterMap[quarter] || `Trimestre ${quarter}`,
-          year: currentYear,
+          year: selectedYear,
         },
       });
     } catch (phaseError) {

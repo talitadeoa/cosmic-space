@@ -143,6 +143,7 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                             event: e,
                             type: "sol",
                             size: "md",
+                            year: sun.year,
                           })
                         }
                         floatOffset={floatOffset}

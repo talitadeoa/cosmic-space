@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { insight } = body;
+    const { insight, year } = body;
 
     if (!insight) {
       return NextResponse.json(
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const year = new Date().getFullYear();
+    const selectedYear = year ?? new Date().getFullYear();
 
     // Extrair user_id do token
     const tokenPayload = getTokenPayload(token);
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Salvar no Neon
     try {
-      await saveAnnualInsight(userId, insight);
+      await saveAnnualInsight(userId, insight, selectedYear);
     } catch (neonError) {
       console.error('Erro ao salvar no Neon:', neonError);
       // Continua para salvar no Sheets mesmo se Neon falhar
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // 2. Salvar no Google Sheets (manter compatibilidade)
     const data = {
       timestamp: new Date().toISOString(),
-      ano: year.toString(),
+      ano: selectedYear.toString(),
       insight,
       tipo: 'insight_anual',
     };
@@ -63,3 +63,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
+

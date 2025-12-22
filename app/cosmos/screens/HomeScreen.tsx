@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CelestialObject } from "../components/CelestialObject";
+import MoonPhaseDisplay from "../components/MoonPhaseDisplay";
 import type {
   CelestialSize,
   CelestialType,
@@ -61,6 +62,8 @@ const HOME_OBJECTS: HomeCelestial[] = [
 const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   return (
     <div className="relative flex h-full w-full items-center justify-center px-4 sm:px-10">
+      <MoonPhaseDisplay />
+      
       <div className="grid h-full w-full max-w-5xl grid-cols-3 grid-rows-2 place-items-center gap-6 sm:gap-12">
         {HOME_OBJECTS.map(({ id, type, target, floatOffset, row, col }) => (
           <div key={id} style={{ gridColumn: col, gridRow: row }} className="flex items-center justify-center">

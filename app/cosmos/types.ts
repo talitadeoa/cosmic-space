@@ -33,6 +33,7 @@ export type FocusState = {
   centerY: number;
   type: CelestialType;
   size: CelestialSize;
+  year?: number;
 };
 
 export type ScreenProps = {
@@ -43,6 +44,7 @@ export type ScreenProps = {
       event?: React.MouseEvent<HTMLDivElement>;
       type: CelestialType;
       size?: CelestialSize;
+      year?: number;
     }
   ) => void;
 };

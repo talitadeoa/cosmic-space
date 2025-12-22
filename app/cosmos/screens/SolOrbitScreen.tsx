@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CelestialObject } from "../components/CelestialObject";
 import CosmosChatModal from "../components/CosmosChatModal";
 import { useQuarterlyInsights } from "@/hooks/useQuarterlyInsights";
 import { useAnnualInsights } from "@/hooks/useAnnualInsights";
+import { useYear } from "../context/YearContext";
 import {
   QUARTERLY_INFO,
   QUARTERLY_PROMPTS,
@@ -278,12 +279,26 @@ const SolOrbitScreen: React.FC<ScreenProps> = () => {
   const [isQuarterlyModalOpen, setIsQuarterlyModalOpen] = useState(false);
   const [isAnnualModalOpen, setIsAnnualModalOpen] = useState(false);
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
+  const [displayYear, setDisplayYear] = useState<number>(new Date().getFullYear());
   const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
   const { saveInsight: saveAnnualInsight } = useAnnualInsights();
+  const { selectedYear } = useYear();
   const phaseInfo = QUARTERLY_INFO[selectedMoonPhase];
-  const currentYear = new Date().getFullYear();
-  const quarterlyStorageKey = buildQuarterlyStorageKey(currentYear, selectedMoonPhase);
-  const annualStorageKey = buildAnnualStorageKey(currentYear);
+  
+  // Atualizar displayYear apenas quando um ano específico foi selecionado via navegação
+  useEffect(() => {
+    const currentYear = new Date().getFullYear();
+    // Se o selectedYear do contexto é diferente do ano atual, significa que foi clicado um sol específico
+    if (selectedYear !== currentYear) {
+      setDisplayYear(selectedYear);
+    } else {
+      // Se é o ano atual, mantém como padrão
+      setDisplayYear(currentYear);
+    }
+  }, [selectedYear]);
+
+  const quarterlyStorageKey = buildQuarterlyStorageKey(displayYear, selectedMoonPhase);
+  const annualStorageKey = buildAnnualStorageKey(displayYear);
 
   const handleMoonClick = (phase: MoonPhase) => {
     setSelectedMoonPhase(phase);
@@ -295,11 +310,11 @@ const SolOrbitScreen: React.FC<ScreenProps> = () => {
   };
 
   const handleQuarterlyInsightSubmit = async (insight: string) => {
-    await saveQuarterlyInsight(selectedMoonPhase, insight);
+    await saveQuarterlyInsight(selectedMoonPhase, insight, undefined, displayYear);
   };
 
   const handleAnnualInsightSubmit = async (insight: string) => {
-    await saveAnnualInsight(insight);
+    await saveAnnualInsight(insight, displayYear);
   };
 
   return (
@@ -328,11 +343,11 @@ const SolOrbitScreen: React.FC<ScreenProps> = () => {
       <CosmosChatModal
         isOpen={isAnnualModalOpen}
         storageKey={annualStorageKey}
-        title={`${currentYear}`}
+        title={`${displayYear}`}
         eyebrow="Insight Anual"
         subtitle="☀️ Sol"
         placeholder="Escreva sua reflexão, aprendizados e conquistas do ano..."
-        systemGreeting={`Bem-vindo ao seu insight anual de ${currentYear}`}
+        systemGreeting={`Bem-vindo ao seu insight anual de ${displayYear}`}
         systemQuestion="Qual foi a essência do seu ano? ☀️"
         submitLabel="✨ Concluir insight anual"
         tone="amber"

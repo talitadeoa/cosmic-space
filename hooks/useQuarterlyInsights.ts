@@ -12,15 +12,16 @@ export function useQuarterlyInsights() {
   const [error, setError] = useState<string | null>(null);
 
   const saveInsight = useCallback(
-    async (moonPhase: string, insight: string, quarterNumber?: number) => {
+    async (moonPhase: string, insight: string, quarterNumber?: number, year?: number) => {
       setIsLoading(true);
       setError(null);
 
       try {
+        const selectedYear = year ?? new Date().getFullYear();
         const response = await fetch('/api/form/quarterly-insight', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ moonPhase, insight, quarterNumber }),
+          body: JSON.stringify({ moonPhase, insight, quarterNumber, year: selectedYear }),
           credentials: 'include',
         });
 

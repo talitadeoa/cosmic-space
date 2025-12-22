@@ -11,15 +11,16 @@ export function useAnnualInsights() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const saveInsight = useCallback(async (insight: string) => {
+  const saveInsight = useCallback(async (insight: string, year?: number) => {
     setIsLoading(true);
     setError(null);
 
     try {
+      const selectedYear = year ?? new Date().getFullYear();
       const response = await fetch('/api/form/annual-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ insight }),
+        body: JSON.stringify({ insight, year: selectedYear }),
         credentials: 'include',
       });
 
@@ -28,9 +29,8 @@ export function useAnnualInsights() {
         throw new Error(data.error || 'Erro ao salvar insight');
       }
 
-      const year = new Date().getFullYear();
       const newInsight: AnnualInsight = {
-        year,
+        year: selectedYear,
         insight,
         timestamp: new Date().toISOString(),
       };
