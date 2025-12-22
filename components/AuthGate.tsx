@@ -18,9 +18,9 @@ export default function AuthGate({ children }: AuthGateProps) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-indigo-500/30 border-t-indigo-500" />
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500/30 border-t-indigo-500" />
           <p className="text-slate-300">Carregando...</p>
         </div>
       </div>
