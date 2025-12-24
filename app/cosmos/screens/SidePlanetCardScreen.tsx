@@ -16,6 +16,7 @@ import {
 import { PHASE_VIBES } from "../utils/phaseVibes";
 import type { ScreenProps } from "../types";
 import { usePhaseInputs } from "@/hooks/usePhaseInputs";
+import { useFilteredTodos, type FilterState } from "@/hooks/useFilteredTodos";
 import { SavedTodosPanel } from "../components/SavedTodosPanel";
 import { MoonPhasesRail } from "../components/MoonPhasesRail";
 import { IslandsList } from "../components/IslandsList";
@@ -41,7 +42,9 @@ type MoonClusterProps = {
   activeDrop: MoonPhase | null;
   moonCounts: Record<MoonPhase, number>;
   isDraggingTodo: boolean;
+  selectedPhase: MoonPhase | null;
   onMoonNavigate: (phase: MoonPhase, event: React.MouseEvent<HTMLDivElement>) => void;
+  onMoonFilter: (phase: MoonPhase | null) => void;
   onDrop: (phase: MoonPhase) => (event: React.DragEvent) => void;
   onDragOver: (phase: MoonPhase) => (event: React.DragEvent) => void;
   onDragLeave: () => void;
@@ -51,7 +54,9 @@ const MoonCluster = ({
   activeDrop,
   moonCounts,
   isDraggingTodo,
+  selectedPhase,
   onMoonNavigate,
+  onMoonFilter,
   onDrop,
   onDragOver,
   onDragLeave,
@@ -62,6 +67,7 @@ const MoonCluster = ({
         const moonTypes = ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"] as const;
         const moonType = moonTypes[i % moonTypes.length];
         const isActiveDrop = activeDrop === moonType;
+        const isSelectedPhase = selectedPhase === moonType;
         const badgeCount = moonCounts[moonType] ?? 0;
         const floatOffset = i * 1.5 - 3;
 
@@ -78,7 +84,12 @@ const MoonCluster = ({
               interactive
               onClick={(event) => {
                 if (isDraggingTodo) return;
-                onMoonNavigate(moonType, event);
+                // Se a fase já está selecionada, deseleciona; caso contrário, seleciona
+                if (isSelectedPhase) {
+                  onMoonFilter(null);
+                } else {
+                  onMoonFilter(moonType);
+                }
               }}
               floatOffset={floatOffset}
               onDrop={onDrop(moonType)}
@@ -86,6 +97,8 @@ const MoonCluster = ({
               onDragLeave={onDragLeave}
               className={`transition-transform duration-300 ${
                 isActiveDrop ? "scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]" : ""
+              } ${
+                isSelectedPhase ? "drop-shadow-[0_0_20px_rgba(129,140,248,0.9)]" : ""
               }`}
             />
           </div>
@@ -241,16 +254,22 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
   const [selectedProject, setSelectedProject] = useState("");
-  const [selectedIsland, setSelectedIsland] = useState<IslandId | null>(null);
-  const [selectedPhase, setSelectedPhase] = useState<MoonPhase | null>(null);
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
   const [newProjectDraft, setNewProjectDraft] = useState("");
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
-  const [todosPanelView, setTodosPanelView] = useState<"inbox" | "lua-atual">("inbox");
-  const [todosFilterView, setTodosFilterView] = useState<"todas" | "completas">("todas");
+  const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { saveInput } = usePhaseInputs();
+
+  // Estado consolidado de filtros
+  const [filters, setFilters] = useState<FilterState>({
+    view: "inbox",
+    completeness: "todas",
+    phase: null,
+    island: null,
+  });
 
   useEffect(() => {
     setSavedTodos(loadSavedTodos());
@@ -330,11 +349,19 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const handleDragStart = (todoId: string) => (e: React.DragEvent) => {
     e.dataTransfer.setData("text/todo-id", todoId);
     setIsDraggingTodo(true);
+    setDraggingTodoId(todoId);
   };
 
   const handleDragEnd = () => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
+    // A lógica de detecção de drop fora da área será feita com dragover/drop
+  };
+
+  const handleDeleteTodo = (todoId: string) => {
+    setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
+    setShowDeleteConfirm(false);
+    setDraggingTodoId(null);
   };
 
   const handleDropOnPhase = (phase: MoonPhase) => (e: React.DragEvent) => {
@@ -365,16 +392,19 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     );
   }, [savedTodos, selectedProject]);
 
+  // Usar o hook useFilteredTodos para aplicar todos os filtros
+  const displayedTodos = useFilteredTodos(savedTodos, filters, selectedProject);
+
   const moonCounts = useMemo(
     () =>
-      filteredTodos.reduce(
+      displayedTodos.reduce(
         (acc, todo) => {
           if (todo.phase) acc[todo.phase] = (acc[todo.phase] ?? 0) + 1;
           return acc;
         },
         {} as Record<MoonPhase, number>,
       ),
-    [filteredTodos],
+    [displayedTodos],
   );
 
   const projectOptions = useMemo(
@@ -413,8 +443,10 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
           {/* Ilhas abaixo do planeta */}
           <IslandsList
-            selectedIsland={selectedIsland}
-            onSelectIsland={setSelectedIsland}
+            selectedIsland={filters.island}
+            onSelectIsland={(island) =>
+              setFilters((prev) => ({ ...prev, island }))
+            }
           />
         </div>
 
@@ -469,9 +501,9 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setTodosPanelView("inbox")}
+                    onClick={() => setFilters((prev) => ({ ...prev, view: "inbox" }))}
                     className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                      todosPanelView === "inbox"
+                      filters.view === "inbox"
                         ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 border"
                         : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
                     }`}
@@ -480,9 +512,9 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setTodosPanelView("lua-atual")}
+                    onClick={() => setFilters((prev) => ({ ...prev, view: "lua-atual" }))}
                     className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                      todosPanelView === "lua-atual"
+                      filters.view === "lua-atual"
                         ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 border"
                         : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
                     }`}
@@ -492,15 +524,24 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 </div>
 
                 <SavedTodosPanel
-                  savedTodos={filteredTodos}
+                  savedTodos={displayedTodos}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onToggleComplete={handleToggleComplete}
                   onAssignPhase={assignTodoToPhase}
+                  onDeleteOutside={(todoId) => {
+                    setDraggingTodoId(todoId);
+                    setShowDeleteConfirm(true);
+                  }}
                   filterLabel={selectedProject.trim() || undefined}
-                  selectedPhase={selectedPhase}
-                  todosFilterView={todosFilterView}
-                  onFilterViewChange={setTodosFilterView}
+                  selectedPhase={filters.phase}
+                  todosFilterView={filters.completeness as "todas" | "completas"}
+                  onFilterViewChange={(view) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      completeness: view === "completas" ? "incompletas" : "todas",
+                    }))
+                  }
                 />
 
                 <TodoInput
@@ -520,8 +561,12 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             activeDrop={activeDrop}
             moonCounts={moonCounts}
             isDraggingTodo={isDraggingTodo}
+            selectedPhase={filters.phase}
             onMoonNavigate={(phase, event) =>
               navigateWithFocus("planetCardStandalone", { event, type: phase, size: "sm" })
+            }
+            onMoonFilter={(phase) =>
+              setFilters((prev) => ({ ...prev, phase }))
             }
             onDrop={handleDropOnPhase}
             onDragOver={handleDragOverPhase}
@@ -542,6 +587,39 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           />
         </div>
       </div>
+
+      {/* Modal de confirmação de exclusão */}
+      {showDeleteConfirm && draggingTodoId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="rounded-2xl border border-indigo-500/30 bg-slate-950/95 shadow-2xl shadow-indigo-900/40 p-6 max-w-sm w-full mx-4">
+            <h2 className="text-xl font-semibold text-white mb-2">
+              Deletar tarefa?
+            </h2>
+            <p className="text-slate-300 mb-6">
+              Você realmente deseja deletar essa tarefa? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDraggingTodoId(null);
+                }}
+                className="rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-900 hover:border-slate-600"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => draggingTodoId && handleDeleteTodo(draggingTodoId)}
+                className="rounded-lg bg-red-600/80 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 shadow-lg"
+              >
+                Deletar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

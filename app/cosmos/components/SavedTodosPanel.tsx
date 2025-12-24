@@ -11,6 +11,7 @@ interface SavedTodosPanelProps {
   onDragEnd: () => void;
   onToggleComplete: (todoId: string) => void;
   onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
+  onDeleteOutside?: (todoId: string) => void;
   filterLabel?: string;
   selectedPhase?: MoonPhase | null;
   todosFilterView?: "todas" | "completas";
@@ -32,18 +33,44 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onDragEnd,
   onToggleComplete,
   onAssignPhase,
+  onDeleteOutside,
   filterLabel,
   selectedPhase,
   todosFilterView = "todas",
   onFilterViewChange,
 }) => {
+  const panelRef = React.useRef<HTMLDivElement>(null);
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Se deixou a área do painel e não é um drop em um alvo interno
+    const rect = panelRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const isOutside =
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom;
+
+    if (isOutside && onDeleteOutside) {
+      const todoId = e.dataTransfer?.getData("text/todo-id");
+      if (todoId) {
+        onDeleteOutside(todoId);
+      }
+    }
+  };
+
   // Filtrar tarefas por fase se uma fase estiver selecionada
   const displayedTodos = selectedPhase
     ? savedTodos.filter((todo) => todo.phase === selectedPhase)
     : savedTodos;
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
+    <div
+      ref={panelRef}
+      className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20"
+      onDragLeave={handleDragLeave}
+    >
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
@@ -78,7 +105,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
             }`}
             title="Tarefas completas"
           >
-            ☑
+            ✔️
           </button>
         </div>
       </div>
@@ -158,5 +185,3 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     </div>
   );
 };
-
-export default SavedTodosPanel;
