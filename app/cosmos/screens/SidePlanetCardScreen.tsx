@@ -100,7 +100,12 @@ type FiltersPanelProps = {
   islandNames: IslandNames;
 };
 
-const FiltersPanel = ({ isOpen, filters, onClearFilters, islandNames }: FiltersPanelProps) => {
+const FiltersPanel = ({
+  isOpen,
+  filters,
+  onClearFilters,
+  islandNames,
+}: FiltersPanelProps) => {
   const showTodoStatus = filters.inputType === "checkbox" && filters.todoStatus !== "all";
   const hasActiveFilters =
     filters.view === "lua-atual" ||
@@ -440,33 +445,15 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   islandNames={islandNames}
                 />
 
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setFilters((prev) => ({ ...prev, view: "inbox" }))}
-                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                      filters.view === "inbox"
-                        ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 border"
-                        : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
-                    }`}
-                  >
-                    Inbox
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFilters((prev) => ({ ...prev, view: "lua-atual" }))}
-                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                      filters.view === "lua-atual"
-                        ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 border"
-                        : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
-                    }`}
-                  >
-                    Lua atual
-                  </button>
-                </div>
-
                 <SavedTodosPanel
                   savedTodos={displayedTodos}
+                  view={filters.view}
+                  onViewChange={(view) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      view,
+                    }))
+                  }
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onToggleComplete={handleToggleComplete}

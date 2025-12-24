@@ -8,6 +8,8 @@ import { getIslandLabel, type IslandNames } from "../utils/islandNames";
 
 interface SavedTodosPanelProps {
   savedTodos: SavedTodo[];
+  view?: "inbox" | "lua-atual";
+  onViewChange?: (view: "inbox" | "lua-atual") => void;
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
   onToggleComplete: (todoId: string) => void;
@@ -34,6 +36,8 @@ interface SavedTodosPanelProps {
  */
 export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   savedTodos,
+  view = "inbox",
+  onViewChange,
   onDragStart,
   onDragEnd,
   onToggleComplete,
@@ -85,6 +89,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const handleTodoStatusFilter = (status: "open" | "completed") => {
     const nextStatus = todoStatusFilter === status ? "all" : status;
     onTodoStatusFilterChange?.(nextStatus);
+  };
+  const handleViewChange = (nextView: "inbox" | "lua-atual") => {
+    onViewChange?.(nextView);
   };
 
   const resetEditingState = () => {
@@ -178,6 +185,30 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           <p className="text-[0.75rem] text-slate-400">
             {headerDescription}
           </p>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleViewChange("inbox")}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+                view === "inbox"
+                  ? "border border-indigo-300/80 bg-indigo-500/20 text-indigo-100"
+                  : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
+              }`}
+            >
+              Inbox
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewChange("lua-atual")}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+                view === "lua-atual"
+                  ? "border border-indigo-300/80 bg-indigo-500/20 text-indigo-100"
+                  : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
+              }`}
+            >
+              Lua atual
+            </button>
+          </div>
           {(filterLabel || statusLabel) && (
             <div className="mt-2 flex flex-wrap gap-2 text-[0.6rem] text-slate-300">
               {filterLabel && (
