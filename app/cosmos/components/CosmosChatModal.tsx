@@ -171,16 +171,23 @@ interface ChatMessagesProps {
   messages: ChatMessage[];
   styles: ChatStyles;
   inline: boolean;
+  containerRef: React.RefObject<HTMLDivElement>;
   messagesEndRef: React.RefObject<HTMLDivElement>;
 }
 
-function ChatMessages({ messages, styles, inline, messagesEndRef }: ChatMessagesProps) {
+function ChatMessages({
+  messages,
+  styles,
+  inline,
+  containerRef,
+  messagesEndRef,
+}: ChatMessagesProps) {
   const messagesClassName = inline
     ? "flex-1 min-h-0 space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20"
     : "flex-1 space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20";
 
   return (
-    <div className={messagesClassName}>
+    <div ref={containerRef} className={messagesClassName}>
       {messages.map((message, index) => (
         <motion.div
           key={message.id}
@@ -387,6 +394,7 @@ export default function CosmosChatModal({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [metaDraft, setMetaDraft] = useState<ChatMessageMeta>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   const styles = toneStyles[tone];
@@ -400,7 +408,12 @@ export default function CosmosChatModal({
   );
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+      return;
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
   const persistMessages = (next: ChatMessage[]) => {
@@ -421,20 +434,22 @@ export default function CosmosChatModal({
 
     // Usar html em vez de body para evitar problemas com overflow
     const htmlElement = document.documentElement;
-    const previousOverflow = htmlElement.style.overflow;
+    const bodyElement = document.body;
+    const previousHtmlOverflow = htmlElement.style.overflow;
+    const previousBodyOverflow = bodyElement.style.overflow;
     const previousPaddingRight = htmlElement.style.paddingRight;
     const scrollbarWidth = window.innerWidth - htmlElement.clientWidth;
 
     htmlElement.style.overflow = "hidden";
-    htmlElement.style.height = "100vh";
+    bodyElement.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       htmlElement.style.paddingRight = `${scrollbarWidth}px`;
     }
 
     return () => {
-      htmlElement.style.overflow = previousOverflow;
+      htmlElement.style.overflow = previousHtmlOverflow;
+      bodyElement.style.overflow = previousBodyOverflow;
       htmlElement.style.paddingRight = previousPaddingRight;
-      htmlElement.style.height = "";
     };
   }, [isOpen, inline]);
 
@@ -589,7 +604,7 @@ export default function CosmosChatModal({
       radius="lg"
       showAccent
       className={`flex flex-col ${
-        inline ? "w-full max-h-[420px]" : "h-[600px]"
+        inline ? "w-full max-h-[420px] overflow-auto" : "h-[600px]"
       }`}
     >
       {!inline && (
@@ -643,6 +658,7 @@ export default function CosmosChatModal({
         messages={messages}
         styles={styles}
         inline={inline}
+        containerRef={messagesContainerRef}
         messagesEndRef={messagesEndRef}
       />
 
@@ -687,7 +703,7 @@ export default function CosmosChatModal({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.25 }}
-            className="w-full"
+            className="w-full overflow-visible"
           >
             {chatWindow}
           </motion.div>

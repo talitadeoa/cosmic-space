@@ -16,6 +16,10 @@ import {
 import { PHASE_VIBES } from "../utils/phaseVibes";
 import type { ScreenProps } from "../types";
 import { usePhaseInputs } from "@/hooks/usePhaseInputs";
+import { SavedTodosPanel } from "../components/SavedTodosPanel";
+import { MoonPhasesRail } from "../components/MoonPhasesRail";
+import { IslandsList } from "../components/IslandsList";
+import type { IslandId } from "../types/screen";
 
 const MOON_COUNT = 4;
 const normalizeProjectName = (value: string) => value.trim();
@@ -37,7 +41,6 @@ type MoonClusterProps = {
   activeDrop: MoonPhase | null;
   moonCounts: Record<MoonPhase, number>;
   isDraggingTodo: boolean;
-  onSolNavigate: (event: React.MouseEvent<HTMLDivElement>) => void;
   onMoonNavigate: (phase: MoonPhase, event: React.MouseEvent<HTMLDivElement>) => void;
   onDrop: (phase: MoonPhase) => (event: React.DragEvent) => void;
   onDragOver: (phase: MoonPhase) => (event: React.DragEvent) => void;
@@ -48,26 +51,13 @@ const MoonCluster = ({
   activeDrop,
   moonCounts,
   isDraggingTodo,
-  onSolNavigate,
   onMoonNavigate,
   onDrop,
   onDragOver,
   onDragLeave,
 }: MoonClusterProps) => (
-  <div className="order-1 flex w-full flex-col items-center gap-3 sm:gap-4 lg:order-2 lg:w-auto lg:flex-row lg:items-center lg:gap-6">
-    <CelestialObject
-      type="sol"
-      size="md"
-      interactive
-      onClick={(event) => {
-        if (isDraggingTodo) return;
-        onSolNavigate(event);
-      }}
-      floatOffset={-2}
-      className="order-1 scale-90 sm:scale-100 lg:order-2"
-    />
-
-    <div className="order-2 flex w-full flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:order-1 lg:w-auto lg:flex-col lg:items-center">
+  <div className="flex w-full flex-col items-center gap-4">
+    <div className="flex flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:flex-col lg:items-center">
       {Array.from({ length: MOON_COUNT }).map((_, i) => {
         const moonTypes = ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"] as const;
         const moonType = moonTypes[i % moonTypes.length];
@@ -76,7 +66,7 @@ const MoonCluster = ({
         const floatOffset = i * 1.5 - 3;
 
         return (
-          <div key={`zigzag-lua-${i}`} className="relative flex items-center justify-center">
+          <div key={`moon-${i}`} className="relative flex items-center justify-center">
             {badgeCount > 0 && (
               <span className="absolute -right-3 top-1/2 flex h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-full bg-indigo-600 px-2 text-[0.65rem] font-semibold text-white shadow-md">
                 {badgeCount}
@@ -244,96 +234,15 @@ type SavedTodosPanelProps = {
   filterLabel?: string;
 };
 
-const SavedTodosPanel = ({
-  savedTodos,
-  onDragStart,
-  onDragEnd,
-  onToggleComplete,
-  filterLabel,
-}: SavedTodosPanelProps) => (
-  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
-    <div className="flex flex-col gap-3">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
-          To-dos salvos
-        </p>
-        <p className="text-[0.75rem] text-slate-400">
-          Adicione tarefas e arraste para a fase lunar desejada.
-        </p>
-      </div>
-    </div>
-
-    <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64">
-      {savedTodos.length === 0 ? (
-        <p className="text-sm text-slate-500">
-          {filterLabel
-            ? `Nenhuma tarefa no projeto ${filterLabel}.`
-            : "Nenhum to-do salvo ainda. Crie tarefas e organize por fase lunar."}
-        </p>
-      ) : (
-        savedTodos.map((todo) => (
-          <div
-            key={todo.id}
-            draggable
-            onDragStart={onDragStart(todo.id)}
-            onDragEnd={onDragEnd}
-            className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
-          >
-            <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onToggleComplete(todo.id);
-                  }}
-                aria-pressed={todo.completed}
-                aria-label={todo.completed ? "Marcar como pendente" : "Marcar como concluída"}
-                className={`flex h-5 w-5 items-center justify-center rounded-full border text-[0.65rem] transition ${
-                  todo.completed
-                    ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
-                    : "border-slate-500 bg-slate-900/80 text-slate-400 hover:border-emerald-400/70"
-                }`}
-              >
-                {todo.completed && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
-              </button>
-              <div className="flex flex-col gap-1">
-                <span
-                  className={`${
-                    todo.completed ? "text-slate-500 line-through" : "text-slate-100"
-                  }`}
-                >
-                  {todo.text}
-                </span>
-                {(todo.category || todo.dueDate) && (
-                  <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-400">
-                    {todo.category && (
-                      <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                        {todo.category}
-                      </span>
-                    )}
-                    {todo.dueDate && (
-                      <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                        {todo.dueDate}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-              {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
-            </span>
-          </div>
-        ))
-      )}
-    </div>
-  </div>
-);
+// SavedTodosPanel agora é importado de um arquivo separado
+// Removed inline definition - using separate SavedTodosPanel component
 
 const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
   const [selectedProject, setSelectedProject] = useState("");
+  const [selectedIsland, setSelectedIsland] = useState<IslandId | null>(null);
+  const [selectedPhase, setSelectedPhase] = useState<MoonPhase | null>(null);
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
   const [newProjectDraft, setNewProjectDraft] = useState("");
   const [isAddingProject, setIsAddingProject] = useState(false);
@@ -488,24 +397,27 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   return (
     <div className="relative flex w-full items-start justify-center px-4 sm:px-8 pt-4 sm:pt-6">
-      <div className="relative flex w-full max-w-6xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-        <MoonCluster
-          activeDrop={activeDrop}
-          moonCounts={moonCounts}
-          isDraggingTodo={isDraggingTodo}
-          onSolNavigate={(event) =>
-            navigateWithFocus("planetCardBelowSun", { event, type: "sol", size: "md" })
-          }
-          onMoonNavigate={(phase, event) =>
-            navigateWithFocus("planetCardStandalone", { event, type: phase, size: "sm" })
-          }
-          onDrop={handleDropOnPhase}
-          onDragOver={handleDragOverPhase}
-          onDragLeave={handleDragLeavePhase}
-        />
+      <div className="relative flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+        {/* Coluna esquerda: Planeta + Ilhas */}
+        <div className="flex w-full flex-col items-center gap-8 lg:w-auto lg:max-w-xs">
+          {/* Planeta */}
+          <div className="flex justify-center">
+            <CelestialObject
+              type="planeta"
+              size="lg"
+              className="scale-75 transition-transform xl:scale-90 2xl:scale-100"
+            />
+          </div>
 
-        {/* card com painel de to-dos embutido */}
-        <div className="relative order-2 w-full lg:order-1 lg:max-w-3xl lg:pl-16">
+          {/* Ilhas abaixo do planeta */}
+          <IslandsList
+            selectedIsland={selectedIsland}
+            onSelectIsland={setSelectedIsland}
+          />
+        </div>
+
+        {/* Coluna central: Card com To-dos */}
+        <div className="relative w-full lg:flex-1">
           <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-lg sm:p-6">
             <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
               <div className="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
@@ -555,10 +467,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 <TodoInput
                   className="shadow-lg flex-shrink-0"
                   onTodoSubmit={handleTodoSubmit}
-                  projectOptions={projectOptions}
-                  projectValue={selectedProject}
-                  onProjectChange={setSelectedProject}
-                  chatInline={false}
+                  chatInline={true}
                 />
 
                 <SavedTodosPanel
@@ -566,19 +475,42 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onToggleComplete={handleToggleComplete}
+                  onAssignPhase={assignTodoToPhase}
                   filterLabel={selectedProject.trim() || undefined}
+                  selectedPhase={selectedPhase}
                 />
               </div>
             </div>
           </Card>
+        </div>
 
-          <div className="hidden justify-center lg:absolute lg:left-0 lg:top-1/2 lg:flex lg:-translate-y-1/2">
-            <CelestialObject
-              type="planeta"
-              size="lg"
-              className="scale-75 transition-transform xl:scale-90 2xl:scale-100"
-            />
-          </div>
+        {/* Coluna direita: Luas + Sol */}
+        <div className="flex w-full flex-col items-center justify-center gap-6 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
+          {/* MoonCluster com as luas interativas */}
+          <MoonCluster
+            activeDrop={activeDrop}
+            moonCounts={moonCounts}
+            isDraggingTodo={isDraggingTodo}
+            onMoonNavigate={(phase, event) =>
+              navigateWithFocus("planetCardStandalone", { event, type: phase, size: "sm" })
+            }
+            onDrop={handleDropOnPhase}
+            onDragOver={handleDragOverPhase}
+            onDragLeave={handleDragLeavePhase}
+          />
+
+          {/* Sol */}
+          <CelestialObject
+            type="sol"
+            size="md"
+            interactive
+            onClick={(event) => {
+              if (isDraggingTodo) return;
+              navigateWithFocus("planetCardBelowSun", { event, type: "sol", size: "md" });
+            }}
+            floatOffset={-2}
+            className="scale-90 sm:scale-100"
+          />
         </div>
       </div>
     </div>

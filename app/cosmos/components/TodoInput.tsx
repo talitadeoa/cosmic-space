@@ -16,40 +16,27 @@ export interface TodoItem {
 
 interface TodoInputProps {
   onTodoSubmit: (todo: TodoItem) => void;
-  projectOptions: string[];
-  projectValue: string;
-  onProjectChange: (value: string) => void;
   className?: string;
   chatInline?: boolean;
 }
 
 const TodoInput: React.FC<TodoInputProps> = ({
   onTodoSubmit,
-  projectValue,
-  projectOptions,
-  onProjectChange,
   className = "",
   chatInline = true,
 }) => {
   const [newDepth, setNewDepth] = useState(0);
-  const [isChatOpen, setIsChatOpen] = useState(chatInline);
-  const activeProject = projectValue;
-
-  const updateProject = (value: string) => {
-    onProjectChange(value);
-  };
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleAddTodo = (text: string, meta?: { category?: string; date?: string }) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    const trimmedProject = activeProject.trim();
 
     onTodoSubmit({
       id: `todo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       text: trimmed,
       completed: false,
       depth: newDepth,
-      project: trimmedProject ? trimmedProject : undefined,
       category: meta?.category,
       dueDate: meta?.date,
     });
@@ -61,56 +48,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
   tomorrow.setDate(today.getDate() + 1);
   const nextWeek = new Date(today);
   nextWeek.setDate(today.getDate() + 7);
-  const headerExtra = (
-    <div className="mt-3 flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          value={activeProject}
-          onChange={(e) => updateProject(e.target.value)}
-          placeholder="Projeto (opcional)"
-          aria-label="Projeto"
-          className="min-w-[180px] flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white placeholder-white/40 focus:border-indigo-200/60 focus:outline-none focus:ring-2 focus:ring-indigo-400/30"
-        />
-        <select
-          value={newDepth}
-          onChange={(e) => setNewDepth(Number(e.target.value))}
-          className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white focus:border-indigo-200/60 focus:outline-none focus:ring-2 focus:ring-indigo-400/30"
-          aria-label="Nivel"
-        >
-          <option value={0}>Principal</option>
-          <option value={1}>Sub</option>
-          <option value={2}>Sub-nivel</option>
-        </select>
-        {activeProject && (
-          <button
-            type="button"
-            onClick={() => updateProject("")}
-            className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10"
-          >
-            Limpar projeto
-          </button>
-        )}
-      </div>
-      {projectOptions.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1">
-          {projectOptions.map((project) => (
-            <button
-              key={project}
-              type="button"
-              onClick={() => updateProject(project)}
-              className={`rounded-full border px-2 py-1 text-[0.65rem] transition ${
-                project === activeProject?.trim()
-                  ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-50"
-                  : "border-white/10 bg-white/5 text-white/70 hover:border-indigo-300/60"
-              }`}
-            >
-              {project}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  const headerExtra = undefined;
 
   return (
     <InputWindow
@@ -132,9 +70,9 @@ const TodoInput: React.FC<TodoInputProps> = ({
         inline={chatInline}
         isOpen={isChatOpen}
         storageKey="todo-input"
-        title="Checklist Orbital"
-        eyebrow="Nova tarefa"
-        subtitle="Adicione tarefas em formato de conversa"
+        title=""
+        eyebrow=""
+        subtitle=""
         placeholder="Digite a tarefa que deseja adicionar..."
         systemGreeting="Vamos registrar uma nova tarefa."
         systemQuestion="Qual tarefa quer adicionar agora?"
