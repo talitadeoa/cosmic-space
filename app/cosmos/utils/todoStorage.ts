@@ -6,10 +6,9 @@ import { MOON_PHASE_LABELS, MOON_PHASES, type MoonPhase } from "./moonPhases";
 export type { MoonPhase } from "./moonPhases";
 export type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
 
-export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase; islandId?: IslandId; project?: string };
+export type SavedTodo = ParsedTodoItem & { phase?: MoonPhase; islandId?: IslandId };
 
 export const TODO_STORAGE_KEY = "cosmic_space_todos_salvos";
-export const PROJECTS_STORAGE_KEY = "cosmic_space_projects";
 
 export const phaseLabels: Record<MoonPhase, string> = MOON_PHASE_LABELS;
 export const phaseOrder: MoonPhase[] = MOON_PHASES;
@@ -35,10 +34,6 @@ export function loadSavedTodos(): SavedTodo[] {
         text: typeof item.text === "string" ? item.text : "",
         completed: Boolean(item.completed),
         depth: Number.isFinite(item.depth) ? Number(item.depth) : 0,
-        project:
-          typeof item.project === "string" && item.project.trim().length > 0
-            ? item.project
-            : undefined,
         islandId: isValidIsland(item.islandId) ? item.islandId : undefined,
         phase: isValidPhase(item.phase) ? item.phase : undefined,
       }))
@@ -49,24 +44,6 @@ export function loadSavedTodos(): SavedTodo[] {
   }
 }
 
-export function loadSavedProjects(): string[] {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const stored = localStorage.getItem(PROJECTS_STORAGE_KEY);
-    if (!stored) return [];
-
-    const parsed = JSON.parse(stored) as string[];
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed
-      .map((item) => (typeof item === "string" ? item.trim() : ""))
-      .filter((item) => item.length > 0);
-  } catch (error) {
-    console.warn("Falha ao ler projetos salvos", error);
-    return [];
-  }
-}
 
 export function saveSavedTodos(todos: SavedTodo[]) {
   if (typeof window === "undefined") return;
@@ -75,15 +52,5 @@ export function saveSavedTodos(todos: SavedTodo[]) {
     localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos));
   } catch (error) {
     console.warn("Falha ao salvar to-dos", error);
-  }
-}
-
-export function saveSavedProjects(projects: string[]) {
-  if (typeof window === "undefined") return;
-
-  try {
-    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
-  } catch (error) {
-    console.warn("Falha ao salvar projetos", error);
   }
 }

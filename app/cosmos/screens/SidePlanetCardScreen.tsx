@@ -5,10 +5,8 @@ import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
 import TodoInput, { TodoItem as ParsedTodoItem } from "../components/TodoInput";
 import {
-  loadSavedProjects,
   loadSavedTodos,
   phaseLabels,
-  saveSavedProjects,
   saveSavedTodos,
   type MoonPhase,
   type SavedTodo,
@@ -18,25 +16,9 @@ import type { ScreenProps } from "../types";
 import { usePhaseInputs } from "@/hooks/usePhaseInputs";
 import { useFilteredTodos, type FilterState } from "@/hooks/useFilteredTodos";
 import { SavedTodosPanel } from "../components/SavedTodosPanel";
-import { MoonPhasesRail } from "../components/MoonPhasesRail";
 import { IslandsList } from "../components/IslandsList";
-import type { IslandId } from "../types/screen";
 
 const MOON_COUNT = 4;
-const normalizeProjectName = (value: string) => value.trim();
-const mergeProjects = (projects: string[]) => {
-  const seen = new Set<string>();
-  const result: string[] = [];
-  projects.forEach((project) => {
-    const trimmed = normalizeProjectName(project);
-    if (!trimmed) return;
-    const key = trimmed.toLowerCase();
-    if (seen.has(key)) return;
-    seen.add(key);
-    result.push(trimmed);
-  });
-  return result;
-};
 
 type MoonClusterProps = {
   activeDrop: MoonPhase | null;
@@ -108,155 +90,83 @@ const MoonCluster = ({
   </div>
 );
 
-type ProjectMenuPanelProps = {
+type FiltersPanelProps = {
   isOpen: boolean;
-  projectOptions: string[];
-  projectCounts: Map<string, number>;
-  totalCount: number;
-  selectedProject: string;
-  isAddingProject: boolean;
-  newProjectDraft: string;
-  onSelectProject: (project: string) => void;
-  onDraftChange: (value: string) => void;
-  onCreateProject: () => void;
-  onStartAdd: () => void;
-  onCancelAdd: () => void;
-  onClearProject: () => void;
+  filters: FilterState;
+  onClearFilters: () => void;
 };
 
-const ProjectMenuPanel = ({
-  isOpen,
-  projectOptions,
-  projectCounts,
-  totalCount,
-  selectedProject,
-  isAddingProject,
-  newProjectDraft,
-  onSelectProject,
-  onDraftChange,
-  onCreateProject,
-  onStartAdd,
-  onCancelAdd,
-  onClearProject,
-}: ProjectMenuPanelProps) => (
-  <div
-    className={`overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-950/70 shadow-xl shadow-indigo-900/20 transition-[max-height,opacity,transform] duration-300 ${
-      isOpen ? "max-h-80 opacity-100 translate-y-0 p-3" : "max-h-0 opacity-0 -translate-y-2 p-0"
-    }`}
-  >
-    <div>
-      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
-        Agrupamento por projeto
-      </p>
-      <p className="text-[0.75rem] text-slate-400">
-        Selecione um projeto para filtrar as tarefas.
-      </p>
-    </div>
+const FiltersPanel = ({ isOpen, filters, onClearFilters }: FiltersPanelProps) => {
+  const hasActiveFilters =
+    filters.view === "lua-atual" ||
+    filters.completeness === "completas" ||
+    Boolean(filters.phase) ||
+    Boolean(filters.island);
 
-    <div className="mt-3 flex flex-wrap gap-2">
-      <button
-        type="button"
-        onClick={onClearProject}
-        className={`flex items-center gap-2 rounded-full border px-3 py-1 text-[0.7rem] font-semibold transition ${
-          selectedProject.trim()
-            ? "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
-            : "border-indigo-300/80 bg-indigo-500/20 text-indigo-100"
-        }`}
-      >
-        <span>Todos</span>
-        <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[0.6rem] text-slate-300">
-          {totalCount}
-        </span>
-      </button>
-      {projectOptions.length === 0 ? (
-        <span className="text-xs text-slate-500">Nenhum projeto criado ainda.</span>
-      ) : (
-        projectOptions.map((project) => {
-          const count = projectCounts.get(project.toLowerCase()) ?? 0;
-          const isActive = project === selectedProject.trim();
-          return (
-            <button
-              key={project}
-              type="button"
-              onClick={() => onSelectProject(project)}
-              className={`flex items-center gap-2 rounded-full border px-3 py-1 text-[0.7rem] font-semibold transition ${
-                isActive
-                  ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-100"
-                  : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
-              }`}
-            >
-              <span>{project}</span>
-              <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[0.6rem] text-slate-300">
-                {count}
-              </span>
-            </button>
-          );
-        })
-      )}
-    </div>
+  const islandLabel = filters.island
+    ? `Ilha ${filters.island.replace("ilha", "")}`
+    : null;
 
-    <div className="mt-3">
-      {isAddingProject ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            value={newProjectDraft}
-            onChange={(event) => onDraftChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                onCreateProject();
-              }
-            }}
-            placeholder="Nome do projeto"
-            className="min-w-[180px] flex-1 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs text-indigo-50 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-          />
-          <button
-            type="button"
-            onClick={onCreateProject}
-            className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-indigo-700"
-          >
-            Salvar
-          </button>
-          <button
-            type="button"
-            onClick={onCancelAdd}
-            className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-900"
-          >
-            Cancelar
-          </button>
+  return (
+    <div
+      className={`overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-950/70 shadow-xl shadow-indigo-900/20 transition-[max-height,opacity,transform] duration-300 ${
+        isOpen ? "max-h-80 opacity-100 translate-y-0 p-3" : "max-h-0 opacity-0 -translate-y-2 p-0"
+      }`}
+    >
+      <div>
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
+          Painel de filtros
+        </p>
+        <p className="text-[0.75rem] text-slate-400">
+          Ajuste como as tarefas aparecem na lista.
+        </p>
+      </div>
+
+      {hasActiveFilters ? (
+        <div className="mt-3 flex flex-wrap gap-2 text-[0.7rem] font-semibold text-slate-200">
+          {filters.view === "lua-atual" && (
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              Lua atual
+            </span>
+          )}
+          {filters.completeness === "completas" && (
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              Completas
+            </span>
+          )}
+          {filters.phase && (
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              {phaseLabels[filters.phase]}
+            </span>
+          )}
+          {islandLabel && (
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              {islandLabel}
+            </span>
+          )}
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={onStartAdd}
-          className="inline-flex items-center gap-2 rounded-full border border-dashed border-indigo-400/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-indigo-100 transition hover:border-indigo-300"
-        >
-          <span className="text-base">+</span>
-          Novo projeto
-        </button>
+        <p className="mt-3 text-xs text-slate-500">Nenhum filtro extra ativo.</p>
+      )}
+
+      {hasActiveFilters && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={onClearFilters}
+            className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-900"
+          >
+            Limpar filtros
+          </button>
+        </div>
       )}
     </div>
-  </div>
-);
-
-type SavedTodosPanelProps = {
-  savedTodos: SavedTodo[];
-  onDragStart: (todoId: string) => (event: React.DragEvent) => void;
-  onDragEnd: () => void;
-  onToggleComplete: (todoId: string) => void;
-  filterLabel?: string;
+  );
 };
-
-// SavedTodosPanel agora é importado de um arquivo separado
-// Removed inline definition - using separate SavedTodosPanel component
 
 const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
-  const [savedProjects, setSavedProjects] = useState<string[]>([]);
-  const [selectedProject, setSelectedProject] = useState("");
-  const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
-  const [newProjectDraft, setNewProjectDraft] = useState("");
-  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
   const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
@@ -271,44 +181,40 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     island: null,
   });
 
+  const resetFilters = () => {
+    setFilters({
+      view: "inbox",
+      completeness: "todas",
+      phase: null,
+      island: null,
+    });
+  };
+
   useEffect(() => {
     setSavedTodos(loadSavedTodos());
-    setSavedProjects(loadSavedProjects());
   }, []);
 
   useEffect(() => {
     saveSavedTodos(savedTodos);
   }, [savedTodos]);
 
-  useEffect(() => {
-    saveSavedProjects(savedProjects);
-  }, [savedProjects]);
-
   const handleTodoSubmit = (todo: ParsedTodoItem) => {
-    if (todo.project?.trim()) {
-      setSavedProjects((prev) => mergeProjects([...prev, todo.project ?? ""]));
-    }
     setSavedTodos((prev) => {
-      const key = `${todo.text}|${todo.depth}|${todo.project ?? ""}`;
+      const key = `${todo.text}|${todo.depth}`;
       const existingIndex = prev.findIndex(
-        (item) => `${item.text}|${item.depth}|${item.project ?? ""}` === key,
+        (item) => `${item.text}|${item.depth}` === key,
       );
       if (existingIndex === -1) {
         return [...prev, todo];
       }
       const updated = [...prev];
-      updated[existingIndex] = { ...updated[existingIndex], completed: todo.completed };
+      updated[existingIndex] = {
+        ...updated[existingIndex],
+        ...todo,
+        id: updated[existingIndex].id,
+      };
       return updated;
     });
-  };
-
-  const handleCreateProject = () => {
-    const trimmed = newProjectDraft.trim();
-    if (!trimmed) return;
-    setSavedProjects((prev) => mergeProjects([...prev, trimmed]));
-    setSelectedProject(trimmed);
-    setNewProjectDraft("");
-    setIsAddingProject(false);
   };
 
   const handleToggleComplete = (todoId: string) => {
@@ -335,7 +241,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       content: target.text,
       vibe: PHASE_VIBES[phase].label,
       metadata: {
-        project: target.project ?? null,
         category: target.category ?? null,
         dueDate: target.dueDate ?? null,
         depth: target.depth,
@@ -383,17 +288,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setActiveDrop(null);
   };
 
-  const filteredTodos = useMemo(() => {
-    const trimmed = selectedProject.trim();
-    if (!trimmed) return savedTodos;
-    const target = trimmed.toLowerCase();
-    return savedTodos.filter(
-      (todo) => (todo.project ?? "").trim().toLowerCase() === target,
-    );
-  }, [savedTodos, selectedProject]);
-
   // Usar o hook useFilteredTodos para aplicar todos os filtros
-  const displayedTodos = useFilteredTodos(savedTodos, filters, selectedProject);
+  const displayedTodos = useFilteredTodos(savedTodos, filters);
 
   const moonCounts = useMemo(
     () =>
@@ -406,26 +302,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       ),
     [displayedTodos],
   );
-
-  const projectOptions = useMemo(
-    () =>
-      mergeProjects([
-        ...savedProjects,
-        ...savedTodos.map((todo) => todo.project ?? ""),
-      ]),
-    [savedProjects, savedTodos],
-  );
-
-  const projectCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    savedTodos.forEach((todo) => {
-      const projectName = todo.project?.trim();
-      if (!projectName) return;
-      const key = projectName.toLowerCase();
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    });
-    return counts;
-  }, [savedTodos]);
 
   return (
     <div className="relative flex w-full items-start justify-center px-4 sm:px-8 pt-4 sm:pt-6">
@@ -465,37 +341,18 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (isProjectMenuOpen) {
-                      setIsAddingProject(false);
-                      setNewProjectDraft("");
-                    }
-                    setIsProjectMenuOpen((prev) => !prev);
-                  }}
+                  onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
                   className="rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
                 >
-                  {isProjectMenuOpen ? "Esconder" : "Mostrar"} painel
+                  {isFiltersPanelOpen ? "Esconder" : "Mostrar"} painel
                 </button>
               </div>
 
               <div className="flex flex-col gap-4 flex-shrink-0">
-                <ProjectMenuPanel
-                  isOpen={isProjectMenuOpen}
-                  projectOptions={projectOptions}
-                  projectCounts={projectCounts}
-                  totalCount={savedTodos.length}
-                  selectedProject={selectedProject}
-                  isAddingProject={isAddingProject}
-                  newProjectDraft={newProjectDraft}
-                  onSelectProject={setSelectedProject}
-                  onDraftChange={setNewProjectDraft}
-                  onCreateProject={handleCreateProject}
-                  onStartAdd={() => setIsAddingProject(true)}
-                  onCancelAdd={() => {
-                    setIsAddingProject(false);
-                    setNewProjectDraft("");
-                  }}
-                  onClearProject={() => setSelectedProject("")}
+                <FiltersPanel
+                  isOpen={isFiltersPanelOpen}
+                  filters={filters}
+                  onClearFilters={resetFilters}
                 />
 
                 <div className="flex gap-2">
@@ -533,13 +390,12 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                     setDraggingTodoId(todoId);
                     setShowDeleteConfirm(true);
                   }}
-                  filterLabel={selectedProject.trim() || undefined}
                   selectedPhase={filters.phase}
-                  todosFilterView={filters.completeness as "todas" | "completas"}
+                  todosFilterView={filters.completeness}
                   onFilterViewChange={(view) =>
                     setFilters((prev) => ({
                       ...prev,
-                      completeness: view === "completas" ? "incompletas" : "todas",
+                      completeness: view,
                     }))
                   }
                 />

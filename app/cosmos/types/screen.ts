@@ -28,7 +28,6 @@ export interface TaskHandlers {
 export interface ScreenSelectionState {
   selectedIsland: IslandId | null;
   selectedPhase: MoonPhase | null;
-  selectedProject: string;
 }
 
 /**
@@ -37,7 +36,6 @@ export interface ScreenSelectionState {
 export interface TaskFilters {
   byPhase?: MoonPhase | null;
   byIsland?: IslandId | null;
-  byProject?: string;
 }
 
 /**

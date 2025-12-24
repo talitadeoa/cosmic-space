@@ -12,7 +12,6 @@ interface SavedTodosPanelProps {
   onToggleComplete: (todoId: string) => void;
   onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
   onDeleteOutside?: (todoId: string) => void;
-  filterLabel?: string;
   selectedPhase?: MoonPhase | null;
   todosFilterView?: "todas" | "completas";
   onFilterViewChange?: (view: "todas" | "completas") => void;
@@ -34,7 +33,6 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onToggleComplete,
   onAssignPhase,
   onDeleteOutside,
-  filterLabel,
   selectedPhase,
   todosFilterView = "todas",
   onFilterViewChange,
@@ -81,6 +79,15 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               ? `Tarefas associadas à fase: ${phaseLabels[selectedPhase]}`
               : "Adicione tarefas e arraste para a fase lunar desejada."}
           </p>
+          {todosFilterView === "completas" && (
+            <div className="mt-2 flex flex-wrap gap-2 text-[0.6rem] text-slate-300">
+              {todosFilterView === "completas" && (
+                <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                  Completas
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <button
