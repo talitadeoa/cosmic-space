@@ -13,6 +13,8 @@ interface SavedTodosPanelProps {
   onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
   filterLabel?: string;
   selectedPhase?: MoonPhase | null;
+  todosFilterView?: "todas" | "completas";
+  onFilterViewChange?: (view: "todas" | "completas") => void;
 }
 
 /**
@@ -32,6 +34,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onAssignPhase,
   filterLabel,
   selectedPhase,
+  todosFilterView = "todas",
+  onFilterViewChange,
 }) => {
   // Filtrar tarefas por fase se uma fase estiver selecionada
   const displayedTodos = selectedPhase
@@ -40,7 +44,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
 
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20">
-      <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
             {selectedPhase ? `To-dos - ${phaseLabels[selectedPhase]}` : "To-dos salvos"}
@@ -50,6 +54,32 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               ? `Tarefas associadas à fase: ${phaseLabels[selectedPhase]}`
               : "Adicione tarefas e arraste para a fase lunar desejada."}
           </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onFilterViewChange?.("todas")}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg font-bold transition ${
+              todosFilterView === "todas"
+                ? "border border-indigo-300/80 bg-indigo-500/20 text-indigo-100"
+                : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
+            }`}
+            title="Todas as tarefas"
+          >
+            T
+          </button>
+          <button
+            type="button"
+            onClick={() => onFilterViewChange?.("completas")}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
+              todosFilterView === "completas"
+                ? "border border-indigo-300/80 bg-indigo-500/20 text-indigo-100"
+                : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
+            }`}
+            title="Tarefas completas"
+          >
+            ☑
+          </button>
         </div>
       </div>
 

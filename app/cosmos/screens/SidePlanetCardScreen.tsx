@@ -248,6 +248,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
+  const [todosPanelView, setTodosPanelView] = useState<"inbox" | "lua-atual">("inbox");
+  const [todosFilterView, setTodosFilterView] = useState<"todas" | "completas">("todas");
   const { saveInput } = usePhaseInputs();
 
   useEffect(() => {
@@ -464,11 +466,30 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onClearProject={() => setSelectedProject("")}
                 />
 
-                <TodoInput
-                  className="shadow-lg flex-shrink-0"
-                  onTodoSubmit={handleTodoSubmit}
-                  chatInline={true}
-                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTodosPanelView("inbox")}
+                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                      todosPanelView === "inbox"
+                        ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 border"
+                        : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
+                    }`}
+                  >
+                    Inbox
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTodosPanelView("lua-atual")}
+                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                      todosPanelView === "lua-atual"
+                        ? "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 border"
+                        : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60"
+                    }`}
+                  >
+                    Lua atual
+                  </button>
+                </div>
 
                 <SavedTodosPanel
                   savedTodos={filteredTodos}
@@ -478,6 +499,14 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onAssignPhase={assignTodoToPhase}
                   filterLabel={selectedProject.trim() || undefined}
                   selectedPhase={selectedPhase}
+                  todosFilterView={todosFilterView}
+                  onFilterViewChange={setTodosFilterView}
+                />
+
+                <TodoInput
+                  className="shadow-lg flex-shrink-0"
+                  onTodoSubmit={handleTodoSubmit}
+                  chatInline={true}
                 />
               </div>
             </div>
