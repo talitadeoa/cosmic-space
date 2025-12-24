@@ -1,20 +1,15 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import InputWindow from "./InputWindow";
-import {
-  ChatMessage,
-  ChatMessageMeta,
-  loadChatHistory,
-  saveChatHistory,
-} from "@/lib/chatHistory";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import InputWindow from './InputWindow';
+import { ChatMessage, ChatMessageMeta, loadChatHistory, saveChatHistory } from '@/lib/chatHistory';
 
-type SubmitStrategy = "concat" | "last";
+type SubmitStrategy = 'concat' | 'last';
 
-type Tone = "indigo" | "violet" | "amber" | "sky";
-type ChatStyles = (typeof toneStyles)["indigo"];
+type Tone = 'indigo' | 'violet' | 'amber' | 'sky';
+type ChatStyles = (typeof toneStyles)['indigo'];
 
 interface CosmosChatModalProps {
   isOpen: boolean;
@@ -64,57 +59,57 @@ const toneStyles: Record<
   }
 > = {
   indigo: {
-    headerBorder: "border-indigo-300/30",
-    eyebrowText: "text-indigo-100/80",
-    badge: "border-indigo-300/40 bg-indigo-500/10 text-indigo-100",
-    userBubble: "bg-indigo-500/40 border border-indigo-300/40 text-white rounded-br-none",
-    systemBubble: "bg-white/10 border border-white/15 text-slate-100 rounded-bl-none",
-    sendButton: "border-indigo-300/60 bg-indigo-500/30 text-white hover:bg-indigo-500/45",
+    headerBorder: 'border-indigo-300/30',
+    eyebrowText: 'text-indigo-100/80',
+    badge: 'border-indigo-300/40 bg-indigo-500/10 text-indigo-100',
+    userBubble: 'bg-indigo-500/40 border border-indigo-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    sendButton: 'border-indigo-300/60 bg-indigo-500/30 text-white hover:bg-indigo-500/45',
     submitButton:
-      "border-indigo-300/60 bg-indigo-500/30 text-white hover:bg-indigo-500/45 shadow-indigo-900/40 hover:shadow-indigo-700/40",
+      'border-indigo-300/60 bg-indigo-500/30 text-white hover:bg-indigo-500/45 shadow-indigo-900/40 hover:shadow-indigo-700/40',
   },
   violet: {
-    headerBorder: "border-violet-300/30",
-    eyebrowText: "text-violet-100/80",
-    badge: "border-violet-300/40 bg-violet-500/10 text-violet-100",
-    userBubble: "bg-violet-500/35 border border-violet-300/40 text-white rounded-br-none",
-    systemBubble: "bg-white/10 border border-white/15 text-slate-100 rounded-bl-none",
-    sendButton: "border-violet-300/60 bg-violet-500/30 text-white hover:bg-violet-500/45",
+    headerBorder: 'border-violet-300/30',
+    eyebrowText: 'text-violet-100/80',
+    badge: 'border-violet-300/40 bg-violet-500/10 text-violet-100',
+    userBubble: 'bg-violet-500/35 border border-violet-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    sendButton: 'border-violet-300/60 bg-violet-500/30 text-white hover:bg-violet-500/45',
     submitButton:
-      "border-violet-300/60 bg-violet-500/30 text-white hover:bg-violet-500/45 shadow-violet-900/40 hover:shadow-violet-700/40",
+      'border-violet-300/60 bg-violet-500/30 text-white hover:bg-violet-500/45 shadow-violet-900/40 hover:shadow-violet-700/40',
   },
   amber: {
-    headerBorder: "border-amber-300/40",
-    eyebrowText: "text-amber-100/80",
-    badge: "border-amber-300/40 bg-amber-500/10 text-amber-100",
-    userBubble: "bg-amber-500/30 border border-amber-300/40 text-white rounded-br-none",
-    systemBubble: "bg-white/10 border border-white/15 text-slate-100 rounded-bl-none",
-    sendButton: "border-amber-300/60 bg-amber-500/30 text-white hover:bg-amber-500/45",
+    headerBorder: 'border-amber-300/40',
+    eyebrowText: 'text-amber-100/80',
+    badge: 'border-amber-300/40 bg-amber-500/10 text-amber-100',
+    userBubble: 'bg-amber-500/30 border border-amber-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    sendButton: 'border-amber-300/60 bg-amber-500/30 text-white hover:bg-amber-500/45',
     submitButton:
-      "border-amber-300/60 bg-amber-500/30 text-white hover:bg-amber-500/45 shadow-amber-900/40 hover:shadow-amber-700/40",
+      'border-amber-300/60 bg-amber-500/30 text-white hover:bg-amber-500/45 shadow-amber-900/40 hover:shadow-amber-700/40',
   },
   sky: {
-    headerBorder: "border-sky-300/40",
-    eyebrowText: "text-sky-100/80",
-    badge: "border-sky-300/40 bg-sky-500/10 text-sky-100",
-    userBubble: "bg-sky-500/30 border border-sky-300/40 text-white rounded-br-none",
-    systemBubble: "bg-white/10 border border-white/15 text-slate-100 rounded-bl-none",
-    sendButton: "border-sky-300/60 bg-sky-500/30 text-white hover:bg-sky-500/45",
+    headerBorder: 'border-sky-300/40',
+    eyebrowText: 'text-sky-100/80',
+    badge: 'border-sky-300/40 bg-sky-500/10 text-sky-100',
+    userBubble: 'bg-sky-500/30 border border-sky-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    sendButton: 'border-sky-300/60 bg-sky-500/30 text-white hover:bg-sky-500/45',
     submitButton:
-      "border-sky-300/60 bg-sky-500/30 text-white hover:bg-sky-500/45 shadow-sky-900/40 hover:shadow-sky-700/40",
+      'border-sky-300/60 bg-sky-500/30 text-white hover:bg-sky-500/45 shadow-sky-900/40 hover:shadow-sky-700/40',
   },
 };
 
 const buildSystemMessage = (id: string, content: string): ChatMessage => ({
   id,
-  role: "system",
+  role: 'system',
   content,
   timestamp: new Date().toISOString(),
 });
 
 const buildUserMessage = (content: string): ChatMessage => ({
   id: `user-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-  role: "user",
+  role: 'user',
   content,
   timestamp: new Date().toISOString(),
 });
@@ -139,21 +134,19 @@ function ChatHeader({
   styles,
 }: ChatHeaderProps) {
   return (
-    <div className={`border-b ${styles.headerBorder} ${inline ? "pb-3" : "pb-4"}`}>
+    <div className={`border-b ${styles.headerBorder} ${inline ? 'pb-3' : 'pb-4'}`}>
       {eyebrow && (
         <div
           className={`mb-2 font-semibold uppercase tracking-[0.24em] ${styles.eyebrowText} ${
-            inline ? "text-[0.65rem]" : "text-sm"
+            inline ? 'text-[0.65rem]' : 'text-sm'
           }`}
         >
           {eyebrow}
         </div>
       )}
-      <h2 className={`${inline ? "text-lg" : "text-2xl"} font-bold text-white`}>{title}</h2>
+      <h2 className={`${inline ? 'text-lg' : 'text-2xl'} font-bold text-white`}>{title}</h2>
       {subtitle && (
-        <p className={`${inline ? "text-[0.7rem]" : "text-xs"} text-slate-200/70`}>
-          {subtitle}
-        </p>
+        <p className={`${inline ? 'text-[0.7rem]' : 'text-xs'} text-slate-200/70`}>{subtitle}</p>
       )}
       {badge && (
         <div
@@ -183,8 +176,8 @@ function ChatMessages({
   messagesEndRef,
 }: ChatMessagesProps) {
   const messagesClassName = inline
-    ? "flex-1 min-h-0 space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20"
-    : "flex-1 space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20";
+    ? 'flex-1 min-h-0 space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20'
+    : 'flex-1 space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20';
 
   return (
     <div ref={containerRef} className={messagesClassName}>
@@ -194,7 +187,7 @@ function ChatMessages({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.05 }}
-          className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
         >
           <div className="flex max-w-xs flex-col gap-1">
             {message.meta && (message.meta.category || message.meta.date) && (
@@ -213,7 +206,7 @@ function ChatMessages({
             )}
             <div
               className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
-                message.role === "user" ? styles.userBubble : styles.systemBubble
+                message.role === 'user' ? styles.userBubble : styles.systemBubble
               }`}
             >
               {message.content}
@@ -239,9 +232,9 @@ interface ChatComposerProps {
   isSaving: boolean;
   hasUserMessage: boolean;
   submitError: string | null;
-  suggestions?: CosmosChatModalProps["suggestions"];
+  suggestions?: CosmosChatModalProps['suggestions'];
   metaDraft: ChatMessageMeta;
-  onSuggestionClick: (suggestion: NonNullable<CosmosChatModalProps["suggestions"]>[number]) => void;
+  onSuggestionClick: (suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]) => void;
   onClearMeta: (key: keyof ChatMessageMeta) => void;
 }
 
@@ -270,7 +263,7 @@ function ChatComposer({
           {metaDraft.category && (
             <button
               type="button"
-              onClick={() => onClearMeta("category")}
+              onClick={() => onClearMeta('category')}
               className="rounded-full border border-white/15 bg-white/10 px-2 py-1 transition hover:bg-white/20"
             >
               {metaDraft.category} ✕
@@ -279,17 +272,14 @@ function ChatComposer({
           {metaDraft.date && (
             <button
               type="button"
-              onClick={() => onClearMeta("date")}
+              onClick={() => onClearMeta('date')}
               className="rounded-full border border-white/15 bg-white/10 px-2 py-1 transition hover:bg-white/20"
             >
               {metaDraft.date} ✕
             </button>
           )}
           {metaDraft.tags?.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-white/10 bg-white/5 px-2 py-1"
-            >
+            <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
               {tag}
             </span>
           ))}
@@ -299,7 +289,7 @@ function ChatComposer({
       {suggestions && suggestions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {suggestions.map((suggestion) => {
-            const suggestionTone = suggestion.tone ?? "indigo";
+            const suggestionTone = suggestion.tone ?? 'indigo';
             const toneStyle = toneStyles[suggestionTone];
             return (
               <button
@@ -343,7 +333,12 @@ function ChatComposer({
           aria-label="Enviar mensagem"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            />
           </svg>
         </button>
       </div>
@@ -357,7 +352,7 @@ function ChatComposer({
           disabled={isSaving}
           className={`w-full rounded-2xl border px-4 py-3 font-semibold shadow-md transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.submitButton}`}
         >
-          {isSaving ? "Salvando..." : submitLabel}
+          {isSaving ? 'Salvando...' : submitLabel}
         </motion.button>
       )}
     </div>
@@ -377,10 +372,10 @@ export default function CosmosChatModal({
   systemQuestion,
   initialValue,
   initialValueLabel,
-  submitLabel = "✨ Concluir e Salvar",
-  tone = "indigo",
+  submitLabel = '✨ Concluir e Salvar',
+  tone = 'indigo',
   systemResponses = [],
-  submitStrategy = "concat",
+  submitStrategy = 'concat',
   onClose,
   onSubmit,
   headerExtra,
@@ -388,7 +383,7 @@ export default function CosmosChatModal({
   contextEntries = [],
   suggestions = [],
 }: CosmosChatModalProps) {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -399,21 +394,21 @@ export default function CosmosChatModal({
 
   const styles = toneStyles[tone];
   const hasUserMessage = useMemo(
-    () => messages.some((message) => message.role === "user"),
-    [messages],
+    () => messages.some((message) => message.role === 'user'),
+    [messages]
   );
   const userMessageCount = useMemo(
-    () => messages.filter((message) => message.role === "user").length,
-    [messages],
+    () => messages.filter((message) => message.role === 'user').length,
+    [messages]
   );
 
   const scrollToBottom = () => {
     const container = messagesContainerRef.current;
     if (container) {
-      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
       return;
     }
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   const persistMessages = (next: ChatMessage[]) => {
@@ -430,7 +425,7 @@ export default function CosmosChatModal({
   }, []);
 
   useEffect(() => {
-    if (inline || !isOpen || typeof document === "undefined") return;
+    if (inline || !isOpen || typeof document === 'undefined') return;
 
     // Usar html em vez de body para evitar problemas com overflow
     const htmlElement = document.documentElement;
@@ -440,8 +435,8 @@ export default function CosmosChatModal({
     const previousPaddingRight = htmlElement.style.paddingRight;
     const scrollbarWidth = window.innerWidth - htmlElement.clientWidth;
 
-    htmlElement.style.overflow = "hidden";
-    bodyElement.style.overflow = "hidden";
+    htmlElement.style.overflow = 'hidden';
+    bodyElement.style.overflow = 'hidden';
     if (scrollbarWidth > 0) {
       htmlElement.style.paddingRight = `${scrollbarWidth}px`;
     }
@@ -456,7 +451,7 @@ export default function CosmosChatModal({
   useEffect(() => {
     if (!isOpen) {
       setMessages([]);
-      setInputValue("");
+      setInputValue('');
       setSubmitError(null);
       setIsSaving(false);
       setMetaDraft({});
@@ -471,21 +466,18 @@ export default function CosmosChatModal({
 
     const seed: ChatMessage[] = [];
     if (systemGreeting) {
-      seed.push(buildSystemMessage("greeting", systemGreeting));
+      seed.push(buildSystemMessage('greeting', systemGreeting));
     }
 
     if (initialValue?.trim()) {
-      const label = initialValueLabel ? ` (${initialValueLabel})` : "";
+      const label = initialValueLabel ? ` (${initialValueLabel})` : '';
       seed.push(
-        buildSystemMessage(
-          "saved",
-          `💾 Registro anterior${label}:\n\n"${initialValue.trim()}"`
-        ),
+        buildSystemMessage('saved', `💾 Registro anterior${label}:\n\n"${initialValue.trim()}"`)
       );
     }
 
     if (systemQuestion) {
-      seed.push(buildSystemMessage("question", systemQuestion));
+      seed.push(buildSystemMessage('question', systemQuestion));
     }
 
     persistMessages(seed);
@@ -495,7 +487,7 @@ export default function CosmosChatModal({
   const handleSendMessage = () => {
     const trimmed = inputValue.trim();
     if (trimmed.length < 3) {
-      setSubmitError("Escreva pelo menos 3 caracteres para enviar.");
+      setSubmitError('Escreva pelo menos 3 caracteres para enviar.');
       return;
     }
 
@@ -503,7 +495,7 @@ export default function CosmosChatModal({
       ...buildUserMessage(trimmed),
       meta: metaDraft.category || metaDraft.date || metaDraft.tags ? metaDraft : undefined,
     };
-    setInputValue("");
+    setInputValue('');
     setMetaDraft({});
     setSubmitError(null);
 
@@ -527,17 +519,19 @@ export default function CosmosChatModal({
   };
 
   const buildSubmitValue = () => {
-    const userMessages = messages.filter((message) => message.role === "user").map((m) => m.content);
-    if (!userMessages.length) return "";
-    if (submitStrategy === "last") {
-      return userMessages[userMessages.length - 1] ?? "";
+    const userMessages = messages
+      .filter((message) => message.role === 'user')
+      .map((m) => m.content);
+    if (!userMessages.length) return '';
+    if (submitStrategy === 'last') {
+      return userMessages[userMessages.length - 1] ?? '';
     }
-    return userMessages.join("\n\n");
+    return userMessages.join('\n\n');
   };
 
   const getLastUserMeta = () => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
-      if (messages[i].role === "user") {
+      if (messages[i].role === 'user') {
         return messages[i].meta;
       }
     }
@@ -547,7 +541,7 @@ export default function CosmosChatModal({
   const handleSave = async () => {
     const value = buildSubmitValue();
     if (value.trim().length < 3) {
-      setSubmitError("Escreva pelo menos 3 caracteres para salvar.");
+      setSubmitError('Escreva pelo menos 3 caracteres para salvar.');
       return;
     }
 
@@ -558,17 +552,19 @@ export default function CosmosChatModal({
       await onSubmit(value, messages, getLastUserMeta());
       onClose();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Erro ao salvar.");
+      setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar.');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleSuggestionClick = (
-    suggestion: NonNullable<CosmosChatModalProps["suggestions"]>[number],
+    suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]
   ) => {
     if (suggestion.value) {
-      setInputValue((prev) => prev ? `${prev} ${suggestion.value}` : (suggestion.value as string));
+      setInputValue((prev) =>
+        prev ? `${prev} ${suggestion.value}` : (suggestion.value as string)
+      );
     }
     if (suggestion.meta) {
       const meta = suggestion.meta;
@@ -589,7 +585,7 @@ export default function CosmosChatModal({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSendMessage();
     }
@@ -600,12 +596,10 @@ export default function CosmosChatModal({
   const chatWindow = (
     <InputWindow
       variant="glass"
-      size={inline ? "sm" : "md"}
+      size={inline ? 'sm' : 'md'}
       radius="lg"
       showAccent
-      className={`flex flex-col ${
-        inline ? "w-full max-h-[420px] overflow-auto" : "h-[600px]"
-      }`}
+      className={`flex flex-col ${inline ? 'w-full max-h-[420px] overflow-auto' : 'h-[600px]'}`}
     >
       {!inline && (
         <button
@@ -614,7 +608,12 @@ export default function CosmosChatModal({
           aria-label="Fechar"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}
@@ -633,7 +632,7 @@ export default function CosmosChatModal({
         <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-200/80 shadow-inner shadow-black/10">
           <div className="flex items-center justify-between gap-2">
             <span className="font-semibold uppercase tracking-[0.18em] text-[0.65rem] text-slate-200/80">
-              {contextTitle ?? "Inputs conectados"}
+              {contextTitle ?? 'Inputs conectados'}
             </span>
           </div>
           <div className="mt-2 space-y-2">
@@ -668,8 +667,8 @@ export default function CosmosChatModal({
           animate={{ opacity: 1 }}
           className="border-t border-white/10 px-2 py-2 text-center text-xs text-slate-400"
         >
-          {userMessageCount} mensagem{userMessageCount !== 1 ? "s" : ""} registrada
-          {userMessageCount !== 1 ? "s" : ""}
+          {userMessageCount} mensagem{userMessageCount !== 1 ? 's' : ''} registrada
+          {userMessageCount !== 1 ? 's' : ''}
         </motion.div>
       )}
 
@@ -726,7 +725,7 @@ export default function CosmosChatModal({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="flex w-full max-w-2xl flex-col gap-4 my-auto"
             onClick={(e) => e.stopPropagation()}
           >
@@ -735,6 +734,6 @@ export default function CosmosChatModal({
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body,
+    document.body
   );
 }

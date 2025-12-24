@@ -2,7 +2,7 @@
 
 ## ✅ O que foi criado
 
-Você agora pode clicar em cada lua no `SolOrbitScreen` para adicionar insights trimestrais! 
+Você agora pode clicar em cada lua no `SolOrbitScreen` para adicionar insights trimestrais!
 
 ### 📁 Arquivos Criados:
 
@@ -26,12 +26,12 @@ Você agora pode clicar em cada lua no `SolOrbitScreen` para adicionar insights 
 
 ### Mapping de Luas e Trimestres:
 
-| Lua | Posição | Trimestre | Meses |
-|-----|---------|-----------|-------|
-| 🌑 Lua Nova | Topo | 1º | Jan - Mar |
-| 🌓 Lua Crescente | Direita | 2º | Abr - Jun |
-| 🌕 Lua Cheia | Topo | 3º | Jul - Set |
-| 🌗 Lua Minguante | Esquerda | 4º | Out - Dez |
+| Lua              | Posição  | Trimestre | Meses     |
+| ---------------- | -------- | --------- | --------- |
+| 🌑 Lua Nova      | Topo     | 1º        | Jan - Mar |
+| 🌓 Lua Crescente | Direita  | 2º        | Abr - Jun |
+| 🌕 Lua Cheia     | Topo     | 3º        | Jul - Set |
+| 🌗 Lua Minguante | Esquerda | 4º        | Out - Dez |
 
 ### Fluxo de Uso:
 
@@ -68,6 +68,7 @@ Modal fecha automaticamente
 ## 📊 Dados Salvos
 
 No Google Sheets você verá:
+
 ```
 timestamp          | fase                    | insight                | tipo
 2024-12-07...     | Lua Nova (Jan-Mar)     | Meu insight aqui...    | insight_trimestral
@@ -86,6 +87,7 @@ timestamp          | fase                    | insight                | tipo
 ## ⚙️ Customizações Futuras
 
 Se quiser modificar:
+
 - **Textos**: Edite `moonPhaseInfo` em `QuarterlyInsightModal.tsx`
 - **Cores**: Atualize as classes Tailwind em `QuarterlyInsightModal.tsx`
 - **Campos**: Adicione mais campos na API e no hook

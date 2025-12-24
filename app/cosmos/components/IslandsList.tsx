@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useCallback, useState } from "react";
-import type { IslandId } from "../types/screen";
+import React, { useCallback, useState } from 'react';
+import type { IslandId } from '../types/screen';
 import {
   DEFAULT_ISLAND_NAMES,
   ISLAND_IDS,
   getIslandLabel,
   type IslandNames,
-} from "../utils/islandNames";
+} from '../utils/islandNames';
 
 interface IslandsListProps {
   /**
@@ -81,9 +81,9 @@ interface IslandsListProps {
 export const IslandsList: React.FC<IslandsListProps> = ({
   selectedIsland,
   onSelectIsland,
-  containerClassName = "",
-  activeItemClassName = "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-500/20",
-  inactiveItemClassName = "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60",
+  containerClassName = '',
+  activeItemClassName = 'border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-500/20',
+  inactiveItemClassName = 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60',
   activeDropIsland = null,
   onDropIsland,
   onDragOverIsland,
@@ -93,46 +93,46 @@ export const IslandsList: React.FC<IslandsListProps> = ({
   onRenameIsland,
 }) => {
   const [isCreating, setIsCreating] = useState(false);
-  const [newIslandName, setNewIslandName] = useState("");
+  const [newIslandName, setNewIslandName] = useState('');
   const [editingIslandId, setEditingIslandId] = useState<IslandId | null>(null);
-  const [editingIslandName, setEditingIslandName] = useState("");
+  const [editingIslandName, setEditingIslandName] = useState('');
 
   const toggleIsland = useCallback(
     (islandId: IslandId) => {
       if (isDraggingTodo) return;
       onSelectIsland(selectedIsland === islandId ? null : islandId);
     },
-    [isDraggingTodo, onSelectIsland, selectedIsland],
+    [isDraggingTodo, onSelectIsland, selectedIsland]
   );
 
   const handleKeyDown = useCallback(
     (islandId: IslandId) => (e: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (e.key === "Enter" || e.key === " ") {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         toggleIsland(islandId);
       }
     },
-    [toggleIsland],
+    [toggleIsland]
   );
 
   const handleCreateIsland = () => {
     const trimmed = newIslandName.trim();
     if (!trimmed) return;
     // Aqui você pode adicionar lógica para criar a nova ilha
-    console.log("Criar nova ilha:", trimmed);
-    setNewIslandName("");
+    console.log('Criar nova ilha:', trimmed);
+    setNewIslandName('');
     setIsCreating(false);
   };
 
   const handleStartEditing = (islandId: IslandId) => {
     if (!onRenameIsland || isDraggingTodo) return;
     setEditingIslandId(islandId);
-    setEditingIslandName(getIslandLabel(islandId, islandNames) ?? "");
+    setEditingIslandName(getIslandLabel(islandId, islandNames) ?? '');
   };
 
   const handleCancelEditing = () => {
     setEditingIslandId(null);
-    setEditingIslandName("");
+    setEditingIslandName('');
   };
 
   const handleSaveEditing = () => {
@@ -141,7 +141,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     if (!trimmed) return;
     onRenameIsland(editingIslandId, trimmed);
     setEditingIslandId(null);
-    setEditingIslandName("");
+    setEditingIslandName('');
   };
 
   return (
@@ -153,7 +153,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     >
       {ISLAND_IDS.map((islandId) => {
         const isActiveDrop = activeDropIsland === islandId;
-        const label = getIslandLabel(islandId, islandNames) ?? "Ilha";
+        const label = getIslandLabel(islandId, islandNames) ?? 'Ilha';
         const isEditing = editingIslandId === islandId;
 
         return (
@@ -171,7 +171,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
                 aria-label={`Select ${label}`}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   selectedIsland === islandId ? activeItemClassName : inactiveItemClassName
-                } ${isActiveDrop ? "scale-[1.02] border-indigo-300/80 shadow-lg shadow-indigo-500/20" : ""}`}
+                } ${isActiveDrop ? 'scale-[1.02] border-indigo-300/80 shadow-lg shadow-indigo-500/20' : ''}`}
               >
                 <span>{label}</span>
               </button>
@@ -182,7 +182,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
                   value={editingIslandName}
                   onChange={(event) => setEditingIslandName(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter") {
+                    if (event.key === 'Enter') {
                       event.preventDefault();
                       handleSaveEditing();
                     }
@@ -219,7 +219,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
             value={newIslandName}
             onChange={(e) => setNewIslandName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 e.preventDefault();
                 handleCreateIsland();
               }
@@ -240,7 +240,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
               type="button"
               onClick={() => {
                 setIsCreating(false);
-                setNewIslandName("");
+                setNewIslandName('');
               }}
               className="flex-1 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-900"
             >
@@ -256,7 +256,6 @@ export const IslandsList: React.FC<IslandsListProps> = ({
           aria-label="Create new island"
         >
           <span className="text-base">+</span>
-          
         </button>
       )}
     </div>

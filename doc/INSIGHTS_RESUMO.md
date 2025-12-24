@@ -5,6 +5,7 @@
 Você agora tem um sistema completo para armazenar **três tipos de insights** no banco de dados:
 
 ### 1. Insights Mensais 🌙
+
 - **Tabela:** `monthly_insights`
 - **Frequência:** 4 por mês (uma por fase lunar)
 - **Total/ano:** até 48 insights
@@ -15,6 +16,7 @@ Você agora tem um sistema completo para armazenar **três tipos de insights** n
   - Lua Minguante em Janeiro: "Deixei partir o que não serve..."
 
 ### 2. Insights Trimestrais ⭐
+
 - **Tabela:** `quarterly_insights`
 - **Frequência:** 1 por trimestre (4 fases lunares)
 - **Total/ano:** 4 insights
@@ -25,6 +27,7 @@ Você agora tem um sistema completo para armazenar **três tipos de insights** n
   - Q4: Outubro a Dezembro
 
 ### 3. Insights Anuais ☀️
+
 - **Tabela:** `annual_insights`
 - **Frequência:** 1 por ano
 - **Total:** 1 insight (pode atualizar)
@@ -132,7 +135,7 @@ import { saveMonthlyInsight, getMonthlyInsights } from '@/lib/forms';
 const result = await saveMonthlyInsight(
   userId,
   'luaNova',
-  1,  // janeiro
+  1, // janeiro
   'Meu insight aqui'
 );
 
@@ -150,9 +153,9 @@ const response = await fetch('/api/form/monthly-insight', {
   body: JSON.stringify({
     moonPhase: 'luaNova',
     monthNumber: 1,
-    insight: 'Texto do insight'
+    insight: 'Texto do insight',
   }),
-  credentials: 'include'
+  credentials: 'include',
 });
 ```
 
@@ -160,34 +163,38 @@ const response = await fetch('/api/form/monthly-insight', {
 
 ## 📚 Documentação Incluída
 
-| Documento | Descrição |
-|-----------|-----------|
-| `INSIGHTS_BANCO_DADOS.md` | Estrutura completa das tabelas, exemplos e queries |
-| `INSIGHTS_TABELAS_VISUAL.md` | Visualizações, exemplos de dados e funções |
-| `INSIGHTS_API.md` | Documentação das 3 APIs de salvamento |
-| `CHECKLIST_INSIGHTS.md` | Passo a passo para implementar tudo |
-| `migration-insights.sql` | Script SQL pronto para executar |
+| Documento                    | Descrição                                          |
+| ---------------------------- | -------------------------------------------------- |
+| `INSIGHTS_BANCO_DADOS.md`    | Estrutura completa das tabelas, exemplos e queries |
+| `INSIGHTS_TABELAS_VISUAL.md` | Visualizações, exemplos de dados e funções         |
+| `INSIGHTS_API.md`            | Documentação das 3 APIs de salvamento              |
+| `CHECKLIST_INSIGHTS.md`      | Passo a passo para implementar tudo                |
+| `migration-insights.sql`     | Script SQL pronto para executar                    |
 
 ---
 
 ## 🔑 Características Principais
 
 ### ✅ Unicidade
+
 - Um insight por fase lunar, por período
 - Evita duplicação de dados
 - Permite atualizações (UPSERT)
 
 ### ✅ Performance
+
 - Índices otimizados
 - Busca rápida por usuário e data
 - Índices em chaves estrangeiras
 
 ### ✅ Validação
+
 - CHECK constraints no SQL
 - Validação de tipos
 - Mensagens de erro claras
 
 ### ✅ Flexibilidade
+
 - CRUD completo implementado
 - ON CONFLICT para atualizações
 - Timestamps automáticos
@@ -235,9 +242,9 @@ async function handleSaveMonthlyInsight(insight: string) {
     body: JSON.stringify({
       moonPhase: 'luaNova',
       monthNumber: 1,
-      insight
+      insight,
     }),
-    credentials: 'include'
+    credentials: 'include',
   });
 
   if (response.ok) {
@@ -255,10 +262,10 @@ async function handleSaveMonthlyInsight(insight: string) {
 // Para exibir insights já salvos
 async function loadMonthInsights(userId: string) {
   const insights = await getMonthlyInsights(userId, 1); // janeiro
-  
+
   // insights será um array com até 4 elementos:
   // [luaNova, luaCrescente, luaCheia, luaMinguante]
-  
+
   return insights;
 }
 ```
@@ -273,9 +280,9 @@ const response = await fetch('/api/form/monthly-insight', {
   body: JSON.stringify({
     moonPhase: 'luaNova',
     monthNumber: 1,
-    insight: 'Novo texto do insight (atualizado)'
+    insight: 'Novo texto do insight (atualizado)',
   }),
-  credentials: 'include'
+  credentials: 'include',
 });
 
 // Response terá updated_at = agora
@@ -285,13 +292,13 @@ const response = await fetch('/api/form/monthly-insight', {
 
 ## 🛠️ Troubleshooting Rápido
 
-| Problema | Solução |
-|----------|---------|
+| Problema             | Solução                                             |
+| -------------------- | --------------------------------------------------- |
 | Tabelas não aparecem | Verifique se `migration-insights.sql` foi executado |
-| Erro 401 na API | Verifique autenticação (`getSession()`) |
-| Erro na função forms | Verifique se `DATABASE_URL` está configurada |
-| Modal não abre | Verifique estado e imports no componente |
-| Dados não salvam | Verifique console do navegador para erros |
+| Erro 401 na API      | Verifique autenticação (`getSession()`)             |
+| Erro na função forms | Verifique se `DATABASE_URL` está configurada        |
+| Modal não abre       | Verifique estado e imports no componente            |
+| Dados não salvam     | Verifique console do navegador para erros           |
 
 ---
 
@@ -315,7 +322,7 @@ Você agora tem:
 ✅ APIs prontas para frontend  
 ✅ Documentação completa  
 ✅ Script SQL para executar  
-✅ Checklist passo a passo  
+✅ Checklist passo a passo
 
 **Tudo o que precisa para armazenar insights no banco de dados!**
 

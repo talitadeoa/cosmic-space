@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Card } from "../components/Card";
-import { CelestialObject } from "../components/CelestialObject";
-import { formatTimePtBr } from "@/lib/utils/format";
+import React, { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Card } from '../components/Card';
+import { CelestialObject } from '../components/CelestialObject';
+import { formatTimePtBr } from '@/lib/utils/format';
 import {
   loadSavedTodos,
   phaseLabels,
   phaseOrder,
   type MoonPhase,
   type SavedTodo,
-} from "../utils/todoStorage";
-import type { ScreenProps } from "../types";
+} from '../utils/todoStorage';
+import type { ScreenProps } from '../types';
 
 type PhaseStat = {
   phase: MoonPhase;
@@ -55,7 +55,7 @@ const EclipseSummaryCard = ({
       <motion.div
         className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.14),transparent_55%)]"
         animate={{ rotate: 360 }}
-        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
       />
       <div className="relative z-10 flex flex-col items-center gap-3">
         <CelestialObject
@@ -137,12 +137,8 @@ const CycleSummaryCard = ({
         <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-emerald-200">
           Concluídas
         </span>
-        <span className="rounded-full bg-indigo-500/20 px-2 py-1 text-indigo-100">
-          Em órbita
-        </span>
-        <span className="rounded-full bg-slate-800 px-2 py-1 text-slate-200">
-          Não atribuídas
-        </span>
+        <span className="rounded-full bg-indigo-500/20 px-2 py-1 text-indigo-100">Em órbita</span>
+        <span className="rounded-full bg-slate-800 px-2 py-1 text-slate-200">Não atribuídas</span>
       </div>
     </div>
 
@@ -193,7 +189,7 @@ const PhaseBarsCard = ({ phaseStats, maxTotal, bestPhase, hasPhaseData }: PhaseB
     <div className="mt-4 space-y-4">
       {phaseStats.map((stat) => {
         const totalWidth = `${(stat.total / maxTotal) * 100}%`;
-        const completedWidth = stat.total ? `${(stat.completed / maxTotal) * 100}%` : "0%";
+        const completedWidth = stat.total ? `${(stat.completed / maxTotal) * 100}%` : '0%';
 
         return (
           <div key={stat.phase} className="space-y-1">
@@ -254,9 +250,7 @@ const ProductivityCard = ({
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
               Curva de energia
             </p>
-            <h3 className="text-lg font-semibold text-white">
-              Tendência de conclusão por fase
-            </h3>
+            <h3 className="text-lg font-semibold text-white">Tendência de conclusão por fase</h3>
           </div>
           <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200">
             {completedTodos}/{totalTodos} concluídas
@@ -372,7 +366,7 @@ const ProductivityCard = ({
 
 const EclipseProductivityScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [todos, setTodos] = useState<SavedTodo[]>([]);
-  const [lastSync, setLastSync] = useState<string>("");
+  const [lastSync, setLastSync] = useState<string>('');
 
   const syncTodos = () => {
     const loaded = loadSavedTodos();
@@ -385,15 +379,9 @@ const EclipseProductivityScreen: React.FC<ScreenProps> = ({ navigateWithFocus })
   }, []);
 
   const totalTodos = todos.length;
-  const completedTodos = useMemo(
-    () => todos.filter((todo) => todo.completed).length,
-    [todos],
-  );
+  const completedTodos = useMemo(() => todos.filter((todo) => todo.completed).length, [todos]);
   const assignedTodos = useMemo(() => todos.filter((todo) => todo.phase), [todos]);
-  const unassignedTodos = useMemo(
-    () => todos.filter((todo) => !todo.phase),
-    [todos],
-  );
+  const unassignedTodos = useMemo(() => todos.filter((todo) => !todo.phase), [todos]);
 
   const phaseStats = useMemo<PhaseStat[]>(
     () =>
@@ -408,14 +396,14 @@ const EclipseProductivityScreen: React.FC<ScreenProps> = ({ navigateWithFocus })
           productivity: total ? Math.round((completed / total) * 100) : 0,
         };
       }),
-    [todos],
+    [todos]
   );
 
   const bestPhase = useMemo(() => {
     if (!phaseStats.length) return null;
     return phaseStats.reduce(
       (best, current) => (current.productivity > best.productivity ? current : best),
-      phaseStats[0],
+      phaseStats[0]
     );
   }, [phaseStats]);
 
@@ -428,10 +416,10 @@ const EclipseProductivityScreen: React.FC<ScreenProps> = ({ navigateWithFocus })
           const y = 120 - (stat.productivity / 100) * 90;
           return `${x},${y}`;
         })
-        .join(" ")
-    : "";
+        .join(' ')
+    : '';
 
-  const lastSyncLabel = lastSync ? `Sync ${lastSync}` : "Sync inicial";
+  const lastSyncLabel = lastSync ? `Sync ${lastSync}` : 'Sync inicial';
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/60 px-4 py-6 sm:px-6">
@@ -442,11 +430,13 @@ const EclipseProductivityScreen: React.FC<ScreenProps> = ({ navigateWithFocus })
       <div className="relative z-10 grid h-full w-full grid-cols-1 gap-5 lg:grid-cols-3">
         <EclipseSummaryCard
           lastSyncLabel={lastSyncLabel}
-          onOpenSidePlanet={() => navigateWithFocus("sidePlanetCard", { type: "planeta", size: "md" })}
+          onOpenSidePlanet={() =>
+            navigateWithFocus('sidePlanetCard', { type: 'planeta', size: 'md' })
+          }
           onSync={syncTodos}
           bestPhase={bestPhase}
           onOpenSidePlanetFromBadge={(event) =>
-            navigateWithFocus("sidePlanetCard", { event, type: "planeta", size: "md" })
+            navigateWithFocus('sidePlanetCard', { event, type: 'planeta', size: 'md' })
           }
         />
 
@@ -471,7 +461,7 @@ const EclipseProductivityScreen: React.FC<ScreenProps> = ({ navigateWithFocus })
             completedTodos={completedTodos}
             totalTodos={totalTodos}
             unassignedTodos={unassignedTodos}
-            onNavigateToLuaList={() => navigateWithFocus("luaList", { type: "lua", size: "sm" })}
+            onNavigateToLuaList={() => navigateWithFocus('luaList', { type: 'lua', size: 'sm' })}
           />
         </div>
       </div>

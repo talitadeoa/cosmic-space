@@ -3,6 +3,7 @@
 ## ✨ O Que Mudou
 
 ### Antes
+
 ```
 ┌────────────────────────────────┐
 │ 🌕 🌑 🌓 🌗                    │
@@ -22,6 +23,7 @@
 ```
 
 ### Depois ✅
+
 ```
 ┌──────────────┬──────────────────────┬──────────────┐
 │              │                      │              │
@@ -47,6 +49,7 @@
 ## 🎯 Features Implementadas
 
 ### 1. Empty State Real ✅
+
 ```tsx
 // Antes: Como item clicável
 <div>
@@ -66,11 +69,12 @@
 ```
 
 ### 2. Tabs Acessíveis (Pronto para uso) ✅
+
 ```tsx
 <AccessibleTabs
   items={[
-    { label: "Inbox", value: "inbox" },
-    { label: "Lua Atual", value: "moon" },
+    { label: 'Inbox', value: 'inbox' },
+    { label: 'Lua Atual', value: 'moon' },
   ]}
   value={activeTab}
   onChange={setActiveTab}
@@ -80,9 +84,10 @@
 ```
 
 ### 3. Seleção de Ilhas ✅
+
 ```tsx
 <IslandsList
-  selectedIsland={selectedIsland}  // "ilha1" | null
+  selectedIsland={selectedIsland} // "ilha1" | null
   onSelectIsland={setSelectedIsland}
 />
 
@@ -90,9 +95,10 @@
 ```
 
 ### 4. Seleção de Fases ✅
+
 ```tsx
 <MoonPhasesRail
-  selectedPhase={selectedPhase}    // "luaNova" | null
+  selectedPhase={selectedPhase} // "luaNova" | null
   onSelectPhase={setSelectedPhase}
   phaseCounts={{
     luaNova: 3,
@@ -106,6 +112,7 @@
 ```
 
 ### 5. Filtragem por Fase ✅
+
 ```tsx
 // Antes: Sem filtro de fase
 const displayedTodos = savedTodos;
@@ -117,6 +124,7 @@ const displayedTodos = selectedPhase
 ```
 
 ### 6. Acessibilidade Completa ✅
+
 ```
 ✓ ARIA: role, aria-selected, aria-pressed, aria-label
 ✓ Teclado: Tab, Arrow Keys, Home, End, Enter, Space
@@ -129,23 +137,24 @@ const displayedTodos = selectedPhase
 
 ## 📊 Métricas
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| Empty State | ❌ Clicável | ✅ Visual |
-| Seleção de Ilha | ❌ Não existe | ✅ Implementado |
-| Seleção de Fase | ⚠️ Só DnD | ✅ UI + Filtro |
-| Acessibilidade | ⚠️ Mínima | ✅ Completa |
-| Layout | 2 colunas | ✅ 3 colunas |
-| Filtragem | 1 (projeto) | ✅ 2+ (projeto + fase) |
-| Focus Ring | ❌ Não | ✅ Visível |
-| Aria Labels | ❌ Raros | ✅ Todos |
-| Navegação Teclado | ⚠️ Básica | ✅ Completa |
+| Aspecto           | Antes         | Depois                 |
+| ----------------- | ------------- | ---------------------- |
+| Empty State       | ❌ Clicável   | ✅ Visual              |
+| Seleção de Ilha   | ❌ Não existe | ✅ Implementado        |
+| Seleção de Fase   | ⚠️ Só DnD     | ✅ UI + Filtro         |
+| Acessibilidade    | ⚠️ Mínima     | ✅ Completa            |
+| Layout            | 2 colunas     | ✅ 3 colunas           |
+| Filtragem         | 1 (projeto)   | ✅ 2+ (projeto + fase) |
+| Focus Ring        | ❌ Não        | ✅ Visível             |
+| Aria Labels       | ❌ Raros      | ✅ Todos               |
+| Navegação Teclado | ⚠️ Básica     | ✅ Completa            |
 
 ---
 
 ## 🎨 Visual Antes vs Depois
 
 ### Empty State
+
 ```
 ANTES: ✗ Item clicável confuso
 ┌─────────────────────┐
@@ -162,6 +171,7 @@ DEPOIS: ✓ Estado visual claro
 ```
 
 ### Seleção de Fase
+
 ```
 ANTES: Sem indicador visual
 🌑 🌓 🌕 🌗
@@ -173,6 +183,7 @@ DEPOIS: Com destaque claro
 ```
 
 ### Layout
+
 ```
 ANTES (2 colunas):        DEPOIS (3 colunas):
 ┌──────┬────────────┐    ┌──────┬──────────┬──────┐
@@ -205,6 +216,7 @@ ANTES (2 colunas):        DEPOIS (3 colunas):
 ## 📁 Arquivos Entregues
 
 ### Componentes (Novos)
+
 ```
 ✨ app/cosmos/components/EmptyState.tsx
 ✨ app/cosmos/components/AccessibleTabs.tsx
@@ -214,12 +226,14 @@ ANTES (2 colunas):        DEPOIS (3 colunas):
 ```
 
 ### Componentes (Refatorados)
+
 ```
 🔄 app/cosmos/components/SavedTodosPanel.tsx
 🔄 app/cosmos/screens/SidePlanetCardScreen.tsx
 ```
 
 ### Documentação (5 arquivos)
+
 ```
 📖 doc/SUMARIO_IMPLEMENTACAO_UI.md
 📖 doc/IMPLEMENTACAO_UI_ACESSIBILIDADE.md
@@ -234,6 +248,7 @@ ANTES (2 colunas):        DEPOIS (3 colunas):
 ## 🚀 Como Testar
 
 ### 1. Teste Visual
+
 ```bash
 # Abrir em navegador
 npm run dev
@@ -242,6 +257,7 @@ npm run dev
 ```
 
 ### 2. Teste de Acessibilidade
+
 ```
 ✓ Navegar só com Tab
 ✓ Usar Arrow Keys em fases
@@ -250,6 +266,7 @@ npm run dev
 ```
 
 ### 3. Teste Responsivo
+
 ```
 ✓ Mobile: 375px (MoonCluster vertical)
 ✓ Tablet: 768px (2 colunas)
@@ -257,6 +274,7 @@ npm run dev
 ```
 
 ### 4. Teste de Funcionalidade
+
 ```
 ✓ Selecionar fase → Lista filtra
 ✓ Selecionar ilha → Prepara filtro
@@ -270,6 +288,7 @@ npm run dev
 ## 💡 Exemplos de Uso
 
 ### Uso Rápido
+
 ```tsx
 import { MoonPhasesRail } from "@/app/cosmos/components/MoonPhasesRail";
 
@@ -283,6 +302,7 @@ const [selectedPhase, setSelectedPhase] = useState(null);
 ```
 
 ### Com Filtro Composto
+
 ```tsx
 const filtered = savedTodos.filter(
   (todo) =>
@@ -314,6 +334,7 @@ const filtered = savedTodos.filter(
 ## 🎓 Padrões Aplicados
 
 ### Acessibilidade
+
 ```
 WAI-ARIA Patterns (W3C spec)
 ├── Tabs (role=tablist)
@@ -329,6 +350,7 @@ Keyboard Navigation
 ```
 
 ### React
+
 ```
 Hooks:
 ├── useState (state management)
@@ -344,6 +366,7 @@ Component Composition
 ```
 
 ### Tailwind CSS
+
 ```
 Responsive Design
 ├── mobile-first (base classes)

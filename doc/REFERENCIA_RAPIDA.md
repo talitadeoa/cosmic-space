@@ -14,9 +14,11 @@ GOOGLE_SHEETS_API_KEY=sua_chave_de_api
 ## 🔌 API Endpoints
 
 ### POST /api/auth/login
+
 **Fazer login com senha**
 
 Request:
+
 ```json
 {
   "password": "sua_senha"
@@ -24,6 +26,7 @@ Request:
 ```
 
 Response (200):
+
 ```json
 {
   "success": true,
@@ -33,6 +36,7 @@ Response (200):
 ```
 
 Response (401):
+
 ```json
 {
   "error": "Senha incorreta"
@@ -42,14 +46,17 @@ Response (401):
 ---
 
 ### GET /api/auth/verify
+
 **Verificar se está autenticado**
 
 Headers:
+
 ```
 Cookie: auth_token=seu_token
 ```
 
 Response (200):
+
 ```json
 {
   "authenticated": true
@@ -57,6 +64,7 @@ Response (200):
 ```
 
 Response (401):
+
 ```json
 {
   "authenticated": false
@@ -66,11 +74,13 @@ Response (401):
 ---
 
 ### POST /api/auth/logout
+
 **Fazer logout e invalidar token**
 
 Request: (sem body necessário)
 
 Response (200):
+
 ```json
 {
   "success": true,
@@ -81,9 +91,11 @@ Response (200):
 ---
 
 ### POST /api/form/submit
+
 **Enviar dados para Google Sheets**
 
 Request:
+
 ```json
 {
   "name": "João Silva",
@@ -93,6 +105,7 @@ Request:
 ```
 
 Response (200):
+
 ```json
 {
   "success": true,
@@ -101,6 +114,7 @@ Response (200):
 ```
 
 Response (401):
+
 ```json
 {
   "error": "Não autenticado"
@@ -108,6 +122,7 @@ Response (401):
 ```
 
 Response (400):
+
 ```json
 {
   "error": "Nome, email e mensagem são obrigatórios"
@@ -129,9 +144,11 @@ Envolve conteúdo que requer autenticação.
 ```
 
 **Props:**
+
 - `children: React.ReactNode` - Conteúdo protegido
 
 **Comportamento:**
+
 - Se não autenticado: mostra tela de login
 - Se autenticado: mostra conteúdo
 - Enquanto carrega: mostra spinner
@@ -143,20 +160,21 @@ Envolve conteúdo que requer autenticação.
 Formulário para capturar e enviar dados.
 
 ```tsx
-<DataCollectionForm 
-  onSuccess={() => alert('Enviado!')} 
-/>
+<DataCollectionForm onSuccess={() => alert('Enviado!')} />
 ```
 
 **Props:**
+
 - `onSuccess?: () => void` - Callback após sucesso
 
 **Campos:**
+
 - Nome (text, obrigatório)
 - Email (email, obrigatório)
 - Mensagem (textarea, obrigatório)
 
 **Features:**
+
 - Validações de entrada
 - Feedback de erro
 - Feedback de sucesso
@@ -171,17 +189,18 @@ Formulário para capturar e enviar dados.
 Gerencia estado de autenticação.
 
 ```tsx
-const { 
-  isAuthenticated,     // boolean
-  loading,             // boolean
-  error,               // string | null
-  login,               // (password: string) => Promise<boolean>
-  logout,              // () => Promise<void>
-  verifyAuth           // () => Promise<void>
+const {
+  isAuthenticated, // boolean
+  loading, // boolean
+  error, // string | null
+  login, // (password: string) => Promise<boolean>
+  logout, // () => Promise<void>
+  verifyAuth, // () => Promise<void>
 } = useAuth();
 ```
 
 **Exemplo completo:**
+
 ```tsx
 'use client';
 import { useAuth } from '@/hooks/useAuth';
@@ -211,11 +230,13 @@ export default function Componente() {
 ## 🏗️ Estrutura de Dados
 
 ### Token
+
 ```typescript
 type Token = string; // 64 caracteres hex (32 bytes)
 ```
 
 ### Dados do Formulário (Google Sheets)
+
 ```typescript
 {
   Timestamp: "2025-12-01T10:30:00.000Z",
@@ -232,6 +253,7 @@ type Token = string; // 64 caracteres hex (32 bytes)
 ## 🔄 Fluxos Comuns
 
 ### Fluxo: Fazer Login
+
 ```tsx
 import { useAuth } from '@/hooks/useAuth';
 
@@ -247,6 +269,7 @@ const handleLogin = async (e: React.FormEvent) => {
 ```
 
 ### Fluxo: Fazer Logout
+
 ```tsx
 import { useAuth } from '@/hooks/useAuth';
 
@@ -259,6 +282,7 @@ const handleLogout = async () => {
 ```
 
 ### Fluxo: Proteger Página
+
 ```tsx
 'use client';
 import AuthGate from '@/components/AuthGate';
@@ -273,15 +297,12 @@ export default function MinhaPagina() {
 ```
 
 ### Fluxo: Enviar Dados
+
 ```tsx
 import DataCollectionForm from '@/components/DataCollectionForm';
 
 export default function Pagina() {
-  return (
-    <DataCollectionForm 
-      onSuccess={() => console.log('Salvo!')} 
-    />
-  );
+  return <DataCollectionForm onSuccess={() => console.log('Salvo!')} />;
 }
 ```
 
@@ -320,24 +341,26 @@ export default function Pagina() {
 
 ## 🐛 Códigos de Status HTTP
 
-| Status | Significado | Quando |
-|--------|-------------|--------|
-| 200 | OK | Login, Logout, Envio sucesso |
-| 400 | Bad Request | Falta dados obrigatórios |
-| 401 | Unauthorized | Senha errada, token inválido |
-| 500 | Server Error | Erro ao salvar Google Sheets |
+| Status | Significado  | Quando                       |
+| ------ | ------------ | ---------------------------- |
+| 200    | OK           | Login, Logout, Envio sucesso |
+| 400    | Bad Request  | Falta dados obrigatórios     |
+| 401    | Unauthorized | Senha errada, token inválido |
+| 500    | Server Error | Erro ao salvar Google Sheets |
 
 ---
 
 ## 🎯 Debug
 
 ### Ver token no console
+
 ```javascript
 // No navegador (DevTools)
-document.cookie
+document.cookie;
 ```
 
 ### Simular requisição
+
 ```bash
 # Teste login
 curl -X POST http://localhost:3000/api/auth/login \
@@ -350,6 +373,7 @@ curl http://localhost:3000/api/auth/verify \
 ```
 
 ### Verificar logs
+
 ```bash
 # Terminal rodando npm run dev mostra logs
 npm run dev
@@ -361,20 +385,21 @@ npm run dev
 
 **Aba:** "Dados"
 
-| Coluna | Tipo | Descrição |
-|--------|------|-----------|
-| A | DateTime | Timestamp ISO |
-| B | Text | Nome do usuário |
-| C | Email | Email do usuário |
-| D | Text | Mensagem/Feedback |
-| E | DateTime | Data de criação |
-| F | Text | Status do registro |
+| Coluna | Tipo     | Descrição          |
+| ------ | -------- | ------------------ |
+| A      | DateTime | Timestamp ISO      |
+| B      | Text     | Nome do usuário    |
+| C      | Email    | Email do usuário   |
+| D      | Text     | Mensagem/Feedback  |
+| E      | DateTime | Data de criação    |
+| F      | Text     | Status do registro |
 
 ---
 
 ## ⚙️ Configurações
 
 ### Cookies (HTTP-only)
+
 ```typescript
 // Definido automaticamente em /api/auth/login
 response.cookies.set('auth_token', token, {
@@ -386,6 +411,7 @@ response.cookies.set('auth_token', token, {
 ```
 
 ### Timeout Padrão
+
 - Duração do token: 24 horas
 - Timeout de API: 30 segundos (fetch)
 

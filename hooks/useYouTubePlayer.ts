@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export interface YouTubeStation {
   id: string;
@@ -12,7 +12,7 @@ const loadYouTubeIframeAPI = () => {
   if (youtubeApiPromise) return youtubeApiPromise;
 
   youtubeApiPromise = new Promise((resolve) => {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       resolve();
       return;
     }
@@ -27,11 +27,11 @@ const loadYouTubeIframeAPI = () => {
       return;
     }
 
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
     tag.async = true;
 
-    const firstScriptTag = document.getElementsByTagName("script")[0];
+    const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
 
     const previous = w.onYouTubeIframeAPIReady;
@@ -52,13 +52,11 @@ export const useYouTubePlayer = () => {
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStation, setCurrentStation] = useState<YouTubeStation | null>(
-    null
-  );
+  const [currentStation, setCurrentStation] = useState<YouTubeStation | null>(null);
   const [volume, setVolume] = useState(0.3);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     let cancelled = false;
 
     loadYouTubeIframeAPI().then(() => {
@@ -67,15 +65,15 @@ export const useYouTubePlayer = () => {
       if (!w.YT?.Player || !containerRef.current) return;
 
       playerRef.current = new w.YT.Player(containerRef.current, {
-        height: "0",
-        width: "0",
+        height: '0',
+        width: '0',
         videoId: undefined,
         playerVars: {
           autoplay: 0,
           controls: 0,
           rel: 0,
           modestbranding: 1,
-          playsinline: 1
+          playsinline: 1,
         },
         events: {
           onReady: () => {
@@ -102,8 +100,8 @@ export const useYouTubePlayer = () => {
           onError: () => {
             setIsLoading(false);
             setIsPlaying(false);
-          }
-        }
+          },
+        },
       });
     });
 
@@ -170,6 +168,6 @@ export const useYouTubePlayer = () => {
     play,
     pause,
     toggle,
-    isLoading
+    isLoading,
   };
 };

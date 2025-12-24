@@ -6,41 +6,44 @@
 
 ```sql
 -- Índice 1: Busca por usuário e data (mais comum)
-CREATE INDEX idx_monthly_insights_user_date 
+CREATE INDEX idx_monthly_insights_user_date
   ON monthly_insights (user_id, created_at DESC);
 ```
 
 **Uso:**
+
 ```sql
 -- Busca rápida: "Todos os insights de um usuário, ordenados por data"
-SELECT * FROM monthly_insights 
-WHERE user_id = 123 
+SELECT * FROM monthly_insights
+WHERE user_id = 123
 ORDER BY created_at DESC;
 ```
 
 ```sql
 -- Índice 2: Busca por mês
-CREATE INDEX idx_monthly_insights_user_month 
+CREATE INDEX idx_monthly_insights_user_month
   ON monthly_insights (user_id, month_number);
 ```
 
 **Uso:**
+
 ```sql
 -- Busca rápida: "Todos os insights de um usuário em um mês"
-SELECT * FROM monthly_insights 
+SELECT * FROM monthly_insights
 WHERE user_id = 123 AND month_number = 1;
 ```
 
 ```sql
 -- Índice 3: Busca por fase lunar
-CREATE INDEX idx_monthly_insights_user_phase 
+CREATE INDEX idx_monthly_insights_user_phase
   ON monthly_insights (user_id, moon_phase);
 ```
 
 **Uso:**
+
 ```sql
 -- Busca rápida: "Todos os insights de Lua Nova de um usuário"
-SELECT * FROM monthly_insights 
+SELECT * FROM monthly_insights
 WHERE user_id = 123 AND moon_phase = 'luaNova';
 ```
 
@@ -63,38 +66,41 @@ Com Índices:
 ### Dicas de Performance
 
 1. **Sempre filtrar por user_id primeiro**
+
 ```typescript
 // ✅ BOM
-SELECT * FROM monthly_insights 
+SELECT * FROM monthly_insights
 WHERE user_id = 123 AND month_number = 1;
 
 // ❌ RUIM (sem user_id)
-SELECT * FROM monthly_insights 
+SELECT * FROM monthly_insights
 WHERE month_number = 1;
 ```
 
 2. **Limitar resultados**
+
 ```typescript
 // ✅ BOM
-SELECT * FROM monthly_insights 
-WHERE user_id = 123 
+SELECT * FROM monthly_insights
+WHERE user_id = 123
 LIMIT 12;  // Um ano
 
 // ❌ RUIM (sem LIMIT)
-SELECT * FROM monthly_insights 
+SELECT * FROM monthly_insights
 WHERE user_id = 123;
 ```
 
 3. **Usar paginação para grandes volumes**
+
 ```typescript
 // ✅ BOM
 const page = 1;
 const limit = 20;
 const offset = (page - 1) * limit;
 
-SELECT * FROM monthly_insights 
-WHERE user_id = 123 
-ORDER BY created_at DESC 
+SELECT * FROM monthly_insights
+WHERE user_id = 123
+ORDER BY created_at DESC
 LIMIT ${limit} OFFSET ${offset};
 ```
 
@@ -110,11 +116,13 @@ UNIQUE (user_id, moon_phase, month_number)
 ```
 
 **Benefícios:**
+
 - ✅ Previne duplicação
 - ✅ Permite UPSERT (INSERT ... ON CONFLICT)
 - ✅ Automaticamente indexado (performance)
 
 **Exemplo:**
+
 ```typescript
 // Primeira chamada - INSERT
 INSERT INTO monthly_insights (user_id, moon_phase, month_number, insight)
@@ -230,7 +238,7 @@ CREATE TABLE monthly_insights_archive (
 // ✅ OTIMIZADO
 export async function getAllInsights(userId: string) {
   const db = getDb();
-  
+
   const rows = await db`
     SELECT 
       'mensal'::TEXT as tipo,
@@ -266,7 +274,7 @@ export async function getAllInsights(userId: string) {
     ORDER BY created_at DESC
     LIMIT 1000
   `;
-  
+
   return rows;
 }
 ```
@@ -276,7 +284,7 @@ export async function getAllInsights(userId: string) {
 ```typescript
 export async function getInsightStats(userId: string) {
   const db = getDb();
-  
+
   const stats = await db`
     SELECT 
       (SELECT COUNT(*) FROM monthly_insights WHERE user_id = ${userId})::INT as total_mensais,
@@ -286,7 +294,7 @@ export async function getInsightStats(userId: string) {
       (SELECT COUNT(DISTINCT quarter_number) FROM quarterly_insights WHERE user_id = ${userId})::INT as trimestres_preenchidos,
       (SELECT COUNT(DISTINCT year) FROM annual_insights WHERE user_id = ${userId})::INT as anos_preenchidos
   `;
-  
+
   return stats[0];
 }
 ```
@@ -296,9 +304,9 @@ export async function getInsightStats(userId: string) {
 ```typescript
 export async function getInsightsByYear(userId: string, year: number) {
   const db = getDb();
-  
+
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  
+
   const rows = await db`
     SELECT 
       month_number,
@@ -316,7 +324,7 @@ export async function getInsightsByYear(userId: string, year: number) {
         WHEN moon_phase = 'luaMinguante' THEN 4
       END
   `;
-  
+
   return rows;
 }
 ```
@@ -350,16 +358,16 @@ const result = await db`
 // Sempre verificar se o usuário tem permissão
 export async function getMonthlyInsight(userId: string, insightId: number) {
   const db = getDb();
-  
+
   const insight = await db`
     SELECT * FROM monthly_insights
     WHERE id = ${insightId} AND user_id = ${userId}
   `;
-  
+
   if (!insight.length) {
     throw new Error('Insight not found or unauthorized');
   }
-  
+
   return insight[0];
 }
 ```

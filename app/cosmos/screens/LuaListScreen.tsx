@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import CosmosChatModal from "../components/CosmosChatModal";
-import { useMonthlyInsights } from "@/hooks/useMonthlyInsights";
-import { fetchLunations } from "@/hooks/useLunations";
-import { normalizeMoonPhase, type MoonCalendarDay } from "@/lib/api/moonCalendar";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import CosmosChatModal from '../components/CosmosChatModal';
+import { useMonthlyInsights } from '@/hooks/useMonthlyInsights';
+import { fetchLunations } from '@/hooks/useLunations';
+import { normalizeMoonPhase, type MoonCalendarDay } from '@/lib/api/moonCalendar';
 import {
   MONTHLY_INSIGHT_LABELS,
   MONTHLY_PROMPTS,
   MONTHLY_RESPONSES,
   MONTHLY_TONES,
   buildMonthlyStorageKey,
-} from "../utils/insightChatPresets";
-import ArrowButton from "../components/lua-list/ArrowButton";
-import CalendarStatus from "../components/lua-list/CalendarStatus";
-import EmptyState from "../components/lua-list/EmptyState";
-import MoonRow from "../components/lua-list/MoonRow";
-import MoonRowSkeleton from "../components/lua-list/MoonRowSkeleton";
-import { CelestialObject } from "../components/CelestialObject";
-import { LuminousTrail } from "../components/LuminousTrail";
-import type { ScreenProps } from "../types";
-import type { MoonPhase } from "../utils/moonPhases";
-import { formatSavedAtLabel, getResolvedTimezone } from "@/lib/utils/format";
+} from '../utils/insightChatPresets';
+import ArrowButton from '../components/lua-list/ArrowButton';
+import CalendarStatus from '../components/lua-list/CalendarStatus';
+import EmptyState from '../components/lua-list/EmptyState';
+import MoonRow from '../components/lua-list/MoonRow';
+import MoonRowSkeleton from '../components/lua-list/MoonRowSkeleton';
+import { CelestialObject } from '../components/CelestialObject';
+import { LuminousTrail } from '../components/LuminousTrail';
+import type { ScreenProps } from '../types';
+import type { MoonPhase } from '../utils/moonPhases';
+import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
 import {
   ANIMATION_CONFIG,
   buildMoonInfo,
@@ -34,7 +34,7 @@ import {
   type HighlightTarget,
   MonthEntry,
   getResponsiveLayout,
-} from "../utils/luaList";
+} from '../utils/luaList';
 
 type HighlightBannerProps = {
   info: ReturnType<typeof buildMoonInfo>;
@@ -119,8 +119,8 @@ const MoonCarousel = ({
       maxWidth: scrollerMaxWidth,
       paddingLeft: layoutPadding,
       paddingRight: layoutPadding,
-      marginLeft: "auto",
-      marginRight: "auto",
+      marginLeft: 'auto',
+      marginRight: 'auto',
     }}
   >
     <ArrowButton
@@ -137,7 +137,12 @@ const MoonCarousel = ({
     />
 
     {isInitialLoading && (
-      <MoonRowSkeleton count={skeletonCount} trackWidth={trackWidth} tileWidth={tileWidth} gap={gap} />
+      <MoonRowSkeleton
+        count={skeletonCount}
+        trackWidth={trackWidth}
+        tileWidth={tileWidth}
+        gap={gap}
+      />
     )}
 
     {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
@@ -188,9 +193,9 @@ const MoonCarousel = ({
 const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
-  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>('luaNova');
   const { saveInsight, loadInsight } = useMonthlyInsights();
-  const [existingInsight, setExistingInsight] = useState("");
+  const [existingInsight, setExistingInsight] = useState('');
   const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const timezone = getResolvedTimezone();
@@ -207,7 +212,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [viewportFraction, setViewportFraction] = useState(0);
   const [virtualWindow, setVirtualWindow] = useState({ start: 0, end: 40 });
   const [layout, setLayout] = useState(() =>
-    getResponsiveLayout(typeof window !== "undefined" ? window.innerWidth : undefined),
+    getResponsiveLayout(typeof window !== 'undefined' ? window.innerWidth : undefined)
   );
   const tileSpan = layout.tileWidth + layout.gap;
   const isCompactLayout = layout.tileWidth <= 90;
@@ -230,7 +235,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       const response = await fetchLunations({
         start: rangeStart,
         end: rangeEnd,
-        source: "db",
+        source: 'db',
         signal: controller.signal,
       });
       if (controller.signal.aborted) return;
@@ -251,7 +256,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       setCalendarError(null);
     } catch (err) {
       if (controller.signal.aborted) return;
-      const message = err instanceof Error ? err.message : "Erro ao carregar calendário lunar";
+      const message = err instanceof Error ? err.message : 'Erro ao carregar calendário lunar';
       setCalendarError(message);
     } finally {
       if (!controller.signal.aborted) {
@@ -273,19 +278,19 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const findMonthEntry = useCallback(
     (isoDate: string) => findMonthEntryByDate(monthEntries, isoDate),
-    [monthEntries],
+    [monthEntries]
   );
 
   const highlightTarget = useMemo(
     () => deriveHighlightTarget(allDays, todayIso, monthEntries),
-    [allDays, monthEntries, todayIso],
+    [allDays, monthEntries, todayIso]
   );
 
   useEffect(() => {
     if (!selectedMonth && monthEntries.length > 0) {
       const highlighted = highlightTarget
         ? monthEntries.find(
-            (m) => m.year === highlightTarget.year && m.monthNumber === highlightTarget.monthNumber,
+            (m) => m.year === highlightTarget.year && m.monthNumber === highlightTarget.monthNumber
           )
         : null;
       const todayMonth = findMonthEntry(todayIso);
@@ -306,17 +311,17 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     const fetchExistingInsight = async () => {
       if (!isModalOpen || !selectedMonth) return;
       setIsLoadingInsight(true);
-      setExistingInsight("");
+      setExistingInsight('');
       setExistingInsightUpdatedAt(null);
 
       try {
         const item = await loadInsight(selectedMoonPhase, selectedMonth.monthNumber);
         if (!isActive) return;
-        setExistingInsight(item?.insight ?? "");
+        setExistingInsight(item?.insight ?? '');
         setExistingInsightUpdatedAt(item?.updatedAt ?? item?.createdAt ?? null);
       } catch {
         if (!isActive) return;
-        setExistingInsight("");
+        setExistingInsight('');
         setExistingInsightUpdatedAt(null);
       } finally {
         if (isActive) setIsLoadingInsight(false);
@@ -345,29 +350,29 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const highlightedMoonInfo = highlightTarget
     ? buildMoonInfo(highlightTarget, highlightTarget.phase)
     : null;
-  const selectedMonthName = selectedMonth?.monthName ?? "Mês";
+  const selectedMonthName = selectedMonth?.monthName ?? 'Mês';
   const prompt = MONTHLY_PROMPTS[selectedMoonPhase];
   const savedAtLabel = formatSavedAtLabel(existingInsightUpdatedAt);
   const chatStorageKey = buildMonthlyStorageKey(
-    selectedMonth?.year ?? "ano",
+    selectedMonth?.year ?? 'ano',
     selectedMonth?.monthNumber ?? 1,
-    selectedMoonPhase,
+    selectedMoonPhase
   );
   const signBadge =
     selectedMoonInfo.signLabel && selectedMoonInfo.signLabel.trim().length > 0
       ? `Signo ${selectedMoonInfo.signLabel}`
       : undefined;
-  const chatPlaceholder = isLoadingInsight ? "Carregando insight salvo..." : prompt.placeholder;
+  const chatPlaceholder = isLoadingInsight ? 'Carregando insight salvo...' : prompt.placeholder;
 
   const getColumnIndex = useCallback(
     (target: typeof highlightTarget) => {
       if (!target) return null;
       const idx = monthEntries.findIndex(
-        (month) => month.year === target.year && month.monthNumber === target.monthNumber,
+        (month) => month.year === target.year && month.monthNumber === target.monthNumber
       );
       return idx >= 0 ? idx : null;
     },
-    [monthEntries],
+    [monthEntries]
   );
 
   const centerOnColumn = useCallback(
@@ -379,10 +384,10 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       const target = columnCenter - scroller.clientWidth / 2;
       scroller.scrollTo({
         left: Math.max(0, target),
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     },
-    [layout.padding, layout.tileWidth, tileSpan],
+    [layout.padding, layout.tileWidth, tileSpan]
   );
 
   const updateScrollMetrics = useCallback(() => {
@@ -419,13 +424,13 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
     updateScrollMetrics();
 
-    scroller.addEventListener("scroll", handleScroll);
+    scroller.addEventListener('scroll', handleScroll);
 
     const resizeObserver = new ResizeObserver(() => updateScrollMetrics());
     resizeObserver.observe(scroller);
 
     return () => {
-      scroller.removeEventListener("scroll", handleScroll);
+      scroller.removeEventListener('scroll', handleScroll);
       resizeObserver.disconnect();
     };
   }, [updateScrollMetrics]);
@@ -439,47 +444,47 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
     const max = scroller.scrollWidth - scroller.clientWidth;
-    scroller.scrollTo({ left: max * value, behavior: "smooth" });
+    scroller.scrollTo({ left: max * value, behavior: 'smooth' });
   }, []);
 
   const scrollByStep = useCallback(
-    (direction: "left" | "right") => {
+    (direction: 'left' | 'right') => {
       const scroller = scrollerRef.current;
       if (!scroller) return;
 
       const step = tileSpan * layout.visibleColumns;
       const max = scroller.scrollWidth - scroller.clientWidth;
       const targetLeft =
-        direction === "left"
+        direction === 'left'
           ? Math.max(0, scroller.scrollLeft - step)
           : Math.min(max, scroller.scrollLeft + step);
 
-      scroller.scrollTo({ left: targetLeft, behavior: "smooth" });
+      scroller.scrollTo({ left: targetLeft, behavior: 'smooth' });
       setScrollProgress(max > 0 ? targetLeft / max : 0);
     },
-    [layout.visibleColumns, tileSpan],
+    [layout.visibleColumns, tileSpan]
   );
 
   const handleScrollerKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "ArrowLeft") {
+      if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        scrollByStep("left");
+        scrollByStep('left');
       }
-      if (event.key === "ArrowRight") {
+      if (event.key === 'ArrowRight') {
         event.preventDefault();
-        scrollByStep("right");
+        scrollByStep('right');
       }
-      if (event.key === "Home") {
+      if (event.key === 'Home') {
         event.preventDefault();
         scrollToProgress(0);
       }
-      if (event.key === "End") {
+      if (event.key === 'End') {
         event.preventDefault();
         scrollToProgress(1);
       }
     },
-    [scrollByStep, scrollToProgress],
+    [scrollByStep, scrollToProgress]
   );
 
   const hasOverflow = viewportFraction > 0 && viewportFraction < 0.999;
@@ -493,20 +498,20 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const virtualizedMonths = useMemo(
     () => monthEntries.slice(virtualWindow.start, virtualWindow.end),
-    [monthEntries, virtualWindow.end, virtualWindow.start],
+    [monthEntries, virtualWindow.end, virtualWindow.start]
   );
   const virtualOffsetPx = virtualWindow.start * tileSpan;
   const isInitialLoading = isCalendarLoading && monthEntries.length === 0;
   const skeletonCount = useMemo(
     () => Math.max(Math.ceil(layout.visibleColumns) + 2, 8),
-    [layout.visibleColumns],
+    [layout.visibleColumns]
   );
   const diagonalStep = Math.max(8, Math.min(18, Math.round(layout.tileWidth * 0.15)));
   const topBaseOffset = diagonalStep * 2.2;
   const bottomBaseOffset = diagonalStep * 6.4;
 
   useEffect(() => {
-    if (typeof window === "undefined") return undefined;
+    if (typeof window === 'undefined') return undefined;
 
     const handleResize = () => {
       setLayout((prev) => {
@@ -524,28 +529,24 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     };
 
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-between py-10 sm:py-14 lg:py-16">
       <LuminousTrail />
-      <CalendarStatus
-        isLoading={isCalendarLoading}
-        error={calendarError}
-        onRetry={handleRetry}
-      />
+      <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
 
       <CelestialObject
         type="sol"
-        size={isCompactLayout ? "md" : "lg"}
+        size={isCompactLayout ? 'md' : 'lg'}
         interactive
         onClick={(e) =>
-          navigateWithFocus("planetCardBelowSun", {
+          navigateWithFocus('planetCardBelowSun', {
             event: e,
-            type: "sol",
-            size: "lg",
+            type: 'sol',
+            size: 'lg',
           })
         }
         className="mt-4"
@@ -569,8 +570,8 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           gap={layout.gap}
           canScrollLeft={canScrollLeft}
           canScrollRight={canScrollRight}
-          onScrollLeft={() => scrollByStep("left")}
-          onScrollRight={() => scrollByStep("right")}
+          onScrollLeft={() => scrollByStep('left')}
+          onScrollRight={() => scrollByStep('right')}
           onRetry={handleRetry}
           isInitialLoading={isInitialLoading}
           monthEntries={monthEntries}
@@ -585,18 +586,17 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           topBaseOffset={topBaseOffset}
           bottomBaseOffset={bottomBaseOffset}
         />
-
       </div>
 
       <CelestialObject
         type="planeta"
-        size={isCompactLayout ? "md" : "lg"}
+        size={isCompactLayout ? 'md' : 'lg'}
         interactive
         onClick={(e) =>
-          navigateWithFocus("planetCardStandalone", {
+          navigateWithFocus('planetCardStandalone', {
             event: e,
-            type: "planeta",
-            size: "lg",
+            type: 'planeta',
+            size: 'lg',
           })
         }
         className="mb-4"
@@ -611,7 +611,7 @@ const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         subtitle={`Mês #${selectedMonth?.monthNumber ?? 1}`}
         badge={signBadge}
         placeholder={chatPlaceholder}
-        systemGreeting={prompt.greeting.replace("{month}", selectedMonthName)}
+        systemGreeting={prompt.greeting.replace('{month}', selectedMonthName)}
         systemQuestion={prompt.systemQuestion}
         initialValue={existingInsight}
         initialValueLabel={savedAtLabel || undefined}

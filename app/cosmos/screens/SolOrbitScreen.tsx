@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { CelestialObject } from "../components/CelestialObject";
-import CosmosChatModal from "../components/CosmosChatModal";
-import { useQuarterlyInsights } from "@/hooks/useQuarterlyInsights";
-import { useAnnualInsights } from "@/hooks/useAnnualInsights";
-import { useYear } from "../context/YearContext";
+import React, { useState, useEffect } from 'react';
+import { CelestialObject } from '../components/CelestialObject';
+import CosmosChatModal from '../components/CosmosChatModal';
+import { useQuarterlyInsights } from '@/hooks/useQuarterlyInsights';
+import { useAnnualInsights } from '@/hooks/useAnnualInsights';
+import { useYear } from '../context/YearContext';
 import {
   QUARTERLY_INFO,
   QUARTERLY_PROMPTS,
   QUARTERLY_RESPONSES,
   buildAnnualStorageKey,
   buildQuarterlyStorageKey,
-} from "../utils/insightChatPresets";
-import type { MoonPhase } from "../utils/moonPhases";
-import type { ScreenProps } from "../types";
+} from '../utils/insightChatPresets';
+import type { MoonPhase } from '../utils/moonPhases';
+import type { ScreenProps } from '../types';
 
 const MOON_RING_RADIUS_PERCENT = 42;
 const DIAGONAL_MOONS: Array<{
@@ -22,10 +22,10 @@ const DIAGONAL_MOONS: Array<{
   angleDeg: number;
   floatOffset: number;
 }> = [
-  { phase: "luaCheia", angleDeg: 0, floatOffset: -1 },
-  { phase: "luaCrescente", angleDeg: 90, floatOffset: -2 },
-  { phase: "luaNova", angleDeg: 180, floatOffset: 3 },
-  { phase: "luaMinguante", angleDeg: 270, floatOffset: 1 },
+  { phase: 'luaCheia', angleDeg: 0, floatOffset: -1 },
+  { phase: 'luaCrescente', angleDeg: 90, floatOffset: -2 },
+  { phase: 'luaNova', angleDeg: 180, floatOffset: 3 },
+  { phase: 'luaMinguante', angleDeg: 270, floatOffset: 1 },
 ];
 
 type SolOrbitStageProps = {
@@ -40,7 +40,7 @@ const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let width = 0;
@@ -90,7 +90,7 @@ const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
     const drawEarthOrbit = () => {
       ctx.save();
       ctx.lineWidth = config.lineWidthOrbits;
-      ctx.strokeStyle = "#38bdf8";
+      ctx.strokeStyle = '#38bdf8';
       ctx.globalAlpha = 0.35;
       ctx.beginPath();
       ctx.arc(centerX, centerY, earthOrbitRadius, 0, Math.PI * 2);
@@ -123,7 +123,7 @@ const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
       if (moonTrail.length < 2) return;
       ctx.save();
       ctx.lineWidth = config.lineWidthTrail;
-      ctx.strokeStyle = "#7dd3fc";
+      ctx.strokeStyle = '#7dd3fc';
       ctx.globalAlpha = 0.8;
       ctx.beginPath();
 
@@ -139,46 +139,46 @@ const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
 
     const drawEarthAndMoon = (
       earthPos: { x: number; y: number },
-      moonPos: { x: number; y: number },
+      moonPos: { x: number; y: number }
     ) => {
       ctx.save();
 
       // Órbita da Lua
       ctx.lineWidth = 0.8;
-      ctx.strokeStyle = "rgba(125,211,252,0.35)";
+      ctx.strokeStyle = 'rgba(125,211,252,0.35)';
       ctx.beginPath();
       ctx.arc(earthPos.x, earthPos.y, moonOrbitRadius, 0, Math.PI * 2);
       ctx.stroke();
 
       // Terra
       ctx.shadowBlur = 10;
-      ctx.shadowColor = "#38bdf8";
-      ctx.fillStyle = "#0ea5e9";
+      ctx.shadowColor = '#38bdf8';
+      ctx.fillStyle = '#0ea5e9';
       ctx.beginPath();
       ctx.arc(earthPos.x, earthPos.y, 10, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.shadowBlur = 0;
-      ctx.fillStyle = "#e5e7eb";
-      ctx.font = "13px system-ui, -apple-system, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      ctx.fillText("Earth", earthPos.x, earthPos.y - 14);
+      ctx.fillStyle = '#e5e7eb';
+      ctx.font = '13px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('Earth', earthPos.x, earthPos.y - 14);
 
       // Lua
       ctx.shadowBlur = 12;
-      ctx.shadowColor = "#bae6fd";
-      ctx.fillStyle = "#e0f2fe";
+      ctx.shadowColor = '#bae6fd';
+      ctx.fillStyle = '#e0f2fe';
       ctx.beginPath();
       ctx.arc(moonPos.x, moonPos.y, 6, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.shadowBlur = 0;
-      ctx.fillStyle = "#e5e7eb";
-      ctx.font = "13px system-ui, -apple-system, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      ctx.fillText("Moon", moonPos.x, moonPos.y - 16);
+      ctx.fillStyle = '#e5e7eb';
+      ctx.font = '13px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('Moon', moonPos.x, moonPos.y - 16);
 
       ctx.restore();
     };
@@ -190,7 +190,7 @@ const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
 
       ctx.save();
       ctx.lineWidth = 1.1;
-      ctx.strokeStyle = "rgba(125,211,252,0.6)";
+      ctx.strokeStyle = 'rgba(125,211,252,0.6)';
       ctx.beginPath();
 
       const steps = 720;
@@ -227,12 +227,12 @@ const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
     };
 
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener('resize', resize);
     animate();
 
     return () => {
       window.cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener('resize', resize);
     };
   }, []);
 
@@ -278,13 +278,13 @@ const SolOrbitStage = ({ onSolClick, onMoonClick }: SolOrbitStageProps) => {
 const SolOrbitScreen: React.FC<ScreenProps> = () => {
   const [isQuarterlyModalOpen, setIsQuarterlyModalOpen] = useState(false);
   const [isAnnualModalOpen, setIsAnnualModalOpen] = useState(false);
-  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>("luaNova");
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>('luaNova');
   const [displayYear, setDisplayYear] = useState<number>(new Date().getFullYear());
   const { saveInsight: saveQuarterlyInsight } = useQuarterlyInsights();
   const { saveInsight: saveAnnualInsight } = useAnnualInsights();
   const { selectedYear } = useYear();
   const phaseInfo = QUARTERLY_INFO[selectedMoonPhase];
-  
+
   // Atualizar displayYear apenas quando um ano específico foi selecionado via navegação
   useEffect(() => {
     const currentYear = new Date().getFullYear();
@@ -352,9 +352,9 @@ const SolOrbitScreen: React.FC<ScreenProps> = () => {
         submitLabel="✨ Concluir insight anual"
         tone="amber"
         systemResponses={[
-          "Que ano cheio de significado! ✨",
-          "Seu caminho ficou ainda mais claro. ☀️",
-          "Lindo fechamento de ciclo. 🌟",
+          'Que ano cheio de significado! ✨',
+          'Seu caminho ficou ainda mais claro. ☀️',
+          'Lindo fechamento de ciclo. 🌟',
         ]}
         onClose={() => setIsAnnualModalOpen(false)}
         onSubmit={async (value) => {

@@ -15,30 +15,39 @@ Se você chegou nesta pasta procurando informações sobre **insights**, você e
 ## 📚 Documentação Disponível
 
 ### 🎯 Para Iniciantes
+
 👉 **[INSIGHTS_RESUMO.md](./INSIGHTS_RESUMO.md)** - O que é, como funciona, comece aqui!
 
 ### 🗂️ Para Entender a Estrutura
+
 👉 **[INSIGHTS_BANCO_DADOS.md](./INSIGHTS_BANCO_DADOS.md)** - Estrutura completa das tabelas
 
 ### 📊 Para Visualizar
+
 👉 **[INSIGHTS_TABELAS_VISUAL.md](./INSIGHTS_TABELAS_VISUAL.md)** - Diagramas e exemplos
 
 ### 🔌 Para Integrar APIs
+
 👉 **[INSIGHTS_API.md](./INSIGHTS_API.md)** - Como usar as APIs
 
 ### 🚀 Para Implementar
+
 👉 **[CHECKLIST_INSIGHTS.md](./CHECKLIST_INSIGHTS.md)** - Passo a passo detalhado
 
 ### 🧪 Para Testar
+
 👉 **[TESTES_INSIGHTS.md](./TESTES_INSIGHTS.md)** - Scripts de teste prontos
 
 ### ⚡ Para Otimizar
+
 👉 **[INSIGHTS_OTIMIZACAO.md](./INSIGHTS_OTIMIZACAO.md)** - Performance e segurança
 
 ### 🌙 Para Entender Fases Lunares
+
 👉 **[FASES_LUNARES.md](./FASES_LUNARES.md)** - Significado de cada fase
 
 ### 🗺️ Para Navegar Tudo
+
 👉 **[INSIGHTS_INDICE.md](./INSIGHTS_INDICE.md)** - Índice completo
 
 ---
@@ -72,6 +81,7 @@ lib/
 ## 🎯 Roteiros Rápidos
 
 ### Roteiro 1: "Quero entender tudo em 30 minutos"
+
 ```
 1. INSIGHTS_RESUMO.md (10 min)
 2. INSIGHTS_TABELAS_VISUAL.md (10 min)
@@ -79,6 +89,7 @@ lib/
 ```
 
 ### Roteiro 2: "Quero implementar tudo agora"
+
 ```
 1. INSIGHTS_RESUMO.md (5 min)
 2. CHECKLIST_INSIGHTS.md (60 min)
@@ -86,6 +97,7 @@ lib/
 ```
 
 ### Roteiro 3: "Quero ser um especialista"
+
 ```
 1. Leia todos os arquivos
 2. Execute os testes
@@ -123,8 +135,8 @@ curl -X POST http://localhost:3000/api/form/monthly-insight \
 ### 3️⃣ Verificar no Banco
 
 ```sql
-SELECT * FROM monthly_insights 
-ORDER BY created_at DESC 
+SELECT * FROM monthly_insights
+ORDER BY created_at DESC
 LIMIT 1;
 ```
 
@@ -135,18 +147,21 @@ LIMIT 1;
 ## 📊 3 Tipos de Insights
 
 ### 🌑 Insights Mensais
+
 - **Como:** Clique em uma lua no `LuaListScreen`
 - **Salva:** `monthly_insights`
 - **Frequência:** 4 por mês (uma por fase lunar)
 - **Total/ano:** 48
 
 ### ⭐ Insights Trimestrais
+
 - **Como:** Clique em uma lua no `SolOrbitScreen`
 - **Salva:** `quarterly_insights`
 - **Frequência:** 1 por trimestre (4 fases)
 - **Total/ano:** 4
 
 ### ☀️ Insights Anuais
+
 - **Como:** Clique no Sol no `SolOrbitScreen`
 - **Salva:** `annual_insights`
 - **Frequência:** 1 por ano
@@ -163,11 +178,11 @@ import { useMonthlyInsights } from '@/hooks/useMonthlyInsights';
 
 export default function MeuComponente() {
   const { saveInsight } = useMonthlyInsights();
-  
+
   const handleSave = async (texto: string) => {
     await saveInsight('luaNova', 1, texto);
   };
-  
+
   return <button onClick={() => handleSave('Meu insight')}>Salvar</button>;
 }
 ```
@@ -177,12 +192,7 @@ export default function MeuComponente() {
 ```typescript
 import { saveMonthlyInsight } from '@/lib/forms';
 
-const result = await saveMonthlyInsight(
-  userId,
-  'luaNova',
-  1,
-  'Meu insight mensal'
-);
+const result = await saveMonthlyInsight(userId, 'luaNova', 1, 'Meu insight mensal');
 ```
 
 ### API Call
@@ -194,9 +204,9 @@ const response = await fetch('/api/form/monthly-insight', {
   body: JSON.stringify({
     moonPhase: 'luaNova',
     monthNumber: 1,
-    insight: 'Meu insight'
+    insight: 'Meu insight',
   }),
-  credentials: 'include'
+  credentials: 'include',
 });
 ```
 
@@ -216,12 +226,12 @@ Se tudo passou: **Você está pronto! 🎉**
 
 ## 🆘 Problemas Comuns
 
-| Problema | Solução |
-|----------|---------|
-| Tabelas não aparecem | Revise `CHECKLIST_INSIGHTS.md` etapa 1 |
-| Erro 401 | Verifique autenticação em `INSIGHTS_API.md` |
-| Erro ao salvar | Leia `TESTES_INSIGHTS.md` seção troubleshooting |
-| Query lenta | Consulte `INSIGHTS_OTIMIZACAO.md` |
+| Problema             | Solução                                         |
+| -------------------- | ----------------------------------------------- |
+| Tabelas não aparecem | Revise `CHECKLIST_INSIGHTS.md` etapa 1          |
+| Erro 401             | Verifique autenticação em `INSIGHTS_API.md`     |
+| Erro ao salvar       | Leia `TESTES_INSIGHTS.md` seção troubleshooting |
+| Query lenta          | Consulte `INSIGHTS_OTIMIZACAO.md`               |
 
 ---
 
@@ -229,29 +239,31 @@ Se tudo passou: **Você está pronto! 🎉**
 
 ### Quero entender...
 
-| Tópico | Arquivo |
-|--------|---------|
-| O que é insights | `INSIGHTS_RESUMO.md` |
-| Como as tabelas funcionam | `INSIGHTS_BANCO_DADOS.md` |
-| Como visualizar dados | `INSIGHTS_TABELAS_VISUAL.md` |
-| Como usar as APIs | `INSIGHTS_API.md` |
-| Como implementar tudo | `CHECKLIST_INSIGHTS.md` |
-| Como testar | `TESTES_INSIGHTS.md` |
-| Como otimizar | `INSIGHTS_OTIMIZACAO.md` |
-| Fases lunares | `FASES_LUNARES.md` |
-| Tudo junto | `INSIGHTS_INDICE.md` |
+| Tópico                    | Arquivo                      |
+| ------------------------- | ---------------------------- |
+| O que é insights          | `INSIGHTS_RESUMO.md`         |
+| Como as tabelas funcionam | `INSIGHTS_BANCO_DADOS.md`    |
+| Como visualizar dados     | `INSIGHTS_TABELAS_VISUAL.md` |
+| Como usar as APIs         | `INSIGHTS_API.md`            |
+| Como implementar tudo     | `CHECKLIST_INSIGHTS.md`      |
+| Como testar               | `TESTES_INSIGHTS.md`         |
+| Como otimizar             | `INSIGHTS_OTIMIZACAO.md`     |
+| Fases lunares             | `FASES_LUNARES.md`           |
+| Tudo junto                | `INSIGHTS_INDICE.md`         |
 
 ---
 
 ## 📈 Estatísticas
 
 ### Por Usuário/Ano
+
 - 48 insights mensais (~24 KB)
 - 4 insights trimestrais (~2 KB)
 - 1 insight anual (~0.5 KB)
 - **Total: ~26.5 KB/usuário**
 
 ### Escalabilidade
+
 - 1M usuários = ~26 GB (viável com Neon) ✅
 
 ---
@@ -264,7 +276,7 @@ Se tudo passou: **Você está pronto! 🎉**
 ✅ 9 arquivos de documentação  
 ✅ Scripts prontos para testar  
 ✅ Performance garantida  
-✅ Segurança implementada  
+✅ Segurança implementada
 
 ---
 

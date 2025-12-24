@@ -12,10 +12,7 @@ export async function GET(
       { status: 200 }
     );
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Erro ao buscar projeto' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro ao buscar projeto' }, { status: 500 });
   }
 }
 
@@ -26,15 +23,9 @@ export async function POST(
   try {
     const { projectId } = await params;
     // TODO: Implementar lógica de POST para projeto específico
-    return NextResponse.json(
-      { message: 'POST em projeto específico', projectId },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'POST em projeto específico', projectId }, { status: 200 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Erro ao atualizar projeto' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro ao atualizar projeto' }, { status: 500 });
   }
 }
 
@@ -45,14 +36,8 @@ export async function DELETE(
   try {
     const { projectId } = await params;
     // TODO: Implementar lógica de DELETE para projeto específico
-    return NextResponse.json(
-      { message: 'Projeto deletado', projectId },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Projeto deletado', projectId }, { status: 200 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Erro ao deletar projeto' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro ao deletar projeto' }, { status: 500 });
   }
 }

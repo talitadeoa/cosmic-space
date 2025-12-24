@@ -3,6 +3,7 @@
 ## 📋 Visão Geral
 
 As três APIs de insights permitem salvar e recuperar os três tipos de insights:
+
 - **POST** `/api/form/monthly-insight` - Salvar insight mensal
 - **POST** `/api/form/quarterly-insight` - Salvar insight trimestral
 - **POST** `/api/form/annual-insight` - Salvar insight anual
@@ -36,11 +37,11 @@ Salva um insight mensal para uma fase lunar específica em um mês.
 
 ### Request Parameters
 
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `moonPhase` | string | Sim | Uma das 4 fases: `luaNova`, `luaCrescente`, `luaCheia`, `luaMinguante` |
-| `monthNumber` | number | Sim | Número do mês: 1-12 |
-| `insight` | string | Sim | Texto do insight (mínimo 1 caractere) |
+| Campo         | Tipo   | Obrigatório | Descrição                                                              |
+| ------------- | ------ | ----------- | ---------------------------------------------------------------------- |
+| `moonPhase`   | string | Sim         | Uma das 4 fases: `luaNova`, `luaCrescente`, `luaCheia`, `luaMinguante` |
+| `monthNumber` | number | Sim         | Número do mês: 1-12                                                    |
+| `insight`     | string | Sim         | Texto do insight (mínimo 1 caractere)                                  |
 
 ### Response (200 OK)
 
@@ -83,11 +84,7 @@ Salva um insight mensal para uma fase lunar específica em um mês.
 ### Exemplo de Uso (Frontend)
 
 ```typescript
-async function saveMonthlyInsight(
-  moonPhase: string,
-  monthNumber: number,
-  insight: string
-) {
+async function saveMonthlyInsight(moonPhase: string, monthNumber: number, insight: string) {
   const response = await fetch('/api/form/monthly-insight', {
     method: 'POST',
     headers: {
@@ -120,58 +117,33 @@ import { saveMonthlyInsight } from '@/lib/forms';
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user?.id) {
-      return Response.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { moonPhase, monthNumber, insight } = await request.json();
 
     // Validação
     if (!moonPhase || !monthNumber || !insight) {
-      return Response.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (![
-      'luaNova',
-      'luaCrescente',
-      'luaCheia',
-      'luaMinguante',
-    ].includes(moonPhase)) {
-      return Response.json(
-        { error: 'Invalid moon phase' },
-        { status: 400 }
-      );
+    if (!['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'].includes(moonPhase)) {
+      return Response.json({ error: 'Invalid moon phase' }, { status: 400 });
     }
 
     if (monthNumber < 1 || monthNumber > 12) {
-      return Response.json(
-        { error: 'Month must be between 1 and 12' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Month must be between 1 and 12' }, { status: 400 });
     }
 
     // Salvar
-    const result = await saveMonthlyInsight(
-      session.user.id,
-      moonPhase,
-      monthNumber,
-      insight
-    );
+    const result = await saveMonthlyInsight(session.user.id, moonPhase, monthNumber, insight);
 
     return Response.json(result);
   } catch (error) {
     console.error('Error saving monthly insight:', error);
-    return Response.json(
-      { error: 'Failed to save insight' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Failed to save insight' }, { status: 500 });
   }
 }
 ```
@@ -194,11 +166,11 @@ Salva um insight trimestral para uma fase lunar específica em um trimestre.
 
 ### Request Parameters
 
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `moonPhase` | string | Sim | Uma das 4 fases: `luaNova`, `luaCrescente`, `luaCheia`, `luaMinguante` |
-| `quarterNumber` | number | Sim | Número do trimestre: 1-4 |
-| `insight` | string | Sim | Texto do insight (mínimo 1 caractere) |
+| Campo           | Tipo   | Obrigatório | Descrição                                                              |
+| --------------- | ------ | ----------- | ---------------------------------------------------------------------- |
+| `moonPhase`     | string | Sim         | Uma das 4 fases: `luaNova`, `luaCrescente`, `luaCheia`, `luaMinguante` |
+| `quarterNumber` | number | Sim         | Número do trimestre: 1-4                                               |
+| `insight`       | string | Sim         | Texto do insight (mínimo 1 caractere)                                  |
 
 ### Response (200 OK)
 
@@ -216,21 +188,17 @@ Salva um insight trimestral para uma fase lunar específica em um trimestre.
 
 ### Trimestres Mapping
 
-| Trimestre | Meses | Período |
-|-----------|-------|---------|
-| 1 | Janeiro a Março | Q1 |
-| 2 | Abril a Junho | Q2 |
-| 3 | Julho a Setembro | Q3 |
-| 4 | Outubro a Dezembro | Q4 |
+| Trimestre | Meses              | Período |
+| --------- | ------------------ | ------- |
+| 1         | Janeiro a Março    | Q1      |
+| 2         | Abril a Junho      | Q2      |
+| 3         | Julho a Setembro   | Q3      |
+| 4         | Outubro a Dezembro | Q4      |
 
 ### Exemplo de Uso (Frontend)
 
 ```typescript
-async function saveQuarterlyInsight(
-  moonPhase: string,
-  quarterNumber: number,
-  insight: string
-) {
+async function saveQuarterlyInsight(moonPhase: string, quarterNumber: number, insight: string) {
   const response = await fetch('/api/form/quarterly-insight', {
     method: 'POST',
     headers: {
@@ -263,58 +231,33 @@ import { saveQuarterlyInsight } from '@/lib/forms';
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user?.id) {
-      return Response.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { moonPhase, quarterNumber, insight } = await request.json();
 
     // Validação
     if (!moonPhase || !quarterNumber || !insight) {
-      return Response.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (![
-      'luaNova',
-      'luaCrescente',
-      'luaCheia',
-      'luaMinguante',
-    ].includes(moonPhase)) {
-      return Response.json(
-        { error: 'Invalid moon phase' },
-        { status: 400 }
-      );
+    if (!['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'].includes(moonPhase)) {
+      return Response.json({ error: 'Invalid moon phase' }, { status: 400 });
     }
 
     if (quarterNumber < 1 || quarterNumber > 4) {
-      return Response.json(
-        { error: 'Quarter must be between 1 and 4' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Quarter must be between 1 and 4' }, { status: 400 });
     }
 
     // Salvar
-    const result = await saveQuarterlyInsight(
-      session.user.id,
-      moonPhase,
-      quarterNumber,
-      insight
-    );
+    const result = await saveQuarterlyInsight(session.user.id, moonPhase, quarterNumber, insight);
 
     return Response.json(result);
   } catch (error) {
     console.error('Error saving quarterly insight:', error);
-    return Response.json(
-      { error: 'Failed to save insight' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Failed to save insight' }, { status: 500 });
   }
 }
 ```
@@ -336,10 +279,10 @@ Salva um insight anual para o ano atual (ou ano especificado).
 
 ### Request Parameters
 
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `insight` | string | Sim | Texto do insight (mínimo 1 caractere) |
-| `year` | number | Não | Ano do insight (padrão: ano atual) |
+| Campo     | Tipo   | Obrigatório | Descrição                             |
+| --------- | ------ | ----------- | ------------------------------------- |
+| `insight` | string | Sim         | Texto do insight (mínimo 1 caractere) |
+| `year`    | number | Não         | Ano do insight (padrão: ano atual)    |
 
 ### Response (200 OK)
 
@@ -357,10 +300,7 @@ Salva um insight anual para o ano atual (ou ano especificado).
 ### Exemplo de Uso (Frontend)
 
 ```typescript
-async function saveAnnualInsight(
-  insight: string,
-  year?: number
-) {
+async function saveAnnualInsight(insight: string, year?: number) {
   const response = await fetch('/api/form/annual-insight', {
     method: 'POST',
     headers: {
@@ -392,47 +332,31 @@ import { saveAnnualInsight } from '@/lib/forms';
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user?.id) {
-      return Response.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { insight, year } = await request.json();
 
     // Validação
     if (!insight) {
-      return Response.json(
-        { error: 'Missing required field: insight' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Missing required field: insight' }, { status: 400 });
     }
 
     const y = year ?? new Date().getFullYear();
 
     if (y < 2000 || y > 2999) {
-      return Response.json(
-        { error: 'Year must be between 2000 and 2999' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Year must be between 2000 and 2999' }, { status: 400 });
     }
 
     // Salvar
-    const result = await saveAnnualInsight(
-      session.user.id,
-      insight,
-      y
-    );
+    const result = await saveAnnualInsight(session.user.id, insight, y);
 
     return Response.json(result);
   } catch (error) {
     console.error('Error saving annual insight:', error);
-    return Response.json(
-      { error: 'Failed to save insight' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Failed to save insight' }, { status: 500 });
   }
 }
 ```
@@ -447,12 +371,12 @@ export async function POST(request: Request) {
 // Em um componente React
 import { useState } from 'react';
 
-export default function MonthlyInsightModal({ 
-  isOpen, 
+export default function MonthlyInsightModal({
+  isOpen,
   monthNumber,
   moonPhase,
   onClose,
-  onSuccess 
+  onSuccess
 }) {
   const [insight, setInsight] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -497,7 +421,7 @@ export default function MonthlyInsightModal({
     <div className={isOpen ? 'modal open' : 'modal'}>
       <div className="modal-content">
         <h2>Insight - {moonPhase}</h2>
-        
+
         <textarea
           value={insight}
           onChange={(e) => setInsight(e.target.value)}
@@ -511,7 +435,7 @@ export default function MonthlyInsightModal({
           <button onClick={onClose} disabled={isLoading}>
             Cancelar
           </button>
-          <button 
+          <button
             onClick={handleSubmit}
             disabled={isLoading || !insight.trim()}
           >
@@ -532,12 +456,7 @@ export default function MonthlyInsightModal({
 
 ```typescript
 // Validar fase lunar
-const validPhases = [
-  'luaNova',
-  'luaCrescente',
-  'luaCheia',
-  'luaMinguante',
-];
+const validPhases = ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'];
 
 if (!validPhases.includes(moonPhase)) {
   throw new Error('Fase lunar inválida');

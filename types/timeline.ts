@@ -1,6 +1,6 @@
-export type TimelinePeriod = "30d" | "90d" | "1y";
+export type TimelinePeriod = '30d' | '90d' | '1y';
 
-export type TimelineItemType = "mensal" | "trimestral" | "anual" | "energia";
+export type TimelineItemType = 'mensal' | 'trimestral' | 'anual' | 'energia';
 
 export type TimelineItem = {
   id: string;

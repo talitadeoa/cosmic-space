@@ -13,32 +13,32 @@ Seu projeto está **100% responsivo**! Ele funciona perfeitamente em:
 ## 📱 Padrões Usados
 
 ### Breakpoints (Tailwind)
-| Breakpoint | Tela | Tamanho |
-|-----------|------|--------|
-| sem prefixo | Mobile | < 640px |
-| `sm:` | Tablet Pequena | 640px+ |
-| `md:` | Tablet Grande | 768px+ |
-| `lg:` | Desktop | 1024px+ |
+
+| Breakpoint  | Tela           | Tamanho |
+| ----------- | -------------- | ------- |
+| sem prefixo | Mobile         | < 640px |
+| `sm:`       | Tablet Pequena | 640px+  |
+| `md:`       | Tablet Grande  | 768px+  |
+| `lg:`       | Desktop        | 1024px+ |
 
 ### Exemplos de Uso
 
 #### Texto Responsivo
+
 ```jsx
 // Começa em xs, cresce para md, depois lg
-<h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl">
-  Título
-</h1>
+<h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl">Título</h1>
 ```
 
 #### Spacing Responsivo
+
 ```jsx
 // Padding aumenta conforme a tela
-<div className="px-4 sm:px-6 md:px-8 lg:px-10">
-  Conteúdo
-</div>
+<div className="px-4 sm:px-6 md:px-8 lg:px-10">Conteúdo</div>
 ```
 
 #### Layout Responsivo
+
 ```jsx
 // Coluna em mobile, linha em desktop
 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
@@ -65,6 +65,7 @@ Ao adicionar novos componentes, considere:
 ## 🎨 Tamanhos Recomendados
 
 ### Fonts
+
 - Heading h1: `text-2xl sm:text-3xl md:text-4xl`
 - Heading h2: `text-xl sm:text-2xl md:text-3xl`
 - Heading h3: `text-lg sm:text-xl md:text-2xl`
@@ -72,12 +73,14 @@ Ao adicionar novos componentes, considere:
 - Small: `text-xs sm:text-sm`
 
 ### Spacing
+
 - Tiny: `px-2 sm:px-3 md:px-4`
 - Small: `px-3 sm:px-4 md:px-6`
 - Medium: `px-4 sm:px-6 md:px-8`
 - Large: `px-6 sm:px-8 md:px-10`
 
 ### Gaps
+
 - Tight: `gap-1 sm:gap-2 md:gap-3`
 - Normal: `gap-2 sm:gap-3 md:gap-4`
 - Relaxed: `gap-3 sm:gap-4 md:gap-6`
@@ -87,31 +90,33 @@ Ao adicionar novos componentes, considere:
 
 ## 📋 Componentes Otimizados
 
-| Componente | Arquivo | Status |
-|-----------|---------|--------|
-| Landing Page | `app/page.tsx` | ✅ |
-| NavMenu | `components/NavMenu.tsx` | ✅ |
-| DataCollectionForm | `components/DataCollectionForm.tsx` | ✅ |
-| LunarPhaseForm | `components/LunarPhaseForm.tsx` | ✅ |
-| Universo Page | `app/universo/page.tsx` | ✅ |
-| Sphere | `components/Sphere.tsx` | ✅ |
-| Cosmos Page | `app/cosmos/page.tsx` | ✅ |
-| HomeScreen | `app/cosmos/screens/HomeScreen.tsx` | ✅ |
-| ZoomView | `components/views/ZoomView.tsx` | ✅ |
-| RadioPlayer | `components/RadioPlayer.tsx` | ✅ |
-| Logs Page | `app/logs/page.tsx` | ✅ |
-| Checklist | `components/Checklist.tsx` | ✅ |
+| Componente         | Arquivo                             | Status |
+| ------------------ | ----------------------------------- | ------ |
+| Landing Page       | `app/page.tsx`                      | ✅     |
+| NavMenu            | `components/NavMenu.tsx`            | ✅     |
+| DataCollectionForm | `components/DataCollectionForm.tsx` | ✅     |
+| LunarPhaseForm     | `components/LunarPhaseForm.tsx`     | ✅     |
+| Universo Page      | `app/universo/page.tsx`             | ✅     |
+| Sphere             | `components/Sphere.tsx`             | ✅     |
+| Cosmos Page        | `app/cosmos/page.tsx`               | ✅     |
+| HomeScreen         | `app/cosmos/screens/HomeScreen.tsx` | ✅     |
+| ZoomView           | `components/views/ZoomView.tsx`     | ✅     |
+| RadioPlayer        | `components/RadioPlayer.tsx`        | ✅     |
+| Logs Page          | `app/logs/page.tsx`                 | ✅     |
+| Checklist          | `components/Checklist.tsx`          | ✅     |
 
 ---
 
 ## 🎯 Testando Responsividade
 
 ### Chrome DevTools
+
 1. Pressione `F12`
 2. Clique no ícone "Toggle Device Toolbar"
 3. Selecione diferentes dispositivos
 
 ### Dispositivos Reais para Testar
+
 - iPhone SE (375px)
 - iPhone 12 (390px)
 - Samsung Galaxy S10 (360px)
@@ -119,6 +124,7 @@ Ao adicionar novos componentes, considere:
 - iPad Air (1024px)
 
 ### Pontos de Quebra a Verificar
+
 - [ ] 320px (móvel pequeno)
 - [ ] 375px (móvel padrão)
 - [ ] 480px (móvel grande)
@@ -132,7 +138,9 @@ Ao adicionar novos componentes, considere:
 ## 💡 Dicas & Truques
 
 ### 1. Mobile First
+
 Sempre comece com estilos móveis, depois adicione breakpoints:
+
 ```jsx
 // ✅ Correto
 <div className="text-sm sm:text-base md:text-lg">
@@ -142,7 +150,9 @@ Sempre comece com estilos móveis, depois adicione breakpoints:
 ```
 
 ### 2. Teste em Landscape
+
 Não esqueça de testar em orientação paisagem!
+
 ```jsx
 // Considere aspect ratio
 <div className="aspect-video">
@@ -151,7 +161,9 @@ Não esqueça de testar em orientação paisagem!
 ```
 
 ### 3. Touch Friendly
+
 Garanta espaço para clique:
+
 ```jsx
 // ✅ Bom (44x44px mínimo)
 <button className="px-4 py-2 rounded">Click</button>
@@ -161,7 +173,9 @@ Garanta espaço para clique:
 ```
 
 ### 4. Overflow Control
+
 Sempre considere overflow em mobile:
+
 ```jsx
 // Adicione scroll horizontal se necessário
 <div className="overflow-x-auto">

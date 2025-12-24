@@ -32,26 +32,29 @@ DATABASE_URL=sua-url-neon-aqui
 
 Crie uma abinha chamada **"Lunações"** com as colunas:
 
-| Data       | FasedaLua | LuaEmoji | Signo     | SignoEmoji |
-|------------|-----------|----------|-----------|------------|
-| 21/10/2025 | Nova      | 🌑       | Libra     | ⚖️         |
-| 29/10/2025 | Crescente | 🌓       | Aquário   | 🧊         |
-| 05/11/2025 | Cheia     | 🌕       | Touro     | 🐂         |
+| Data       | FasedaLua | LuaEmoji | Signo   | SignoEmoji |
+| ---------- | --------- | -------- | ------- | ---------- |
+| 21/10/2025 | Nova      | 🌑       | Libra   | ⚖️         |
+| 29/10/2025 | Crescente | 🌓       | Aquário | 🧊         |
+| 05/11/2025 | Cheia     | 🌕       | Touro   | 🐂         |
 
 ## 🚀 Como Usar
 
 ### Sincronizar (execute 1x/ano):
+
 ```bash
 npm run sync:sheets
 ```
 
 Isso vai:
+
 1. Ler todos os dados do Google Sheets
 2. Converter datas de DD/MM/YYYY → YYYY-MM-DD
 3. Salvar/atualizar no banco de dados
 4. Exibir relatório de sucesso
 
 ### Acessar Lunações via API:
+
 ```bash
 # Todas as lunações
 curl http://localhost:3000/api/lunations
@@ -79,15 +82,15 @@ curl http://localhost:3000/api/lunations
 
 ```typescript
 // hooks/useLunations.ts
-import { useEffect, useState } from "react";
-import type { LunationData } from "@/lib/forms";
+import { useEffect, useState } from 'react';
+import type { LunationData } from '@/lib/forms';
 
 export function useLunations() {
   const [lunations, setLunations] = useState<LunationData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/lunations")
+    fetch('/api/lunations')
       .then((res) => res.json())
       .then((data) => setLunations(data.data))
       .finally(() => setLoading(false));
@@ -139,15 +142,15 @@ export function LunationList() {
 
 ```typescript
 interface LunationData {
-  lunation_date: string;      // ISO YYYY-MM-DD
-  moon_phase: string;         // "Nova", "Crescente", etc
-  moon_emoji?: string;        // "🌑", "🌓", etc
-  zodiac_sign: string;        // "Libra", "Aquário", etc
-  zodiac_emoji?: string;      // "⚖️", "🧊", etc
-  illumination?: number;      // 0-100 (opcional)
-  age_days?: number;          // dias da fase (opcional)
-  description?: string;       // anotações (opcional)
-  source?: string;            // "google-sheets"
+  lunation_date: string; // ISO YYYY-MM-DD
+  moon_phase: string; // "Nova", "Crescente", etc
+  moon_emoji?: string; // "🌑", "🌓", etc
+  zodiac_sign: string; // "Libra", "Aquário", etc
+  zodiac_emoji?: string; // "⚖️", "🧊", etc
+  illumination?: number; // 0-100 (opcional)
+  age_days?: number; // dias da fase (opcional)
+  description?: string; // anotações (opcional)
+  source?: string; // "google-sheets"
 }
 ```
 
@@ -166,6 +169,7 @@ interface LunationData {
 ## 🎉 Pronto!
 
 Agora você tem um fluxo super simples:
+
 - Google Sheets é a fonte única de verdade
 - Sincroniza 1x/ano (quando atualiza)
 - App lê do DB (rápido, offline)

@@ -291,7 +291,7 @@ Já feito?    Não │   │ Já feito? Não
                         │
                         ▼
                   Tudo pronto!
-                  
+
                   UI nunca trava
                   Tudo happens in background
                   LuaListScreen usa dados
@@ -446,6 +446,7 @@ GET /api/moons/lunations
 ```
 
 **Resultado:** Calendário lunar completo com:
+
 - ✅ Datas de lunações
 - ✅ Fases da lua (Nova, Crescente, Cheia, Minguante)
 - ✅ Signos zodiacais

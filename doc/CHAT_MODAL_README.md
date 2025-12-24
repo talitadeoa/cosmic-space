@@ -41,6 +41,7 @@
 ## 🎬 Transformação Visual
 
 ### De:
+
 ```
 ┌────────────────────┐
 │ Input Textarea     │
@@ -49,6 +50,7 @@
 ```
 
 ### Para:
+
 ```
 ┌────────────────────────────────┐
 │ 🌕 Lua Cheia                   │
@@ -67,16 +69,19 @@
 ## 🚀 Como Começar
 
 ### Opção 1: Quick Start (1 minuto)
+
 ```tsx
 // Abra: app/cosmos/screens/LuaListScreen.tsx
 // Mude:
-import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvancedChatModal";
+import MonthlyInsightAdvancedChatModal from '@/components/MonthlyInsightAdvancedChatModal';
 ```
 
 ### Opção 2: Ler a Documentação (5 minutos)
+
 Leia: [CHAT_MODAL_QUICKSTART.md](CHAT_MODAL_QUICKSTART.md)
 
 ### Opção 3: Explorar Tudo (15 minutos)
+
 1. Veja [CHAT_MODAL_PREVIEW.md](doc/CHAT_MODAL_PREVIEW.md)
 2. Leia [MONTHLY_INSIGHT_CHAT_MODAL.md](doc/MONTHLY_INSIGHT_CHAT_MODAL.md)
 3. Explore os componentes
@@ -102,6 +107,7 @@ Cada cor transmite a energia da fase! ✨
 Cada fase tem 3 respostas padrão do sistema:
 
 ### 🌑 Lua Nova
+
 ```
 "Que intenções poderosas! 🌱 Você está pronto para este novo ciclo."
 "Excelente! Essas sementes do seu coração estão plantadas. ✨"
@@ -109,6 +115,7 @@ Cada fase tem 3 respostas padrão do sistema:
 ```
 
 ### 🌓 Lua Crescente
+
 ```
 "Seu crescimento é inspirador! Continuamos em movimento. 📈"
 "Ótimo! Você está honrando seu próprio desenvolvimento. 🌟"
@@ -116,6 +123,7 @@ Cada fase tem 3 respostas padrão do sistema:
 ```
 
 ### 🌕 Lua Cheia
+
 ```
 "Que colheita magnífica! Você está celebrando o ciclo completo. 🌕"
 "Incrível! Veja tudo que você realizou. ✨"
@@ -123,6 +131,7 @@ Cada fase tem 3 respostas padrão do sistema:
 ```
 
 ### 🌗 Lua Minguante
+
 ```
 "Que libertação! Você está honrando o fim do ciclo. 🌙"
 "Profundo! Soltar é tão poderoso quanto plantar. ✨"
@@ -143,14 +152,14 @@ Cada fase tem 3 respostas padrão do sistema:
 
 ## 📊 Comparação Rápida
 
-| | Original | Chat Simples | Chat Avançado |
-|---|----------|----------|----------|
-| Textarea | ✅ | ❌ | ❌ |
-| Chat | ❌ | ✅ | ✅ |
-| Cores dinâmicas | ❌ | ❌ | ✅ |
-| Respostas | ❌ | ✅ | ✅ |
-| Contador | ❌ | ❌ | ✅ |
-| Emojis | ❌ | ❌ | ✅ |
+|                 | Original | Chat Simples | Chat Avançado |
+| --------------- | -------- | ------------ | ------------- |
+| Textarea        | ✅       | ❌           | ❌            |
+| Chat            | ❌       | ✅           | ✅            |
+| Cores dinâmicas | ❌       | ❌           | ✅            |
+| Respostas       | ❌       | ✅           | ✅            |
+| Contador        | ❌       | ❌           | ✅            |
+| Emojis          | ❌       | ❌           | ✅            |
 
 ---
 
@@ -162,7 +171,7 @@ Cada fase tem 3 respostas padrão do sistema:
 ✓ Cores dinâmicas  
 ✓ Feedback visual  
 ✓ Mesmo tamanho do original  
-✓ Fácil de customizar  
+✓ Fácil de customizar
 
 ---
 

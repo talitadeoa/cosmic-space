@@ -3,11 +3,12 @@
 ## 📖 As 4 Fases Lunares
 
 ### 🌑 Lua Nova (luaNova)
+
 **Fase de Intenções e Inícios**
 
 - **Energia:** Receptiva, introspectiva, de planejamento
 - **Significado:** Começo de ciclos, plantio de sementes
-- **Insight típico:** 
+- **Insight típico:**
   - \"Minhas intenções para este mês são...\"
   - \"Quero plantar as sementes de...\"
   - \"Meu propósito agora é...\"
@@ -17,6 +18,7 @@
 ---
 
 ### 🌓 Lua Crescente (luaCrescente)
+
 **Fase de Crescimento e Expansão**
 
 - **Energia:** Expansiva, de crescimento, de ação
@@ -31,6 +33,7 @@
 ---
 
 ### 🌕 Lua Cheia (luaCheia)
+
 **Fase de Colheita e Realização**
 
 - **Energia:** Manifestada, poderosa, de colheita
@@ -45,6 +48,7 @@
 ---
 
 ### 🌗 Lua Minguante (luaMinguante)
+
 **Fase de Reflexão e Libertação**
 
 - **Energia:** Reflexiva, de soltura, de encerramento
@@ -195,6 +199,7 @@ Dezembro
 ## 🎯 Trimestres
 
 ### Q1 - Janeiro a Março
+
 ```
 Janeiro
   🌑 Lua Nova (Intenciona Q1)
@@ -216,6 +221,7 @@ Março
 ```
 
 **Insights Trimestrais Q1:**
+
 - 🌑 Lua Nova: Intenções do Q1
 - 🌓 Lua Crescente: Crescimento em Q1
 - 🌕 Lua Cheia: Colheita de Q1
@@ -224,11 +230,13 @@ Março
 ---
 
 ### Q2 - Abril a Junho
+
 ```
 Energia: Crescimento continua, colheita de sementes de janeiro
 ```
 
 **Insights Trimestrais Q2:**
+
 - 🌑 Lua Nova: Intenções do Q2
 - 🌓 Lua Crescente: Crescimento em Q2
 - 🌕 Lua Cheia: Colheita de Q2
@@ -237,11 +245,13 @@ Energia: Crescimento continua, colheita de sementes de janeiro
 ---
 
 ### Q3 - Julho a Setembro
+
 ```
 Energia: Auge, plenitude, preparação para encerramento
 ```
 
 **Insights Trimestrais Q3:**
+
 - 🌑 Lua Nova: Intenções do Q3
 - 🌓 Lua Crescente: Crescimento em Q3
 - 🌕 Lua Cheia: Colheita de Q3
@@ -250,11 +260,13 @@ Energia: Auge, plenitude, preparação para encerramento
 ---
 
 ### Q4 - Outubro a Dezembro
+
 ```
 Energia: Encerramento, reflexão anual, preparação para novo ano
 ```
 
 **Insights Trimestrais Q4:**
+
 - 🌑 Lua Nova: Intenções do Q4
 - 🌓 Lua Crescente: Crescimento em Q4
 - 🌕 Lua Cheia: Colheita de Q4
@@ -268,7 +280,7 @@ Energia: Encerramento, reflexão anual, preparação para novo ano
 
 ```
 01-07 jan 🌑 Lua Nova
-Insight: \"Começo 2024 com intenção clara: 
+Insight: \"Começo 2024 com intenção clara:
 transformação pessoal e profissional.
 Plantei as sementes em...\"
 
@@ -333,6 +345,7 @@ e aprendi que... 2025 será o ano de...\"
 ## 💡 Padrões de Insight
 
 ### Por Lua Nova (Planejamento)
+
 ```
 \"Minha intenção para [período] é...\"
 \"Vou focar em...\"
@@ -341,6 +354,7 @@ e aprendi que... 2025 será o ano de...\"
 ```
 
 ### Por Lua Crescente (Progresso)
+
 ```
 \"Observo que estou crescendo em...\"
 \"Vejo progresso em...\"
@@ -349,6 +363,7 @@ e aprendi que... 2025 será o ano de...\"
 ```
 
 ### Por Lua Cheia (Realização)
+
 ```
 \"Consegui realizar...\"
 \"Colhei os frutos de...\"
@@ -358,6 +373,7 @@ e aprendi que... 2025 será o ano de...\"
 ```
 
 ### Por Lua Minguante (Reflexão)
+
 ```
 \"Aprendizado deste período foi...\"
 \"Deixo partir...\"
@@ -434,11 +450,7 @@ Lua Nova em Sagitário (Nov-Dez)
 No banco de dados, as fases lunares são armazenadas como:
 
 ```typescript
-type MoonPhase = 
-  | 'luaNova'
-  | 'luaCrescente'
-  | 'luaCheia'
-  | 'luaMinguante';
+type MoonPhase = 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
 ```
 
 **Garantir que use estes valores exatos!**

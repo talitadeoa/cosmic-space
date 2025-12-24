@@ -1,12 +1,12 @@
 // lib/auth.ts
-import "server-only";
+import 'server-only';
 import crypto from 'crypto';
 
 // Em memória: map token -> payload (ex: { email, provider })
 // Em produção use JWT ou um armazenamento persistente.
 const tokens = new Map<string, Record<string, any>>();
 const validCredentials = {
-  password: process.env.AUTH_PASSWORD || 'cosmos2025'
+  password: process.env.AUTH_PASSWORD || 'cosmos2025',
 };
 
 export function generateToken(): string {

@@ -1,29 +1,29 @@
 export type ScreenId =
-  | "home"
-  | "solOrbit"
-  | "luaList"
-  | "planetCardBelowSun"
-  | "planetCardStandalone"
-  | "galaxySuns"
-  | "ringGalaxy"
-  | "sidePlanetCard"
-  | "eclipseProductivity"
-  | "columnSolLuaPlaneta";
+  | 'home'
+  | 'solOrbit'
+  | 'luaList'
+  | 'planetCardBelowSun'
+  | 'planetCardStandalone'
+  | 'galaxySuns'
+  | 'ringGalaxy'
+  | 'sidePlanetCard'
+  | 'eclipseProductivity'
+  | 'columnSolLuaPlaneta';
 
 export type CelestialType =
-  | "sol"
-  | "solTrocoidal"
-  | "lua"
-  | "luaNova"
-  | "luaCrescente"
-  | "luaCheia"
-  | "luaMinguante"
-  | "planeta"
-  | "galaxia"
-  | "anel"
-  | "eclipse";
+  | 'sol'
+  | 'solTrocoidal'
+  | 'lua'
+  | 'luaNova'
+  | 'luaCrescente'
+  | 'luaCheia'
+  | 'luaMinguante'
+  | 'planeta'
+  | 'galaxia'
+  | 'anel'
+  | 'eclipse';
 
-export type CelestialSize = "sm" | "md" | "lg";
+export type CelestialSize = 'sm' | 'md' | 'lg';
 
 export type FocusState = {
   target: ScreenId;

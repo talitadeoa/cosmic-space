@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
 interface EmptyStateProps {
   title?: string;
@@ -17,10 +17,10 @@ interface EmptyStateProps {
  * Usa opacidade reduzida e ícone sutil para diferenciação visual.
  */
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  title = "Nenhum to-do salvo",
-  description = "Crie uma tarefa ou selecione uma fase lunar.",
+  title = 'Nenhum to-do salvo',
+  description = 'Crie uma tarefa ou selecione uma fase lunar.',
   icon,
-  className = "",
+  className = '',
 }) => {
   return (
     <div

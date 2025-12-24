@@ -32,11 +32,13 @@
 ## 🚀 3 PASSOS PARA COMEÇAR
 
 ### 1️⃣ Copiar Template
+
 ```bash
 cp .env.local.example .env.local
 ```
 
 ### 2️⃣ Configurar Credenciais
+
 ```env
 AUTH_PASSWORD=sua_senha
 GOOGLE_SHEET_ID=seu_id
@@ -44,6 +46,7 @@ GOOGLE_SHEETS_API_KEY=sua_chave
 ```
 
 ### 3️⃣ Rodar
+
 ```bash
 npm run dev
 # Acesse: http://localhost:3000/universo
@@ -71,22 +74,23 @@ npm run dev
 
 ## 📚 DOCUMENTAÇÃO
 
-| 📄 | Nome | Para Quem |
-|---|------|----------|
-| ⚡ | QUICKSTART.md | Começar em 5 min |
-| 📄 | RESUMO.md | Visão geral |
-| 🔐 | SETUP_AUTENTICACAO.md | Guia completo |
-| 🏗️ | ARQUITETURA.md | Entender design |
-| 🔍 | REFERENCIA_RAPIDA.md | Consulta API |
-| ✅ | CHECKLIST_IMPLEMENTACAO.md | Acompanhar tarefas |
-| 🎉 | IMPLEMENTACAO_FINAL.md | Sumário |
-| 📑 | README_INDICE.md | Navegar documentos |
+| 📄  | Nome                       | Para Quem          |
+| --- | -------------------------- | ------------------ |
+| ⚡  | QUICKSTART.md              | Começar em 5 min   |
+| 📄  | RESUMO.md                  | Visão geral        |
+| 🔐  | SETUP_AUTENTICACAO.md      | Guia completo      |
+| 🏗️  | ARQUITETURA.md             | Entender design    |
+| 🔍  | REFERENCIA_RAPIDA.md       | Consulta API       |
+| ✅  | CHECKLIST_IMPLEMENTACAO.md | Acompanhar tarefas |
+| 🎉  | IMPLEMENTACAO_FINAL.md     | Sumário            |
+| 📑  | README_INDICE.md           | Navegar documentos |
 
 ---
 
 ## 💻 COMO USAR
 
 ### Proteger uma página
+
 ```tsx
 <AuthGate>
   <MeuConteudo />
@@ -94,11 +98,13 @@ npm run dev
 ```
 
 ### Adicionar formulário
+
 ```tsx
 <DataCollectionForm onSuccess={() => {}} />
 ```
 
 ### Usar autenticação
+
 ```tsx
 const { logout, isAuthenticated } = useAuth();
 ```

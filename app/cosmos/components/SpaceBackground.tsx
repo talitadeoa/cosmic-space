@@ -1,12 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { StarfieldBackground } from "./StarfieldBackground";
-import { LuminousTrail } from "./LuminousTrail";
+import React from 'react';
+import { StarfieldBackground } from './StarfieldBackground';
+import { LuminousTrail } from './LuminousTrail';
 
-export const SpaceBackground: React.FC<{ showTrail?: boolean }> = ({
-  showTrail = false,
-}) => (
+export const SpaceBackground: React.FC<{ showTrail?: boolean }> = ({ showTrail = false }) => (
   <>
     <StarfieldBackground />
     {showTrail && <LuminousTrail />}

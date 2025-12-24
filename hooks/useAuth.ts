@@ -4,35 +4,47 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface User {
+  [key: string]: any;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  user?: Record<string, any> | null;
+  user: User | null;
 }
 
+const INITIAL_STATE: AuthState = {
+  isAuthenticated: false,
+  loading: true,
+  error: null,
+  user: null,
+};
+
+/**
+ * Hook centralizado para autenticação
+ * Gerencia login, signup, logout e OAuth Google
+ */
 export function useAuth() {
   const router = useRouter();
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    loading: true,
-    error: null,
-  });
+  const [state, setState] = useState<AuthState>(INITIAL_STATE);
 
   // Verificar autenticação ao montar
   const verifyAuth = useCallback(async () => {
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
+      setState((prev) => ({ ...prev, loading: true, error: null }));
       const response = await fetch('/api/auth/verify');
       const data = await response.json();
-      setState(prev => ({
+
+      setState((prev) => ({
         ...prev,
-        isAuthenticated: data.authenticated || false,
+        isAuthenticated: Boolean(data.authenticated),
         loading: false,
         user: data.user ?? null,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isAuthenticated: false,
         loading: false,
@@ -45,104 +57,79 @@ export function useAuth() {
     verifyAuth();
   }, [verifyAuth]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+  /**
+   * Handler genérico para requisições de autenticação
+   * Reduz duplicação de lógica entre login e signup
+   */
+  const _handleAuthRequest = useCallback(
+    async (endpoint: string, email: string, password: string, errorMessage: string) => {
+      try {
+        setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      const data = await response.json();
+        const response = await fetch(`/api/auth/${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
 
-      if (!response.ok) {
-        setState(prev => ({
+        const data = await response.json();
+
+        if (!response.ok) {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            error: data.error || errorMessage,
+            isAuthenticated: false,
+          }));
+          return false;
+        }
+
+        // Verificar após autenticação
+        await verifyAuth();
+
+        setState((prev) => ({
+          ...prev,
+          isAuthenticated: true,
+          loading: false,
+          error: null,
+        }));
+
+        router.refresh();
+        return true;
+      } catch (error) {
+        setState((prev) => ({
           ...prev,
           loading: false,
-          error: data.error || 'Erro ao fazer login',
+          error: errorMessage,
           isAuthenticated: false,
         }));
         return false;
       }
+    },
+    [router, verifyAuth]
+  );
 
-      // Após login via senha, verificar para obter payload
-      await verifyAuth();
+  const login = useCallback(
+    (email: string, password: string) =>
+      _handleAuthRequest('login', email, password, 'Erro ao fazer login'),
+    [_handleAuthRequest]
+  );
 
-      setState(prev => ({
-        ...prev,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
-      }));
-      router.refresh();
-      return true;
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: 'Erro ao fazer login',
-        isAuthenticated: false,
-      }));
-      return false;
-    }
-  }, [router, verifyAuth]);
-
-  const signup = useCallback(async (email: string, password: string) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: data.error || 'Erro ao criar conta',
-          isAuthenticated: false,
-        }));
-        return false;
-      }
-
-      await verifyAuth();
-
-      setState(prev => ({
-        ...prev,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
-      }));
-      router.refresh();
-      return true;
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: 'Erro ao criar conta',
-        isAuthenticated: false,
-      }));
-      return false;
-    }
-  }, [router, verifyAuth]);
+  const signup = useCallback(
+    (email: string, password: string) =>
+      _handleAuthRequest('signup', email, password, 'Erro ao criar conta'),
+    [_handleAuthRequest]
+  );
 
   const logout = useCallback(async () => {
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
+      setState((prev) => ({ ...prev, loading: true, error: null }));
       await fetch('/api/auth/logout', { method: 'POST' });
-      setState(prev => ({
-        ...prev,
-        isAuthenticated: false,
-        loading: false,
-        user: null,
-      }));
+
+      setState(INITIAL_STATE);
       router.refresh();
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: 'Erro ao fazer logout',
@@ -151,7 +138,6 @@ export function useAuth() {
   }, [router]);
 
   const googleLogin = useCallback(() => {
-    // Inicia fluxo OAuth do Google redirecionando para o servidor
     if (typeof window !== 'undefined') {
       window.location.href = '/api/auth/google';
     }

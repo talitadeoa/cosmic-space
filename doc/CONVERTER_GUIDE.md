@@ -9,10 +9,10 @@ Para cada novo HTML, seguiremos este padrão:
 ```
 1. Canvas/Componente Principal
    └─ `components/[Nome]Canvas.tsx` ou `components/[Nome].tsx`
-   
+
 2. View (Wrapper)
    └─ `components/views/[Nome]View.tsx`
-   
+
 3. Rota
    └─ `app/[nome]/page.tsx`
 ```
@@ -31,7 +31,9 @@ Para cada novo HTML, seguiremos este padrão:
 ## 🔧 Padrões de Conversão
 
 ### Canvas/WebGL
+
 Se o HTML usa `<canvas>`:
+
 ```tsx
 // Arquivo: components/[Nome]Canvas.tsx
 "use client";
@@ -39,32 +41,31 @@ import React, { useRef, useEffect } from "react";
 
 export const [Nome]Canvas: React.FC<{ config?: Partial<Config> }> = ({ config = {} }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   useEffect(() => {
     // Lógica aqui
   }, [config]);
-  
+
   return <canvas ref={canvasRef} className="block w-full h-full" />;
 };
 ```
 
 ### SVG/DOM
+
 Se o HTML usa SVG ou DOM:
+
 ```tsx
 // Arquivo: components/[Nome].tsx
-"use client";
-import React from "react";
+'use client';
+import React from 'react';
 
 export const [Nome]: React.FC = () => {
-  return (
-    <div className="...">
-      {/* SVG ou conteúdo aqui */}
-    </div>
-  );
+  return <div className="...">{/* SVG ou conteúdo aqui */}</div>;
 };
 ```
 
 ### View Wrapper
+
 ```tsx
 // Arquivo: components/views/[Nome]View.tsx
 import type { FC } from "react";
@@ -85,6 +86,7 @@ export const [Nome]View: FC = () => {
 ```
 
 ### Rota
+
 ```tsx
 // Arquivo: app/[nome]/page.tsx
 import { [Nome]View } from "@/components/views/[Nome]View";

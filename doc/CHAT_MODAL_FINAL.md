@@ -15,6 +15,7 @@
 ## 🎯 Antes e Depois
 
 ### ANTES (Modo Formulário)
+
 ```
 Modal abre
    ↓
@@ -28,6 +29,7 @@ Modal fecha
 ```
 
 ### DEPOIS (Modo Chat - Novo!)
+
 ```
 Modal abre
    ↓
@@ -53,6 +55,7 @@ Modal fecha
 ## 📁 Arquivos Criados
 
 ### Componentes (2 arquivos)
+
 ```
 components/
 ├── MonthlyInsightChatModal.tsx              (320 linhas)
@@ -60,6 +63,7 @@ components/
 ```
 
 ### Documentações (5 arquivos)
+
 ```
 raiz/
 ├── CHAT_MODAL_INDEX.md                      (guia de navegação)
@@ -80,6 +84,7 @@ app/cosmos/screens/
 ## 🎨 Componentes Disponíveis
 
 ### 1️⃣ MonthlyInsightChatModal
+
 - Chat simples
 - Respostas do sistema
 - Cores padrão (indigo)
@@ -88,6 +93,7 @@ app/cosmos/screens/
 **Quando usar:** Se quer algo básico e leve
 
 ### 2️⃣ MonthlyInsightAdvancedChatModal ⭐
+
 - Chat com recursos extras
 - Cores dinâmicas por fase
 - Contador de mensagens
@@ -97,6 +103,7 @@ app/cosmos/screens/
 **Quando usar:** Recomendado para uso final
 
 ### Mantém Original
+
 - MonthlyInsightModal (não mexemos)
 
 **Quando usar:** Se não quiser mudar nada
@@ -106,6 +113,7 @@ app/cosmos/screens/
 ## 🌙 Personalizações por Fase
 
 ### 🌑 Lua Nova
+
 ```
 Cor: Indigo (recomeço)
 Saudação: "Bem-vindo à Lua Nova"
@@ -114,6 +122,7 @@ Respostas: (3 opções de encorajamento)
 ```
 
 ### 🌓 Lua Crescente
+
 ```
 Cor: Blue (crescimento)
 Saudação: "Bem-vindo à Lua Crescente"
@@ -122,6 +131,7 @@ Respostas: (3 opções de encorajamento)
 ```
 
 ### 🌕 Lua Cheia
+
 ```
 Cor: Amber (abundância)
 Saudação: "Bem-vindo à Lua Cheia"
@@ -130,6 +140,7 @@ Respostas: (3 opções de encorajamento)
 ```
 
 ### 🌗 Lua Minguante
+
 ```
 Cor: Slate (libertação)
 Saudação: "Bem-vindo à Lua Minguante"
@@ -141,32 +152,35 @@ Respostas: (3 opções de encorajamento)
 
 ## 📚 Documentação
 
-| Arquivo | Tipo | Tempo | Para |
-|---------|------|-------|------|
-| CHAT_MODAL_INDEX.md | Guia | 2 min | Navegar tudo |
-| CHAT_MODAL_QUICKSTART.md | Setup | 2 min | Começar rápido |
-| CHAT_MODAL_README.md | Visão Geral | 5 min | Entender tudo |
-| CHAT_MODAL_SUMMARY.md | Sumário | 3 min | Resumo técnico |
-| CHAT_MODAL_PREVIEW.md | Visual | 5 min | Ver antes/depois |
-| MONTHLY_INSIGHT_CHAT_MODAL.md | Completa | 15 min | Dominar tudo |
-| LuaListScreen-ChatModal-Example.tsx | Código | 10 min | Exemplos |
+| Arquivo                             | Tipo        | Tempo  | Para             |
+| ----------------------------------- | ----------- | ------ | ---------------- |
+| CHAT_MODAL_INDEX.md                 | Guia        | 2 min  | Navegar tudo     |
+| CHAT_MODAL_QUICKSTART.md            | Setup       | 2 min  | Começar rápido   |
+| CHAT_MODAL_README.md                | Visão Geral | 5 min  | Entender tudo    |
+| CHAT_MODAL_SUMMARY.md               | Sumário     | 3 min  | Resumo técnico   |
+| CHAT_MODAL_PREVIEW.md               | Visual      | 5 min  | Ver antes/depois |
+| MONTHLY_INSIGHT_CHAT_MODAL.md       | Completa    | 15 min | Dominar tudo     |
+| LuaListScreen-ChatModal-Example.tsx | Código      | 10 min | Exemplos         |
 
 ---
 
 ## 🚀 Como Usar (3 Passos)
 
 ### Passo 1: Escolha um componente
+
 ```tsx
-MonthlyInsightChatModal              // Simples
-MonthlyInsightAdvancedChatModal      // Completo ⭐
+MonthlyInsightChatModal; // Simples
+MonthlyInsightAdvancedChatModal; // Completo ⭐
 ```
 
 ### Passo 2: Importe em LuaListScreen
+
 ```tsx
-import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvancedChatModal";
+import MonthlyInsightAdvancedChatModal from '@/components/MonthlyInsightAdvancedChatModal';
 ```
 
 ### Passo 3: Use no lugar do antigo
+
 ```tsx
 // Antes:
 <MonthlyInsightModal {...props} />
@@ -182,6 +196,7 @@ import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvanced
 ## ✨ Features Incluídas
 
 ### Básicas
+
 - ✅ Conversa com bolhas
 - ✅ Mensagens do usuário à direita
 - ✅ Mensagens do sistema à esquerda
@@ -190,6 +205,7 @@ import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvanced
 - ✅ Animações suaves
 
 ### Avançadas (Versão Avançada)
+
 - ✅ Cores dinâmicas por fase lunar
 - ✅ Emojis nas fases
 - ✅ Contador de mensagens
@@ -197,6 +213,7 @@ import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvanced
 - ✅ Melhor espaçamento
 
 ### Compatibilidade
+
 - ✅ Salva igual ao banco
 - ✅ Mesmos props da versão original
 - ✅ Sem quebra de compatibilidade
@@ -207,12 +224,14 @@ import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvanced
 ## 🎯 Benefícios
 
 ### Para o Usuário
+
 - 💬 Experiência mais natural (como um chat)
 - 🌙 Conexão emocional com as fases lunares
 - ✨ Feedback positivo do sistema
 - 🎨 Visual mais bonito
 
 ### Para o Desenvolvedor
+
 - 🔧 Fácil de customizar
 - 📝 Bem documentado
 - 🎯 Props idênticos ao original
@@ -255,15 +274,19 @@ import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvanced
 ## 🎁 Extras
 
 ### Respostas Personalizadas
+
 Cada fase tem 3 respostas padrão que você pode customizar.
 
 ### Emojis Customizáveis
+
 Mude os emojis das fases como quiser.
 
 ### Cores Customizáveis
+
 Altere as cores de cada fase lunar.
 
 ### Textos Customizáveis
+
 Mude saudações, perguntas e respostas.
 
 ---

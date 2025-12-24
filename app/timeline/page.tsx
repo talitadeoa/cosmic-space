@@ -1,20 +1,18 @@
-import { cookies } from "next/headers";
-import AuthGate from "@/components/AuthGate";
-import type { TimelineFiltersState, TimelineResponse } from "@/types/timeline";
-import { getTimelineEntries } from "@/lib/timeline";
-import { getTokenPayload, validateToken } from "@/lib/auth";
-import { allowedTypes, parseTimelineQuery, periodDays } from "@/lib/timelineQuery";
-import TimelineClient from "./TimelineClient";
+import { cookies } from 'next/headers';
+import AuthGate from '@/components/AuthGate';
+import type { TimelineFiltersState, TimelineResponse } from '@/types/timeline';
+import { getTimelineEntries } from '@/lib/timeline';
+import { getTokenPayload, validateToken } from '@/lib/auth';
+import { allowedTypes, parseTimelineQuery, periodDays } from '@/lib/timelineQuery';
+import TimelineClient from './TimelineClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 type TimelinePageProps = {
   searchParams?: Record<string, string | string[] | undefined>;
 };
 
-const buildSearchParams = (
-  searchParams: TimelinePageProps["searchParams"]
-): URLSearchParams => {
+const buildSearchParams = (searchParams: TimelinePageProps['searchParams']): URLSearchParams => {
   const params = new URLSearchParams();
   if (!searchParams) return params;
 
@@ -34,12 +32,11 @@ const buildSearchParams = (
 
 export default async function TimelinePage({ searchParams }: TimelinePageProps) {
   const params = buildSearchParams(searchParams);
-  const { period, types, moonPhase, page, pageSize, typesParam } =
-    parseTimelineQuery(params);
-  const resolvedPageSize = params.get("pageSize") ? pageSize : 10;
+  const { period, types, moonPhase, page, pageSize, typesParam } = parseTimelineQuery(params);
+  const resolvedPageSize = params.get('pageSize') ? pageSize : 10;
 
   const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = cookieStore.get('auth_token')?.value;
   const isAuthenticated = token ? validateToken(token) : false;
   const userId = isAuthenticated && token ? getTokenPayload(token)?.userId : null;
 
@@ -48,13 +45,13 @@ export default async function TimelinePage({ searchParams }: TimelinePageProps) 
   let meta: TimelineResponse | null = null;
 
   if (!isAuthenticated) {
-    error = "Nao autenticado";
+    error = 'Nao autenticado';
   } else if (!userId) {
-    error = "Usuario nao identificado";
+    error = 'Usuario nao identificado';
   }
 
   if (typesParam && types.length === 0) {
-    typeError = "Selecione ao menos um tipo.";
+    typeError = 'Selecione ao menos um tipo.';
   }
 
   if (!error && !typeError && userId) {

@@ -1,50 +1,47 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { GalaxyInnerView } from "../components/GalaxyInnerView";
-import { CelestialObject } from "../components/CelestialObject";
-import { Card } from "../components/Card";
-import CosmosChatModal from "../components/CosmosChatModal";
-import { getLatestUserMessageFromHistory } from "@/lib/chatHistory";
+import React, { useEffect, useState } from 'react';
+import { GalaxyInnerView } from '../components/GalaxyInnerView';
+import { CelestialObject } from '../components/CelestialObject';
+import { Card } from '../components/Card';
+import CosmosChatModal from '../components/CosmosChatModal';
+import { getLatestUserMessageFromHistory } from '@/lib/chatHistory';
 import {
   RING_ENERGY_PROMPTS,
   RING_ENERGY_RESPONSES,
   buildRingEnergyStorageKey,
-} from "../utils/insightChatPresets";
-import type { MoonPhase } from "../utils/moonPhases";
-import type { ScreenProps } from "../types";
+} from '../utils/insightChatPresets';
+import type { MoonPhase } from '../utils/moonPhases';
+import type { ScreenProps } from '../types';
 
-const RingGalaxyScreen: React.FC<ScreenProps> = ({
-  navigateTo,
-  navigateWithFocus,
-}) => {
+const RingGalaxyScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {
   const [selectedMoon, setSelectedMoon] = useState<MoonPhase | null>(null);
   const [energyNotes, setEnergyNotes] = useState<Record<MoonPhase, string>>({
-    luaNova: "",
-    luaCrescente: "",
-    luaCheia: "",
-    luaMinguante: "",
+    luaNova: '',
+    luaCrescente: '',
+    luaCheia: '',
+    luaMinguante: '',
   });
 
   useEffect(() => {
     const next: Record<MoonPhase, string> = {
-      luaNova: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaNova")),
-      luaCrescente: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaCrescente")),
-      luaCheia: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaCheia")),
-      luaMinguante: getLatestUserMessageFromHistory(buildRingEnergyStorageKey("luaMinguante")),
+      luaNova: getLatestUserMessageFromHistory(buildRingEnergyStorageKey('luaNova')),
+      luaCrescente: getLatestUserMessageFromHistory(buildRingEnergyStorageKey('luaCrescente')),
+      luaCheia: getLatestUserMessageFromHistory(buildRingEnergyStorageKey('luaCheia')),
+      luaMinguante: getLatestUserMessageFromHistory(buildRingEnergyStorageKey('luaMinguante')),
     };
     setEnergyNotes(next);
   }, []);
 
   // Raio da órbita das luas (distância do centro)
   const orbitRadius = 180;
-  
+
   // Calcular posições das 4 luas em um círculo (90 graus de distância)
   const moonPositions = [
-    { angle: 0, type: "luaCheia" as const, label: "Top" },           // 0° - Top
-    { angle: 90, type: "luaCrescente" as const, label: "Right" },    // 90° - Right
-    { angle: 180, type: "luaNova" as const, label: "Bottom" },       // 180° - Bottom
-    { angle: 270, type: "luaMinguante" as const, label: "Left" },    // 270° - Left
+    { angle: 0, type: 'luaCheia' as const, label: 'Top' }, // 0° - Top
+    { angle: 90, type: 'luaCrescente' as const, label: 'Right' }, // 90° - Right
+    { angle: 180, type: 'luaNova' as const, label: 'Bottom' }, // 180° - Bottom
+    { angle: 270, type: 'luaMinguante' as const, label: 'Left' }, // 270° - Left
   ];
 
   const getMoonPosition = (angleDegrees: number) => {
@@ -63,7 +60,7 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
       <div className="relative flex h-64 w-64 items-center justify-center rounded-full border-4 border-violet-300/70 shadow-[0_0_55px_rgba(196,181,253,0.8)]">
         <Card
           interactive
-          onClick={() => navigateTo("columnSolLuaPlaneta")}
+          onClick={() => navigateTo('columnSolLuaPlaneta')}
           className="w-52 text-center"
         >
           <GalaxyInnerView compact />
@@ -74,7 +71,7 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
       {moonPositions.map((moon, index) => {
         const { x, y } = getMoonPosition(moon.angle);
         const floatOffsets = [-2, 1, 2, -1];
-        
+
         return (
           <div
             key={moon.label}
@@ -114,9 +111,9 @@ const RingGalaxyScreen: React.FC<ScreenProps> = ({
               <button
                 className="underline underline-offset-2 transition hover:text-white"
                 onClick={() =>
-                  navigateWithFocus("luaList", {
+                  navigateWithFocus('luaList', {
                     type: selectedMoon,
-                    size: "sm",
+                    size: 'sm',
                   })
                 }
               >

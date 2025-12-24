@@ -5,40 +5,52 @@
 Recomendamos ler nesta ordem:
 
 ### 1️⃣ Para Entender o Conceito
+
 👉 **[INSIGHTS_RESUMO.md](./INSIGHTS_RESUMO.md)** - Resumo executivo
+
 - O que foi criado
 - 3 tipos de insights
 - Começar rápido
 
 ### 2️⃣ Para Implementar
+
 👉 **[CHECKLIST_INSIGHTS.md](./CHECKLIST_INSIGHTS.md)** - Passo a passo
+
 - 9 etapas de implementação
 - Cada etapa verificável
 - Troubleshooting
 
 ### 3️⃣ Para Entender as Tabelas
+
 👉 **[INSIGHTS_BANCO_DADOS.md](./INSIGHTS_BANCO_DADOS.md)** - Guia técnico completo
+
 - Estrutura de cada tabela
 - Queries úteis
 - Exemplos de dados
 - Funções TypeScript
 
 ### 4️⃣ Para Visualizar
+
 👉 **[INSIGHTS_TABELAS_VISUAL.md](./INSIGHTS_TABELAS_VISUAL.md)** - Diagramas e exemplos
+
 - Estruturas visuais
 - Exemplos de dados
 - Relacionamentos
 - Funções disponíveis
 
 ### 5️⃣ Para Integrar APIs
+
 👉 **[INSIGHTS_API.md](./INSIGHTS_API.md)** - Documentação de APIs
+
 - 3 endpoints POST
 - Request/Response examples
 - Implementação backend
 - Exemplos de frontend
 
 ### 6️⃣ Para Otimizar
+
 👉 **[INSIGHTS_OTIMIZACAO.md](./INSIGHTS_OTIMIZACAO.md)** - Performance e segurança
+
 - Índices explicados
 - Queries otimizadas
 - Segurança
@@ -50,25 +62,25 @@ Recomendamos ler nesta ordem:
 
 ### Banco de Dados
 
-| Arquivo | Descrição |
-|---------|-----------|
-| `infra/db/schema.sql` | Definição completa das tabelas |
-| `infra/db/migration-insights.sql` | Script para criar tabelas no Neon |
-| `infra/db/dados-teste-insights.sql` | Dados de teste para validar |
+| Arquivo                             | Descrição                         |
+| ----------------------------------- | --------------------------------- |
+| `infra/db/schema.sql`               | Definição completa das tabelas    |
+| `infra/db/migration-insights.sql`   | Script para criar tabelas no Neon |
+| `infra/db/dados-teste-insights.sql` | Dados de teste para validar       |
 
 ### Código TypeScript
 
-| Arquivo | Descrição |
-|---------|-----------|
-| `lib/forms.ts` | Funções de banco de dados (salvar/obter) |
-| `lib/db.ts` | Conexão com o banco |
-| `lib/auth.ts` | Autenticação |
-| `hooks/useMonthlyInsights.ts` | Hook para insights mensais |
-| `hooks/useQuarterlyInsights.ts` | Hook para insights trimestrais |
-| `hooks/useAnnualInsights.ts` | Hook para insights anuais |
-| `components/MonthlyInsightModal.tsx` | Modal mensal |
-| `components/QuarterlyInsightModal.tsx` | Modal trimestral |
-| `components/AnnualInsightModal.tsx` | Modal anual |
+| Arquivo                                | Descrição                                |
+| -------------------------------------- | ---------------------------------------- |
+| `lib/forms.ts`                         | Funções de banco de dados (salvar/obter) |
+| `lib/db.ts`                            | Conexão com o banco                      |
+| `lib/auth.ts`                          | Autenticação                             |
+| `hooks/useMonthlyInsights.ts`          | Hook para insights mensais               |
+| `hooks/useQuarterlyInsights.ts`        | Hook para insights trimestrais           |
+| `hooks/useAnnualInsights.ts`           | Hook para insights anuais                |
+| `components/MonthlyInsightModal.tsx`   | Modal mensal                             |
+| `components/QuarterlyInsightModal.tsx` | Modal trimestral                         |
+| `components/AnnualInsightModal.tsx`    | Modal anual                              |
 
 ---
 
@@ -167,6 +179,7 @@ Recomendamos ler nesta ordem:
 ## 🎯 Fases do Desenvolvimento
 
 ### Fase 1: Setup (Banco de Dados)
+
 - [ ] Criar tabelas no Neon
 - [ ] Verificar índices e constraints
 - [ ] Testar com dados de teste
@@ -175,6 +188,7 @@ Recomendamos ler nesta ordem:
 🛠️ Arquivo: `migration-insights.sql`
 
 ### Fase 2: Backend (Servidor)
+
 - [ ] Implementar funções em `lib/forms.ts`
 - [ ] Criar APIs em `app/api/form/`
 - [ ] Testar com curl/Postman
@@ -183,6 +197,7 @@ Recomendamos ler nesta ordem:
 💻 Arquivo: `lib/forms.ts`
 
 ### Fase 3: Frontend (Cliente)
+
 - [ ] Atualizar hooks
 - [ ] Integrar com componentes
 - [ ] Testar no navegador
@@ -191,6 +206,7 @@ Recomendamos ler nesta ordem:
 🎨 Arquivos: `hooks/`, `components/`
 
 ### Fase 4: Otimização (Performance)
+
 - [ ] Analisar queries
 - [ ] Adicionar cache se necessário
 - [ ] Otimizar índices
@@ -201,13 +217,13 @@ Recomendamos ler nesta ordem:
 
 ## 🔍 Problemas Comuns
 
-| Problema | Solução | Documentação |
-|----------|---------|--------------|
+| Problema            | Solução                          | Documentação            |
+| ------------------- | -------------------------------- | ----------------------- |
 | Tabelas não criadas | Execute `migration-insights.sql` | INSIGHTS_BANCO_DADOS.md |
-| Erro 401 na API | Verifique autenticação | INSIGHTS_API.md |
-| Modal não abre | Verifique imports e estado | CHECKLIST_INSIGHTS.md |
-| Dados não salvam | Verifique console e logs | CHECKLIST_INSIGHTS.md |
-| Query lenta | Verifique índices | INSIGHTS_OTIMIZACAO.md |
+| Erro 401 na API     | Verifique autenticação           | INSIGHTS_API.md         |
+| Modal não abre      | Verifique imports e estado       | CHECKLIST_INSIGHTS.md   |
+| Dados não salvam    | Verifique console e logs         | CHECKLIST_INSIGHTS.md   |
+| Query lenta         | Verifique índices                | INSIGHTS_OTIMIZACAO.md  |
 
 ---
 
@@ -215,12 +231,12 @@ Recomendamos ler nesta ordem:
 
 ### Dados Esperados (Por Usuário/Ano)
 
-| Tipo | Por Mês | Por Ano | Tamanho |
-|------|---------|--------|--------|
-| Mensais | 4 | 48 | ~24 KB |
-| Trimestrais | 1.3 | 4 | ~2 KB |
-| Anuais | 0.08 | 1 | ~0.5 KB |
-| **Total** | **5.3** | **53** | **~26.5 KB** |
+| Tipo        | Por Mês | Por Ano | Tamanho      |
+| ----------- | ------- | ------- | ------------ |
+| Mensais     | 4       | 48      | ~24 KB       |
+| Trimestrais | 1.3     | 4       | ~2 KB        |
+| Anuais      | 0.08    | 1       | ~0.5 KB      |
+| **Total**   | **5.3** | **53**  | **~26.5 KB** |
 
 ### Escalabilidade
 
@@ -238,24 +254,28 @@ Recomendamos ler nesta ordem:
 ## 🎓 Aprendizados Principais
 
 ### 1. Estrutura de Dados
+
 - ✅ 3 tabelas separadas (um insight por período)
 - ✅ UNIQUE constraints para prevenir duplicação
 - ✅ Índices para performance
 - ✅ CHECK constraints para validação
 
 ### 2. Operações CRUD
+
 - ✅ CREATE: INSERT com ON CONFLICT (UPSERT)
 - ✅ READ: SELECT otimizadas com índices
 - ✅ UPDATE: Automático via ON CONFLICT
 - ✅ DELETE: Cascata automática
 
 ### 3. Segurança
+
 - ✅ Autenticação obrigatória
 - ✅ Parameterized queries (sem SQL injection)
 - ✅ Validação frontend e backend
 - ✅ Autorização por usuário
 
 ### 4. Performance
+
 - ✅ Índices apropriados
 - ✅ LIMIT e OFFSET para paginação
 - ✅ Queries otimizadas
@@ -266,18 +286,23 @@ Recomendamos ler nesta ordem:
 ## 📞 Suporte Rápido
 
 ### Dúvidas Gerais?
+
 → Leia `INSIGHTS_RESUMO.md`
 
 ### Como Implementar?
+
 → Siga `CHECKLIST_INSIGHTS.md`
 
 ### Estrutura do Banco?
+
 → Veja `INSIGHTS_BANCO_DADOS.md`
 
 ### Como as APIs funcionam?
+
 → Consulte `INSIGHTS_API.md`
 
 ### Como otimizar?
+
 → Estude `INSIGHTS_OTIMIZACAO.md`
 
 ---
@@ -319,6 +344,6 @@ Recomendamos ler nesta ordem:
 ✅ Checklist passo a passo  
 ✅ Dados de teste  
 ✅ Otimizações  
-✅ Troubleshooting  
+✅ Troubleshooting
 
 **Bom desenvolvimento! 🚀**

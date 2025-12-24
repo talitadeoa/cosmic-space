@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import { motion } from "framer-motion";
-import { CelestialObject } from "../components/CelestialObject";
-import { useGalaxySunsSync } from "@/hooks/useGalaxySunsSync";
-import type { ScreenProps } from "../types";
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { CelestialObject } from '../components/CelestialObject';
+import { useGalaxySunsSync } from '@/hooks/useGalaxySunsSync';
+import type { ScreenProps } from '../types';
 
 type YearSun = {
   id: string;
@@ -22,15 +22,15 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const orbitSizes = useMemo(
     () => Array.from({ length: 4 }, (_, idx) => BASE_ORBIT_SIZE + idx * ORBIT_STEP),
-    [],
+    []
   );
 
   const yearSuns = useMemo<YearSun[]>(() => {
     return [
-      { id: "past", label: "Ano", year: currentYear - 1, orbitIndex: 0 },
-      { id: "present", label: "Ano", year: currentYear, orbitIndex: 1 },
-      { id: "next1", label: "Ano", year: currentYear + 1, orbitIndex: 2 },
-      { id: "next2", label: "Ano", year: currentYear + 2, orbitIndex: 3 },
+      { id: 'past', label: 'Ano', year: currentYear - 1, orbitIndex: 0 },
+      { id: 'present', label: 'Ano', year: currentYear, orbitIndex: 1 },
+      { id: 'next1', label: 'Ano', year: currentYear + 1, orbitIndex: 2 },
+      { id: 'next2', label: 'Ano', year: currentYear + 2, orbitIndex: 3 },
     ];
   }, [currentYear]);
 
@@ -67,10 +67,7 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </p>
       </div>
 
-      <div
-        className="relative mt-6 w-full max-w-[760px]"
-        style={{ minHeight: stageSize }}
-      >
+      <div className="relative mt-6 w-full max-w-[760px]" style={{ minHeight: stageSize }}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative aspect-square w-full max-w-[720px]">
             {orbitSizes.map((size, idx) => (
@@ -81,7 +78,7 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   width: size,
                   height: size,
                   rotate: `${idx * 8}deg`,
-                  boxShadow: idx % 2 === 0 ? "0 0 28px rgba(14,165,233,0.14)" : undefined,
+                  boxShadow: idx % 2 === 0 ? '0 0 28px rgba(14,165,233,0.14)' : undefined,
                 }}
               />
             ))}
@@ -89,7 +86,7 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             <motion.div
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, ease: "linear", duration: 26 }}
+              transition={{ repeat: Infinity, ease: 'linear', duration: 26 }}
             >
               <div className="absolute -inset-10 blur-3xl bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.28),rgba(14,165,233,0.12),transparent)]" />
               <CelestialObject
@@ -97,10 +94,10 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 size="lg"
                 interactive
                 onClick={(e) =>
-                  navigateWithFocus("ringGalaxy", {
+                  navigateWithFocus('ringGalaxy', {
                     event: e,
-                    type: "galaxia",
-                    size: "lg",
+                    type: 'galaxia',
+                    size: 'lg',
                   })
                 }
                 className="shadow-[0_0_45px_rgba(99,102,241,0.45)]"
@@ -130,8 +127,8 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                       transition={{
                         duration: 6 + idx,
                         repeat: Infinity,
-                        repeatType: "reverse",
-                        ease: "easeInOut",
+                        repeatType: 'reverse',
+                        ease: 'easeInOut',
                       }}
                     >
                       <CelestialObject
@@ -139,10 +136,10 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                         size="md"
                         interactive
                         onClick={(e) =>
-                          navigateWithFocus("solOrbit", {
+                          navigateWithFocus('solOrbit', {
                             event: e,
-                            type: "sol",
-                            size: "md",
+                            type: 'sol',
+                            size: 'md',
                             year: sun.year,
                           })
                         }
@@ -156,10 +153,10 @@ const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                         <span className="text-[0.7rem] text-slate-300">{sun.year}</span>
                         {yearData && yearData.dominantPhase && (
                           <span className="text-[0.6rem] text-slate-400">
-                            {yearData.dominantPhase === "luaNova" && "🌑"}
-                            {yearData.dominantPhase === "luaCrescente" && "🌓"}
-                            {yearData.dominantPhase === "luaCheia" && "🌕"}
-                            {yearData.dominantPhase === "luaMinguante" && "🌗"}
+                            {yearData.dominantPhase === 'luaNova' && '🌑'}
+                            {yearData.dominantPhase === 'luaCrescente' && '🌓'}
+                            {yearData.dominantPhase === 'luaCheia' && '🌕'}
+                            {yearData.dominantPhase === 'luaMinguante' && '🌗'}
                           </span>
                         )}
                       </div>

@@ -63,6 +63,7 @@
 ## 🔒 Segurança - Antes de Produção
 
 ### Desenvolvimento ✅
+
 Configuração atual é segura para desenvolvimento.
 
 ### Produção - Implemente:
@@ -137,19 +138,20 @@ Configuração atual é segura para desenvolvimento.
 
 ## 🎯 Status Geral
 
-| Item | Status | Observações |
-|------|--------|-------------|
-| Autenticação | ✅ Completo | Pronto para usar |
-| Google Sheets | ✅ Completo | Requer credenciais |
-| Formulário | ✅ Completo | Validações básicas |
-| Componentes | ✅ Completo | Reutilizáveis |
-| Documentação | ✅ Completo | Bem detalhada |
-| Exemplo funcional | ✅ Completo | app/universo protegida |
-| Build | ✅ Sem erros | Pronto para deploy |
+| Item              | Status       | Observações            |
+| ----------------- | ------------ | ---------------------- |
+| Autenticação      | ✅ Completo  | Pronto para usar       |
+| Google Sheets     | ✅ Completo  | Requer credenciais     |
+| Formulário        | ✅ Completo  | Validações básicas     |
+| Componentes       | ✅ Completo  | Reutilizáveis          |
+| Documentação      | ✅ Completo  | Bem detalhada          |
+| Exemplo funcional | ✅ Completo  | app/universo protegida |
+| Build             | ✅ Sem erros | Pronto para deploy     |
 
 ## 💡 Dicas de Uso
 
 1. **Para proteger uma página:**
+
    ```tsx
    <AuthGate>
      <SuaPagina />
@@ -157,11 +159,13 @@ Configuração atual é segura para desenvolvimento.
    ```
 
 2. **Para usar o hook de auth:**
+
    ```tsx
    const { isAuthenticated, logout } = useAuth();
    ```
 
 3. **Para adicionar formulário:**
+
    ```tsx
    <DataCollectionForm onSuccess={() => alert('Enviado!')} />
    ```

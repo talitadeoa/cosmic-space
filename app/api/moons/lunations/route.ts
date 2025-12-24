@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getLunations, saveLunations, deleteLunations } from "@/lib/forms";
-import { getLunarPhaseAndSign } from "@/lib/astro";
+import { NextRequest, NextResponse } from 'next/server';
+import { getLunations, saveLunations, deleteLunations } from '@/lib/forms';
+import { getLunarPhaseAndSign } from '@/lib/astro';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const SYNODIC_MONTH = 29.53058867; // dias
 const MAX_DAYS = 550;
@@ -13,7 +13,7 @@ type MoonDay = {
   sign: string;
   illumination: number;
   ageDays: number;
-  normalizedPhase: "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
+  normalizedPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
 };
 
 const toJulianDay = (date: Date) => {
@@ -45,41 +45,41 @@ const calcMoonAge = (date: Date) => {
 const illuminationFromAge = (ageDays: number) =>
   0.5 * (1 - Math.cos((2 * Math.PI * ageDays) / SYNODIC_MONTH));
 
-const labelPhase = (ageDays: number): "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante" => {
-  if (ageDays < 1.5 || ageDays > SYNODIC_MONTH - 1.5) return "luaNova";
-  if (ageDays < SYNODIC_MONTH / 2 - 1.2) return "luaCrescente";
-  if (ageDays < SYNODIC_MONTH / 2 + 1.2) return "luaCheia";
-  return "luaMinguante";
+const labelPhase = (ageDays: number): 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' => {
+  if (ageDays < 1.5 || ageDays > SYNODIC_MONTH - 1.5) return 'luaNova';
+  if (ageDays < SYNODIC_MONTH / 2 - 1.2) return 'luaCrescente';
+  if (ageDays < SYNODIC_MONTH / 2 + 1.2) return 'luaCheia';
+  return 'luaMinguante';
 };
 
-const describePhase = (norm: "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante") => {
+const describePhase = (norm: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante') => {
   switch (norm) {
-    case "luaNova":
-      return "Lua Nova";
-    case "luaCrescente":
-      return "Lua Crescente";
-    case "luaCheia":
-      return "Lua Cheia";
-    case "luaMinguante":
-      return "Lua Minguante";
+    case 'luaNova':
+      return 'Lua Nova';
+    case 'luaCrescente':
+      return 'Lua Crescente';
+    case 'luaCheia':
+      return 'Lua Cheia';
+    case 'luaMinguante':
+      return 'Lua Minguante';
     default:
-      return "Lua";
+      return 'Lua';
   }
 };
 
 const zodiacCutoffs: Array<[string, number]> = [
-  ["Capricórnio", 20],
-  ["Aquário", 19],
-  ["Peixes", 21],
-  ["Áries", 20],
-  ["Touro", 21],
-  ["Gêmeos", 21],
-  ["Câncer", 23],
-  ["Leão", 23],
-  ["Virgem", 23],
-  ["Libra", 23],
-  ["Escorpião", 22],
-  ["Sagitário", 22],
+  ['Capricórnio', 20],
+  ['Aquário', 19],
+  ['Peixes', 21],
+  ['Áries', 20],
+  ['Touro', 21],
+  ['Gêmeos', 21],
+  ['Câncer', 23],
+  ['Leão', 23],
+  ['Virgem', 23],
+  ['Libra', 23],
+  ['Escorpião', 22],
+  ['Sagitário', 22],
 ];
 
 const approximateSign = (date: Date) => {
@@ -134,16 +134,16 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const defaultYear = now.getUTCFullYear();
 
-    const startParam = searchParams.get("start") || `${defaultYear}-01-01`;
-    const endParam = searchParams.get("end") || `${defaultYear}-12-31`;
-    const source = searchParams.get("source") || "auto"; // 'auto', 'db', 'generated'
+    const startParam = searchParams.get('start') || `${defaultYear}-01-01`;
+    const endParam = searchParams.get('end') || `${defaultYear}-12-31`;
+    const source = searchParams.get('source') || 'auto'; // 'auto', 'db', 'generated'
 
     const startDate = parseIsoDate(startParam);
     const endDate = parseIsoDate(endParam);
 
     if (!startDate || !endDate || startDate > endDate) {
       return NextResponse.json(
-        { error: "Parâmetros start/end inválidos. Use ISO YYYY-MM-DD." },
+        { error: 'Parâmetros start/end inválidos. Use ISO YYYY-MM-DD.' },
         { status: 400 }
       );
     }
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
     let usedDatabase = false;
 
     // 1. Tentar buscar do banco de dados se source é 'auto' ou 'db'
-    if ((source === "auto" || source === "db") && process.env.DATABASE_URL) {
+    if ((source === 'auto' || source === 'db') && process.env.DATABASE_URL) {
       try {
         dbLunations = await getLunations(startParam, endParam);
         if (dbLunations && dbLunations.length > 0) {
@@ -165,23 +165,23 @@ export async function GET(request: NextRequest) {
               illumination: l.illumination,
               ageDays: l.age_days,
               description: l.description,
-              source: "database",
+              source: 'database',
             })),
             generatedAt: new Date().toISOString(),
-            source: "database",
+            source: 'database',
             range: { start: startParam, end: endParam },
           });
         }
       } catch (dbError) {
-        console.warn("Banco não disponível, usando geração local:", (dbError as Error).message);
+        console.warn('Banco não disponível, usando geração local:', (dbError as Error).message);
         // Continua para gerar localmente
       }
     }
 
     // Se source é 'db' e banco falhou, retornar erro
-    if (source === "db" && !usedDatabase) {
+    if (source === 'db' && !usedDatabase) {
       return NextResponse.json(
-        { error: "Banco de dados não disponível e source=db foi solicitado" },
+        { error: 'Banco de dados não disponível e source=db foi solicitado' },
         { status: 503 }
       );
     }
@@ -192,13 +192,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       days,
       generatedAt: new Date().toISOString(),
-      source: "generated",
+      source: 'generated',
       range: { start: formatIsoDate(startDate), end: formatIsoDate(endDate) },
     });
   } catch (error) {
-    console.error("Erro ao buscar lunações:", error);
+    console.error('Erro ao buscar lunações:', error);
     return NextResponse.json(
-      { error: "Erro ao processar solicitação", details: String(error) },
+      { error: 'Erro ao processar solicitação', details: String(error) },
       { status: 500 }
     );
   }
@@ -210,19 +210,13 @@ export async function POST(request: NextRequest) {
     const { days, action } = body;
 
     if (!Array.isArray(days) || days.length === 0) {
-      return NextResponse.json(
-        { error: "Array de dias obrigatório e não vazio" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Array de dias obrigatório e não vazio' }, { status: 400 });
     }
 
-    if (action === "replace") {
+    if (action === 'replace') {
       // Deletar e recriar para um range específico
       if (days.length === 0) {
-        return NextResponse.json(
-          { error: "Dias obrigatórios para 'replace'" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Dias obrigatórios para 'replace'" }, { status: 400 });
       }
 
       const dates = days.map((d: any) => d.date || d.lunation_date);
@@ -239,12 +233,12 @@ export async function POST(request: NextRequest) {
       const lunation_date = d.date || d.lunation_date;
       const moon_phase = d.moonPhase || d.moon_phase;
       const zodiac_sign = d.sign || d.zodiac_sign;
-      
+
       // Validar dados obrigatórios
       if (!lunation_date || !moon_phase || !zodiac_sign) {
         console.warn('Lunação com dados incompletos:', d);
       }
-      
+
       return {
         lunation_date,
         moon_phase,
@@ -267,9 +261,9 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Erro ao salvar lunações:", error);
+    console.error('Erro ao salvar lunações:', error);
     return NextResponse.json(
-      { error: "Erro ao salvar lunações", details: String(error) },
+      { error: 'Erro ao salvar lunações', details: String(error) },
       { status: 500 }
     );
   }

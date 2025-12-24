@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
-import styles from "./ilha.module.css";
+import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
+import styles from './ilha.module.css';
 
-type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
+type IslandId = 'ilha1' | 'ilha2' | 'ilha3' | 'ilha4';
 
 type IslandData = {
   titulo: string;
@@ -22,26 +22,26 @@ type FormState = {
 };
 
 const markers: { id: IslandId; nome: string; label: string }[] = [
-  { id: "ilha1", nome: "Plataforma Criativa", label: "ILHA 1" },
-  { id: "ilha2", nome: "Pier da Comunidade", label: "ILHA 2" },
-  { id: "ilha3", nome: "Ilha Central", label: "ILHA 3" },
-  { id: "ilha4", nome: "Ilha da Visão", label: "ILHA 4" },
+  { id: 'ilha1', nome: 'Plataforma Criativa', label: 'ILHA 1' },
+  { id: 'ilha2', nome: 'Pier da Comunidade', label: 'ILHA 2' },
+  { id: 'ilha3', nome: 'Ilha Central', label: 'ILHA 3' },
+  { id: 'ilha4', nome: 'Ilha da Visão', label: 'ILHA 4' },
 ];
 
 const createEmptyIsland = (): IslandData => ({
-  titulo: "",
-  tag: "",
-  descricao: "",
+  titulo: '',
+  tag: '',
+  descricao: '',
   energia: null,
   prioridade: null,
 });
 
 const emptyFormState: FormState = {
-  titulo: "",
-  tag: "",
-  descricao: "",
-  energia: "",
-  prioridade: "",
+  titulo: '',
+  tag: '',
+  descricao: '',
+  energia: '',
+  prioridade: '',
 };
 
 export default function IlhaClient() {
@@ -58,7 +58,7 @@ export default function IlhaClient() {
 
   const selectedMarker = useMemo(
     () => markers.find((marker) => marker.id === ilhaSelecionada),
-    [ilhaSelecionada],
+    [ilhaSelecionada]
   );
 
   const handleMarkerClick = (id: IslandId) => {
@@ -66,17 +66,12 @@ export default function IlhaClient() {
     const dados = ilhas[id];
 
     setFormState({
-      titulo: dados.titulo || "",
-      tag: dados.tag || "",
-      descricao: dados.descricao || "",
-      energia:
-        dados.energia !== null && dados.energia !== undefined
-          ? String(dados.energia)
-          : "",
+      titulo: dados.titulo || '',
+      tag: dados.tag || '',
+      descricao: dados.descricao || '',
+      energia: dados.energia !== null && dados.energia !== undefined ? String(dados.energia) : '',
       prioridade:
-        dados.prioridade !== null && dados.prioridade !== undefined
-          ? String(dados.prioridade)
-          : "",
+        dados.prioridade !== null && dados.prioridade !== undefined ? String(dados.prioridade) : '',
     });
   };
 
@@ -91,8 +86,8 @@ export default function IlhaClient() {
       titulo: formState.titulo.trim(),
       tag: formState.tag.trim(),
       descricao: formState.descricao.trim(),
-      energia: formState.energia !== "" ? Number(formState.energia) : null,
-      prioridade: formState.prioridade !== "" ? Number(formState.prioridade) : null,
+      energia: formState.energia !== '' ? Number(formState.energia) : null,
+      prioridade: formState.prioridade !== '' ? Number(formState.prioridade) : null,
     };
 
     setIlhas((prev) => ({
@@ -119,9 +114,9 @@ export default function IlhaClient() {
           ilha.tag ||
           ilha.descricao ||
           ilha.energia !== null ||
-          ilha.prioridade !== null,
+          ilha.prioridade !== null
       ),
-    [ilhas],
+    [ilhas]
   );
 
   const shouldShowJson = hasSaved || hasData;
@@ -141,7 +136,7 @@ export default function IlhaClient() {
                 data-id={marker.id}
                 data-nome={marker.nome}
                 onClick={() => handleMarkerClick(marker.id)}
-                className={`${styles.islandMarker} ${isActive ? styles.islandMarkerActive : ""}`}
+                className={`${styles.islandMarker} ${isActive ? styles.islandMarkerActive : ''}`}
               >
                 <div className={styles.markerDot} />
                 <span className={styles.markerLabel}>{marker.label}</span>
@@ -155,23 +150,23 @@ export default function IlhaClient() {
         <header className={styles.panelHeader}>
           <h2 className={styles.panelTitle}>
             <span className={styles.islandNameHighlight}>
-              {selectedMarker ? selectedMarker.nome : "Escolha uma ilha"}
+              {selectedMarker ? selectedMarker.nome : 'Escolha uma ilha'}
             </span>
           </h2>
           <span className={styles.panelPill}>
-            {ilhaSelecionada ? ilhaSelecionada.toUpperCase() : "Nenhuma ilha selecionada"}
+            {ilhaSelecionada ? ilhaSelecionada.toUpperCase() : 'Nenhuma ilha selecionada'}
           </span>
         </header>
 
         <p className={styles.panelSubtitle}>
           {ilhaSelecionada
-            ? "Edite os campos abaixo para registrar as informações desta ilha."
-            : "Clique em um marcador no mapa para começar a editar as informações daquela ilha."}
+            ? 'Edite os campos abaixo para registrar as informações desta ilha.'
+            : 'Clique em um marcador no mapa para começar a editar as informações daquela ilha.'}
         </p>
 
         <form
           id="form-ilha"
-          className={`${styles.form} ${isLocked ? styles.formLocked : ""}`}
+          className={`${styles.form} ${isLocked ? styles.formLocked : ''}`}
           onSubmit={handleSubmit}
           aria-disabled={isLocked}
         >
@@ -184,7 +179,7 @@ export default function IlhaClient() {
                 placeholder="Ex.: Laboratório de Ideias"
                 autoComplete="off"
                 value={formState.titulo}
-                onChange={handleChange("titulo")}
+                onChange={handleChange('titulo')}
                 className={styles.field}
                 disabled={isLocked}
               />
@@ -197,7 +192,7 @@ export default function IlhaClient() {
                 placeholder="Ex.: pesquisa, música, cuidado"
                 autoComplete="off"
                 value={formState.tag}
-                onChange={handleChange("tag")}
+                onChange={handleChange('tag')}
                 className={styles.field}
                 disabled={isLocked}
               />
@@ -211,7 +206,7 @@ export default function IlhaClient() {
               rows={4}
               placeholder="O que acontece nesta ilha? Que tipo de experiências, rituais, pesquisas, encontros?"
               value={formState.descricao}
-              onChange={handleChange("descricao")}
+              onChange={handleChange('descricao')}
               className={`${styles.field} ${styles.textArea}`}
               disabled={isLocked}
             />
@@ -227,7 +222,7 @@ export default function IlhaClient() {
                 max={10}
                 placeholder="7"
                 value={formState.energia}
-                onChange={handleChange("energia")}
+                onChange={handleChange('energia')}
                 className={styles.field}
                 disabled={isLocked}
               />
@@ -241,7 +236,7 @@ export default function IlhaClient() {
                 max={10}
                 placeholder="5"
                 value={formState.prioridade}
-                onChange={handleChange("prioridade")}
+                onChange={handleChange('prioridade')}
                 className={styles.field}
                 disabled={isLocked}
               />
@@ -249,7 +244,7 @@ export default function IlhaClient() {
           </div>
 
           <button type="submit" className={styles.submitButton} disabled={isLocked}>
-            {ilhaSelecionada ? "Salvar dados da ilha" : "Selecione uma ilha"}
+            {ilhaSelecionada ? 'Salvar dados da ilha' : 'Selecione uma ilha'}
             <span aria-hidden>➜</span>
           </button>
         </form>

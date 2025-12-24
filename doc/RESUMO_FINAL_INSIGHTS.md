@@ -5,12 +5,14 @@
 Você agora tem um **sistema completo de captura de insights** em 2 níveis:
 
 ### 1️⃣ **Insights Trimestrais** (SolOrbitScreen)
+
 - 4 luas = 4 trimestres do ano
 - Clique em uma lua → Modal abre
 - Escreva o insight trimestral
 - Salva no Google Sheets
 
 ### 2️⃣ **Insights Mensais** (LuaListScreen)
+
 - 8 luas = 8 meses
 - Clique em uma lua → Modal abre
 - Escreva o insight mensal
@@ -19,6 +21,7 @@ Você agora tem um **sistema completo de captura de insights** em 2 níveis:
 ## 📁 Arquivos Criados
 
 ### Componentes React (2)
+
 ```
 components/
 ├── QuarterlyInsightModal.tsx    ← Modal para insights trimestrais
@@ -26,6 +29,7 @@ components/
 ```
 
 ### Hooks (2)
+
 ```
 hooks/
 ├── useQuarterlyInsights.ts      ← Gerencia insights trimestrais
@@ -33,6 +37,7 @@ hooks/
 ```
 
 ### APIs (2)
+
 ```
 app/api/form/
 ├── quarterly-insight/route.ts   ← Salva insights trimestrais
@@ -40,6 +45,7 @@ app/api/form/
 ```
 
 ### Documentação (4)
+
 ```
 ├── INSIGHTS_TRIMESTRAIS.md     ← Docs técnicas (trimestral)
 ├── INSIGHTS_MENSAIS.md         ← Docs técnicas (mensal)
@@ -63,6 +69,7 @@ app/api/form/
 ## 🎯 Fluxo de Dados
 
 ### Trimestral
+
 ```
 SolOrbitScreen
   ↓ clique na lua
@@ -78,6 +85,7 @@ Google Sheets
 ```
 
 ### Mensal
+
 ```
 LuaListScreen
   ↓ clique na lua
@@ -95,12 +103,14 @@ Google Sheets
 ## 📊 Dados Salvos no Google Sheets
 
 ### Insights Trimestrais
+
 ```
 timestamp              | fase                    | insight              | tipo
 2024-12-07T10:30:00  | Lua Nova (Jan-Mar)     | "Texto do insight"   | insight_trimestral
 ```
 
 ### Insights Mensais
+
 ```
 timestamp              | mes                 | fase            | insight              | tipo
 2024-12-07T10:30:00  | Janeiro (Mês #1)   | Lua Nova       | "Texto do insight"   | insight_mensal
@@ -124,6 +134,7 @@ timestamp              | mes                 | fase            | insight        
 ## ✅ Checklist de Implementação
 
 Insights Trimestrais:
+
 - [x] Modal criado
 - [x] Hook criado
 - [x] API criada
@@ -132,6 +143,7 @@ Insights Trimestrais:
 - [x] Documentação criada
 
 Insights Mensais:
+
 - [x] Modal criado
 - [x] Hook criado
 - [x] API criada
@@ -142,6 +154,7 @@ Insights Mensais:
 ## 🚀 Como Testar
 
 ### Teste 1: Insights Trimestrais
+
 1. Navegue para `/cosmos`
 2. Veja a tela com Sol e 4 luas
 3. Clique em qualquer lua (ex: Lua Cheia no topo)
@@ -151,6 +164,7 @@ Insights Mensais:
 7. ✅ Salvo no Google Sheets com tipo "insight_trimestral"
 
 ### Teste 2: Insights Mensais
+
 1. De dentro do `/cosmos`, navegue para a tela das 8 luas
 2. Veja duas linhas com 4 luas cada
 3. Clique em qualquer lua (ex: primeira da esquerda)
@@ -162,29 +176,34 @@ Insights Mensais:
 ## 🔧 Exemplos de Customização
 
 ### Mudar trimestres
+
 Edite `moonPhaseInfo` em `QuarterlyInsightModal.tsx`:
+
 ```tsx
 const moonPhaseInfo = {
-  luaNova: { 
+  luaNova: {
     name: 'Lua Nova',
-    quarter: '1º Trimestre',  // customize
-    months: 'Jan - Mar'       // customize
+    quarter: '1º Trimestre', // customize
+    months: 'Jan - Mar', // customize
   },
   // ...
 };
 ```
 
 ### Mudar meses
+
 Edite `getMonthName()` em `MonthlyInsightModal.tsx`:
+
 ```tsx
 const months = [
-  'Janeiro',   // customize
+  'Janeiro', // customize
   'Fevereiro',
   // ...
 ];
 ```
 
 ### Adicionar mais campos
+
 1. Adicione input no modal
 2. Capture no estado
 3. Envie na API

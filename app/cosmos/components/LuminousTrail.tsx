@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from 'react';
 
 export const LuminousTrail: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -9,12 +9,12 @@ export const LuminousTrail: React.FC = () => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const config = {
       amplitude: 0.045, // oscilação vertical principal
-      frequency: 2.2,   // quantas ondas cabem no traço
+      frequency: 2.2, // quantas ondas cabem no traço
       phaseSpeed: 0.001, // velocidade de deslocamento da onda
       segments: 240,
     };
@@ -46,14 +46,14 @@ export const LuminousTrail: React.FC = () => {
 
       ctx.save();
       ctx.shadowBlur = 40;
-      ctx.shadowColor = "rgba(180, 230, 255, 0.9)";
+      ctx.shadowColor = 'rgba(180, 230, 255, 0.9)';
 
       const grad = ctx.createLinearGradient(0, canvas.height, canvas.width, 0);
-      grad.addColorStop(0, "rgba(100,160,255,0)");
-      grad.addColorStop(0.2, "rgba(160,210,255,0.8)");
-      grad.addColorStop(0.5, "#fff");
-      grad.addColorStop(0.8, "rgba(160,220,255,0.8)");
-      grad.addColorStop(1, "rgba(100,160,255,0)");
+      grad.addColorStop(0, 'rgba(100,160,255,0)');
+      grad.addColorStop(0.2, 'rgba(160,210,255,0.8)');
+      grad.addColorStop(0.5, '#fff');
+      grad.addColorStop(0.8, 'rgba(160,220,255,0.8)');
+      grad.addColorStop(1, 'rgba(100,160,255,0)');
       ctx.strokeStyle = grad;
       ctx.lineWidth = lineWidth;
 
@@ -68,7 +68,7 @@ export const LuminousTrail: React.FC = () => {
 
       ctx.save();
       ctx.lineWidth = lineWidth * 2.2;
-      ctx.strokeStyle = "rgba(160,220,255,0.12)";
+      ctx.strokeStyle = 'rgba(160,220,255,0.12)';
       ctx.beginPath();
       for (let i = 0; i <= config.segments; i++) {
         const t = i / config.segments;
@@ -88,13 +88,13 @@ export const LuminousTrail: React.FC = () => {
 
     function start() {
       resize();
-      window.addEventListener("resize", resize);
+      window.addEventListener('resize', resize);
       frameId = requestAnimationFrame(render);
     }
 
     function stop() {
       if (frameId != null) cancelAnimationFrame(frameId);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener('resize', resize);
     }
 
     start();
@@ -102,10 +102,5 @@ export const LuminousTrail: React.FC = () => {
     return () => stop();
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none absolute inset-0"
-    />
-  );
+  return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" />;
 };

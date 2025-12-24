@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from 'react';
 
 export const StarfieldBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -9,7 +9,7 @@ export const StarfieldBackground: React.FC = () => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const STAR_COUNT = 250;
@@ -55,7 +55,7 @@ export const StarfieldBackground: React.FC = () => {
 
     function drawBackground() {
       if (!ctx) return;
-      ctx.fillStyle = "#02030a";
+      ctx.fillStyle = '#02030a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -66,8 +66,7 @@ export const StarfieldBackground: React.FC = () => {
         const y = normToPixelY(s.y);
         const r = normRadiusToPixels(s.radius);
 
-        const twinkle =
-          Math.sin(time * s.twinkleSpeed + s.twinklePhase) * 0.3 + 0.7;
+        const twinkle = Math.sin(time * s.twinkleSpeed + s.twinklePhase) * 0.3 + 0.7;
         const alpha = s.baseAlpha * twinkle;
 
         ctx.beginPath();
@@ -89,13 +88,13 @@ export const StarfieldBackground: React.FC = () => {
     function start() {
       resizeCanvas();
       createStars();
-      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener('resize', resizeCanvas);
       frameId = requestAnimationFrame(render);
     }
 
     function stop() {
       if (frameId != null) cancelAnimationFrame(frameId);
-      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener('resize', resizeCanvas);
     }
 
     start();
@@ -103,10 +102,5 @@ export const StarfieldBackground: React.FC = () => {
     return () => stop();
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none absolute inset-0"
-    />
-  );
+  return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" />;
 };

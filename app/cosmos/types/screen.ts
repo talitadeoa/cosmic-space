@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { SavedTodo } from "../utils/todoStorage";
-import type { MoonPhase } from "../utils/moonPhases";
+import type { SavedTodo } from '../utils/todoStorage';
+import type { MoonPhase } from '../utils/moonPhases';
 
-export type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
+export type IslandId = 'ilha1' | 'ilha2' | 'ilha3' | 'ilha4';
 
 /**
  * Estilo TaskWithState é apenas para documentação

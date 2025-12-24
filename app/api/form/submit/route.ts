@@ -9,12 +9,9 @@ export async function POST(request: NextRequest) {
   try {
     // Verificar autenticação
     const token = request.cookies.get('auth_token')?.value;
-    
+
     if (!token || !validateToken(token)) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
     const data = await request.json();
@@ -39,10 +36,7 @@ export async function POST(request: NextRequest) {
     const success = await appendToSheet(sheetData);
 
     if (!success) {
-      return NextResponse.json(
-        { error: 'Erro ao salvar dados' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Erro ao salvar dados' }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -51,9 +45,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Erro ao processar formulário:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

@@ -5,48 +5,47 @@ Execute estes scripts **na ordem** no Neon SQL Editor.
 ## 📋 Ordem de Execução
 
 ### ✅ 1. Tabelas Base (EXECUTE PRIMEIRO)
+
 **Arquivo:** `01-base-tables.sql`
+
 - `auth_tokens` - Tokens de autenticação
 - `users` - Usuários do sistema
 - `form_entries` - Formulários genéricos
+- `insights` - Insights unificados (mensal, trimestral, anual)
 
 **IMPORTANTE:** Execute este primeiro, pois as outras tabelas dependem da tabela `users`.
 
 ---
 
-### ✅ 2. Insights Mensais
-**Arquivo:** `02-monthly-insights.sql`
-- `monthly_insights` - 12 meses x 4 fases lunares
+### ✅ 2. Fases Lunares
+
+**Arquivo:** `02-lunar-phases.sql`
+
+- `lunar_phases` - Registros de fases lunares por usuário
 
 ---
 
-### ✅ 3. Insights Trimestrais
-**Arquivo:** `04-annual-insights.sql`
-- `annual_insights` - 1 insight por ano
+### ✅ 3. Ilhas
+
+**Arquivo:** `03-islands.sql`
+
+- `islands` - Sistema de ilhas/projetos
 
 ---
 
-### ✅ 5. Fases Lunares
-**Arquivo:** `05-annual-insights.sql`
-- `annual_insights` - 1 insight por ano
+### ✅ 4. Lunações
+
+**Arquivo:** `04-lunations.sql`
+
+- `lunations` - Calendário lunar completo (global)
 
 ---
 
-### ✅ 6. Ilhas
-**Arquivo:** `06-islands.sql`
-- `islands` - Sistema de ilhas
+### ✅ 5. Entradas de Fases
 
----
+**Arquivo:** `05-phase-inputs.sql`
 
-### ✅ 7. Lunações
-**Arquivo:** `07-islands.sql`
-- `islands` - Sistema de ilhas
-
----
-
-### ✅ 6. Lunações
-**Arquivo:** `06-lunations.sql`
-- `lunations` - Calendário lunar completo
+- `phase_inputs` - Entradas do usuário por fase lunar
 
 ---
 
@@ -66,24 +65,31 @@ Execute estes scripts **na ordem** no Neon SQL Editor.
 ## ✅ Checklist de Criação
 
 - [ ] `01-base-tables.sql` ✓ **EXECUTE PRIMEIRO**
-- [ ] `02-monthly-insights.sql`
-- [ ] `03-quarterly-insights.sql`
-- [ ] `04-annual-insights.sql`
-- [ ] `05-lunar-phases.sql`
-- [ ] `06-islands.sql`
-- [ ] `07-lunations.sql`
+- [ ] `02-lunar-phases.sql`
+- [ ] `03-islands.sql`
+- [ ] `04-lunations.sql`
+- [ ] `05-phase-inputs.sql`
 
 ---
 
 ## 📊 Resultado Final
 
-Você deve ter **9 tabelas** criadas:
-1. auth_tokens
-2. users
-3. form_entries
-4. monthly_insights ✓ (já criada)
-5. quarterly_insights
-6. annual_insights
-7. lunar_phases
-8. islands
-9. lunations
+Você deve ter **8 tabelas** criadas:
+
+1. `auth_tokens` - Tokens de sessão
+2. `users` - Usuários
+3. `form_entries` - Formulários
+4. `insights` - Insights unificados ✓ (consolidada: monthly + quarterly + annual)
+5. `lunar_phases` - Fases lunares por usuário
+6. `islands` - Ilhas/projetos
+7. `lunations` - Calendário lunar global
+8. `phase_inputs` - Entradas por fase
+
+---
+
+## 🗑️ Arquivos Removidos (Consolidados)
+
+- ~~02-monthly-insights.sql~~ → consolidado em `insights`
+- ~~03-quarterly-insights.sql~~ → consolidado em `insights`
+- ~~04-annual-insights.sql~~ → consolidado em `insights`
+- ~~schema.sql~~ → duplicado, removido

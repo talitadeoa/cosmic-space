@@ -1,13 +1,13 @@
-import { cookies } from "next/headers";
-import AuthGate from "@/components/AuthGate";
-import { validateToken } from "@/lib/auth";
-import { getSheetData } from "@/lib/sheets";
+import { cookies } from 'next/headers';
+import AuthGate from '@/components/AuthGate';
+import { validateToken } from '@/lib/auth';
+import { getSheetData } from '@/lib/sheets';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function LogsPage() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = cookieStore.get('auth_token')?.value;
   const isAuthenticated = token ? validateToken(token) : false;
 
   let rows: any[] = [];
@@ -18,13 +18,13 @@ export default async function LogsPage() {
     const apiKey = process.env.GOOGLE_SHEETS_API_KEY;
 
     if (!spreadsheetId || !apiKey) {
-      error = "Sheets nao configurado";
+      error = 'Sheets nao configurado';
     } else {
       const data = await getSheetData(spreadsheetId, apiKey);
       if (data?.values && Array.isArray(data.values)) {
         rows = data.values;
       } else {
-        error = "Nenhum dado encontrado";
+        error = 'Nenhum dado encontrado';
       }
     }
   }

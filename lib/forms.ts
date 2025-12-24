@@ -1,14 +1,16 @@
-import "server-only";
-import { getDb } from "./db";
+import 'server-only';
+import { getDb } from './db';
+import { logger } from './logger';
+import type { LunationData } from '@/types/lunation';
 
 export type FormEntryType =
-  | "subscribe"
-  | "contact"
-  | "insight_anual"
-  | "insight_mensal"
-  | "insight_lunar"
-  | "insight_trimestral"
-  | "checklist";
+  | 'subscribe'
+  | 'contact'
+  | 'insight_anual'
+  | 'insight_mensal'
+  | 'insight_lunar'
+  | 'insight_trimestral'
+  | 'checklist';
 
 export interface FormEntryInput {
   type: FormEntryType;
@@ -44,7 +46,7 @@ export async function saveFormEntry(entry: FormEntryInput): Promise<FormEntryRow
 
     return row as FormEntryRow;
   } catch (error) {
-    console.error("Erro ao salvar formulário no banco", error);
+    logger.error('Erro ao salvar formulário no banco', error);
     throw error;
   }
 }
@@ -56,243 +58,215 @@ export async function listFormEntries(
   try {
     const db = getDb();
 
-    const rows = (types?.length
-      ? await db`
-          SELECT id, type, name, email, message, source, payload, created_at
-          FROM form_entries
-          WHERE type = ANY(${types})
-          ORDER BY created_at DESC
-          LIMIT ${limit}
-        `
-      : await db`
-          SELECT id, type, name, email, message, source, payload, created_at
-          FROM form_entries
-          ORDER BY created_at DESC
-          LIMIT ${limit}
-        `) as any[];
+    const rows = (await db`
+      SELECT id, type, name, email, message, source, payload, created_at
+      FROM form_entries
+      ${types?.length ? db`WHERE type = ANY(${types})` : db``}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    `) as any[];
 
     return rows as FormEntryRow[];
   } catch (error) {
-    console.error("Erro ao listar formulários no banco", error);
+    logger.error('Erro ao listar formulários no banco', error);
     throw error;
   }
 }
 
-// Insights Mensais
+// ========== INSIGHTS GENÉRICOS ==========
+
+type InsightType = 'monthly' | 'quarterly' | 'annual';
+
+interface InsightParams {
+  userId: string | number;
+  moonPhase?: string;
+  period?: number | string; // monthNumber, quarterNumber, year
+  insight: string;
+  year?: number;
+}
+
+/**
+ * Salvar insight genérico (mensal, trimestral, anual)
+ */
+export async function saveInsight(type: InsightType, params: InsightParams) {
+  try {
+    const db = getDb();
+
+    const periodType =
+      type === 'monthly' ? 'monthly' : type === 'quarterly' ? 'quarterly' : 'annual';
+
+    const year = params.year ?? new Date().getFullYear();
+
+    const rows = (await db`
+      INSERT INTO insights (user_id, period_type, period_value, year, moon_phase, content)
+      VALUES (
+        ${params.userId},
+        ${periodType},
+        ${params.period ?? null},
+        ${year},
+        ${params.moonPhase ?? null},
+        ${params.insight}
+      )
+      ON CONFLICT (user_id, period_type, period_value, year, COALESCE(moon_phase, 'none'))
+      DO UPDATE SET content = EXCLUDED.content, updated_at = NOW()
+      RETURNING id, user_id, period_type, period_value, year, moon_phase, content, created_at, updated_at
+    `) as any[];
+
+    return rows[0];
+  } catch (error) {
+    logger.error(`Erro ao salvar ${type} insight no banco`, error);
+    throw error;
+  }
+}
+
+// Compatibilidade com código existente
 export async function saveMonthlyInsight(
   userId: string | number,
   moonPhase: string,
   monthNumber: number,
   insight: string
 ) {
-  try {
-    const db = getDb();
-    const rows = (await db`
-      INSERT INTO monthly_insights (user_id, moon_phase, month_number, insight)
-      VALUES (${userId}, ${moonPhase}, ${monthNumber}, ${insight})
-      ON CONFLICT (user_id, moon_phase, month_number)
-      DO UPDATE SET insight = EXCLUDED.insight, updated_at = NOW()
-      RETURNING id, user_id, moon_phase, month_number, insight, created_at, updated_at
-    `) as any[];
-
-    return rows[0];
-  } catch (error) {
-    console.error("Erro ao salvar monthly insight no banco", error);
-    throw error;
-  }
+  return saveInsight('monthly', { userId, moonPhase, period: monthNumber, insight });
 }
 
-// Insights Trimestrais
 export async function saveQuarterlyInsight(
   userId: string | number,
   moonPhase: string,
   quarterNumber: number,
   insight: string
 ) {
-  try {
-    const db = getDb();
-    const rows = (await db`
-      INSERT INTO quarterly_insights (user_id, moon_phase, quarter_number, insight)
-      VALUES (${userId}, ${moonPhase}, ${quarterNumber}, ${insight})
-      ON CONFLICT (user_id, moon_phase, quarter_number)
-      DO UPDATE SET insight = EXCLUDED.insight, updated_at = NOW()
-      RETURNING id, user_id, moon_phase, quarter_number, insight, created_at, updated_at
-    `) as any[];
-
-    return rows[0];
-  } catch (error) {
-    console.error("Erro ao salvar quarterly insight no banco", error);
-    throw error;
-  }
+  return saveInsight('quarterly', { userId, moonPhase, period: quarterNumber, insight });
 }
 
-// Insights Anuais
-export async function saveAnnualInsight(
-  userId: string | number,
-  insight: string,
-  year?: number
-) {
-  try {
-    const db = getDb();
-    const y = year ?? new Date().getFullYear();
-    const rows = (await db`
-      INSERT INTO annual_insights (user_id, year, insight)
-      VALUES (${userId}, ${y}, ${insight})
-      ON CONFLICT (user_id, year)
-      DO UPDATE SET insight = EXCLUDED.insight, updated_at = NOW()
-      RETURNING id, user_id, year, insight, created_at, updated_at
-    `) as any[];
-
-    return rows[0];
-  } catch (error) {
-    console.error("Erro ao salvar annual insight no banco", error);
-    throw error;
-  }
+export async function saveAnnualInsight(userId: string | number, insight: string, year?: number) {
+  return saveInsight('annual', { userId, insight, year });
 }
 
 // ========== LEITURA DE INSIGHTS ==========
 
-// Obter Insights Mensais
-export async function getMonthlyInsights(
+/**
+ * Obter insights de um usuário e período
+ */
+export async function getInsights(
+  type: InsightType,
   userId: string | number,
-  monthNumber?: number
+  period?: number | string
 ) {
   try {
     const db = getDb();
-    const month = monthNumber ?? new Date().getMonth() + 1;
-    
-    const rows = (await db`
-      SELECT id, user_id, moon_phase, month_number, insight, created_at, updated_at
-      FROM monthly_insights
-      WHERE user_id = ${userId} AND month_number = ${month}
-      ORDER BY 
-        CASE 
-          WHEN moon_phase = 'luaNova' THEN 1
-          WHEN moon_phase = 'luaCrescente' THEN 2
-          WHEN moon_phase = 'luaCheia' THEN 3
-          WHEN moon_phase = 'luaMinguante' THEN 4
-        END
-    `) as any[];
 
-    return rows;
+    const periodType =
+      type === 'monthly' ? 'monthly' : type === 'quarterly' ? 'quarterly' : 'annual';
+
+    if (periodType === 'annual') {
+      const year = period ?? new Date().getFullYear();
+      return await db`
+        SELECT id, user_id, period_type, period_value, year, moon_phase, content, created_at, updated_at
+        FROM insights
+        WHERE user_id = ${userId} AND period_type = 'annual' AND year = ${year}
+      `;
+    }
+
+    const periodValue =
+      period ??
+      (periodType === 'monthly'
+        ? new Date().getMonth() + 1
+        : Math.ceil((new Date().getMonth() + 1) / 3));
+
+    return await db`
+      SELECT id, user_id, period_type, period_value, year, moon_phase, content, created_at, updated_at
+      FROM insights
+      WHERE user_id = ${userId} AND period_type = ${periodType} AND period_value = ${periodValue}
+      ORDER BY CASE 
+        WHEN moon_phase = 'luaNova' THEN 1
+        WHEN moon_phase = 'luaCrescente' THEN 2
+        WHEN moon_phase = 'luaCheia' THEN 3
+        WHEN moon_phase = 'luaMinguante' THEN 4
+      END
+    `;
   } catch (error) {
-    console.error("Erro ao obter monthly insights", error);
+    logger.error(`Erro ao obter ${type} insights`, error);
     throw error;
   }
 }
 
-// Obter um Insight Mensal específico
+/**
+ * Obter insight específico de um usuário, fase e período
+ */
+export async function getInsightByPhase(
+  type: 'monthly' | 'quarterly',
+  userId: string | number,
+  moonPhase: string,
+  period: number
+) {
+  try {
+    const db = getDb();
+    const periodType = type === 'monthly' ? 'monthly' : 'quarterly';
+
+    const rows = (await db`
+      SELECT * FROM insights 
+      WHERE user_id = ${userId} AND period_type = ${periodType} AND moon_phase = ${moonPhase} AND period_value = ${period}
+    `) as any[];
+
+    return rows[0] ?? null;
+  } catch (error) {
+    logger.error(`Erro ao obter ${type} insight específico`, error);
+    throw error;
+  }
+}
+
+// Compatibilidade com código existente
+export async function getMonthlyInsights(userId: string | number, monthNumber?: number) {
+  return getInsights('monthly', userId, monthNumber);
+}
+
 export async function getMonthlyInsight(
   userId: string | number,
   moonPhase: string,
   monthNumber: number
 ) {
-  try {
-    const db = getDb();
-    
-    const rows = (await db`
-      SELECT id, user_id, moon_phase, month_number, insight, created_at, updated_at
-      FROM monthly_insights
-      WHERE user_id = ${userId} AND moon_phase = ${moonPhase} AND month_number = ${monthNumber}
-    `) as any[];
-
-    return rows[0] ?? null;
-  } catch (error) {
-    console.error("Erro ao obter monthly insight", error);
-    throw error;
-  }
+  return getInsightByPhase('monthly', userId, moonPhase, monthNumber);
 }
 
-// Obter Insights Trimestrais
-export async function getQuarterlyInsights(
-  userId: string | number,
-  quarterNumber?: number
-) {
-  try {
-    const db = getDb();
-    const month = new Date().getMonth() + 1;
-    const quarter = Math.ceil(month / 3);
-    const q = quarterNumber ?? quarter;
-    
-    const rows = (await db`
-      SELECT id, user_id, moon_phase, quarter_number, insight, created_at, updated_at
-      FROM quarterly_insights
-      WHERE user_id = ${userId} AND quarter_number = ${q}
-      ORDER BY 
-        CASE 
-          WHEN moon_phase = 'luaNova' THEN 1
-          WHEN moon_phase = 'luaCrescente' THEN 2
-          WHEN moon_phase = 'luaCheia' THEN 3
-          WHEN moon_phase = 'luaMinguante' THEN 4
-        END
-    `) as any[];
-
-    return rows;
-  } catch (error) {
-    console.error("Erro ao obter quarterly insights", error);
-    throw error;
-  }
+export async function getQuarterlyInsights(userId: string | number, quarterNumber?: number) {
+  return getInsights('quarterly', userId, quarterNumber);
 }
 
-// Obter um Insight Trimestral específico
 export async function getQuarterlyInsight(
   userId: string | number,
   moonPhase: string,
   quarterNumber: number
 ) {
-  try {
-    const db = getDb();
-    
-    const rows = (await db`
-      SELECT id, user_id, moon_phase, quarter_number, insight, created_at, updated_at
-      FROM quarterly_insights
-      WHERE user_id = ${userId} AND moon_phase = ${moonPhase} AND quarter_number = ${quarterNumber}
-    `) as any[];
-
-    return rows[0] ?? null;
-  } catch (error) {
-    console.error("Erro ao obter quarterly insight", error);
-    throw error;
-  }
+  return getInsightByPhase('quarterly', userId, moonPhase, quarterNumber);
 }
 
-// Obter Insight Anual
-export async function getAnnualInsight(
-  userId: string | number,
-  year?: number
-) {
+export async function getAnnualInsight(userId: string | number, year?: number) {
   try {
     const db = getDb();
     const y = year ?? new Date().getFullYear();
-    
     const rows = (await db`
-      SELECT id, user_id, year, insight, created_at, updated_at
-      FROM annual_insights
-      WHERE user_id = ${userId} AND year = ${y}
+      SELECT id, user_id, period_type, period_value, year, moon_phase, content, created_at, updated_at
+      FROM insights
+      WHERE user_id = ${userId} AND period_type = 'annual' AND year = ${y}
     `) as any[];
-
     return rows[0] ?? null;
   } catch (error) {
-    console.error("Erro ao obter annual insight", error);
+    logger.error('Erro ao obter annual insight', error);
     throw error;
   }
 }
 
-// Obter todos os Insights Anuais de um usuário
 export async function getAnnualInsights(userId: string | number) {
   try {
     const db = getDb();
-    
-    const rows = (await db`
-      SELECT id, user_id, year, insight, created_at, updated_at
-      FROM annual_insights
-      WHERE user_id = ${userId}
+    return (await db`
+      SELECT id, user_id, period_type, period_value, year, moon_phase, content, created_at, updated_at
+      FROM insights
+      WHERE user_id = ${userId} AND period_type = 'annual'
       ORDER BY year DESC
     `) as any[];
-
-    return rows;
   } catch (error) {
-    console.error("Erro ao obter annual insights", error);
+    logger.error('Erro ao obter annual insights', error);
     throw error;
   }
 }
@@ -301,45 +275,24 @@ export async function getAnnualInsights(userId: string | number) {
 export async function getAllInsights(userId: string | number) {
   try {
     const db = getDb();
-    
-    const rows = (await db`
+
+    return (await db`
       SELECT 
-        'mensal'::TEXT as tipo,
-        moon_phase,
-        month_number::TEXT as periodo,
-        insight,
-        created_at
-      FROM monthly_insights
+        CASE 
+          WHEN period_type = 'monthly' THEN 'mensal'::TEXT
+          WHEN period_type = 'quarterly' THEN 'trimestral'::TEXT
+          WHEN period_type = 'annual' THEN 'anual'::TEXT
+        END as type,
+        moon_phase, 
+        COALESCE(period_value::TEXT, year::TEXT) as period_text,
+        content as insight, 
+        created_at 
+      FROM insights 
       WHERE user_id = ${userId}
-      
-      UNION ALL
-      
-      SELECT 
-        'trimestral'::TEXT,
-        moon_phase,
-        quarter_number::TEXT,
-        insight,
-        created_at
-      FROM quarterly_insights
-      WHERE user_id = ${userId}
-      
-      UNION ALL
-      
-      SELECT 
-        'anual'::TEXT,
-        NULL as moon_phase,
-        year::TEXT,
-        insight,
-        created_at
-      FROM annual_insights
-      WHERE user_id = ${userId}
-      
       ORDER BY created_at DESC
     `) as any[];
-
-    return rows;
   } catch (error) {
-    console.error("Erro ao obter todos os insights", error);
+    logger.error('Erro ao obter todos os insights', error);
     throw error;
   }
 }
@@ -380,7 +333,7 @@ export async function saveLunarPhase(
 
     return rows[0];
   } catch (error) {
-    console.error("Erro ao salvar lunar phase no banco", error);
+    logger.error('Erro ao salvar lunar phase no banco', error);
     throw error;
   }
 }
@@ -415,29 +368,20 @@ export async function saveIsland(
 
     return rows[0];
   } catch (error) {
-    console.error("Erro ao salvar island no banco", error);
+    logger.error('Erro ao salvar island no banco', error);
     throw error;
   }
 }
 
 // Lunações
-export interface LunationData {
-  lunation_date: string; // ISO YYYY-MM-DD
-  moon_phase: string;
-  zodiac_sign: string;
-  illumination?: number;
-  age_days?: number;
-  description?: string;
-  source?: string;
-}
-
 export async function saveLunations(lunations: LunationData[]): Promise<any[]> {
   try {
+    if (!lunations.length) return [];
+
     const db = getDb();
-    
-    // Inserir um por um para garantir consistência
     const results: any[] = [];
-    
+
+    // Inserir em pequenos batches para melhor performance
     for (const l of lunations) {
       const rows = (await db`
         INSERT INTO lunations (lunation_date, moon_phase, zodiac_sign, illumination, age_days, description, source)
@@ -451,23 +395,18 @@ export async function saveLunations(lunations: LunationData[]): Promise<any[]> {
           updated_at = NOW()
         RETURNING id, lunation_date, moon_phase, zodiac_sign, illumination, age_days, description, created_at, updated_at
       `) as any[];
-      
-      if (rows.length > 0) {
-        results.push(rows[0]);
-      }
+
+      if (rows.length) results.push(rows[0]);
     }
 
     return results;
   } catch (error) {
-    console.error("Erro ao salvar lunações no banco", error);
+    logger.error('Erro ao salvar lunações no banco', error);
     throw error;
   }
 }
 
-export async function getLunations(
-  startDate: string,
-  endDate: string
-): Promise<LunationData[]> {
+export async function getLunations(startDate: string, endDate: string): Promise<LunationData[]> {
   try {
     const db = getDb();
     const rows = (await db`
@@ -487,7 +426,7 @@ export async function getLunations(
 
     return rows;
   } catch (error) {
-    console.error("Erro ao buscar lunações no banco", error);
+    logger.error('Erro ao buscar lunações no banco', error);
     throw error;
   }
 }
@@ -502,7 +441,7 @@ export async function deleteLunations(startDate: string, endDate: string): Promi
     `) as any[];
     return result.length;
   } catch (error) {
-    console.error("Erro ao deletar lunações no banco", error);
+    logger.error('Erro ao deletar lunações no banco', error);
     throw error;
   }
 }
