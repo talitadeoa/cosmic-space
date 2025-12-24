@@ -4,6 +4,7 @@ import React from "react";
 import { EmptyState } from "./EmptyState";
 import type { SavedTodo, MoonPhase, IslandId } from "../utils/todoStorage";
 import { phaseLabels } from "../utils/todoStorage";
+import { getIslandLabel, type IslandNames } from "../utils/islandNames";
 
 interface SavedTodosPanelProps {
   savedTodos: SavedTodo[];
@@ -11,13 +12,15 @@ interface SavedTodosPanelProps {
   onDragEnd: () => void;
   onToggleComplete: (todoId: string) => void;
   onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
-  onDeleteOutside?: (todoId: string) => void;
+  onDropInside?: () => void;
   selectedPhase?: MoonPhase | null;
   selectedIsland?: IslandId | null;
+  islandNames?: IslandNames;
   inputTypeFilter?: "all" | "text" | "checkbox";
   todoStatusFilter?: "all" | "completed" | "open";
   onInputTypeFilterChange?: (filter: "all" | "text" | "checkbox") => void;
   onTodoStatusFilterChange?: (filter: "all" | "completed" | "open") => void;
+  onUpdateTodo?: (todoId: string, updates: Partial<SavedTodo>) => void;
 }
 
 /**
@@ -35,16 +38,18 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onDragEnd,
   onToggleComplete,
   onAssignPhase,
-  onDeleteOutside,
+  onDropInside,
   selectedPhase,
   selectedIsland,
+  islandNames,
   inputTypeFilter = "all",
   todoStatusFilter = "all",
   onInputTypeFilterChange,
   onTodoStatusFilterChange,
+  onUpdateTodo,
 }) => {
   const panelRef = React.useRef<HTMLDivElement>(null);
-  const islandLabel = selectedIsland ? `Ilha ${selectedIsland.replace("ilha", "")}` : null;
+  const islandLabel = getIslandLabel(selectedIsland, islandNames);
   const filterLabel =
     inputTypeFilter === "text"
       ? "Texto"
@@ -57,10 +62,16 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
         ? "Completas"
         : "Em aberto"
       : null;
+  const canEdit = Boolean(onUpdateTodo);
   const isTextFilter = inputTypeFilter === "text";
   const isTodoFilter = inputTypeFilter === "checkbox";
   const isOpenFilter = todoStatusFilter === "open";
   const isCompletedFilter = todoStatusFilter === "completed";
+  const [isEditMode, setIsEditMode] = React.useState(false);
+  const [editingTodoId, setEditingTodoId] = React.useState<string | null>(null);
+  const [editingText, setEditingText] = React.useState("");
+  const [editingCategory, setEditingCategory] = React.useState("");
+  const [editingDueDate, setEditingDueDate] = React.useState("");
 
   const handleTextFilter = () => {
     const nextFilter = inputTypeFilter === "text" ? "all" : "text";
@@ -76,23 +87,46 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     onTodoStatusFilterChange?.(nextStatus);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    // Se deixou a área do painel e não é um drop em um alvo interno
-    const rect = panelRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  const resetEditingState = () => {
+    setEditingTodoId(null);
+    setEditingText("");
+    setEditingCategory("");
+    setEditingDueDate("");
+  };
 
-    const isOutside =
-      e.clientX < rect.left ||
-      e.clientX > rect.right ||
-      e.clientY < rect.top ||
-      e.clientY > rect.bottom;
-
-    if (isOutside && onDeleteOutside) {
-      const todoId = e.dataTransfer?.getData("text/todo-id");
-      if (todoId) {
-        onDeleteOutside(todoId);
+  const handleToggleEditMode = () => {
+    if (!canEdit) return;
+    setIsEditMode((prev) => {
+      const next = !prev;
+      if (!next) {
+        resetEditingState();
       }
-    }
+      return next;
+    });
+  };
+
+  const handleStartEditing = (todo: SavedTodo) => {
+    if (!canEdit) return;
+    setEditingTodoId(todo.id);
+    setEditingText(todo.text);
+    setEditingCategory(todo.category ?? "");
+    setEditingDueDate(todo.dueDate ?? "");
+  };
+
+  const handleCancelEditing = () => {
+    resetEditingState();
+  };
+
+  const handleSaveEditing = (todo: SavedTodo) => {
+    if (!onUpdateTodo) return;
+    const trimmedText = editingText.trim();
+    if (!trimmedText) return;
+    onUpdateTodo(todo.id, {
+      text: trimmedText,
+      category: editingCategory.trim() || undefined,
+      dueDate: editingDueDate || undefined,
+    });
+    resetEditingState();
   };
 
   // Filtrar tarefas por fase e ilha se estiverem selecionadas
@@ -130,7 +164,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     <div
       ref={panelRef}
       className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20"
-      onDragLeave={handleDragLeave}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => {
+        event.preventDefault();
+        onDropInside?.();
+      }}
     >
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -156,6 +194,21 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           )}
         </div>
         <div className="flex flex-col items-end gap-2">
+          {canEdit && (
+            <button
+              type="button"
+              onClick={handleToggleEditMode}
+              aria-pressed={isEditMode}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
+                isEditMode
+                  ? "border border-amber-300/80 bg-amber-500/20 text-amber-100"
+                  : "border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-300/60"
+              }`}
+              title={isEditMode ? "Sair do modo edição" : "Editar inputs"}
+            >
+              ✏️
+            </button>
+          )}
           <div className="flex gap-2">
             <button
               type="button"
@@ -234,23 +287,24 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           />
         ) : (
           displayedTodos.map((todo) => {
-            const islandLabel = todo.islandId
-              ? `Ilha ${todo.islandId.replace("ilha", "")}`
-              : null;
+            const islandLabel = getIslandLabel(todo.islandId, islandNames);
             const isCheckbox = todo.inputType === "checkbox";
             const isCompleted = isCheckbox && todo.completed;
             const showMeta =
               todo.inputType === "text" || todo.category || todo.dueDate || islandLabel;
+            const isEditing = editingTodoId === todo.id;
+            const canDrag = !isEditMode;
+            const isSaveDisabled = !editingText.trim();
 
             return (
               <div
                 key={todo.id}
-                draggable
-                onDragStart={onDragStart(todo.id)}
-                onDragEnd={onDragEnd}
-                className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
+                draggable={canDrag}
+                onDragStart={canDrag ? onDragStart(todo.id) : undefined}
+                onDragEnd={canDrag ? onDragEnd : undefined}
+                className="group flex items-start justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   {isCheckbox ? (
                     <button
                       type="button"
@@ -282,42 +336,123 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                     </span>
                   )}
                   <div className="flex flex-col gap-1">
-                    <span
-                      className={`${
-                        isCompleted ? "text-slate-500 line-through" : "text-slate-100"
-                      }`}
-                    >
-                      {todo.text}
-                    </span>
-                    {showMeta && (
-                      <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-400">
-                        {todo.inputType === "text" && (
-                          <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                            Texto
-                          </span>
+                    {isEditing ? (
+                      <div className="flex flex-col gap-2">
+                        <input
+                          type="text"
+                          value={editingText}
+                          onChange={(event) => setEditingText(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              handleSaveEditing(todo);
+                            }
+                            if (event.key === "Escape") {
+                              event.preventDefault();
+                              handleCancelEditing();
+                            }
+                          }}
+                          className="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
+                          placeholder="Atualize o texto"
+                          autoFocus
+                        />
+                        {isCheckbox && (
+                          <div className="flex flex-wrap gap-2">
+                            <input
+                              type="text"
+                              value={editingCategory}
+                              onChange={(event) => setEditingCategory(event.target.value)}
+                              className="min-w-[140px] flex-1 rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-[0.7rem] text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
+                              placeholder="Categoria"
+                            />
+                            <input
+                              type="date"
+                              value={editingDueDate}
+                              onChange={(event) => setEditingDueDate(event.target.value)}
+                              className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-[0.7rem] text-slate-100 focus:border-indigo-400 focus:outline-none"
+                            />
+                          </div>
                         )}
-                        {todo.category && (
-                          <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                            {todo.category}
-                          </span>
-                        )}
-                        {todo.dueDate && (
-                          <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                            {todo.dueDate}
-                          </span>
-                        )}
-                        {islandLabel && (
-                          <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                            {islandLabel}
-                          </span>
-                        )}
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSaveEditing(todo)}
+                            disabled={isSaveDisabled}
+                            className={`rounded-lg border px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+                              isSaveDisabled
+                                ? "border-slate-700 bg-slate-900/60 text-slate-500"
+                                : "border-emerald-400/60 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30"
+                            }`}
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCancelEditing}
+                            className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-slate-200 transition hover:bg-slate-900"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <span
+                          className={`${
+                            isCompleted ? "text-slate-500 line-through" : "text-slate-100"
+                          }`}
+                        >
+                          {todo.text}
+                        </span>
+                        {showMeta && (
+                          <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-400">
+                            {todo.inputType === "text" && (
+                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                                Texto
+                              </span>
+                            )}
+                            {todo.category && (
+                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                                {todo.category}
+                              </span>
+                            )}
+                            {todo.dueDate && (
+                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                                {todo.dueDate}
+                              </span>
+                            )}
+                            {islandLabel && (
+                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                                {islandLabel}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
-                <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-                  {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
-                </span>
+                <div className="flex items-center gap-2">
+                  {isEditMode && canEdit && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        isEditing ? handleCancelEditing() : handleStartEditing(todo)
+                      }
+                      className={`flex h-7 w-7 items-center justify-center rounded-full border text-[0.7rem] transition ${
+                        isEditing
+                          ? "border-amber-300/70 bg-amber-500/20 text-amber-100"
+                          : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-300/60"
+                      }`}
+                      title={isEditing ? "Cancelar edição" : "Editar input"}
+                    >
+                      ✏️
+                    </button>
+                  )}
+                  <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
+                    {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
+                  </span>
+                </div>
               </div>
             );
           })

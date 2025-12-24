@@ -4,6 +4,7 @@ import { useState } from "react";
 import InputWindow from "./InputWindow";
 import CosmosChatModal from "./CosmosChatModal";
 import type { IslandId } from "../utils/todoStorage";
+import { getIslandLabel, type IslandNames } from "../utils/islandNames";
 
 export type TodoInputType = "text" | "checkbox";
 
@@ -23,6 +24,7 @@ interface TodoInputProps {
   className?: string;
   chatInline?: boolean;
   selectedIsland?: IslandId | null;
+  islandNames?: IslandNames;
 }
 
 const TodoInput: React.FC<TodoInputProps> = ({
@@ -30,11 +32,12 @@ const TodoInput: React.FC<TodoInputProps> = ({
   className = "",
   chatInline = true,
   selectedIsland = null,
+  islandNames,
 }) => {
   const [newDepth, setNewDepth] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [inputType, setInputType] = useState<TodoInputType>("checkbox");
-  const islandLabel = selectedIsland ? `Ilha ${selectedIsland.replace("ilha", "")}` : null;
+  const islandLabel = getIslandLabel(selectedIsland, islandNames);
 
   const handleAddTodo = (text: string, meta?: { category?: string; date?: string }) => {
     const trimmed = text.trim();

@@ -2,8 +2,12 @@
 
 import React, { useCallback, useState } from "react";
 import type { IslandId } from "../types/screen";
-
-const ISLANDS: { id: IslandId; label: string }[] = [{ id: "ilha1", label: "Ilha" }];
+import {
+  DEFAULT_ISLAND_NAMES,
+  ISLAND_IDS,
+  getIslandLabel,
+  type IslandNames,
+} from "../utils/islandNames";
 
 interface IslandsListProps {
   /**
@@ -55,6 +59,16 @@ interface IslandsListProps {
    * Evita clique durante arrasto
    */
   isDraggingTodo?: boolean;
+
+  /**
+   * Nomes customizados das ilhas
+   */
+  islandNames?: IslandNames;
+
+  /**
+   * Callback ao renomear uma ilha
+   */
+  onRenameIsland?: (islandId: IslandId, name: string) => void;
 }
 
 /**
@@ -75,9 +89,13 @@ export const IslandsList: React.FC<IslandsListProps> = ({
   onDragOverIsland,
   onDragLeaveIsland,
   isDraggingTodo = false,
+  islandNames = DEFAULT_ISLAND_NAMES,
+  onRenameIsland,
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newIslandName, setNewIslandName] = useState("");
+  const [editingIslandId, setEditingIslandId] = useState<IslandId | null>(null);
+  const [editingIslandName, setEditingIslandName] = useState("");
 
   const toggleIsland = useCallback(
     (islandId: IslandId) => {
@@ -106,6 +124,26 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     setIsCreating(false);
   };
 
+  const handleStartEditing = (islandId: IslandId) => {
+    if (!onRenameIsland || isDraggingTodo) return;
+    setEditingIslandId(islandId);
+    setEditingIslandName(getIslandLabel(islandId, islandNames) ?? "");
+  };
+
+  const handleCancelEditing = () => {
+    setEditingIslandId(null);
+    setEditingIslandName("");
+  };
+
+  const handleSaveEditing = () => {
+    if (!editingIslandId || !onRenameIsland) return;
+    const trimmed = editingIslandName.trim();
+    if (!trimmed) return;
+    onRenameIsland(editingIslandId, trimmed);
+    setEditingIslandId(null);
+    setEditingIslandName("");
+  };
+
   return (
     <div
       className={`flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3 sm:p-4 ${containerClassName}`}
@@ -113,27 +151,67 @@ export const IslandsList: React.FC<IslandsListProps> = ({
       aria-label="Island selection"
       onClick={(event) => event.stopPropagation()}
     >
-      {ISLANDS.map((island) => {
-        const isActiveDrop = activeDropIsland === island.id;
+      {ISLAND_IDS.map((islandId) => {
+        const isActiveDrop = activeDropIsland === islandId;
+        const label = getIslandLabel(islandId, islandNames) ?? "Ilha";
+        const isEditing = editingIslandId === islandId;
 
         return (
-        <button
-          key={island.id}
-          type="button"
-          onClick={() => toggleIsland(island.id)}
-          onKeyDown={handleKeyDown(island.id)}
-          onDrop={onDropIsland ? onDropIsland(island.id) : undefined}
-          onDragOver={onDragOverIsland ? onDragOverIsland(island.id) : undefined}
-          onDragLeave={onDragLeaveIsland}
-          aria-pressed={selectedIsland === island.id}
-          aria-label={`Select ${island.label}`}
-          className={`rounded-lg border px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-            selectedIsland === island.id ? activeItemClassName : inactiveItemClassName
-          } ${isActiveDrop ? "scale-[1.02] border-indigo-300/80 shadow-lg shadow-indigo-500/20" : ""}`}
-        >
-          <span>{island.label}</span>
-        </button>
-      )})}
+          <div key={islandId} className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => toggleIsland(islandId)}
+                onDoubleClick={() => handleStartEditing(islandId)}
+                onKeyDown={handleKeyDown(islandId)}
+                onDrop={onDropIsland ? onDropIsland(islandId) : undefined}
+                onDragOver={onDragOverIsland ? onDragOverIsland(islandId) : undefined}
+                onDragLeave={onDragLeaveIsland}
+                aria-pressed={selectedIsland === islandId}
+                aria-label={`Select ${label}`}
+                className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                  selectedIsland === islandId ? activeItemClassName : inactiveItemClassName
+                } ${isActiveDrop ? "scale-[1.02] border-indigo-300/80 shadow-lg shadow-indigo-500/20" : ""}`}
+              >
+                <span>{label}</span>
+              </button>
+            </div>
+            {isEditing && (
+              <div className="flex flex-col gap-2 rounded-lg border border-slate-800 bg-slate-950/60 p-2">
+                <input
+                  value={editingIslandName}
+                  onChange={(event) => setEditingIslandName(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleSaveEditing();
+                    }
+                  }}
+                  placeholder="Nome da ilha"
+                  className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs text-indigo-50 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSaveEditing}
+                    className="flex-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:bg-indigo-700"
+                  >
+                    Salvar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEditing}
+                    className="flex-1 rounded-md border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-900"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {isCreating ? (
         <div className="flex flex-col gap-2">

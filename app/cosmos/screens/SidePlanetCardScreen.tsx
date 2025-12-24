@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CelestialObject } from "../components/CelestialObject";
 import { Card } from "../components/Card";
 import TodoInput, { TodoItem as ParsedTodoItem } from "../components/TodoInput";
@@ -18,6 +18,8 @@ import { usePhaseInputs } from "@/hooks/usePhaseInputs";
 import { useFilteredTodos, type FilterState } from "@/hooks/useFilteredTodos";
 import { SavedTodosPanel } from "../components/SavedTodosPanel";
 import { IslandsList } from "../components/IslandsList";
+import { useIslandNames } from "@/hooks/useIslandNames";
+import { getIslandLabel, type IslandNames } from "../utils/islandNames";
 
 const MOON_COUNT = 4;
 
@@ -95,9 +97,10 @@ type FiltersPanelProps = {
   isOpen: boolean;
   filters: FilterState;
   onClearFilters: () => void;
+  islandNames: IslandNames;
 };
 
-const FiltersPanel = ({ isOpen, filters, onClearFilters }: FiltersPanelProps) => {
+const FiltersPanel = ({ isOpen, filters, onClearFilters, islandNames }: FiltersPanelProps) => {
   const showTodoStatus = filters.inputType === "checkbox" && filters.todoStatus !== "all";
   const hasActiveFilters =
     filters.view === "lua-atual" ||
@@ -106,9 +109,7 @@ const FiltersPanel = ({ isOpen, filters, onClearFilters }: FiltersPanelProps) =>
     Boolean(filters.phase) ||
     Boolean(filters.island);
 
-  const islandLabel = filters.island
-    ? `Ilha ${filters.island.replace("ilha", "")}`
-    : null;
+  const islandLabel = getIslandLabel(filters.island, islandNames);
 
   return (
     <div
@@ -186,7 +187,9 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
   const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const dropHandledRef = useRef(false);
   const { saveInput } = usePhaseInputs();
+  const { islandNames, renameIsland } = useIslandNames();
 
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
@@ -253,6 +256,12 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     );
   };
 
+  const handleUpdateTodo = (todoId: string, updates: Partial<SavedTodo>) => {
+    setSavedTodos((prev) =>
+      prev.map((todo) => (todo.id === todoId ? { ...todo, ...updates } : todo)),
+    );
+  };
+
   const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
     const target = savedTodos.find((todo) => todo.id === todoId);
     if (!target) return;
@@ -293,6 +302,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const handleDragStart = (todoId: string) => (e: React.DragEvent) => {
     e.dataTransfer.setData("text/todo-id", todoId);
+    dropHandledRef.current = false;
     setIsDraggingTodo(true);
     setDraggingTodoId(todoId);
   };
@@ -301,7 +311,12 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
-    // A lógica de detecção de drop fora da área será feita com dragover/drop
+    if (!dropHandledRef.current && draggingTodoId) {
+      setShowDeleteConfirm(true);
+    } else {
+      setDraggingTodoId(null);
+    }
+    dropHandledRef.current = false;
   };
 
   const handleDeleteTodo = (todoId: string) => {
@@ -315,6 +330,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     e.stopPropagation();
     const todoId = e.dataTransfer.getData("text/todo-id");
     if (!todoId) return;
+    dropHandledRef.current = true;
     assignTodoToPhase(todoId, phase);
     setActiveDrop(null);
     setIsDraggingTodo(false);
@@ -334,6 +350,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     e.stopPropagation();
     const todoId = e.dataTransfer.getData("text/todo-id");
     if (!todoId) return;
+    dropHandledRef.current = true;
     assignTodoToIsland(todoId, islandId);
     setActiveIslandDrop(null);
     setIsDraggingTodo(false);
@@ -388,6 +405,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             onDragOverIsland={handleDragOverIsland}
             onDragLeaveIsland={handleDragLeaveIsland}
             isDraggingTodo={isDraggingTodo}
+            islandNames={islandNames}
+            onRenameIsland={renameIsland}
           />
         </div>
 
@@ -418,6 +437,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   isOpen={isFiltersPanelOpen}
                   filters={filters}
                   onClearFilters={resetFilters}
+                  islandNames={islandNames}
                 />
 
                 <div className="flex gap-2">
@@ -451,12 +471,13 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onDragEnd={handleDragEnd}
                   onToggleComplete={handleToggleComplete}
                   onAssignPhase={assignTodoToPhase}
-                  onDeleteOutside={(todoId) => {
-                    setDraggingTodoId(todoId);
-                    setShowDeleteConfirm(true);
+                  onDropInside={() => {
+                    dropHandledRef.current = true;
                   }}
+                  onUpdateTodo={handleUpdateTodo}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}
+                  islandNames={islandNames}
                   inputTypeFilter={filters.inputType}
                   todoStatusFilter={filters.todoStatus}
                   onInputTypeFilterChange={(inputType) =>
@@ -478,6 +499,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onTodoSubmit={handleTodoSubmit}
                   chatInline={true}
                   selectedIsland={filters.island}
+                  islandNames={islandNames}
                 />
               </div>
             </div>
