@@ -13,6 +13,7 @@ import {
 } from "../utils/todoStorage";
 import { PHASE_VIBES } from "../utils/phaseVibes";
 import type { ScreenProps } from "../types";
+import type { IslandId } from "../types/screen";
 import { usePhaseInputs } from "@/hooks/usePhaseInputs";
 import { useFilteredTodos, type FilterState } from "@/hooks/useFilteredTodos";
 import { SavedTodosPanel } from "../components/SavedTodosPanel";
@@ -169,6 +170,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [hasLoadedTodos, setHasLoadedTodos] = useState(false);
   const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
+  const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
   const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -202,18 +204,24 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   }, [hasLoadedTodos, savedTodos]);
 
   const handleTodoSubmit = (todo: ParsedTodoItem) => {
+    const resolvedTodo = {
+      ...todo,
+      islandId: todo.islandId ?? filters.island ?? undefined,
+    };
+
     setSavedTodos((prev) => {
-      const key = `${todo.text}|${todo.depth}`;
+      const key = `${resolvedTodo.text}|${resolvedTodo.depth}|${resolvedTodo.islandId ?? "sem-ilha"}`;
       const existingIndex = prev.findIndex(
-        (item) => `${item.text}|${item.depth}` === key,
+        (item) =>
+          `${item.text}|${item.depth}|${item.islandId ?? "sem-ilha"}` === key,
       );
       if (existingIndex === -1) {
-        return [...prev, todo];
+        return [...prev, resolvedTodo];
       }
       const updated = [...prev];
       updated[existingIndex] = {
         ...updated[existingIndex],
-        ...todo,
+        ...resolvedTodo,
         id: updated[existingIndex].id,
       };
       return updated;
@@ -248,10 +256,21 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         dueDate: target.dueDate ?? null,
         depth: target.depth,
         completed: target.completed,
+        islandId: target.islandId ?? null,
       },
     }).catch((error) => {
       console.warn("Falha ao salvar tarefa na fase:", error);
     });
+  };
+
+  const assignTodoToIsland = (todoId: string, islandId: IslandId) => {
+    const target = savedTodos.find((todo) => todo.id === todoId);
+    if (!target) return;
+    if (target.islandId === islandId) return;
+
+    setSavedTodos((prev) =>
+      prev.map((todo) => (todo.id === todoId ? { ...todo, islandId } : todo)),
+    );
   };
 
   const handleDragStart = (todoId: string) => (e: React.DragEvent) => {
@@ -263,6 +282,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const handleDragEnd = () => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
+    setActiveIslandDrop(null);
     // A lógica de detecção de drop fora da área será feita com dragover/drop
   };
 
@@ -289,6 +309,25 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const handleDragLeavePhase = () => {
     setActiveDrop(null);
+  };
+
+  const handleDropOnIsland = (islandId: IslandId) => (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const todoId = e.dataTransfer.getData("text/todo-id");
+    if (!todoId) return;
+    assignTodoToIsland(todoId, islandId);
+    setActiveIslandDrop(null);
+    setIsDraggingTodo(false);
+  };
+
+  const handleDragOverIsland = (islandId: IslandId) => (e: React.DragEvent) => {
+    e.preventDefault();
+    setActiveIslandDrop(islandId);
+  };
+
+  const handleDragLeaveIsland = () => {
+    setActiveIslandDrop(null);
   };
 
   // Usar o hook useFilteredTodos para aplicar todos os filtros
@@ -326,6 +365,11 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             onSelectIsland={(island) =>
               setFilters((prev) => ({ ...prev, island }))
             }
+            activeDropIsland={activeIslandDrop}
+            onDropIsland={handleDropOnIsland}
+            onDragOverIsland={handleDragOverIsland}
+            onDragLeaveIsland={handleDragLeaveIsland}
+            isDraggingTodo={isDraggingTodo}
           />
         </div>
 
@@ -394,6 +438,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                     setShowDeleteConfirm(true);
                   }}
                   selectedPhase={filters.phase}
+                  selectedIsland={filters.island}
                   todosFilterView={filters.completeness}
                   onFilterViewChange={(view) =>
                     setFilters((prev) => ({
@@ -407,6 +452,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   className="shadow-lg flex-shrink-0"
                   onTodoSubmit={handleTodoSubmit}
                   chatInline={true}
+                  selectedIsland={filters.island}
                 />
               </div>
             </div>

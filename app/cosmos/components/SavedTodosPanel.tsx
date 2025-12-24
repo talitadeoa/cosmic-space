@@ -2,7 +2,7 @@
 
 import React from "react";
 import { EmptyState } from "./EmptyState";
-import type { SavedTodo, MoonPhase } from "../utils/todoStorage";
+import type { SavedTodo, MoonPhase, IslandId } from "../utils/todoStorage";
 import { phaseLabels } from "../utils/todoStorage";
 
 interface SavedTodosPanelProps {
@@ -13,6 +13,7 @@ interface SavedTodosPanelProps {
   onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
   onDeleteOutside?: (todoId: string) => void;
   selectedPhase?: MoonPhase | null;
+  selectedIsland?: IslandId | null;
   todosFilterView?: "todas" | "completas";
   onFilterViewChange?: (view: "todas" | "completas") => void;
 }
@@ -34,10 +35,12 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onAssignPhase,
   onDeleteOutside,
   selectedPhase,
+  selectedIsland,
   todosFilterView = "todas",
   onFilterViewChange,
 }) => {
   const panelRef = React.useRef<HTMLDivElement>(null);
+  const islandLabel = selectedIsland ? `Ilha ${selectedIsland.replace("ilha", "")}` : null;
 
   const handleDragLeave = (e: React.DragEvent) => {
     // Se deixou a área do painel e não é um drop em um alvo interno
@@ -58,10 +61,36 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     }
   };
 
-  // Filtrar tarefas por fase se uma fase estiver selecionada
-  const displayedTodos = selectedPhase
-    ? savedTodos.filter((todo) => todo.phase === selectedPhase)
-    : savedTodos;
+  // Filtrar tarefas por fase e ilha se estiverem selecionadas
+  const displayedTodos = savedTodos
+    .filter((todo) => (selectedPhase ? todo.phase === selectedPhase : true))
+    .filter((todo) => (selectedIsland ? todo.islandId === selectedIsland : true));
+
+  const headerLabel = (() => {
+    if (selectedPhase && islandLabel) {
+      return `To-dos - ${phaseLabels[selectedPhase]} • ${islandLabel}`;
+    }
+    if (selectedPhase) {
+      return `To-dos - ${phaseLabels[selectedPhase]}`;
+    }
+    if (islandLabel) {
+      return `To-dos - ${islandLabel}`;
+    }
+    return "To-dos salvos";
+  })();
+
+  const headerDescription = (() => {
+    if (selectedPhase && islandLabel) {
+      return `Tarefas associadas à fase ${phaseLabels[selectedPhase]} na ${islandLabel}.`;
+    }
+    if (selectedPhase) {
+      return `Tarefas associadas à fase: ${phaseLabels[selectedPhase]}`;
+    }
+    if (islandLabel) {
+      return `Tarefas associadas à ${islandLabel}.`;
+    }
+    return "Adicione tarefas e arraste para a fase lunar desejada.";
+  })();
 
   return (
     <div
@@ -72,12 +101,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
-            {selectedPhase ? `To-dos - ${phaseLabels[selectedPhase]}` : "To-dos salvos"}
+            {headerLabel}
           </p>
           <p className="text-[0.75rem] text-slate-400">
-            {selectedPhase
-              ? `Tarefas associadas à fase: ${phaseLabels[selectedPhase]}`
-              : "Adicione tarefas e arraste para a fase lunar desejada."}
+            {headerDescription}
           </p>
           {todosFilterView === "completas" && (
             <div className="mt-2 flex flex-wrap gap-2 text-[0.6rem] text-slate-300">
@@ -120,73 +147,92 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64">
         {displayedTodos.length === 0 ? (
           <EmptyState
-            title={selectedPhase ? "Nenhuma tarefa nesta fase" : "Nenhum to-do salvo"}
+            title={
+              selectedPhase
+                ? "Nenhuma tarefa nesta fase"
+                : islandLabel
+                  ? "Nenhuma tarefa nesta ilha"
+                  : "Nenhum to-do salvo"
+            }
             description={
               selectedPhase
                 ? `Arraste uma tarefa para ${phaseLabels[selectedPhase]} ou crie uma nova.`
-                : "Crie uma tarefa ou selecione uma fase lunar."
+                : islandLabel
+                  ? `Arraste uma tarefa para ${islandLabel} ou crie uma nova.`
+                  : "Crie uma tarefa ou selecione uma fase lunar."
             }
             icon="✨"
           />
         ) : (
-          displayedTodos.map((todo) => (
-            <div
-              key={todo.id}
-              draggable
-              onDragStart={onDragStart(todo.id)}
-              onDragEnd={onDragEnd}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
-            >
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onToggleComplete(todo.id);
-                  }}
-                  aria-pressed={todo.completed}
-                  aria-label={
-                    todo.completed ? "Marcar como pendente" : "Marcar como concluída"
-                  }
-                  className={`flex h-5 w-5 items-center justify-center rounded-full border text-[0.65rem] transition ${
-                    todo.completed
-                      ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
-                      : "border-slate-500 bg-slate-900/80 text-slate-400 hover:border-emerald-400/70"
-                  }`}
-                >
-                  {todo.completed && (
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  )}
-                </button>
-                <div className="flex flex-col gap-1">
-                  <span
-                    className={`${
-                      todo.completed ? "text-slate-500 line-through" : "text-slate-100"
+          displayedTodos.map((todo) => {
+            const islandLabel = todo.islandId
+              ? `Ilha ${todo.islandId.replace("ilha", "")}`
+              : null;
+
+            return (
+              <div
+                key={todo.id}
+                draggable
+                onDragStart={onDragStart(todo.id)}
+                onDragEnd={onDragEnd}
+                className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
+              >
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onToggleComplete(todo.id);
+                    }}
+                    aria-pressed={todo.completed}
+                    aria-label={
+                      todo.completed ? "Marcar como pendente" : "Marcar como concluída"
+                    }
+                    className={`flex h-5 w-5 items-center justify-center rounded-full border text-[0.65rem] transition ${
+                      todo.completed
+                        ? "border-emerald-400 bg-emerald-500/20 text-emerald-200"
+                        : "border-slate-500 bg-slate-900/80 text-slate-400 hover:border-emerald-400/70"
                     }`}
                   >
-                    {todo.text}
-                  </span>
-                  {(todo.category || todo.dueDate) && (
-                    <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-400">
-                      {todo.category && (
-                        <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                          {todo.category}
-                        </span>
-                      )}
-                      {todo.dueDate && (
-                        <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                          {todo.dueDate}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                    {todo.completed && (
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    )}
+                  </button>
+                  <div className="flex flex-col gap-1">
+                    <span
+                      className={`${
+                        todo.completed ? "text-slate-500 line-through" : "text-slate-100"
+                      }`}
+                    >
+                      {todo.text}
+                    </span>
+                    {(todo.category || todo.dueDate || islandLabel) && (
+                      <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-400">
+                        {todo.category && (
+                          <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                            {todo.category}
+                          </span>
+                        )}
+                        {todo.dueDate && (
+                          <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                            {todo.dueDate}
+                          </span>
+                        )}
+                        {islandLabel && (
+                          <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
+                            {islandLabel}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
+                <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
+                  {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
+                </span>
               </div>
-              <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-                {todo.phase ? phaseLabels[todo.phase] : "Sem fase"}
-              </span>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

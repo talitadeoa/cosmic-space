@@ -4,7 +4,10 @@ import React, { useCallback, useState } from "react";
 import type { IslandId } from "../types/screen";
 
 const ISLANDS: { id: IslandId; label: string }[] = [
-  { id: "ilha1", label: "Ilha" },
+  { id: "ilha1", label: "Ilha 1" },
+  { id: "ilha2", label: "Ilha 2" },
+  { id: "ilha3", label: "Ilha 3" },
+  { id: "ilha4", label: "Ilha 4" },
 ];
 
 interface IslandsListProps {
@@ -32,12 +35,37 @@ interface IslandsListProps {
    * Classes CSS customizadas para item inativo
    */
   inactiveItemClassName?: string;
+
+  /**
+   * Ilha com drop ativo (drag over)
+   */
+  activeDropIsland?: IslandId | null;
+
+  /**
+   * Callback de drop por ilha
+   */
+  onDropIsland?: (island: IslandId) => (event: React.DragEvent) => void;
+
+  /**
+   * Callback de drag over por ilha
+   */
+  onDragOverIsland?: (island: IslandId) => (event: React.DragEvent) => void;
+
+  /**
+   * Callback ao sair do drag
+   */
+  onDragLeaveIsland?: () => void;
+
+  /**
+   * Evita clique durante arrasto
+   */
+  isDraggingTodo?: boolean;
 }
 
 /**
  * IslandsList Component
  *
- * Exibe uma única ilha com opção de criar novas.
+ * Exibe uma lista de ilhas com opção de criar novas.
  * Acessível: navegação por teclado (Tab, Enter, Space).
  * Uso de aria-labels e aria-pressed para estados.
  */
@@ -47,20 +75,31 @@ export const IslandsList: React.FC<IslandsListProps> = ({
   containerClassName = "",
   activeItemClassName = "border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-500/20",
   inactiveItemClassName = "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60",
+  activeDropIsland = null,
+  onDropIsland,
+  onDragOverIsland,
+  onDragLeaveIsland,
+  isDraggingTodo = false,
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newIslandName, setNewIslandName] = useState("");
 
-  const currentIsland = ISLANDS[0]; // Mostra apenas a primeira ilha
+  const toggleIsland = useCallback(
+    (islandId: IslandId) => {
+      if (isDraggingTodo) return;
+      onSelectIsland(selectedIsland === islandId ? null : islandId);
+    },
+    [isDraggingTodo, onSelectIsland, selectedIsland],
+  );
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    (islandId: IslandId) => (e: React.KeyboardEvent<HTMLButtonElement>) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        onSelectIsland(selectedIsland === currentIsland.id ? null : currentIsland.id);
+        toggleIsland(islandId);
       }
     },
-    [selectedIsland, currentIsland.id, onSelectIsland]
+    [toggleIsland],
   );
 
   const handleCreateIsland = () => {
@@ -77,19 +116,29 @@ export const IslandsList: React.FC<IslandsListProps> = ({
       className={`flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3 sm:p-4 ${containerClassName}`}
       role="group"
       aria-label="Island selection"
+      onClick={(event) => event.stopPropagation()}
     >
-      <button
-        type="button"
-        onClick={() => onSelectIsland(selectedIsland === currentIsland.id ? null : currentIsland.id)}
-        onKeyDown={handleKeyDown}
-        aria-pressed={selectedIsland === currentIsland.id}
-        aria-label={`Select ${currentIsland.label}`}
-        className={`rounded-lg border px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-          selectedIsland === currentIsland.id ? activeItemClassName : inactiveItemClassName
-        }`}
-      >
-        <span>{currentIsland.label}</span>
-      </button>
+      {ISLANDS.map((island) => {
+        const isActiveDrop = activeDropIsland === island.id;
+
+        return (
+        <button
+          key={island.id}
+          type="button"
+          onClick={() => toggleIsland(island.id)}
+          onKeyDown={handleKeyDown(island.id)}
+          onDrop={onDropIsland ? onDropIsland(island.id) : undefined}
+          onDragOver={onDragOverIsland ? onDragOverIsland(island.id) : undefined}
+          onDragLeave={onDragLeaveIsland}
+          aria-pressed={selectedIsland === island.id}
+          aria-label={`Select ${island.label}`}
+          className={`rounded-lg border px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+            selectedIsland === island.id ? activeItemClassName : inactiveItemClassName
+          } ${isActiveDrop ? "scale-[1.02] border-indigo-300/80 shadow-lg shadow-indigo-500/20" : ""}`}
+        >
+          <span>{island.label}</span>
+        </button>
+      )})}
 
       {isCreating ? (
         <div className="flex flex-col gap-2">

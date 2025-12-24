@@ -3,6 +3,7 @@
 import { useState } from "react";
 import InputWindow from "./InputWindow";
 import CosmosChatModal from "./CosmosChatModal";
+import type { IslandId } from "../utils/todoStorage";
 
 export interface TodoItem {
   id: string;
@@ -11,21 +12,25 @@ export interface TodoItem {
   depth: number;
   category?: string;
   dueDate?: string;
+  islandId?: IslandId;
 }
 
 interface TodoInputProps {
   onTodoSubmit: (todo: TodoItem) => void;
   className?: string;
   chatInline?: boolean;
+  selectedIsland?: IslandId | null;
 }
 
 const TodoInput: React.FC<TodoInputProps> = ({
   onTodoSubmit,
   className = "",
   chatInline = true,
+  selectedIsland = null,
 }) => {
   const [newDepth, setNewDepth] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const islandLabel = selectedIsland ? `Ilha ${selectedIsland.replace("ilha", "")}` : null;
 
   const handleAddTodo = (text: string, meta?: { category?: string; date?: string }) => {
     const trimmed = text.trim();
@@ -38,6 +43,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
       depth: newDepth,
       category: meta?.category,
       dueDate: meta?.date,
+      islandId: selectedIsland ?? undefined,
     });
   };
 
@@ -47,7 +53,13 @@ const TodoInput: React.FC<TodoInputProps> = ({
   tomorrow.setDate(today.getDate() + 1);
   const nextWeek = new Date(today);
   nextWeek.setDate(today.getDate() + 7);
-  const headerExtra = undefined;
+  const headerExtra = islandLabel ? (
+    <div className="mt-3 flex flex-wrap gap-2 text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-indigo-100">
+      <span className="rounded-full border border-indigo-300/40 bg-indigo-500/15 px-3 py-1">
+        {islandLabel}
+      </span>
+    </div>
+  ) : undefined;
 
   return (
     <InputWindow
@@ -64,6 +76,11 @@ const TodoInput: React.FC<TodoInputProps> = ({
         >
           {isChatOpen ? "Fechar chat" : "Adicionar tarefa"}
         </button>
+        {islandLabel && (
+          <span className="rounded-full border border-indigo-300/40 bg-indigo-500/10 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-indigo-100">
+            {islandLabel}
+          </span>
+        )}
       </div>
       <CosmosChatModal
         inline={chatInline}
