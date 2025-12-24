@@ -1,6 +1,6 @@
 "use client";
 
-import type { TodoItem as ParsedTodoItem } from "../components/TodoInput";
+import type { TodoItem as ParsedTodoItem, TodoInputType } from "../components/TodoInput";
 import { MOON_PHASE_LABELS, MOON_PHASES, type MoonPhase } from "./moonPhases";
 
 export type { MoonPhase } from "./moonPhases";
@@ -17,6 +17,8 @@ const isValidPhase = (phase: unknown): phase is MoonPhase =>
   phase === "luaNova" || phase === "luaCrescente" || phase === "luaCheia" || phase === "luaMinguante";
 const isValidIsland = (island: unknown): island is IslandId =>
   island === "ilha1" || island === "ilha2" || island === "ilha3" || island === "ilha4";
+const isValidInputType = (inputType: unknown): inputType is TodoInputType =>
+  inputType === "text" || inputType === "checkbox";
 
 export function loadSavedTodos(): SavedTodo[] {
   if (typeof window === "undefined") return [];
@@ -29,14 +31,19 @@ export function loadSavedTodos(): SavedTodo[] {
     if (!Array.isArray(parsed)) return [];
 
     return parsed
-      .map((item, idx) => ({
-        id: typeof item.id === "string" ? item.id : `todo-${idx}`,
-        text: typeof item.text === "string" ? item.text : "",
-        completed: Boolean(item.completed),
-        depth: Number.isFinite(item.depth) ? Number(item.depth) : 0,
-        islandId: isValidIsland(item.islandId) ? item.islandId : undefined,
-        phase: isValidPhase(item.phase) ? item.phase : undefined,
-      }))
+      .map((item, idx) => {
+        const inputType = isValidInputType(item.inputType) ? item.inputType : "checkbox";
+
+        return {
+          id: typeof item.id === "string" ? item.id : `todo-${idx}`,
+          text: typeof item.text === "string" ? item.text : "",
+          completed: inputType === "checkbox" ? Boolean(item.completed) : false,
+          depth: Number.isFinite(item.depth) ? Number(item.depth) : 0,
+          inputType,
+          islandId: isValidIsland(item.islandId) ? item.islandId : undefined,
+          phase: isValidPhase(item.phase) ? item.phase : undefined,
+        };
+      })
       .filter((item) => item.text.trim().length > 0);
   } catch (error) {
     console.warn("Falha ao ler to-dos salvos", error);

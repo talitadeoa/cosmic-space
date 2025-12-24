@@ -3,12 +3,7 @@
 import React, { useCallback, useState } from "react";
 import type { IslandId } from "../types/screen";
 
-const ISLANDS: { id: IslandId; label: string }[] = [
-  { id: "ilha1", label: "Ilha 1" },
-  { id: "ilha2", label: "Ilha 2" },
-  { id: "ilha3", label: "Ilha 3" },
-  { id: "ilha4", label: "Ilha 4" },
-];
+const ISLANDS: { id: IslandId; label: string }[] = [{ id: "ilha1", label: "Ilha" }];
 
 interface IslandsListProps {
   /**

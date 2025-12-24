@@ -98,9 +98,11 @@ type FiltersPanelProps = {
 };
 
 const FiltersPanel = ({ isOpen, filters, onClearFilters }: FiltersPanelProps) => {
+  const showTodoStatus = filters.inputType === "checkbox" && filters.todoStatus !== "all";
   const hasActiveFilters =
     filters.view === "lua-atual" ||
-    filters.completeness === "completas" ||
+    filters.inputType !== "all" ||
+    showTodoStatus ||
     Boolean(filters.phase) ||
     Boolean(filters.island);
 
@@ -130,9 +132,19 @@ const FiltersPanel = ({ isOpen, filters, onClearFilters }: FiltersPanelProps) =>
               Lua atual
             </span>
           )}
-          {filters.completeness === "completas" && (
+          {filters.inputType === "text" && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
-              Completas
+              Texto
+            </span>
+          )}
+          {filters.inputType === "checkbox" && (
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              To-dos
+            </span>
+          )}
+          {showTodoStatus && (
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              {filters.todoStatus === "completed" ? "Completas" : "Em aberto"}
             </span>
           )}
           {filters.phase && (
@@ -179,7 +191,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
     view: "inbox",
-    completeness: "todas",
+    inputType: "all",
+    todoStatus: "all",
     phase: null,
     island: null,
   });
@@ -187,7 +200,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const resetFilters = () => {
     setFilters({
       view: "inbox",
-      completeness: "todas",
+      inputType: "all",
+      todoStatus: "all",
       phase: null,
       island: null,
     });
@@ -210,10 +224,13 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     };
 
     setSavedTodos((prev) => {
-      const key = `${resolvedTodo.text}|${resolvedTodo.depth}|${resolvedTodo.islandId ?? "sem-ilha"}`;
+      const key = `${resolvedTodo.inputType}|${resolvedTodo.text}|${resolvedTodo.depth}|${
+        resolvedTodo.islandId ?? "sem-ilha"
+      }`;
       const existingIndex = prev.findIndex(
         (item) =>
-          `${item.text}|${item.depth}|${item.islandId ?? "sem-ilha"}` === key,
+          `${item.inputType}|${item.text}|${item.depth}|${item.islandId ?? "sem-ilha"}` ===
+            key,
       );
       if (existingIndex === -1) {
         return [...prev, resolvedTodo];
@@ -256,6 +273,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         dueDate: target.dueDate ?? null,
         depth: target.depth,
         completed: target.completed,
+        inputType: target.inputType,
         islandId: target.islandId ?? null,
       },
     }).catch((error) => {
@@ -439,11 +457,18 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   }}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}
-                  todosFilterView={filters.completeness}
-                  onFilterViewChange={(view) =>
+                  inputTypeFilter={filters.inputType}
+                  todoStatusFilter={filters.todoStatus}
+                  onInputTypeFilterChange={(inputType) =>
                     setFilters((prev) => ({
                       ...prev,
-                      completeness: view,
+                      inputType,
+                    }))
+                  }
+                  onTodoStatusFilterChange={(todoStatus) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      todoStatus,
                     }))
                   }
                 />
