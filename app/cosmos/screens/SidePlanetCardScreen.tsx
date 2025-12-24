@@ -166,6 +166,7 @@ const FiltersPanel = ({ isOpen, filters, onClearFilters }: FiltersPanelProps) =>
 
 const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
+  const [hasLoadedTodos, setHasLoadedTodos] = useState(false);
   const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
@@ -192,11 +193,13 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   useEffect(() => {
     setSavedTodos(loadSavedTodos());
+    setHasLoadedTodos(true);
   }, []);
 
   useEffect(() => {
+    if (!hasLoadedTodos) return;
     saveSavedTodos(savedTodos);
-  }, [savedTodos]);
+  }, [hasLoadedTodos, savedTodos]);
 
   const handleTodoSubmit = (todo: ParsedTodoItem) => {
     setSavedTodos((prev) => {
