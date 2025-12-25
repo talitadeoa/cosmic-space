@@ -1,0 +1,477 @@
+'use client';
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
+import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
+import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
+import type { ScreenProps } from '@/app/cosmos/types';
+import {
+  MONTHLY_INSIGHT_LABELS,
+  MONTHLY_PROMPTS,
+  MONTHLY_RESPONSES,
+  MONTHLY_TONES,
+  buildMonthlyStorageKey,
+} from '@/app/cosmos/utils/insightChatPresets';
+import {
+  buildMoonInfo,
+  buildMonthEntries,
+  deriveHighlightTarget,
+  flattenCalendarDays,
+  formatDateInTimezone,
+  findMonthEntryByDate,
+  getResponsiveLayout,
+  type HighlightTarget,
+  type MonthEntry,
+} from '@/app/cosmos/utils/luaList';
+import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
+import { useMonthlyInsights } from '@/hooks/useMonthlyInsights';
+import { fetchLunations } from '@/hooks/useLunations';
+import { normalizeMoonPhase, type MoonCalendarDay } from '@/lib/api/moonCalendar';
+import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
+import HighlightBanner from '../components/HighlightBanner';
+import MoonCarousel from '../components/MoonCarousel';
+import CalendarStatus from '../components/CalendarStatus';
+
+type LuaScreenProps = {
+  navigateWithFocus?: ScreenProps['navigateWithFocus'];
+};
+
+const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>('luaNova');
+  const { saveInsight, loadInsight } = useMonthlyInsights();
+  const [existingInsight, setExistingInsight] = useState('');
+  const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+  const timezone = getResolvedTimezone();
+  const MIN_YEAR = 2025;
+  const MAX_YEAR = 2028;
+  const rangeStart = `${MIN_YEAR}-01-01`;
+  const rangeEnd = `${MAX_YEAR}-12-31`;
+  const [calendarByYear, setCalendarByYear] = useState<Record<number, MoonCalendarDay[]>>({});
+  const [isCalendarLoading, setIsCalendarLoading] = useState(false);
+  const [calendarError, setCalendarError] = useState<string | null>(null);
+  const pendingControllerRef = useRef<AbortController | null>(null);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [viewportFraction, setViewportFraction] = useState(0);
+  const [virtualWindow, setVirtualWindow] = useState({ start: 0, end: 40 });
+  const [layout, setLayout] = useState(() =>
+    getResponsiveLayout(typeof window !== 'undefined' ? window.innerWidth : undefined)
+  );
+  const tileSpan = layout.tileWidth + layout.gap;
+  const isCompactLayout = layout.tileWidth <= 90;
+
+  const scrollerMaxWidth = useMemo(() => {
+    const visibleWindowWidthPx = layout.visibleColumns * tileSpan - layout.gap;
+    return Math.max(320, visibleWindowWidthPx + layout.padding * 2);
+  }, [layout.gap, layout.padding, layout.visibleColumns, tileSpan]);
+
+  const todayIso = useMemo(() => formatDateInTimezone(new Date(), timezone), [timezone]);
+
+  const loadCalendar = useCallback(async () => {
+    pendingControllerRef.current?.abort();
+    const controller = new AbortController();
+    pendingControllerRef.current = controller;
+    setIsCalendarLoading(true);
+    setCalendarError(null);
+
+    try {
+      const response = await fetchLunations({
+        start: rangeStart,
+        end: rangeEnd,
+        source: 'db',
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+
+      const grouped: Record<number, MoonCalendarDay[]> = {};
+      response.days.forEach((day) => {
+        const year = Number(day.date.slice(0, 4));
+        if (!grouped[year]) grouped[year] = [];
+        grouped[year].push({
+          date: day.date,
+          moonPhase: day.moonPhase,
+          sign: day.sign,
+          normalizedPhase: normalizeMoonPhase(day.moonPhase),
+        });
+      });
+
+      setCalendarByYear(grouped);
+      setCalendarError(null);
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      const message = err instanceof Error ? err.message : 'Erro ao carregar calendário lunar';
+      setCalendarError(message);
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsCalendarLoading(false);
+      }
+    }
+  }, [rangeEnd, rangeStart]);
+
+  const monthEntries = useMemo(() => buildMonthEntries(calendarByYear), [calendarByYear]);
+
+  useEffect(() => {
+    loadCalendar();
+    return () => {
+      pendingControllerRef.current?.abort();
+    };
+  }, [loadCalendar]);
+
+  const allDays = useMemo(() => flattenCalendarDays(calendarByYear), [calendarByYear]);
+
+  const findMonthEntry = useCallback(
+    (isoDate: string) => findMonthEntryByDate(monthEntries, isoDate),
+    [monthEntries]
+  );
+
+  const highlightTarget = useMemo(
+    () => deriveHighlightTarget(allDays, todayIso, monthEntries),
+    [allDays, monthEntries, todayIso]
+  );
+
+  useEffect(() => {
+    if (!selectedMonth && monthEntries.length > 0) {
+      const highlighted = highlightTarget
+        ? monthEntries.find(
+            (m) => m.year === highlightTarget.year && m.monthNumber === highlightTarget.monthNumber
+          )
+        : null;
+      const todayMonth = findMonthEntry(todayIso);
+      const initial = highlighted || todayMonth || monthEntries[monthEntries.length - 1];
+      setSelectedMonth(initial ?? null);
+    }
+  }, [findMonthEntry, highlightTarget, monthEntries, selectedMonth, todayIso]);
+
+  const handleMoonClick = (month: MonthEntry, phase: MoonPhase) => {
+    setSelectedMonth(month);
+    setSelectedMoonPhase(phase);
+    setIsModalOpen(true);
+  };
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchExistingInsight = async () => {
+      if (!isModalOpen || !selectedMonth) return;
+      setIsLoadingInsight(true);
+      setExistingInsight('');
+      setExistingInsightUpdatedAt(null);
+
+      try {
+        const item = await loadInsight(selectedMoonPhase, selectedMonth.monthNumber);
+        if (!isActive) return;
+        setExistingInsight(item?.insight ?? '');
+        setExistingInsightUpdatedAt(item?.updatedAt ?? item?.createdAt ?? null);
+      } catch {
+        if (!isActive) return;
+        setExistingInsight('');
+        setExistingInsightUpdatedAt(null);
+      } finally {
+        if (isActive) setIsLoadingInsight(false);
+      }
+    };
+
+    fetchExistingInsight();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isModalOpen, loadInsight, selectedMonth, selectedMoonPhase]);
+
+  const handleInsightSubmit = async (insight: string) => {
+    const monthNumber = selectedMonth?.monthNumber ?? 1;
+    await saveInsight(selectedMoonPhase, monthNumber, insight);
+  };
+
+  const handleRetry = useCallback(() => {
+    setCalendarByYear({});
+    setCalendarError(null);
+    loadCalendar();
+  }, [loadCalendar]);
+
+  const selectedMoonInfo = buildMoonInfo(selectedMonth, selectedMoonPhase);
+  const highlightedMoonInfo = highlightTarget
+    ? buildMoonInfo(highlightTarget, highlightTarget.phase)
+    : null;
+  const selectedMonthName = selectedMonth?.monthName ?? 'Mês';
+  const prompt = MONTHLY_PROMPTS[selectedMoonPhase];
+  const savedAtLabel = formatSavedAtLabel(existingInsightUpdatedAt);
+  const chatStorageKey = buildMonthlyStorageKey(
+    selectedMonth?.year ?? 'ano',
+    selectedMonth?.monthNumber ?? 1,
+    selectedMoonPhase
+  );
+  const signBadge =
+    selectedMoonInfo.signLabel && selectedMoonInfo.signLabel.trim().length > 0
+      ? `Signo ${selectedMoonInfo.signLabel}`
+      : undefined;
+  const chatPlaceholder = isLoadingInsight ? 'Carregando insight salvo...' : prompt.placeholder;
+
+  const getColumnIndex = useCallback(
+    (target: typeof highlightTarget) => {
+      if (!target) return null;
+      const idx = monthEntries.findIndex(
+        (month) => month.year === target.year && month.monthNumber === target.monthNumber
+      );
+      return idx >= 0 ? idx : null;
+    },
+    [monthEntries]
+  );
+
+  const centerOnColumn = useCallback(
+    (columnIndex: number | null) => {
+      if (columnIndex === null) return;
+      const scroller = scrollerRef.current;
+      if (!scroller) return;
+      const columnCenter = layout.padding + columnIndex * tileSpan + layout.tileWidth / 2;
+      const target = columnCenter - scroller.clientWidth / 2;
+      scroller.scrollTo({
+        left: Math.max(0, target),
+        behavior: 'smooth',
+      });
+    },
+    [layout.padding, layout.tileWidth, tileSpan]
+  );
+
+  const updateScrollMetrics = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const max = scroller.scrollWidth - scroller.clientWidth;
+    const progress = max > 0 ? Math.min(scroller.scrollLeft / max, 1) : 0;
+    const fraction =
+      scroller.scrollWidth > 0 ? Math.min(scroller.clientWidth / scroller.scrollWidth, 1) : 0;
+
+    setScrollProgress(progress);
+    setViewportFraction(fraction);
+
+    const bufferTiles = 6;
+    const start = Math.max(0, Math.floor(scroller.scrollLeft / tileSpan) - bufferTiles);
+    const visibleTiles = Math.ceil(scroller.clientWidth / tileSpan) + bufferTiles * 2;
+    const end = Math.min(monthEntries.length, start + visibleTiles);
+    setVirtualWindow((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
+  }, [monthEntries.length, tileSpan]);
+
+  useEffect(() => {
+    const column = getColumnIndex(highlightTarget);
+    centerOnColumn(column);
+  }, [centerOnColumn, getColumnIndex, highlightTarget]);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const handleScroll = () => {
+      updateScrollMetrics();
+    };
+
+    updateScrollMetrics();
+
+    scroller.addEventListener('scroll', handleScroll);
+
+    const resizeObserver = new ResizeObserver(() => updateScrollMetrics());
+    resizeObserver.observe(scroller);
+
+    return () => {
+      scroller.removeEventListener('scroll', handleScroll);
+      resizeObserver.disconnect();
+    };
+  }, [updateScrollMetrics]);
+
+  useEffect(() => {
+    updateScrollMetrics();
+  }, [layout.visibleColumns, monthEntries.length, updateScrollMetrics]);
+
+  const scrollToProgress = useCallback((value: number) => {
+    setScrollProgress(value);
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const max = scroller.scrollWidth - scroller.clientWidth;
+    scroller.scrollTo({ left: max * value, behavior: 'smooth' });
+  }, []);
+
+  const scrollByStep = useCallback(
+    (direction: 'left' | 'right') => {
+      const scroller = scrollerRef.current;
+      if (!scroller) return;
+
+      const step = tileSpan * layout.visibleColumns;
+      const max = scroller.scrollWidth - scroller.clientWidth;
+      const targetLeft =
+        direction === 'left'
+          ? Math.max(0, scroller.scrollLeft - step)
+          : Math.min(max, scroller.scrollLeft + step);
+
+      scroller.scrollTo({ left: targetLeft, behavior: 'smooth' });
+      setScrollProgress(max > 0 ? targetLeft / max : 0);
+    },
+    [layout.visibleColumns, tileSpan]
+  );
+
+  const handleScrollerKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        scrollByStep('left');
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        scrollByStep('right');
+      }
+      if (event.key === 'Home') {
+        event.preventDefault();
+        scrollToProgress(0);
+      }
+      if (event.key === 'End') {
+        event.preventDefault();
+        scrollToProgress(1);
+      }
+    },
+    [scrollByStep, scrollToProgress]
+  );
+
+  const hasOverflow = viewportFraction > 0 && viewportFraction < 0.999;
+  const canScrollLeft = hasOverflow && scrollProgress > 0.01;
+  const canScrollRight = hasOverflow && scrollProgress < 0.99;
+
+  const trackWidth = useMemo(() => {
+    const monthCount = Math.max(1, monthEntries.length);
+    return monthCount * tileSpan - layout.gap;
+  }, [layout.gap, monthEntries.length, tileSpan]);
+
+  const virtualizedMonths = useMemo(
+    () => monthEntries.slice(virtualWindow.start, virtualWindow.end),
+    [monthEntries, virtualWindow.end, virtualWindow.start]
+  );
+  const virtualOffsetPx = virtualWindow.start * tileSpan;
+  const isInitialLoading = isCalendarLoading && monthEntries.length === 0;
+  const skeletonCount = useMemo(
+    () => Math.max(Math.ceil(layout.visibleColumns) + 2, 8),
+    [layout.visibleColumns]
+  );
+  const diagonalStep = Math.max(8, Math.min(18, Math.round(layout.tileWidth * 0.15)));
+  const topBaseOffset = diagonalStep * 2.2;
+  const bottomBaseOffset = diagonalStep * 6.4;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleResize = () => {
+      setLayout((prev) => {
+        const next = getResponsiveLayout(window.innerWidth);
+        if (
+          prev.tileWidth === next.tileWidth &&
+          prev.gap === next.gap &&
+          prev.padding === next.padding &&
+          prev.visibleColumns === next.visibleColumns
+        ) {
+          return prev;
+        }
+        return next;
+      });
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    <div className="relative flex h-full w-full flex-col items-center justify-between py-10 sm:py-14 lg:py-16">
+      <LuminousTrail />
+      <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
+
+      <CelestialObject
+        type="sol"
+        size={isCompactLayout ? 'md' : 'lg'}
+        interactive
+        onClick={(e) =>
+          navigateWithFocus?.('planetCardBelowSun', {
+            event: e,
+            type: 'sol',
+            size: 'lg',
+          })
+        }
+        className="mt-4"
+        floatOffset={-3}
+      />
+
+      <div className="relative w-full max-w-5xl px-3 sm:px-4">
+        {highlightTarget && highlightedMoonInfo && (
+          <HighlightBanner
+            info={highlightedMoonInfo}
+            onClick={() => centerOnColumn(getColumnIndex(highlightTarget))}
+          />
+        )}
+
+        <MoonCarousel
+          scrollerRef={scrollerRef}
+          scrollerMaxWidth={scrollerMaxWidth}
+          onKeyDown={handleScrollerKeyDown}
+          layoutPadding={layout.padding}
+          tileWidth={layout.tileWidth}
+          gap={layout.gap}
+          canScrollLeft={canScrollLeft}
+          canScrollRight={canScrollRight}
+          onScrollLeft={() => scrollByStep('left')}
+          onScrollRight={() => scrollByStep('right')}
+          onRetry={handleRetry}
+          isInitialLoading={isInitialLoading}
+          monthEntries={monthEntries}
+          calendarError={calendarError}
+          skeletonCount={skeletonCount}
+          trackWidth={trackWidth}
+          virtualizedMonths={virtualizedMonths}
+          highlightTarget={highlightTarget}
+          virtualOffsetPx={virtualOffsetPx}
+          onMoonClick={handleMoonClick}
+          diagonalStep={diagonalStep}
+          topBaseOffset={topBaseOffset}
+          bottomBaseOffset={bottomBaseOffset}
+        />
+      </div>
+
+      <CelestialObject
+        type="planeta"
+        size={isCompactLayout ? 'md' : 'lg'}
+        interactive
+        onClick={(e) =>
+          navigateWithFocus?.('planetCardStandalone', {
+            event: e,
+            type: 'planeta',
+            size: 'lg',
+          })
+        }
+        className="mb-4"
+        floatOffset={2}
+      />
+      
+      <CosmosChatModal
+        isOpen={isModalOpen}
+        storageKey={chatStorageKey}
+        title={selectedMonthName}
+        eyebrow={MONTHLY_INSIGHT_LABELS[selectedMoonPhase]}
+        subtitle={`Mês #${selectedMonth?.monthNumber ?? 1}`}
+        badge={signBadge}
+        placeholder={chatPlaceholder}
+        systemGreeting={prompt.greeting.replace('{month}', selectedMonthName)}
+        systemQuestion={prompt.systemQuestion}
+        initialValue={existingInsight}
+        initialValueLabel={savedAtLabel || undefined}
+        submitLabel="✨ Concluir insight"
+        tone={MONTHLY_TONES[selectedMoonPhase]}
+        systemResponses={MONTHLY_RESPONSES[selectedMoonPhase]}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={async (value) => {
+          await handleInsightSubmit(value);
+        }}
+      />
+    </div>
+  );
+};
+
+export default LuaScreen;
+
