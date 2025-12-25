@@ -3,6 +3,7 @@
 ## ✅ O que foi instalado
 
 ### Pacotes
+
 - **Prettier**: Formatação automática de código
 - **ESLint v9**: Análise estática com regras rigorosas
 - **Husky**: Git hooks para automação
@@ -10,6 +11,7 @@
 - **ESLint Plugins**: React, JSX-a11y (acessibilidade)
 
 ### Arquivos Criados
+
 - `.prettierrc.json` - Configuração do Prettier
 - `.prettierignore` - Ignorar arquivos no Prettier
 - `eslint.config.js` - Configuração expandida do ESLint
@@ -42,27 +44,33 @@ npm run build
 ## 🎯 Regras Ativas
 
 ### ESLint
+
 ✅ **TypeScript Strict**
+
 - Avoid `any` types
 - No unused variables
 - No non-null assertions
 
 ✅ **React/Next.js**
+
 - React in JSX scope (off for React 17+)
 - No prop-types (use TypeScript)
 
 ✅ **Acessibilidade (a11y)**
+
 - Alt text em imagens
 - Keyboard events com key listeners
 - Interactive elements com roles
 
 ✅ **Code Quality**
+
 - `console.log` apenas com warnings
 - Prefer `const` over `let`
 - `===` e `!==` (não use `==` e `!=`)
 - No debugger statements
 
 ### Prettier
+
 - **Semicolons**: ✓ Ativados
 - **Single Quotes**: ✓ Usadas
 - **Print Width**: 100 caracteres
@@ -115,6 +123,7 @@ npm run build
 ## 💡 Dicas
 
 ### Para usar variáveis não utilizadas de propósito
+
 ```typescript
 // ❌ Ruim
 const { unused, important } = props;
@@ -124,6 +133,7 @@ const { _unused, important } = props;
 ```
 
 ### Para permitir console.log em arquivos específicos
+
 ```typescript
 // No topo do arquivo
 /* eslint-disable no-console */
@@ -132,6 +142,7 @@ console.log('Isso é permitido aqui');
 ```
 
 ### Para desabilitar Prettier em um arquivo
+
 ```
 <!-- prettier-ignore -->
 ```
@@ -143,21 +154,26 @@ console.log('Isso é permitido aqui');
 Se quiser ajustar as regras:
 
 ### Remover warnings de `any`
+
 Edit `eslint.config.js`:
+
 ```javascript
 '@typescript-eslint/no-explicit-any': 'off', // ao invés de 'warn'
 ```
 
 ### Remover warnings de `console.log`
+
 ```javascript
 'no-console': 'off', // ao invés de ['warn', ...]
 ```
 
 ### Mudar print width do Prettier
+
 Edit `.prettierrc.json`:
+
 ```json
 {
-  "printWidth": 120  // ao invés de 100
+  "printWidth": 120 // ao invés de 100
 }
 ```
 
@@ -176,11 +192,13 @@ Edit `.prettierrc.json`:
 ## 🆘 Troubleshooting
 
 ### Prettier e ESLint em conflito?
+
 ```bash
 npm run lint:fix && npm run format
 ```
 
 ### Husky não rodando em commits?
+
 ```bash
 npx husky install
 # Se ainda não funcionar, reinstale:
@@ -189,7 +207,9 @@ npx husky init
 ```
 
 ### GitHub Actions falhando?
+
 Verifique o arquivo `.github/workflows/quality.yml` e rode localmente:
+
 ```bash
 npm run lint
 npm run format:check

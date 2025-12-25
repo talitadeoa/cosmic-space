@@ -2,9 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getLatestUserMessageFromHistory } from '@/lib/chatHistory';
-import {
-  buildRingEnergyStorageKey,
-} from '@/app/cosmos/utils/insightChatPresets';
+import { buildRingEnergyStorageKey } from '@/app/cosmos/utils/insightChatPresets';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 import GalaxyCoreLayer from './layers/GalaxyCoreLayer';
 import OrbitingMoonsLayer, { OrbitingMoon } from './layers/OrbitingMoonsLayer';
@@ -75,10 +73,7 @@ const RingGalaxyExperience: React.FC<RingGalaxyExperienceProps> = ({
     <div className="relative flex h-full w-full items-center justify-center">
       <GalaxyCoreLayer onNavigate={onNavigateToColumn} />
 
-      <OrbitingMoonsLayer
-        moons={moons}
-        onSelect={(moon) => setSelectedMoon(moon)}
-      />
+      <OrbitingMoonsLayer moons={moons} onSelect={(moon) => setSelectedMoon(moon)} />
 
       <EnergyModalLayer
         selectedMoon={selectedMoon}

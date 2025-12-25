@@ -13,14 +13,6 @@ export const metadata: Metadata = {
  * 2. Wrapper de layout
  */
 
-export default function PlanetaLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-h-screen w-full bg-slate-950">
-      {children}
-    </div>
-  );
+export default function PlanetaLayout({ children }: { children: React.ReactNode }) {
+  return <div className="min-h-screen w-full bg-slate-950">{children}</div>;
 }

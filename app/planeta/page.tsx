@@ -29,10 +29,7 @@ const PlanetaPage: React.FC = () => {
   return (
     <PlanetaProviders>
       <PlanetaScene>
-        <PlanetScreen
-          navigateTo={handleNavigateTo}
-          navigateWithFocus={handleNavigateWithFocus}
-        />
+        <PlanetScreen navigateTo={handleNavigateTo} navigateWithFocus={handleNavigateWithFocus} />
       </PlanetaScene>
     </PlanetaProviders>
   );

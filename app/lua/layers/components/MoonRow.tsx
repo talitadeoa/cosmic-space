@@ -93,7 +93,9 @@ const MoonRow: React.FC<MoonRowProps> = ({
                   <div className="mt-1 text-[10px] text-slate-300/80">
                     {phase === 'luaNova' ? '🌑' : '🌕'} {monthPhaseLabel || '—'}
                   </div>
-                  {monthPhaseDate && <div className="text-[10px] text-slate-400">{monthPhaseDate}</div>}
+                  {monthPhaseDate && (
+                    <div className="text-[10px] text-slate-400">{monthPhaseDate}</div>
+                  )}
                 </motion.div>
               )}
 

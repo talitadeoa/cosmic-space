@@ -3,6 +3,7 @@
 ## 🚀 Acessando a Rota
 
 A rota planeta está disponível em:
+
 ```
 http://localhost:3000/planeta
 ```
@@ -29,6 +30,7 @@ app/
 ## 🔌 Como Navegar para a Página Planeta
 
 ### Opção 1: Link Direto
+
 ```tsx
 import Link from 'next/link';
 
@@ -38,22 +40,21 @@ export default function Navigation() {
 ```
 
 ### Opção 2: Use Router
+
 ```tsx
 'use client';
 import { useRouter } from 'next/navigation';
 
 export default function Navigation() {
   const router = useRouter();
-  return (
-    <button onClick={() => router.push('/planeta')}>
-      Ir para Planeta
-    </button>
-  );
+  return <button onClick={() => router.push('/planeta')}>Ir para Planeta</button>;
 }
 ```
 
 ### Opção 3: Dentro da Navegação Existente
+
 Se você tem um menu ou navegação, adicione:
+
 ```tsx
 {
   label: 'Planeta',
@@ -65,7 +66,9 @@ Se você tem um menu ou navegação, adicione:
 ## 🎨 Customizações Possíveis
 
 ### 1. Adicionar Navegação de Volta
+
 Em `/app/planeta/page.tsx`:
+
 ```tsx
 'use client';
 
@@ -84,7 +87,9 @@ const PlanetaPage: React.FC = () => {
 ```
 
 ### 2. Adicionar Header Custom
+
 Em `/app/planeta/layout.tsx`:
+
 ```tsx
 export default function PlanetaLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -99,10 +104,12 @@ export default function PlanetaLayout({ children }: { children: React.ReactNode 
 ```
 
 ### 3. Adicionar Navegação Modal
+
 Em `/app/planeta/page.tsx`, implementar a função `handleNavigateWithFocus` para navegar entre telas:
+
 ```tsx
 const handleNavigateWithFocus: ScreenProps['navigateWithFocus'] = (screenId, options) => {
-  switch(screenId) {
+  switch (screenId) {
     case 'planetCardStandalone':
       // Navegar para tela de lua individual
       break;
@@ -117,6 +124,7 @@ const handleNavigateWithFocus: ScreenProps['navigateWithFocus'] = (screenId, opt
 ## 🧪 Testando a Rota
 
 1. **Iniciar o servidor:**
+
    ```bash
    npm run dev
    ```
@@ -133,6 +141,7 @@ const handleNavigateWithFocus: ScreenProps['navigateWithFocus'] = (screenId, opt
 ## 📱 Responsividade
 
 A página planeta herda toda a responsividade do componente original:
+
 - **Mobile** (< 640px) - Layout em coluna única
 - **Tablet** (640px - 1024px) - Layout adaptado
 - **Desktop** (> 1024px) - Layout completo com 3 colunas
@@ -140,15 +149,12 @@ A página planeta herda toda a responsividade do componente original:
 ## 🔐 Autenticação
 
 Se precisar proteger a rota com autenticação, adicione em `/app/planeta/page.tsx`:
+
 ```tsx
 import AuthGate from '@/components/AuthGate';
 
 const PlanetaPage: React.FC = () => {
-  return (
-    <AuthGate>
-      {/* conteúdo */}
-    </AuthGate>
-  );
+  return <AuthGate>{/* conteúdo */}</AuthGate>;
 };
 ```
 

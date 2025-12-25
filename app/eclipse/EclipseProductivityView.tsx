@@ -3,11 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatTimePtBr } from '@/lib/utils/format';
-import {
-  loadSavedTodos,
-  phaseOrder,
-  type SavedTodo,
-} from '@/app/cosmos/utils/todoStorage';
+import { loadSavedTodos, phaseOrder, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
 import type { ScreenProps } from '@/app/cosmos/types';
 import SummaryLayer from './layers/summary/SummaryLayer';
 import CycleSummaryLayer from './layers/cycle/CycleSummaryLayer';

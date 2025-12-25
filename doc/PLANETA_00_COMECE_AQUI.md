@@ -8,7 +8,7 @@ Você pediu uma **rota 'planeta'** com **tudo organizado por camadas**.
 
 ```
 /app/planeta/page.tsx         ← Página principal
-/app/planeta/layout.tsx       ← Layout + metadata  
+/app/planeta/layout.tsx       ← Layout + metadata
 /app/cosmos/screens/planet.tsx ← Tela PlanetScreen
 ```
 

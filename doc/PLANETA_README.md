@@ -7,6 +7,7 @@ Criação completa de uma rota dedicada chamada **`/planeta`** com toda a estrut
 ## 📂 Arquivos Criados
 
 ### Rota (Next.js)
+
 ```
 /app/planeta/
 ├── layout.tsx     (Metadata e configuração)
@@ -14,12 +15,14 @@ Criação completa de uma rota dedicada chamada **`/planeta`** com toda a estrut
 ```
 
 ### Tela
+
 ```
 /app/cosmos/screens/
 └── planet.tsx     (Componente PlanetScreen - cópia do SidePlanetCardScreen)
 ```
 
 ### Documentação
+
 ```
 /doc/
 ├── PLANETA_INTEGRACAO.md       (Guia de como usar)
@@ -37,19 +40,24 @@ http://localhost:3000/planeta
 ## 🏗️ Estrutura por Camadas
 
 ### Camada 1: Rota
+
 - `/app/planeta/page.tsx` → Página principal
 - `/app/planeta/layout.tsx` → Layout e metadata
 
 ### Camada 2: Contexto
+
 - `YearProvider` → Gerencia estado do ano lunar
 
 ### Camada 3: Background
+
 - `SpaceBackground` → Animação de fundo
 
 ### Camada 4: Tela Principal
+
 - `PlanetScreen` → Componente principal com toda a lógica
 
 ### Camada 5: Componentes
+
 - `CelestialObject` (Luas, Planeta, Sol)
 - `Card` (Container)
 - `TodoInput` (Entrada de tarefas)
@@ -57,14 +65,17 @@ http://localhost:3000/planeta
 - `IslandsList` (Lista de ilhas)
 
 ### Camada 6: Hooks
+
 - `usePhaseInputs` (Salva inputs em fases)
 - `useFilteredTodos` (Filtra tarefas)
 - `useIslandNames` (Gerencia nomes de ilhas)
 
 ### Camada 7: Tipos
+
 - `ScreenProps`, `MoonPhase`, `SavedTodo`, `FilterState`, etc.
 
 ### Camada 8: Utilitários
+
 - `todoStorage` (localStorage)
 - `phaseVibes` (Vibes das fases)
 - `islandNames` (Nomes customizados)
@@ -94,6 +105,7 @@ Nada precisa ser instalado ou criado além do que já foi feito. Todos os compon
 ## ⏭️ Próximos Passos (Opcional)
 
 1. **Testar a rota:**
+
    ```bash
    npm run dev
    # Abrir http://localhost:3000/planeta
@@ -113,14 +125,14 @@ Nada precisa ser instalado ou criado além do que já foi feito. Todos os compon
 
 ## 📊 Status
 
-| Item | Status |
-|------|--------|
-| Rota criada | ✅ |
-| Tela criada | ✅ |
-| Documentação | ✅ |
+| Item              | Status   |
+| ----------------- | -------- |
+| Rota criada       | ✅       |
+| Tela criada       | ✅       |
+| Documentação      | ✅       |
 | Testes funcionais | ⏳ Fazer |
-| Menu integrado | ⏳ Fazer |
-| Navegação modal | ⏳ Fazer |
+| Menu integrado    | ⏳ Fazer |
+| Navegação modal   | ⏳ Fazer |
 
 ## 🎓 Arquitetura Limpa
 

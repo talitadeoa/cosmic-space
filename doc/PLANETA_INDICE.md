@@ -3,7 +3,9 @@
 ## 🚀 Comece Aqui
 
 ### 1. **PLANETA_SUMARIO.md** ⭐ LEIA PRIMEIRO
+
 Resumo executivo com visão geral do projeto.
+
 - O que foi criado
 - Como acessar
 - Status final
@@ -15,56 +17,62 @@ Resumo executivo com visão geral do projeto.
 ## 📖 Documentação por Tópico
 
 ### Para Entender a Rota
+
 1. **PLANETA_README.md**
    - Resumo completo
    - Funcionalidades
    - Estrutura por camadas
-   
+
    👉 [PLANETA_README.md](./PLANETA_README.md)
 
 ### Para Integrar no Menu
+
 2. **PLANETA_INTEGRACAO.md**
    - Como navegar para /planeta
    - Customizações
    - Autenticação
    - Responsividade
-   
+
    👉 [PLANETA_INTEGRACAO.md](./PLANETA_INTEGRACAO.md)
 
 ### Para Entender a Arquitetura
+
 3. **PLANETA_ROTA_ESTRUTURA.md**
    - Estrutura detalhada por camadas
    - Estados gerenciados
    - Fluxo de dados
    - Dependências externas
-   
+
    👉 [PLANETA_ROTA_ESTRUTURA.md](./PLANETA_ROTA_ESTRUTURA.md)
 
 ### Para Ver Diagrama Visual
+
 4. **PLANETA_MAPA_VISUAL.md**
    - Diagrama ASCII de camadas
    - Tabela de dependências
    - Fluxo de dados
    - Como navegar entre telas
-   
+
    👉 [PLANETA_MAPA_VISUAL.md](./PLANETA_MAPA_VISUAL.md)
 
 ### Para Validar Implementação
+
 5. **PLANETA_CHECKLIST.md**
    - Checklist de criação
    - Testes manuais
    - Status de implementação
    - Próximos passos
-   
+
    👉 [PLANETA_CHECKLIST.md](./PLANETA_CHECKLIST.md)
 
 ### Para Ver Estrutura de Pastas
+
 6. **PLANETA_ESTRUTURA_PASTAS.md**
    - Árvore completa de pastas
    - Mapa de importações
    - Grafo de dependências
    - Matriz de responsabilidades
-   
+
    👉 [PLANETA_ESTRUTURA_PASTAS.md](./PLANETA_ESTRUTURA_PASTAS.md)
 
 ---
@@ -72,23 +80,28 @@ Resumo executivo com visão geral do projeto.
 ## 🎯 Guia Rápido por Perfil
 
 ### 👨‍💻 Se você é Desenvolvedor
+
 1. Leia **PLANETA_SUMARIO.md**
 2. Consulte **PLANETA_ROTA_ESTRUTURA.md**
 3. Veja **PLANETA_ESTRUTURA_PASTAS.md**
 4. Use **PLANETA_CHECKLIST.md** para testes
 
 ### 🎨 Se você vai Integrar no Menu
+
 1. Leia **PLANETA_INTEGRACAO.md**
 2. Consulte **PLANETA_MAPA_VISUAL.md**
 3. Implemente o link
 
 ### 🧪 Se você vai Testar
+
 1. Leia **PLANETA_SUMARIO.md**
 2. Siga o checklist em **PLANETA_CHECKLIST.md**
 3. Teste conforme instruções em **PLANETA_INTEGRACAO.md**
 
 ### 📚 Se você quer Entender Tudo
+
 Leia nesta ordem:
+
 1. PLANETA_SUMARIO.md
 2. PLANETA_README.md
 3. PLANETA_ROTA_ESTRUTURA.md
@@ -102,11 +115,13 @@ Leia nesta ordem:
 ## 🗂️ Índice de Seções
 
 ### Arquivos Criados
+
 - `/app/planeta/page.tsx` - Página principal
 - `/app/planeta/layout.tsx` - Layout com metadata
 - `/app/cosmos/screens/planet.tsx` - Componente tela
 
 ### Estrutura por Camadas
+
 ```
 Camada 1: Rota (/app/planeta)
 Camada 2: Contexto (YearProvider)
@@ -119,18 +134,21 @@ Camada 8: Utilitários
 ```
 
 ### Componentes Utilizados
+
 - CelestialObject (Luas, Planeta, Sol)
 - Card, TodoInput, SavedTodosPanel
 - IslandsList, FiltersPanel
 - SpaceBackground
 
 ### Hooks Utilizados
+
 - usePhaseInputs
 - useFilteredTodos
 - useIslandNames
 - useYear (via contexto)
 
 ### Utilitários Utilizados
+
 - todoStorage (localStorage)
 - phaseVibes (dados de vibes)
 - islandNames (nomes customizados)
@@ -141,26 +159,32 @@ Camada 8: Utilitários
 ## 🔍 Buscar por Tópico
 
 ### Componentes
+
 👉 Ver em: PLANETA_ROTA_ESTRUTURA.md (Camada 5)
 👉 Ver em: PLANETA_MAPA_VISUAL.md (Tabela de dependências)
 
 ### Hooks
+
 👉 Ver em: PLANETA_ROTA_ESTRUTURA.md (Camada 6)
 👉 Ver em: PLANETA_ESTRUTURA_PASTAS.md (Mapa de importações)
 
 ### Tipos
+
 👉 Ver em: PLANETA_ROTA_ESTRUTURA.md (Camada 7)
 👉 Ver em: PLANETA_MAPA_VISUAL.md (Seção de tipos)
 
 ### Utilitários
+
 👉 Ver em: PLANETA_ROTA_ESTRUTURA.md (Camada 8)
 👉 Ver em: PLANETA_ESTRUTURA_PASTAS.md
 
 ### Integração
+
 👉 Ver em: PLANETA_INTEGRACAO.md
 👉 Ver em: PLANETA_CHECKLIST.md
 
 ### Testes
+
 👉 Ver em: PLANETA_CHECKLIST.md (Testes manuais)
 👉 Ver em: PLANETA_INTEGRACAO.md (Testando a rota)
 
@@ -193,41 +217,44 @@ R: PLANETA_SUMARIO.md
 
 ## 📊 Estatísticas
 
-| Item | Quantidade |
-|------|-----------|
-| Arquivos criados | 3 |
-| Documentos criados | 7 |
-| Camadas de arquitetura | 8 |
-| Componentes utilizados | 15+ |
-| Hooks utilizados | 4 |
-| Utilitários utilizados | 4 |
-| Tipos definidos | 7+ |
+| Item                   | Quantidade |
+| ---------------------- | ---------- |
+| Arquivos criados       | 3          |
+| Documentos criados     | 7          |
+| Camadas de arquitetura | 8          |
+| Componentes utilizados | 15+        |
+| Hooks utilizados       | 4          |
+| Utilitários utilizados | 4          |
+| Tipos definidos        | 7+         |
 
 ---
 
 ## 🎯 Status de Cada Doc
 
-| Doc | Completo | Lido | Útil |
-|-----|----------|------|------|
-| PLANETA_SUMARIO.md | ✅ | ⏳ | ⭐⭐⭐⭐⭐ |
-| PLANETA_README.md | ✅ | ⏳ | ⭐⭐⭐⭐⭐ |
-| PLANETA_INTEGRACAO.md | ✅ | ⏳ | ⭐⭐⭐⭐ |
-| PLANETA_ROTA_ESTRUTURA.md | ✅ | ⏳ | ⭐⭐⭐⭐⭐ |
-| PLANETA_MAPA_VISUAL.md | ✅ | ⏳ | ⭐⭐⭐⭐ |
-| PLANETA_CHECKLIST.md | ✅ | ⏳ | ⭐⭐⭐⭐ |
-| PLANETA_ESTRUTURA_PASTAS.md | ✅ | ⏳ | ⭐⭐⭐⭐ |
+| Doc                         | Completo | Lido | Útil       |
+| --------------------------- | -------- | ---- | ---------- |
+| PLANETA_SUMARIO.md          | ✅       | ⏳   | ⭐⭐⭐⭐⭐ |
+| PLANETA_README.md           | ✅       | ⏳   | ⭐⭐⭐⭐⭐ |
+| PLANETA_INTEGRACAO.md       | ✅       | ⏳   | ⭐⭐⭐⭐   |
+| PLANETA_ROTA_ESTRUTURA.md   | ✅       | ⏳   | ⭐⭐⭐⭐⭐ |
+| PLANETA_MAPA_VISUAL.md      | ✅       | ⏳   | ⭐⭐⭐⭐   |
+| PLANETA_CHECKLIST.md        | ✅       | ⏳   | ⭐⭐⭐⭐   |
+| PLANETA_ESTRUTURA_PASTAS.md | ✅       | ⏳   | ⭐⭐⭐⭐   |
 
 ---
 
 ## 🚀 Começar Agora
 
 ### 1º Passo
+
 Leia: [PLANETA_SUMARIO.md](./PLANETA_SUMARIO.md)
 
 ### 2º Passo
+
 Teste: `http://localhost:3000/planeta`
 
 ### 3º Passo
+
 Integre no seu menu (opcional)
 
 ---
@@ -237,6 +264,7 @@ Integre no seu menu (opcional)
 Todas as informações que você precisa estão nesta documentação.
 
 Se tiver dúvidas:
+
 1. Procure o tópico no índice acima
 2. Leia o documento correspondente
 3. Consulte o checklist para validação

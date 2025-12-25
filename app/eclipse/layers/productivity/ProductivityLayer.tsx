@@ -73,10 +73,20 @@ const ProductivityLayer: React.FC<ProductivityLayerProps> = ({
                           fill="#22c55e"
                           className="drop-shadow-[0_0_12px_rgba(16,185,129,0.8)]"
                         />
-                        <text x={x} y={132} textAnchor="middle" className="fill-slate-400 text-[10px]">
+                        <text
+                          x={x}
+                          y={132}
+                          textAnchor="middle"
+                          className="fill-slate-400 text-[10px]"
+                        >
                           {phaseLabels[stat.phase]}
                         </text>
-                        <text x={x} y={y - 10} textAnchor="middle" className="fill-emerald-200 text-[10px]">
+                        <text
+                          x={x}
+                          y={y - 10}
+                          textAnchor="middle"
+                          className="fill-emerald-200 text-[10px]"
+                        >
                           {stat.productivity}%
                         </text>
                       </g>

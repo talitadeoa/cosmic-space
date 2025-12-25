@@ -52,7 +52,8 @@ const SummaryLayer: React.FC<SummaryLayerProps> = ({
             className="drop-shadow-[0_0_30px_rgba(99,102,241,0.45)]"
           />
           <p className="max-w-xs text-center text-sm text-slate-200">
-            Use o eclipse para visualizar a fusão entre os to-dos do planeta lateral e o ciclo lunar.
+            Use o eclipse para visualizar a fusão entre os to-dos do planeta lateral e o ciclo
+            lunar.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button

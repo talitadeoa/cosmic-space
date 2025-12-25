@@ -1,13 +1,13 @@
 /**
  * ✔️ Validadores Centralizados
- * 
+ *
  * Single source of truth para validação de tipos em toda aplicação
  * Evita duplicação de lógica de validação
  */
 
-import type { MoonPhase } from "@/types/moon";
-import type { IslandId } from "@/lib/islands";
-import type { TodoInputType, PhaseInputType, FormEntryType } from "@/types/inputs";
+import type { MoonPhase } from '@/types/moon';
+import type { IslandId } from '@/lib/islands';
+import type { TodoInputType, PhaseInputType, FormEntryType } from '@/types/inputs';
 
 /**
  * Validador para MoonPhase
@@ -15,9 +15,7 @@ import type { TodoInputType, PhaseInputType, FormEntryType } from "@/types/input
  * @returns true se é uma MoonPhase válida
  */
 export const isMoonPhase = (phase: unknown): phase is MoonPhase => {
-  return ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"].includes(
-    phase as string
-  );
+  return ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'].includes(phase as string);
 };
 
 /**
@@ -26,7 +24,7 @@ export const isMoonPhase = (phase: unknown): phase is MoonPhase => {
  * @returns true se é um IslandId válido
  */
 export const isIslandId = (island: unknown): island is IslandId => {
-  return ["ilha1", "ilha2", "ilha3", "ilha4"].includes(island as string);
+  return ['ilha1', 'ilha2', 'ilha3', 'ilha4'].includes(island as string);
 };
 
 /**
@@ -35,7 +33,7 @@ export const isIslandId = (island: unknown): island is IslandId => {
  * @returns true se é um TodoInputType válido
  */
 export const isTodoInputType = (inputType: unknown): inputType is TodoInputType => {
-  return ["text", "checkbox"].includes(inputType as string);
+  return ['text', 'checkbox'].includes(inputType as string);
 };
 
 /**
@@ -43,12 +41,8 @@ export const isTodoInputType = (inputType: unknown): inputType is TodoInputType 
  * @param inputType - Valor desconhecido
  * @returns true se é um PhaseInputType válido
  */
-export const isPhaseInputType = (
-  inputType: unknown
-): inputType is PhaseInputType => {
-  return ["energia", "tarefa", "insight_trimestral"].includes(
-    inputType as string
-  );
+export const isPhaseInputType = (inputType: unknown): inputType is PhaseInputType => {
+  return ['energia', 'tarefa', 'insight_trimestral'].includes(inputType as string);
 };
 
 /**
@@ -58,13 +52,13 @@ export const isPhaseInputType = (
  */
 export const isFormEntryType = (type: unknown): type is FormEntryType => {
   return [
-    "subscribe",
-    "contact",
-    "insight_anual",
-    "insight_mensal",
-    "insight_trimestral",
-    "insight_lunar",
-    "checklist",
+    'subscribe',
+    'contact',
+    'insight_anual',
+    'insight_mensal',
+    'insight_trimestral',
+    'insight_lunar',
+    'checklist',
   ].includes(type as string);
 };
 

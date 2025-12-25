@@ -221,16 +221,16 @@ PlanetScreen
 
 ## 📊 Tabela de Dependências
 
-| Camada | Arquivo | Dependências |
-|--------|---------|--------------|
-| 1 | /app/planeta/page.tsx | YearProvider, SpaceBackground, PlanetScreen |
-| 2 | YearContext | React Context API |
-| 3 | SpaceBackground | CSS, Framer Motion |
-| 4 | planet.tsx | Camada 5-8, React Hooks |
-| 5 | Componentes | React, Tailwind, Framer Motion |
-| 6 | Hooks | React Hooks, Utils |
-| 7 | Types | TypeScript |
-| 8 | Utils | localStorage, array/object utilities |
+| Camada | Arquivo               | Dependências                                |
+| ------ | --------------------- | ------------------------------------------- |
+| 1      | /app/planeta/page.tsx | YearProvider, SpaceBackground, PlanetScreen |
+| 2      | YearContext           | React Context API                           |
+| 3      | SpaceBackground       | CSS, Framer Motion                          |
+| 4      | planet.tsx            | Camada 5-8, React Hooks                     |
+| 5      | Componentes           | React, Tailwind, Framer Motion              |
+| 6      | Hooks                 | React Hooks, Utils                          |
+| 7      | Types                 | TypeScript                                  |
+| 8      | Utils                 | localStorage, array/object utilities        |
 
 ## 🚀 Como Navegar entre Telas
 

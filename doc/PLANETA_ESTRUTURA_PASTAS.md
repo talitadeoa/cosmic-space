@@ -86,6 +86,7 @@ doc/
 ## 🎯 Mapa de Importações
 
 ### Em `/app/planeta/page.tsx`
+
 ```tsx
 import React from 'react';
 import { YearProvider } from '@/app/cosmos/context/YearContext';
@@ -95,6 +96,7 @@ import type { ScreenProps } from '@/app/cosmos/types';
 ```
 
 ### Em `/app/cosmos/screens/planet.tsx`
+
 ```tsx
 // React
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -158,23 +160,23 @@ import { useIslandNames } from '@/hooks/useIslandNames';
 
 ## 📊 Matriz de Responsabilidades
 
-| Arquivo | Responsabilidade | Camada |
-|---------|------------------|--------|
-| /app/planeta/page.tsx | Integrar tela com contexto | 1 (Rota) |
-| /app/planeta/layout.tsx | Metadata e styling base | 1 (Rota) |
-| planet.tsx | Lógica e UI da tela | 4 (Screen) |
-| CelestialObject.tsx | Renderizar celestiais | 5 (Component) |
-| Card.tsx | Container com estilo | 5 (Component) |
-| TodoInput.tsx | Input de nova tarefa | 5 (Component) |
-| SavedTodosPanel.tsx | Exibir tarefas salvas | 5 (Component) |
-| IslandsList.tsx | Exibir e gerenciar ilhas | 5 (Component) |
-| usePhaseInputs | Salvar inputs em fases | 6 (Hook) |
-| useFilteredTodos | Filtrar tarefas | 6 (Hook) |
-| useIslandNames | Gerenciar nomes de ilhas | 6 (Hook) |
-| Types | Definições de tipos | 7 (Type) |
-| todoStorage | Persistência de tarefas | 8 (Util) |
-| phaseVibes | Dados de vibes | 8 (Util) |
-| islandNames | Dados de ilhas | 8 (Util) |
+| Arquivo                 | Responsabilidade           | Camada        |
+| ----------------------- | -------------------------- | ------------- |
+| /app/planeta/page.tsx   | Integrar tela com contexto | 1 (Rota)      |
+| /app/planeta/layout.tsx | Metadata e styling base    | 1 (Rota)      |
+| planet.tsx              | Lógica e UI da tela        | 4 (Screen)    |
+| CelestialObject.tsx     | Renderizar celestiais      | 5 (Component) |
+| Card.tsx                | Container com estilo       | 5 (Component) |
+| TodoInput.tsx           | Input de nova tarefa       | 5 (Component) |
+| SavedTodosPanel.tsx     | Exibir tarefas salvas      | 5 (Component) |
+| IslandsList.tsx         | Exibir e gerenciar ilhas   | 5 (Component) |
+| usePhaseInputs          | Salvar inputs em fases     | 6 (Hook)      |
+| useFilteredTodos        | Filtrar tarefas            | 6 (Hook)      |
+| useIslandNames          | Gerenciar nomes de ilhas   | 6 (Hook)      |
+| Types                   | Definições de tipos        | 7 (Type)      |
+| todoStorage             | Persistência de tarefas    | 8 (Util)      |
+| phaseVibes              | Dados de vibes             | 8 (Util)      |
+| islandNames             | Dados de ilhas             | 8 (Util)      |
 
 ## 📦 Pacotes Externos Usados
 
@@ -192,10 +194,12 @@ import { useIslandNames } from '@/hooks/useIslandNames';
 ## 🔐 Caminhos Relativos vs Absolutos
 
 ### Relativos (../):
+
 - Usado dentro de `/app/cosmos/` para importar de mesma pasta
 - Exemplo: `import { Card } from '../components/Card'`
 
 ### Absolutos (@/):
+
 - Usado para importar de fora de `/app/cosmos/`
 - Exemplo: `import { usePhaseInputs } from '@/hooks/usePhaseInputs'`
 

@@ -73,15 +73,34 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
       marginRight: 'auto',
     }}
   >
-    <ArrowButton direction="left" disabled={!canScrollLeft} onClick={onScrollLeft} label="Ver luas anteriores" />
-    <ArrowButton direction="right" disabled={!canScrollRight} onClick={onScrollRight} label="Ver próximas luas" />
+    <ArrowButton
+      direction="left"
+      disabled={!canScrollLeft}
+      onClick={onScrollLeft}
+      label="Ver luas anteriores"
+    />
+    <ArrowButton
+      direction="right"
+      disabled={!canScrollRight}
+      onClick={onScrollRight}
+      label="Ver próximas luas"
+    />
 
     {isInitialLoading && (
-      <MoonRowSkeleton count={skeletonCount} trackWidth={trackWidth} tileWidth={tileWidth} gap={gap} />
+      <MoonRowSkeleton
+        count={skeletonCount}
+        trackWidth={trackWidth}
+        tileWidth={tileWidth}
+        gap={gap}
+      />
     )}
 
-    {!isInitialLoading && monthEntries.length === 0 && !calendarError && <EmptyState onRetry={onRetry} />}
-    {!isInitialLoading && monthEntries.length === 0 && !calendarError && <EmptyState onRetry={onRetry} />}
+    {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
+      <EmptyState onRetry={onRetry} />
+    )}
+    {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
+      <EmptyState onRetry={onRetry} />
+    )}
 
     {!isInitialLoading && monthEntries.length > 0 && (
       <div className="flex min-w-max flex-col items-center gap-10" style={{ minWidth: trackWidth }}>
@@ -121,7 +140,6 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
         />
       </div>
     )}
-
   </div>
 );
 

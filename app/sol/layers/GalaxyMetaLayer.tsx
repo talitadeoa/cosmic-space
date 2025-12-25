@@ -18,9 +18,7 @@ const GalaxyMetaLayer: React.FC<GalaxyMetaLayerProps> = ({ isLoading }) => {
       <p className="text-sm text-slate-300">
         Clique em um sol para focar a órbita daquele ano. Cada órbita representa um ciclo anual.
       </p>
-      {isLoading && (
-        <p className="text-xs text-indigo-100/70">Sincronizando dados lunares...</p>
-      )}
+      {isLoading && <p className="text-xs text-indigo-100/70">Sincronizando dados lunares...</p>}
     </div>
   );
 };

@@ -52,13 +52,19 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
       {activeFilters ? (
         <div className="mt-3 flex flex-wrap gap-2 text-[0.7rem] font-semibold text-slate-200">
           {filters.view === 'lua-atual' && (
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Lua atual</span>
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              Lua atual
+            </span>
           )}
           {filters.inputType === 'text' && (
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Texto</span>
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              Texto
+            </span>
           )}
           {filters.inputType === 'checkbox' && (
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">To-dos</span>
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              To-dos
+            </span>
           )}
           {displayTodoStatus && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
@@ -66,10 +72,14 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
             </span>
           )}
           {phaseLabel && (
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">{phaseLabel}</span>
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              {phaseLabel}
+            </span>
           )}
           {islandLabel && (
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">{islandLabel}</span>
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              {islandLabel}
+            </span>
           )}
         </div>
       ) : (

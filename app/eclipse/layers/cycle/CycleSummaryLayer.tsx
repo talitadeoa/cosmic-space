@@ -26,7 +26,9 @@ const CycleSummaryLayer: React.FC<CycleSummaryLayerProps> = ({
           <h3 className="text-lg font-semibold text-white">Status das listas orbitais</h3>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
-          <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-emerald-200">Concluídas</span>
+          <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-emerald-200">
+            Concluídas
+          </span>
           <span className="rounded-full bg-indigo-500/20 px-2 py-1 text-indigo-100">Em órbita</span>
           <span className="rounded-full bg-slate-800 px-2 py-1 text-slate-200">Não atribuídas</span>
         </div>

@@ -21,7 +21,10 @@ const MoonRowSkeleton: React.FC<MoonRowSkeletonProps> = ({ count, trackWidth, ti
           />
         ))}
       </div>
-      <div className="h-0.5 w-full animate-pulse bg-slate-700/70" style={{ minWidth: trackWidth }} />
+      <div
+        className="h-0.5 w-full animate-pulse bg-slate-700/70"
+        style={{ minWidth: trackWidth }}
+      />
       <div className="flex min-w-max items-center" style={{ columnGap: gap }}>
         {Array.from({ length: count }).map((_, idx) => (
           <div

@@ -448,7 +448,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
         className="mb-4"
         floatOffset={2}
       />
-      
+
       <CosmosChatModal
         isOpen={isModalOpen}
         storageKey={chatStorageKey}
@@ -474,4 +474,3 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
 };
 
 export default LuaScreen;
-
