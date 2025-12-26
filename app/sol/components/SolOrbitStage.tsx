@@ -10,10 +10,10 @@ const DIAGONAL_MOONS: Array<{
   angleDeg: number;
   floatOffset: number;
 }> = [
-  { phase: 'luaCheia', angleDeg: 0, floatOffset: -1 },
-  { phase: 'luaCrescente', angleDeg: 90, floatOffset: -2 },
-  { phase: 'luaNova', angleDeg: 180, floatOffset: 3 },
-  { phase: 'luaMinguante', angleDeg: 270, floatOffset: 1 },
+  { phase: 'luaNova', angleDeg: 270, floatOffset: 3 },
+  { phase: 'luaCrescente', angleDeg: 0, floatOffset: -2 },
+  { phase: 'luaCheia', angleDeg: 90, floatOffset: -1 },
+  { phase: 'luaMinguante', angleDeg: 180, floatOffset: 1 },
 ];
 
 type SolOrbitStageProps = {

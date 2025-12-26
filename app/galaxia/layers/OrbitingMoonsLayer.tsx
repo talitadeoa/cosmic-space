@@ -24,6 +24,8 @@ const OrbitingMoonsLayer: React.FC<OrbitingMoonsLayerProps> = ({ moons, onSelect
           key={moon.label}
           className="absolute"
           style={{
+            top: '50%',
+            left: '50%',
             transform: `translate(calc(-50% + ${moon.position.x}px), calc(-50% + ${moon.position.y}px))`,
           }}
         >

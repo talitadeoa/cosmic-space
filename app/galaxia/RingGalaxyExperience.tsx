@@ -21,10 +21,10 @@ const moonDescriptors: Array<{
   label: string;
   floatOffset: number;
 }> = [
-  { angle: 0, type: 'luaCheia', label: 'Top', floatOffset: -2 },
-  { angle: 90, type: 'luaCrescente', label: 'Right', floatOffset: 1 },
-  { angle: 180, type: 'luaNova', label: 'Bottom', floatOffset: 2 },
-  { angle: 270, type: 'luaMinguante', label: 'Left', floatOffset: -1 },
+  { angle: 270, type: 'luaNova', label: 'Top', floatOffset: -2 },
+  { angle: 0, type: 'luaCrescente', label: 'Right', floatOffset: 1 },
+  { angle: 90, type: 'luaCheia', label: 'Bottom', floatOffset: 2 },
+  { angle: 180, type: 'luaMinguante', label: 'Left', floatOffset: -1 },
 ];
 
 const RingGalaxyExperience: React.FC<RingGalaxyExperienceProps> = ({
