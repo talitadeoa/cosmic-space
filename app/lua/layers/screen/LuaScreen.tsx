@@ -36,6 +36,11 @@ type LuaScreenProps = {
   navigateWithFocus?: ScreenProps['navigateWithFocus'];
 };
 
+type PhaseItem = {
+  month: MonthEntry;
+  phase: MoonPhase;
+};
+
 const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
@@ -44,7 +49,6 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [existingInsight, setExistingInsight] = useState('');
   const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
-  const [revealedCycleKey, setRevealedCycleKey] = useState<string | null>(null);
   const timezone = getResolvedTimezone();
   const MIN_YEAR = 2025;
   const MAX_YEAR = 2028;
@@ -58,7 +62,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const hasInitializedYearRef = useRef(false);
   const pendingCenterTargetRef = useRef<HighlightTarget | null>(null);
   const [visibleYearIndex, setVisibleYearIndex] = useState(0);
-  const [virtualWindow, setVirtualWindow] = useState({ start: 0, end: 40 });
+  const [phaseWindow, setPhaseWindow] = useState({ start: 0, end: 80 });
   const [layout, setLayout] = useState(() =>
     getResponsiveLayout(typeof window !== 'undefined' ? window.innerWidth : undefined)
   );
@@ -124,6 +128,15 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const visibleMonths = useMemo(
     () => (visibleYear === null ? [] : monthEntries.filter((month) => month.year === visibleYear)),
     [monthEntries, visibleYear]
+  );
+
+  const phaseSequence = useMemo<PhaseItem[]>(
+    () =>
+      visibleMonths.flatMap((month) => [
+        { month, phase: 'luaNova' as MoonPhase },
+        { month, phase: 'luaCheia' as MoonPhase },
+      ]),
+    [visibleMonths]
   );
 
   useEffect(() => {
@@ -380,23 +393,20 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const canScrollRight = yearList.length > 0 && visibleYearIndex < yearList.length - 1;
 
   const trackWidth = useMemo(() => {
-    const monthCount = Math.max(1, visibleMonths.length);
-    return monthCount * tileSpan - layout.gap;
-  }, [layout.gap, tileSpan, visibleMonths.length]);
+    const phaseCount = Math.max(1, phaseSequence.length);
+    return phaseCount * tileSpan - layout.gap;
+  }, [layout.gap, phaseSequence.length, tileSpan]);
 
-  const virtualizedMonths = useMemo(
-    () => visibleMonths.slice(virtualWindow.start, virtualWindow.end),
-    [visibleMonths, virtualWindow.end, virtualWindow.start]
+  const virtualizedPhases = useMemo(
+    () => phaseSequence.slice(phaseWindow.start, phaseWindow.end),
+    [phaseSequence, phaseWindow.end, phaseWindow.start]
   );
-  const virtualOffsetPx = virtualWindow.start * tileSpan;
+  const virtualOffsetPx = phaseWindow.start * tileSpan;
   const isInitialLoading = isCalendarLoading && visibleMonths.length === 0;
   const skeletonCount = useMemo(
-    () => Math.max(Math.ceil(layout.visibleColumns) + 2, 8),
+    () => Math.max(Math.ceil(layout.visibleColumns * 2) + 4, 12),
     [layout.visibleColumns]
   );
-  const diagonalStep = Math.max(8, Math.min(18, Math.round(layout.tileWidth * 0.15)));
-  const topBaseOffset = diagonalStep * 2.2;
-  const bottomBaseOffset = diagonalStep * 6.4;
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
