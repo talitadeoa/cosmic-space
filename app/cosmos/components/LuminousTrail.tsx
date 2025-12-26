@@ -102,7 +102,9 @@ export const LuminousTrail: React.FC = () => {
       window.addEventListener('resize', resize);
       const parent = canvas.parentElement;
       const observer = parent ? new ResizeObserver(() => resize()) : null;
-      observer?.observe(parent);
+      if (observer && parent) {
+        observer.observe(parent);
+      }
       frameId = requestAnimationFrame(render);
 
       return () => observer?.disconnect();

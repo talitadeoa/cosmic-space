@@ -102,7 +102,9 @@ export const StarfieldBackground: React.FC = () => {
       window.addEventListener('resize', resizeCanvas);
       const parent = canvas.parentElement;
       const observer = parent ? new ResizeObserver(() => resizeCanvas()) : null;
-      observer?.observe(parent);
+      if (observer && parent) {
+        observer.observe(parent);
+      }
       frameId = requestAnimationFrame(render);
 
       return () => observer?.disconnect();
