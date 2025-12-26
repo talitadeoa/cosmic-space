@@ -22,9 +22,7 @@ type HiddenPhasesBridgeProps = {
 };
 
 const ORBIT_PHASES: Array<{ phase: MoonPhase; angleDeg: number; size: 'sm' | 'md' }> = [
-  { phase: 'luaNova', angleDeg: -90, size: 'md' },
   { phase: 'luaCrescente', angleDeg: 0, size: 'sm' },
-  { phase: 'luaCheia', angleDeg: 90, size: 'md' },
   { phase: 'luaMinguante', angleDeg: 180, size: 'sm' },
 ] as const;
 
@@ -40,7 +38,8 @@ const HiddenPhasesBridge: React.FC<HiddenPhasesBridgeProps> = ({
   if (anchors.length === 0) return null;
 
   const tileSpan = tileWidth + gap;
-  const circleDiameter = orbitRadius * 2 + 28;
+  const adjustedOrbitRadius = orbitRadius * 1.5;
+  const circleDiameter = adjustedOrbitRadius * 2 + 80;
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10" style={{ minWidth: trackWidth }}>
@@ -52,7 +51,7 @@ const HiddenPhasesBridge: React.FC<HiddenPhasesBridgeProps> = ({
         return (
           <motion.div
             key={`hidden-phases-${monthKey}`}
-            className="absolute flex items-center justify-center"
+            className="absolute flex items-center justify-center pointer-events-none"
             style={{
               width: circleDiameter,
               height: circleDiameter,
@@ -62,32 +61,33 @@ const HiddenPhasesBridge: React.FC<HiddenPhasesBridgeProps> = ({
             }}
             animate={{
               opacity: isActive ? 1 : 0,
-              scale: isActive ? 1 : 0.85,
-              rotateX: isActive ? 0 : 45,
             }}
             transition={bridgeTransition}
           >
-            <div className="relative flex h-full w-full items-center justify-center rounded-full border border-sky-400/45 bg-slate-900/35 shadow-[0_0_35px_rgba(56,189,248,0.35)] backdrop-blur">
-              <motion.div
-                className="absolute inset-4 rounded-full border border-sky-300/15"
-                animate={{ rotate: isActive ? 360 : 0, opacity: isActive ? 1 : 0 }}
-                transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-              />
-              {ORBIT_PHASES.map(({ phase, angleDeg, size }) => {
-                const radians = (angleDeg * Math.PI) / 180;
-                const offsetX = Math.cos(radians) * orbitRadius;
-                const offsetY = Math.sin(radians) * orbitRadius;
-                return (
+            {ORBIT_PHASES.map(({ phase, angleDeg, size }) => {
+              const radians = (angleDeg * Math.PI) / 180;
+              const offsetX = Math.cos(radians) * adjustedOrbitRadius;
+              const offsetY = Math.sin(radians) * adjustedOrbitRadius;
+              return (
+                <motion.div
+                  key={`${monthKey}-${phase}`}
+                  className="absolute"
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                  }}
+                  animate={{
+                    opacity: isActive ? 1 : 0,
+                    scale: isActive ? 1 : 0.6,
+                    x: isActive ? offsetX : 0,
+                    y: isActive ? offsetY : 0,
+                  }}
+                  transition={{ duration: 0.3, delay: isActive ? 0.05 : 0 }}
+                >
                   <motion.div
-                    key={`${monthKey}-${phase}`}
-                    className="absolute"
                     style={{
-                      left: '50%',
-                      top: '50%',
-                      transform: `translate(-50%, -50%) translate(${offsetX}px, ${offsetY}px)`,
+                      transform: 'translate(-50%, -50%)',
                     }}
-                    animate={{ opacity: isActive ? 1 : 0, scale: isActive ? 1 : 0.6 }}
-                    transition={{ duration: 0.3, delay: isActive ? 0.05 : 0 }}
                   >
                     <CelestialObject
                       type={phase}
@@ -96,9 +96,9 @@ const HiddenPhasesBridge: React.FC<HiddenPhasesBridgeProps> = ({
                       className="shadow-[0_0_18px_rgba(56,189,248,0.45)]"
                     />
                   </motion.div>
-                );
-              })}
-            </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         );
       })}
