@@ -123,10 +123,11 @@ export async function saveInsight(type: InsightType, params: InsightParams) {
 export async function saveMonthlyInsight(
   userId: string | number,
   moonPhase: string,
+  year: number,
   monthNumber: number,
   insight: string
 ) {
-  return saveInsight('monthly', { userId, moonPhase, period: monthNumber, insight });
+  return saveInsight('monthly', { userId, moonPhase, period: monthNumber, insight, year });
 }
 
 export async function saveQuarterlyInsight(
@@ -197,15 +198,17 @@ export async function getInsightByPhase(
   type: 'monthly' | 'quarterly',
   userId: string | number,
   moonPhase: string,
-  period: number
+  period: number,
+  year?: number
 ) {
   try {
     const db = getDb();
     const periodType = type === 'monthly' ? 'monthly' : 'quarterly';
+    const queryYear = year ?? new Date().getFullYear();
 
     const rows = (await db`
       SELECT * FROM insights 
-      WHERE user_id = ${userId} AND period_type = ${periodType} AND moon_phase = ${moonPhase} AND period_value = ${period}
+      WHERE user_id = ${userId} AND period_type = ${periodType} AND moon_phase = ${moonPhase} AND period_value = ${period} AND year = ${queryYear}
     `) as any[];
 
     return rows[0] ?? null;
@@ -223,9 +226,10 @@ export async function getMonthlyInsights(userId: string | number, monthNumber?: 
 export async function getMonthlyInsight(
   userId: string | number,
   moonPhase: string,
+  year: number,
   monthNumber: number
 ) {
-  return getInsightByPhase('monthly', userId, moonPhase, monthNumber);
+  return getInsightByPhase('monthly', userId, moonPhase, monthNumber, year);
 }
 
 export async function getQuarterlyInsights(userId: string | number, quarterNumber?: number) {
