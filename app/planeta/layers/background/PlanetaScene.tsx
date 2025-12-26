@@ -8,9 +8,5 @@ export type PlanetaSceneProps = {
 };
 
 export const PlanetaScene: React.FC<PlanetaSceneProps> = ({ children }) => {
-  return (
-    <SpacePageLayout allowBackNavigation>
-      {children}
-    </SpacePageLayout>
-  );
+  return <SpacePageLayout allowBackNavigation>{children}</SpacePageLayout>;
 };

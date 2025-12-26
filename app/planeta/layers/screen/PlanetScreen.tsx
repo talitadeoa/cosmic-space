@@ -242,10 +242,10 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDraggingTodo || !touchStartPos) return;
-    
+
     const touch = e.touches[0];
     const element = document.elementFromPoint(touch.clientX, touch.clientY);
-    
+
     if (!element) return;
 
     // Detectar se é uma lua (MoonCluster)

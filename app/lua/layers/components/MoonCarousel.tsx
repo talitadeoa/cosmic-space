@@ -59,30 +59,27 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
 }) => {
   const tileSpan = tileWidth + gap;
   const orbitRadius = Math.max(48, Math.round(tileWidth * 0.55));
-  const cycleAnchors = useMemo(
-    () => {
-      const seen = new Set<string>();
-      let newMoonIndex = 0;
-      return virtualizedPhases.reduce<{ month: MonthEntry; localIndex: number }[]>(
-        (acc, item, idx) => {
-          const key = buildMonthKey(item.month);
-          if (seen.has(key)) {
-            if (item.phase === 'luaNova') newMoonIndex++;
-            return acc;
-          }
-          seen.add(key);
-          // Usar o índice da lua nova como referência para o posicionamento
-          if (item.phase === 'luaNova') {
-            acc.push({ month: item.month, localIndex: newMoonIndex });
-          }
+  const cycleAnchors = useMemo(() => {
+    const seen = new Set<string>();
+    let newMoonIndex = 0;
+    return virtualizedPhases.reduce<{ month: MonthEntry; localIndex: number }[]>(
+      (acc, item, idx) => {
+        const key = buildMonthKey(item.month);
+        if (seen.has(key)) {
           if (item.phase === 'luaNova') newMoonIndex++;
           return acc;
-        },
-        []
-      );
-    },
-    [virtualizedPhases]
-  );
+        }
+        seen.add(key);
+        // Usar o índice da lua nova como referência para o posicionamento
+        if (item.phase === 'luaNova') {
+          acc.push({ month: item.month, localIndex: newMoonIndex });
+        }
+        if (item.phase === 'luaNova') newMoonIndex++;
+        return acc;
+      },
+      []
+    );
+  }, [virtualizedPhases]);
 
   return (
     <div
@@ -101,29 +98,29 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
         alignItems: 'center',
       }}
     >
-    {isInitialLoading && (
-      <div className="flex items-center gap-4">
-        <ArrowButton
-          direction="left"
-          disabled={!canScrollLeft}
-          onClick={onScrollLeft}
-          label="Ver luas anteriores"
-          placement="inline"
-        />
-        <MoonRowSkeleton count={skeletonCount} tileWidth={tileWidth} gap={gap} />
-        <ArrowButton
-          direction="right"
-          disabled={!canScrollRight}
-          onClick={onScrollRight}
-          label="Ver próximas luas"
-          placement="inline"
-        />
-      </div>
-    )}
+      {isInitialLoading && (
+        <div className="flex items-center gap-4">
+          <ArrowButton
+            direction="left"
+            disabled={!canScrollLeft}
+            onClick={onScrollLeft}
+            label="Ver luas anteriores"
+            placement="inline"
+          />
+          <MoonRowSkeleton count={skeletonCount} tileWidth={tileWidth} gap={gap} />
+          <ArrowButton
+            direction="right"
+            disabled={!canScrollRight}
+            onClick={onScrollRight}
+            label="Ver próximas luas"
+            placement="inline"
+          />
+        </div>
+      )}
 
-    {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
-      <EmptyState onRetry={onRetry} />
-    )}
+      {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
+        <EmptyState onRetry={onRetry} />
+      )}
 
       {!isInitialLoading && monthEntries.length > 0 && (
         <div className="flex items-center gap-4">

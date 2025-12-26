@@ -41,7 +41,6 @@ type PhaseItem = {
   phase: MoonPhase;
 };
 
-
 const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
@@ -125,7 +124,8 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     );
     return years;
   }, [monthEntries]);
-  const visibleYear = yearList.length > 0 ? yearList[Math.min(visibleYearIndex, yearList.length - 1)] : null;
+  const visibleYear =
+    yearList.length > 0 ? yearList[Math.min(visibleYearIndex, yearList.length - 1)] : null;
   const visibleMonths = useMemo(
     () => (visibleYear === null ? [] : monthEntries.filter((month) => month.year === visibleYear)),
     [monthEntries, visibleYear]
@@ -214,7 +214,11 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
       setExistingInsightUpdatedAt(null);
 
       try {
-        const item = await loadInsight(selectedMoonPhase, selectedMonth.year, selectedMonth.monthNumber);
+        const item = await loadInsight(
+          selectedMoonPhase,
+          selectedMonth.year,
+          selectedMonth.monthNumber
+        );
         if (!isActive) return;
         setExistingInsight(item?.insight ?? '');
         setExistingInsightUpdatedAt(item?.updatedAt ?? item?.createdAt ?? null);
@@ -401,75 +405,75 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   return (
     <>
       <div className="relative flex min-h-screen w-full flex-col items-center py-10 sm:py-12 lg:py-14">
-      <LuminousTrail />
-      <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
+        <LuminousTrail />
+        <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
 
-      <div className="flex w-full flex-1 flex-col items-center justify-center">
-        <CelestialObject
-          type="sol"
-          size={isCompactLayout ? 'md' : 'lg'}
-          interactive
-          onClick={(e) =>
-            navigateWithFocus?.('planetCardBelowSun', {
-              event: e,
-              type: 'sol',
-              size: 'lg',
-            })
-          }
-          className="mb-4 sm:mb-5 lg:mb-4"
-          floatOffset={-3}
-        />
+        <div className="flex w-full flex-1 flex-col items-center justify-center">
+          <CelestialObject
+            type="sol"
+            size={isCompactLayout ? 'md' : 'lg'}
+            interactive
+            onClick={(e) =>
+              navigateWithFocus?.('planetCardBelowSun', {
+                event: e,
+                type: 'sol',
+                size: 'lg',
+              })
+            }
+            className="mb-4 sm:mb-5 lg:mb-4"
+            floatOffset={-3}
+          />
 
-        <div className="relative w-full max-w-5xl px-3 sm:px-4">
-          {highlightTarget && highlightedMoonInfo && (
-            <HighlightBanner
-              info={highlightedMoonInfo}
-              onClick={() => focusOnTarget(highlightTarget)}
+          <div className="relative w-full max-w-5xl px-3 sm:px-4">
+            {highlightTarget && highlightedMoonInfo && (
+              <HighlightBanner
+                info={highlightedMoonInfo}
+                onClick={() => focusOnTarget(highlightTarget)}
+              />
+            )}
+
+            <MoonCarousel
+              scrollerRef={scrollerRef}
+              scrollerMaxWidth={scrollerMaxWidth}
+              onKeyDown={handleScrollerKeyDown}
+              layoutPadding={layout.padding}
+              tileWidth={layout.tileWidth}
+              gap={layout.gap}
+              canScrollLeft={canScrollLeft}
+              canScrollRight={canScrollRight}
+              onScrollLeft={() => handleYearStep('left')}
+              onScrollRight={() => handleYearStep('right')}
+              onRetry={handleRetry}
+              isInitialLoading={isInitialLoading}
+              monthEntries={visibleMonths}
+              calendarError={calendarError}
+              skeletonCount={skeletonCount}
+              virtualizedPhases={virtualizedPhases}
+              highlightTarget={highlightTarget}
+              onMoonClick={handleMoonClick}
+              revealedCycleKey={revealedCycleKey}
+              onCycleReveal={handleCycleReveal}
             />
-          )}
+          </div>
+        </div>
 
-          <MoonCarousel
-            scrollerRef={scrollerRef}
-            scrollerMaxWidth={scrollerMaxWidth}
-            onKeyDown={handleScrollerKeyDown}
-            layoutPadding={layout.padding}
-            tileWidth={layout.tileWidth}
-            gap={layout.gap}
-            canScrollLeft={canScrollLeft}
-            canScrollRight={canScrollRight}
-            onScrollLeft={() => handleYearStep('left')}
-            onScrollRight={() => handleYearStep('right')}
-          onRetry={handleRetry}
-          isInitialLoading={isInitialLoading}
-          monthEntries={visibleMonths}
-          calendarError={calendarError}
-          skeletonCount={skeletonCount}
-          virtualizedPhases={virtualizedPhases}
-          highlightTarget={highlightTarget}
-          onMoonClick={handleMoonClick}
-          revealedCycleKey={revealedCycleKey}
-          onCycleReveal={handleCycleReveal}
-        />
+        <div className="mt-auto flex w-full justify-center pt-4 pb-3 sm:pt-5 sm:pb-4 lg:pt-3 lg:pb-3">
+          <CelestialObject
+            type="planeta"
+            size={isCompactLayout ? 'md' : 'lg'}
+            interactive
+            onClick={(e) =>
+              navigateWithFocus?.('planetCardStandalone', {
+                event: e,
+                type: 'planeta',
+                size: 'lg',
+              })
+            }
+            className="mb-2"
+            floatOffset={2}
+          />
         </div>
       </div>
-
-      <div className="mt-auto flex w-full justify-center pt-4 pb-3 sm:pt-5 sm:pb-4 lg:pt-3 lg:pb-3">
-        <CelestialObject
-          type="planeta"
-          size={isCompactLayout ? 'md' : 'lg'}
-          interactive
-          onClick={(e) =>
-            navigateWithFocus?.('planetCardStandalone', {
-              event: e,
-              type: 'planeta',
-              size: 'lg',
-            })
-          }
-          className="mb-2"
-          floatOffset={2}
-        />
-      </div>
-    </div>
 
       <CosmosChatModal
         isOpen={isModalOpen}

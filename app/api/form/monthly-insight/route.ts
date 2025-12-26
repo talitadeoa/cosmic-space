@@ -30,7 +30,13 @@ export async function GET(request: NextRequest) {
     const year = Number(yearParam);
     const monthNumber = Number(monthNumberParam);
 
-    if (!moonPhaseParam || !yearParam || !monthNumberParam || Number.isNaN(year) || Number.isNaN(monthNumber)) {
+    if (
+      !moonPhaseParam ||
+      !yearParam ||
+      !monthNumberParam ||
+      Number.isNaN(year) ||
+      Number.isNaN(monthNumber)
+    ) {
       return NextResponse.json(
         { error: 'moonPhase, year e monthNumber são obrigatórios' },
         { status: 400 }

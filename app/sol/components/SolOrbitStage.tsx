@@ -24,11 +24,7 @@ type SolOrbitStageProps = {
   onSpaceClick?: () => void;
 };
 
-const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
-  onSolClick,
-  onMoonClick,
-  onSpaceClick,
-}) => {
+const SolOrbitStage: React.FC<SolOrbitStageProps> = ({ onSolClick, onMoonClick, onSpaceClick }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const handleSpaceClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {

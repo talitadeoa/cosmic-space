@@ -29,10 +29,7 @@ const SolRouteContent: React.FC<{
           <SolOrbitExperience onSpaceClick={onSpaceClick} />
         </section>
       ) : (
-        <section
-          className="mx-auto w-full max-w-5xl"
-          onClick={(event) => event.stopPropagation()}
-        >
+        <section className="mx-auto w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
           <GalaxySunsExperience
             onSunSelect={(year) => handleSunSelect(year)}
             onBackgroundClick={onBackgroundClick}

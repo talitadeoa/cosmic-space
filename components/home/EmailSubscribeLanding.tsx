@@ -21,7 +21,9 @@ export default function EmailSubscribeLanding() {
         </div>
         <EmailSignupForm />
       </div>
-      <p className="mt-4 text-[11px] text-slate-400/80 text-center">© {year} Construido no hiperespaço</p>
+      <p className="mt-4 text-[11px] text-slate-400/80 text-center">
+        © {year} Construido no hiperespaço
+      </p>
     </main>
   );
 }
