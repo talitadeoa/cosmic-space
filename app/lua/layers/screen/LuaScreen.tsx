@@ -204,7 +204,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
       setExistingInsightUpdatedAt(null);
 
       try {
-        const item = await loadInsight(selectedMoonPhase, selectedMonth.monthNumber);
+        const item = await loadInsight(selectedMoonPhase, selectedMonth.year, selectedMonth.monthNumber);
         if (!isActive) return;
         setExistingInsight(item?.insight ?? '');
         setExistingInsightUpdatedAt(item?.updatedAt ?? item?.createdAt ?? null);
@@ -226,7 +226,8 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
 
   const handleInsightSubmit = async (insight: string) => {
     const monthNumber = selectedMonth?.monthNumber ?? 1;
-    await saveInsight(selectedMoonPhase, monthNumber, insight);
+    const year = selectedMonth?.year ?? new Date().getFullYear();
+    await saveInsight(selectedMoonPhase, year, monthNumber, insight);
   };
 
   const handleRetry = useCallback(() => {
