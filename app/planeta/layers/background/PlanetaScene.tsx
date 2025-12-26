@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SpaceBackground } from '@/app/cosmos/components/SpaceBackground';
+import { SpacePageLayout } from '@/components/SpacePageLayout';
 
 export type PlanetaSceneProps = {
   children: React.ReactNode;
@@ -9,9 +9,8 @@ export type PlanetaSceneProps = {
 
 export const PlanetaScene: React.FC<PlanetaSceneProps> = ({ children }) => {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      <SpaceBackground />
+    <SpacePageLayout allowBackNavigation>
       {children}
-    </div>
+    </SpacePageLayout>
   );
 };

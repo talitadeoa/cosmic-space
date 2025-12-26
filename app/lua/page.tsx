@@ -1,13 +1,17 @@
-import type { Metadata } from 'next';
+'use client';
+
+import AuthGate from '@/components/AuthGate';
+import { SpacePageLayout } from '@/components/SpacePageLayout';
 import LuaScreen from './layers/screen/LuaScreen';
 
-export const metadata: Metadata = {
-  title: 'Lua | Cosmic Space',
-  description: 'Explore o carrossel lunar completo com insights e sincronizações dedicadas.',
-};
-
 const LuaPage = () => {
-  return <LuaScreen />;
+  return (
+    <AuthGate>
+      <SpacePageLayout allowBackNavigation>
+        <LuaScreen />
+      </SpacePageLayout>
+    </AuthGate>
+  );
 };
 
 export default LuaPage;

@@ -16,19 +16,21 @@ export default function AuthGate({ children }: AuthGateProps) {
   const [localError, setLocalError] = useState<string | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
 
-  if (loading) {
+  // Renderiza o conteúdo durante o carregamento para evitar flash
+  // A autenticação será verificada silenciosamente em background
+  if (isAuthenticated || loading) {
+    return <>{children}</>;
+  }
+
+  // Só mostra o login quando autenticação falhou definitivamente
+  if (!isAuthenticated && !loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500/30 border-t-indigo-500" />
-          <p className="text-slate-300">Carregando...</p>
+          <p className="text-slate-300">Autenticação necessária</p>
         </div>
       </div>
     );
-  }
-
-  if (isAuthenticated) {
-    return <>{children}</>;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

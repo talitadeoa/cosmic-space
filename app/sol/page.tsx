@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import AuthGate from '@/components/AuthGate';
+import { SpacePageLayout } from '@/components/SpacePageLayout';
 import { YearProvider, useYear } from '@/app/cosmos/context/YearContext';
 import SolOrbitExperience from './SolOrbitExperience';
 import GalaxySunsExperience from './GalaxySunsExperience';
@@ -32,7 +33,9 @@ const SolPage = () => {
   return (
     <AuthGate>
       <YearProvider>
-        <SolRouteContent />
+        <SpacePageLayout allowBackNavigation>
+          <SolRouteContent />
+        </SpacePageLayout>
       </YearProvider>
     </AuthGate>
   );
