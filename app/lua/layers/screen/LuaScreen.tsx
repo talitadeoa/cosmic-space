@@ -41,6 +41,7 @@ type PhaseItem = {
   phase: MoonPhase;
 };
 
+
 const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
@@ -49,6 +50,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [existingInsight, setExistingInsight] = useState('');
   const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+  const [revealedCycleKey, setRevealedCycleKey] = useState<string | null>(null);
   const timezone = getResolvedTimezone();
   const MIN_YEAR = 2025;
   const MAX_YEAR = 2028;
@@ -298,12 +300,12 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
-    const bufferTiles = 6;
-    const start = Math.max(0, Math.floor(scroller.scrollLeft / tileSpan) - bufferTiles);
-    const visibleTiles = Math.ceil(scroller.clientWidth / tileSpan) + bufferTiles * 2;
-    const end = Math.min(visibleMonths.length, start + visibleTiles);
-    setVirtualWindow((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
-  }, [tileSpan, visibleMonths.length]);
+    const bufferItems = 12;
+    const start = Math.max(0, Math.floor(scroller.scrollLeft / tileSpan) - bufferItems);
+    const visibleItems = Math.ceil(scroller.clientWidth / tileSpan) + bufferItems * 2;
+    const end = Math.min(phaseSequence.length, start + visibleItems);
+    setPhaseWindow((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
+  }, [phaseSequence.length, tileSpan]);
 
   useEffect(() => {
     focusOnTarget(highlightTarget);
@@ -342,7 +344,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
 
   useEffect(() => {
     updateScrollMetrics();
-  }, [layout.visibleColumns, updateScrollMetrics, visibleMonths.length]);
+  }, [layout.visibleColumns, phaseSequence.length, updateScrollMetrics]);
 
   const handleCycleReveal = useCallback((monthKey: string | null) => {
     setRevealedCycleKey(monthKey);
@@ -356,7 +358,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
         if (next < 0 || next >= yearList.length) return prev;
         return next;
       });
-      setVirtualWindow({ start: 0, end: 40 });
+      setPhaseWindow({ start: 0, end: 80 });
       requestAnimationFrame(() => {
         scrollerRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
       });
@@ -477,13 +479,10 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
           calendarError={calendarError}
           skeletonCount={skeletonCount}
           trackWidth={trackWidth}
-          virtualizedMonths={virtualizedMonths}
+          virtualizedPhases={virtualizedPhases}
           highlightTarget={highlightTarget}
           virtualOffsetPx={virtualOffsetPx}
           onMoonClick={handleMoonClick}
-          diagonalStep={diagonalStep}
-          topBaseOffset={topBaseOffset}
-          bottomBaseOffset={bottomBaseOffset}
           revealedCycleKey={revealedCycleKey}
           onCycleReveal={handleCycleReveal}
         />

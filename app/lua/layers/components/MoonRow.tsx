@@ -5,36 +5,37 @@ import type { HighlightTarget, MonthEntry } from '@/app/cosmos/utils/luaList';
 import { ANIMATION_CONFIG, buildMonthKey, getFloatOffset } from '@/app/cosmos/utils/luaList';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
-type MoonRowProps = {
+type MoonRowItem = {
+  month: MonthEntry;
   phase: MoonPhase;
-  direction: 'up' | 'down';
-  months: MonthEntry[];
+};
+
+type MoonRowProps = {
+  items: MoonRowItem[];
   highlightTarget: HighlightTarget | null;
   trackWidth: number;
   virtualOffsetPx: number;
   tileWidth: number;
   gap: number;
-  diagonalStep: number;
-  baseYOffset: number;
   onMoonClick: (month: MonthEntry, phase: MoonPhase) => void;
+  orbitRadius: number;
+  revealedCycleKey: string | null;
   onCycleReveal: (monthKey: string | null) => void;
 };
 
 const MoonRow: React.FC<MoonRowProps> = ({
-  phase,
-  direction,
-  months,
+  items,
   highlightTarget,
   trackWidth,
   virtualOffsetPx,
   tileWidth,
   gap,
-  diagonalStep,
-  baseYOffset,
   onMoonClick,
+  orbitRadius,
+  revealedCycleKey,
   onCycleReveal,
 }) => {
-  const [hoveredMonth, setHoveredMonth] = useState<string | null>(null);
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const touchRevealTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearTouchRevealTimeout = () => {
@@ -55,9 +56,13 @@ const MoonRow: React.FC<MoonRowProps> = ({
         columnGap: gap,
       }}
     >
-      {months.map((month, idx) => {
+        {items.map(({ month, phase }, idx) => {
         const monthKey = buildMonthKey(month);
-        const isHovered = hoveredMonth === monthKey;
+        const phaseKey = `${monthKey}-${phase}`;
+        const isHovered = hoveredKey === phaseKey;
+          const isCycleActive = revealedCycleKey === monthKey;
+          const isFullPhase = phase === 'luaCheia';
+          const isNewPhase = phase === 'luaNova';
 
         const isHighlighted =
           highlightTarget &&
@@ -65,73 +70,85 @@ const MoonRow: React.FC<MoonRowProps> = ({
           highlightTarget.monthNumber === month.monthNumber &&
           highlightTarget.year === month.year;
 
-        const floatOffset = getFloatOffset(direction, idx);
-        const delay = idx * 0.018;
-        const diagonalOffset = baseYOffset - idx * diagonalStep;
+          const floatDirection = idx % 2 === 0 ? 'up' : 'down';
+          const floatOffset = getFloatOffset(floatDirection, idx);
+          const delay = idx * 0.015;
+          const initialY = floatDirection === 'up' ? 10 : -10;
+          const orbitOffsets: Record<MoonPhase, { x: number; y: number }> = {
+            luaNova: { x: 0, y: -orbitRadius },
+            luaCrescente: { x: orbitRadius, y: 0 },
+            luaCheia: { x: 0, y: orbitRadius },
+            luaMinguante: { x: -orbitRadius, y: 0 },
+          };
+          const targetOffset = orbitOffsets[phase] ?? { x: 0, y: 0 };
+          const translatedX = isCycleActive ? targetOffset.x : 0;
+          const translatedY = isCycleActive ? targetOffset.y : 0;
+          const tooltipDirection = isCycleActive ? (isNewPhase ? 'up' : isFullPhase ? 'down' : floatDirection) : floatDirection;
 
         const monthPhaseLabel = phase === 'luaNova' ? month.newMoonSign : month.fullMoonSign;
         const monthPhaseDate = phase === 'luaNova' ? month.newMoonDate : month.fullMoonDate;
 
         return (
           <motion.div
-            key={`${phase}-${monthKey}`}
+            key={phaseKey}
             transition={{
               ...ANIMATION_CONFIG.spring,
               delay,
             }}
             animate={{
               opacity: 1,
-              y: diagonalOffset,
+                y: translatedY,
+                x: translatedX,
               scale: 1,
             }}
-            initial={{ opacity: 0, y: diagonalOffset + 10, scale: 0.95 }}
+              initial={{ opacity: 0, y: initialY, x: 0, scale: 0.95 }}
             onPointerEnter={() => {
               clearTouchRevealTimeout();
-              setHoveredMonth(monthKey);
-              onCycleReveal(monthKey);
+              setHoveredKey(phaseKey);
+                onCycleReveal(monthKey);
             }}
             onPointerLeave={() => {
               clearTouchRevealTimeout();
-              setHoveredMonth(null);
-              onCycleReveal(null);
+              setHoveredKey(null);
+                onCycleReveal(null);
             }}
             onTouchStart={() => {
               clearTouchRevealTimeout();
-              setHoveredMonth(monthKey);
-              onCycleReveal(monthKey);
+              setHoveredKey(phaseKey);
+                onCycleReveal(monthKey);
             }}
             onTouchEnd={() => {
-              setHoveredMonth(null);
+              setHoveredKey(null);
               clearTouchRevealTimeout();
               touchRevealTimeout.current = setTimeout(() => {
-                onCycleReveal(null);
+                  onCycleReveal(null);
                 touchRevealTimeout.current = null;
               }, 900);
             }}
             onTouchCancel={() => {
               clearTouchRevealTimeout();
-              setHoveredMonth(null);
-              onCycleReveal(null);
+              setHoveredKey(null);
+                onCycleReveal(null);
             }}
             onFocus={() => {
-              setHoveredMonth(monthKey);
-              onCycleReveal(monthKey);
+              setHoveredKey(phaseKey);
+                onCycleReveal(monthKey);
             }}
             onBlur={() => {
-              setHoveredMonth(null);
-              onCycleReveal(null);
+              setHoveredKey(null);
+                onCycleReveal(null);
             }}
             style={{ width: tileWidth }}
             className="relative"
           >
             <div className="relative flex flex-col items-center justify-center cursor-pointer">
-              {isHovered && (
+                {isHovered && (
                 <motion.div
-                  initial={{ opacity: 0, y: direction === 'up' ? 10 : -10 }}
-                  animate={{ opacity: 1, y: direction === 'up' ? -8 : 8 }}
-                  exit={{ opacity: 0, y: direction === 'up' ? 10 : -10 }}
+                    initial={{ opacity: 0, y: tooltipDirection === 'up' ? 10 : -10 }}
+                    animate={{ opacity: 1, y: tooltipDirection === 'up' ? -8 : 8 }}
+                    exit={{ opacity: 0, y: tooltipDirection === 'up' ? 10 : -10 }}
                   transition={{ duration: 0.2 }}
-                  className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-lg border border-sky-400/30 bg-slate-900/95 px-3 py-2 text-xs text-sky-200 shadow-lg backdrop-blur ${direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
+                    className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-lg border border-sky-400/30 bg-slate-900/95 px-3 py-2 text-xs text-sky-200 shadow-lg backdrop-blur ${tooltipDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
                 >
                   <div className="font-semibold">
                     {month.monthName} {month.year}

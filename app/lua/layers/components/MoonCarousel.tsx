@@ -1,13 +1,16 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo } from 'react';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
-import type { HighlightTarget, MonthEntry } from '@/app/cosmos/utils/luaList';
-import { ANIMATION_CONFIG } from '@/app/cosmos/utils/luaList';
+import { buildMonthKey, type HighlightTarget, type MonthEntry } from '@/app/cosmos/utils/luaList';
 import ArrowButton from './ArrowButton';
 import EmptyState from './EmptyState';
-import HiddenPhasesBridge from './HiddenPhasesBridge';
 import MoonRow from './MoonRow';
 import MoonRowSkeleton from './MoonRowSkeleton';
+import HiddenPhasesBridge from './HiddenPhasesBridge';
+
+type PhaseItem = {
+  month: MonthEntry;
+  phase: MoonPhase;
+};
 
 type MoonCarouselProps = {
   scrollerRef: React.RefObject<HTMLDivElement>;
@@ -26,13 +29,10 @@ type MoonCarouselProps = {
   calendarError: string | null;
   skeletonCount: number;
   trackWidth: number;
-  virtualizedMonths: MonthEntry[];
+  virtualizedPhases: PhaseItem[];
   highlightTarget: HighlightTarget | null;
   virtualOffsetPx: number;
   onMoonClick: (month: MonthEntry, phase: MoonPhase) => void;
-  diagonalStep: number;
-  topBaseOffset: number;
-  bottomBaseOffset: number;
   revealedCycleKey: string | null;
   onCycleReveal: (monthKey: string | null) => void;
 };
@@ -54,17 +54,34 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
   calendarError,
   skeletonCount,
   trackWidth,
-  virtualizedMonths,
+  virtualizedPhases,
   highlightTarget,
   virtualOffsetPx,
   onMoonClick,
-  diagonalStep,
-  topBaseOffset,
-  bottomBaseOffset,
   revealedCycleKey,
   onCycleReveal,
-}) => (
-  <div
+}) => {
+  const tileSpan = tileWidth + gap;
+  const orbitRadius = Math.max(48, Math.round(tileWidth * 0.55));
+  const cycleAnchors = useMemo(
+    () => {
+      const seen = new Set<string>();
+      return virtualizedPhases.reduce<{ month: MonthEntry; localIndex: number }[]>(
+        (acc, item, idx) => {
+          const key = buildMonthKey(item.month);
+          if (seen.has(key)) return acc;
+          seen.add(key);
+          acc.push({ month: item.month, localIndex: idx });
+          return acc;
+        },
+        []
+      );
+    },
+    [virtualizedPhases]
+  );
+
+  return (
+    <div
     ref={scrollerRef}
     className="group relative w-full min-h-[24rem] overflow-x-auto overflow-y-visible rounded-3xl py-12 sm:min-h-[26rem] sm:py-14 lg:min-h-[30rem] lg:py-16 transition-[max-width] duration-200"
     onKeyDown={onKeyDown}
@@ -103,63 +120,35 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
     {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
       <EmptyState onRetry={onRetry} />
     )}
-    {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
-      <EmptyState onRetry={onRetry} />
-    )}
 
-    {!isInitialLoading && monthEntries.length > 0 && (
-      <div
-        className="relative flex min-w-max flex-col items-center gap-12 sm:gap-14 lg:gap-16"
-        style={{ minWidth: trackWidth }}
-      >
-        <MoonRow
-          phase="luaNova"
-          direction="up"
-          months={virtualizedMonths}
-          highlightTarget={highlightTarget}
-          trackWidth={trackWidth}
-          virtualOffsetPx={virtualOffsetPx}
-          onMoonClick={onMoonClick}
-          tileWidth={tileWidth}
-          gap={gap}
-          diagonalStep={diagonalStep}
-          baseYOffset={topBaseOffset}
-          onCycleReveal={onCycleReveal}
-        />
+      {!isInitialLoading && monthEntries.length > 0 && (
+        <div className="relative flex min-w-max items-center" style={{ minWidth: trackWidth }}>
+          <HiddenPhasesBridge
+            anchors={cycleAnchors}
+            tileWidth={tileWidth}
+            gap={gap}
+            virtualOffsetPx={virtualOffsetPx}
+            trackWidth={trackWidth}
+            revealedCycleKey={revealedCycleKey}
+            orbitRadius={orbitRadius}
+          />
 
-        <HiddenPhasesBridge
-          months={virtualizedMonths}
-          tileWidth={tileWidth}
-          gap={gap}
-          virtualOffsetPx={virtualOffsetPx}
-          trackWidth={trackWidth}
-          revealedCycleKey={revealedCycleKey}
-        />
-
-        <motion.div
-          className="h-0.5 w-full bg-gradient-to-r from-sky-300/60 via-sky-500/80 to-sky-300/60"
-          style={{ minWidth: trackWidth, marginLeft: virtualOffsetPx }}
-          animate={{ x: [-10, 10, -10] }}
-          transition={ANIMATION_CONFIG.float}
-        />
-
-        <MoonRow
-          phase="luaCheia"
-          direction="down"
-          months={virtualizedMonths}
-          highlightTarget={highlightTarget}
-          trackWidth={trackWidth}
-          virtualOffsetPx={virtualOffsetPx}
-          onMoonClick={onMoonClick}
-          tileWidth={tileWidth}
-          gap={gap}
-          diagonalStep={diagonalStep}
-          baseYOffset={bottomBaseOffset}
-          onCycleReveal={onCycleReveal}
-        />
-      </div>
-    )}
-  </div>
-);
+          <MoonRow
+            items={virtualizedPhases}
+            highlightTarget={highlightTarget}
+            trackWidth={trackWidth}
+            virtualOffsetPx={virtualOffsetPx}
+            onMoonClick={onMoonClick}
+            tileWidth={tileWidth}
+            gap={gap}
+            orbitRadius={orbitRadius}
+            revealedCycleKey={revealedCycleKey}
+            onCycleReveal={onCycleReveal}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default MoonCarousel;
