@@ -66,12 +66,20 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
   const cycleAnchors = useMemo(
     () => {
       const seen = new Set<string>();
+      let newMoonIndex = 0;
       return virtualizedPhases.reduce<{ month: MonthEntry; localIndex: number }[]>(
         (acc, item, idx) => {
           const key = buildMonthKey(item.month);
-          if (seen.has(key)) return acc;
+          if (seen.has(key)) {
+            if (item.phase === 'luaNova') newMoonIndex++;
+            return acc;
+          }
           seen.add(key);
-          acc.push({ month: item.month, localIndex: idx });
+          // Usar o índice da lua nova como referência para o posicionamento
+          if (item.phase === 'luaNova') {
+            acc.push({ month: item.month, localIndex: newMoonIndex });
+          }
+          if (item.phase === 'luaNova') newMoonIndex++;
           return acc;
         },
         []
@@ -93,6 +101,8 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
       paddingRight: layoutPadding,
       marginLeft: 'auto',
       marginRight: 'auto',
+      display: 'flex',
+      alignItems: 'center',
     }}
   >
     <ArrowButton
