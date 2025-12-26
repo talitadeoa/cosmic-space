@@ -44,6 +44,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [existingInsight, setExistingInsight] = useState('');
   const [existingInsightUpdatedAt, setExistingInsightUpdatedAt] = useState<string | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+  const [revealedCycleKey, setRevealedCycleKey] = useState<string | null>(null);
   const timezone = getResolvedTimezone();
   const MIN_YEAR = 2025;
   const MAX_YEAR = 2028;
@@ -54,8 +55,9 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [calendarError, setCalendarError] = useState<string | null>(null);
   const pendingControllerRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [viewportFraction, setViewportFraction] = useState(0);
+  const hasInitializedYearRef = useRef(false);
+  const pendingCenterTargetRef = useRef<HighlightTarget | null>(null);
+  const [visibleYearIndex, setVisibleYearIndex] = useState(0);
   const [virtualWindow, setVirtualWindow] = useState({ start: 0, end: 40 });
   const [layout, setLayout] = useState(() =>
     getResponsiveLayout(typeof window !== 'undefined' ? window.innerWidth : undefined)
@@ -112,6 +114,17 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   }, [rangeEnd, rangeStart]);
 
   const monthEntries = useMemo(() => buildMonthEntries(calendarByYear), [calendarByYear]);
+  const yearList = useMemo(() => {
+    const years = Array.from(new Set(monthEntries.map((month) => month.year))).sort(
+      (a, b) => a - b
+    );
+    return years;
+  }, [monthEntries]);
+  const visibleYear = yearList.length > 0 ? yearList[Math.min(visibleYearIndex, yearList.length - 1)] : null;
+  const visibleMonths = useMemo(
+    () => (visibleYear === null ? [] : monthEntries.filter((month) => month.year === visibleYear)),
+    [monthEntries, visibleYear]
+  );
 
   useEffect(() => {
     loadCalendar();
@@ -131,6 +144,21 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     () => deriveHighlightTarget(allDays, todayIso, monthEntries),
     [allDays, monthEntries, todayIso]
   );
+
+  useEffect(() => {
+    if (!yearList.length) return;
+    if (!hasInitializedYearRef.current) {
+      const targetYear = highlightTarget?.year ?? yearList[yearList.length - 1];
+      const targetIndex = yearList.indexOf(targetYear);
+      setVisibleYearIndex(targetIndex >= 0 ? targetIndex : yearList.length - 1);
+      hasInitializedYearRef.current = true;
+      return;
+    }
+
+    if (visibleYearIndex > yearList.length - 1) {
+      setVisibleYearIndex(yearList.length - 1);
+    }
+  }, [highlightTarget, visibleYearIndex, yearList]);
 
   useEffect(() => {
     if (!selectedMonth && monthEntries.length > 0) {
@@ -213,12 +241,12 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const getColumnIndex = useCallback(
     (target: typeof highlightTarget) => {
       if (!target) return null;
-      const idx = monthEntries.findIndex(
+      const idx = visibleMonths.findIndex(
         (month) => month.year === target.year && month.monthNumber === target.monthNumber
       );
       return idx >= 0 ? idx : null;
     },
-    [monthEntries]
+    [visibleMonths]
   );
 
   const centerOnColumn = useCallback(
@@ -236,29 +264,47 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     [layout.padding, layout.tileWidth, tileSpan]
   );
 
+  const focusOnTarget = useCallback(
+    (target: HighlightTarget | null) => {
+      if (!target) return;
+      const column = getColumnIndex(target);
+      if (column === null) {
+        pendingCenterTargetRef.current = target;
+        const targetIndex = yearList.indexOf(target.year);
+        if (targetIndex >= 0 && targetIndex !== visibleYearIndex) {
+          setVisibleYearIndex(targetIndex);
+        }
+        return;
+      }
+      centerOnColumn(column);
+    },
+    [centerOnColumn, getColumnIndex, visibleYearIndex, yearList]
+  );
+
   const updateScrollMetrics = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
-    const max = scroller.scrollWidth - scroller.clientWidth;
-    const progress = max > 0 ? Math.min(scroller.scrollLeft / max, 1) : 0;
-    const fraction =
-      scroller.scrollWidth > 0 ? Math.min(scroller.clientWidth / scroller.scrollWidth, 1) : 0;
-
-    setScrollProgress(progress);
-    setViewportFraction(fraction);
-
     const bufferTiles = 6;
     const start = Math.max(0, Math.floor(scroller.scrollLeft / tileSpan) - bufferTiles);
     const visibleTiles = Math.ceil(scroller.clientWidth / tileSpan) + bufferTiles * 2;
-    const end = Math.min(monthEntries.length, start + visibleTiles);
+    const end = Math.min(visibleMonths.length, start + visibleTiles);
     setVirtualWindow((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
-  }, [monthEntries.length, tileSpan]);
+  }, [tileSpan, visibleMonths.length]);
 
   useEffect(() => {
-    const column = getColumnIndex(highlightTarget);
+    focusOnTarget(highlightTarget);
+  }, [focusOnTarget, highlightTarget]);
+
+  useEffect(() => {
+    const pendingTarget = pendingCenterTargetRef.current;
+    if (!pendingTarget) return;
+    if (pendingTarget.year !== visibleYear) return;
+    const column = getColumnIndex(pendingTarget);
+    if (column === null) return;
     centerOnColumn(column);
-  }, [centerOnColumn, getColumnIndex, highlightTarget]);
+    pendingCenterTargetRef.current = null;
+  }, [centerOnColumn, getColumnIndex, visibleYear, visibleMonths]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -283,71 +329,67 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
 
   useEffect(() => {
     updateScrollMetrics();
-  }, [layout.visibleColumns, monthEntries.length, updateScrollMetrics]);
+  }, [layout.visibleColumns, updateScrollMetrics, visibleMonths.length]);
 
-  const scrollToProgress = useCallback((value: number) => {
-    setScrollProgress(value);
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    const max = scroller.scrollWidth - scroller.clientWidth;
-    scroller.scrollTo({ left: max * value, behavior: 'smooth' });
+  const handleCycleReveal = useCallback((monthKey: string | null) => {
+    setRevealedCycleKey(monthKey);
   }, []);
 
-  const scrollByStep = useCallback(
+  const handleYearStep = useCallback(
     (direction: 'left' | 'right') => {
-      const scroller = scrollerRef.current;
-      if (!scroller) return;
-
-      const step = tileSpan * layout.visibleColumns;
-      const max = scroller.scrollWidth - scroller.clientWidth;
-      const targetLeft =
-        direction === 'left'
-          ? Math.max(0, scroller.scrollLeft - step)
-          : Math.min(max, scroller.scrollLeft + step);
-
-      scroller.scrollTo({ left: targetLeft, behavior: 'smooth' });
-      setScrollProgress(max > 0 ? targetLeft / max : 0);
+      setVisibleYearIndex((prev) => {
+        const delta = direction === 'left' ? -1 : 1;
+        const next = prev + delta;
+        if (next < 0 || next >= yearList.length) return prev;
+        return next;
+      });
+      setVirtualWindow({ start: 0, end: 40 });
+      requestAnimationFrame(() => {
+        scrollerRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+      });
     },
-    [layout.visibleColumns, tileSpan]
+    [yearList.length]
   );
 
   const handleScrollerKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        scrollByStep('left');
+        if (visibleYearIndex > 0) handleYearStep('left');
       }
       if (event.key === 'ArrowRight') {
         event.preventDefault();
-        scrollByStep('right');
+        if (visibleYearIndex < yearList.length - 1) handleYearStep('right');
       }
       if (event.key === 'Home') {
         event.preventDefault();
-        scrollToProgress(0);
+        scrollerRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
       }
       if (event.key === 'End') {
         event.preventDefault();
-        scrollToProgress(1);
+        const scroller = scrollerRef.current;
+        if (!scroller) return;
+        const max = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+        scroller.scrollTo({ left: max, behavior: 'smooth' });
       }
     },
-    [scrollByStep, scrollToProgress]
+    [handleYearStep, visibleYearIndex, yearList.length]
   );
 
-  const hasOverflow = viewportFraction > 0 && viewportFraction < 0.999;
-  const canScrollLeft = hasOverflow && scrollProgress > 0.01;
-  const canScrollRight = hasOverflow && scrollProgress < 0.99;
+  const canScrollLeft = visibleYearIndex > 0;
+  const canScrollRight = yearList.length > 0 && visibleYearIndex < yearList.length - 1;
 
   const trackWidth = useMemo(() => {
-    const monthCount = Math.max(1, monthEntries.length);
+    const monthCount = Math.max(1, visibleMonths.length);
     return monthCount * tileSpan - layout.gap;
-  }, [layout.gap, monthEntries.length, tileSpan]);
+  }, [layout.gap, tileSpan, visibleMonths.length]);
 
   const virtualizedMonths = useMemo(
-    () => monthEntries.slice(virtualWindow.start, virtualWindow.end),
-    [monthEntries, virtualWindow.end, virtualWindow.start]
+    () => visibleMonths.slice(virtualWindow.start, virtualWindow.end),
+    [visibleMonths, virtualWindow.end, virtualWindow.start]
   );
   const virtualOffsetPx = virtualWindow.start * tileSpan;
-  const isInitialLoading = isCalendarLoading && monthEntries.length === 0;
+  const isInitialLoading = isCalendarLoading && visibleMonths.length === 0;
   const skeletonCount = useMemo(
     () => Math.max(Math.ceil(layout.visibleColumns) + 2, 8),
     [layout.visibleColumns]
@@ -380,7 +422,8 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   }, []);
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center justify-between py-10 sm:py-14 lg:py-16">
+    <>
+      <div className="relative flex min-h-screen w-full flex-col items-center py-12 sm:py-16 lg:py-20">
       <LuminousTrail />
       <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
 
@@ -395,15 +438,15 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
             size: 'lg',
           })
         }
-        className="mt-4"
+        className="mt-2 mb-10 sm:mt-4 sm:mb-12 lg:mb-16"
         floatOffset={-3}
       />
 
-      <div className="relative w-full max-w-5xl px-3 sm:px-4">
+      <div className="relative mt-8 w-full max-w-5xl px-3 sm:mt-10 sm:px-4 lg:mt-14">
         {highlightTarget && highlightedMoonInfo && (
           <HighlightBanner
             info={highlightedMoonInfo}
-            onClick={() => centerOnColumn(getColumnIndex(highlightTarget))}
+            onClick={() => focusOnTarget(highlightTarget)}
           />
         )}
 
@@ -416,11 +459,11 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
           gap={layout.gap}
           canScrollLeft={canScrollLeft}
           canScrollRight={canScrollRight}
-          onScrollLeft={() => scrollByStep('left')}
-          onScrollRight={() => scrollByStep('right')}
+          onScrollLeft={() => handleYearStep('left')}
+          onScrollRight={() => handleYearStep('right')}
           onRetry={handleRetry}
           isInitialLoading={isInitialLoading}
-          monthEntries={monthEntries}
+          monthEntries={visibleMonths}
           calendarError={calendarError}
           skeletonCount={skeletonCount}
           trackWidth={trackWidth}
@@ -431,23 +474,28 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
           diagonalStep={diagonalStep}
           topBaseOffset={topBaseOffset}
           bottomBaseOffset={bottomBaseOffset}
+          revealedCycleKey={revealedCycleKey}
+          onCycleReveal={handleCycleReveal}
         />
       </div>
 
-      <CelestialObject
-        type="planeta"
-        size={isCompactLayout ? 'md' : 'lg'}
-        interactive
-        onClick={(e) =>
-          navigateWithFocus?.('planetCardStandalone', {
-            event: e,
-            type: 'planeta',
-            size: 'lg',
-          })
-        }
-        className="mb-4"
-        floatOffset={2}
-      />
+      <div className="mt-auto flex w-full justify-center pt-12 pb-6">
+        <CelestialObject
+          type="planeta"
+          size={isCompactLayout ? 'md' : 'lg'}
+          interactive
+          onClick={(e) =>
+            navigateWithFocus?.('planetCardStandalone', {
+              event: e,
+              type: 'planeta',
+              size: 'lg',
+            })
+          }
+          className="mb-2"
+          floatOffset={2}
+        />
+      </div>
+    </div>
 
       <CosmosChatModal
         isOpen={isModalOpen}
@@ -469,7 +517,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
           await handleInsightSubmit(value);
         }}
       />
-    </div>
+    </>
   );
 };
 

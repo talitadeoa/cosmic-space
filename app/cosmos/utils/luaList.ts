@@ -56,6 +56,9 @@ export type MonthEntry = {
   fullMoonDate: string;
 };
 
+export const buildMonthKey = (month: Pick<MonthEntry, 'year' | 'monthNumber'>) =>
+  `${month.year}-${String(month.monthNumber).padStart(2, '0')}`;
+
 export type HighlightTarget = MonthEntry & {
   phase: 'luaNova' | 'luaCheia';
   date: string;

@@ -5,6 +5,7 @@ import type { HighlightTarget, MonthEntry } from '@/app/cosmos/utils/luaList';
 import { ANIMATION_CONFIG } from '@/app/cosmos/utils/luaList';
 import ArrowButton from './ArrowButton';
 import EmptyState from './EmptyState';
+import HiddenPhasesBridge from './HiddenPhasesBridge';
 import MoonRow from './MoonRow';
 import MoonRowSkeleton from './MoonRowSkeleton';
 
@@ -32,6 +33,8 @@ type MoonCarouselProps = {
   diagonalStep: number;
   topBaseOffset: number;
   bottomBaseOffset: number;
+  revealedCycleKey: string | null;
+  onCycleReveal: (monthKey: string | null) => void;
 };
 
 const MoonCarousel: React.FC<MoonCarouselProps> = ({
@@ -58,10 +61,12 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
   diagonalStep,
   topBaseOffset,
   bottomBaseOffset,
+  revealedCycleKey,
+  onCycleReveal,
 }) => (
   <div
     ref={scrollerRef}
-    className="group relative w-full overflow-x-auto overflow-y-visible rounded-3xl py-6 transition-[max-width] duration-200"
+    className="group relative w-full min-h-[24rem] overflow-x-auto overflow-y-visible rounded-3xl py-12 sm:min-h-[26rem] sm:py-14 lg:min-h-[30rem] lg:py-16 transition-[max-width] duration-200"
     onKeyDown={onKeyDown}
     tabIndex={0}
     aria-label="Carrossel de luas"
@@ -103,7 +108,10 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
     )}
 
     {!isInitialLoading && monthEntries.length > 0 && (
-      <div className="flex min-w-max flex-col items-center gap-10" style={{ minWidth: trackWidth }}>
+      <div
+        className="relative flex min-w-max flex-col items-center gap-12 sm:gap-14 lg:gap-16"
+        style={{ minWidth: trackWidth }}
+      >
         <MoonRow
           phase="luaNova"
           direction="up"
@@ -116,6 +124,16 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
           gap={gap}
           diagonalStep={diagonalStep}
           baseYOffset={topBaseOffset}
+          onCycleReveal={onCycleReveal}
+        />
+
+        <HiddenPhasesBridge
+          months={virtualizedMonths}
+          tileWidth={tileWidth}
+          gap={gap}
+          virtualOffsetPx={virtualOffsetPx}
+          trackWidth={trackWidth}
+          revealedCycleKey={revealedCycleKey}
         />
 
         <motion.div
@@ -137,6 +155,7 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
           gap={gap}
           diagonalStep={diagonalStep}
           baseYOffset={bottomBaseOffset}
+          onCycleReveal={onCycleReveal}
         />
       </div>
     )}

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { HighlightTarget, MonthEntry } from '@/app/cosmos/utils/luaList';
-import { ANIMATION_CONFIG, getFloatOffset } from '@/app/cosmos/utils/luaList';
+import { ANIMATION_CONFIG, buildMonthKey, getFloatOffset } from '@/app/cosmos/utils/luaList';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
 type MoonRowProps = {
@@ -17,6 +17,7 @@ type MoonRowProps = {
   diagonalStep: number;
   baseYOffset: number;
   onMoonClick: (month: MonthEntry, phase: MoonPhase) => void;
+  onCycleReveal: (monthKey: string | null) => void;
 };
 
 const MoonRow: React.FC<MoonRowProps> = ({
@@ -31,8 +32,19 @@ const MoonRow: React.FC<MoonRowProps> = ({
   diagonalStep,
   baseYOffset,
   onMoonClick,
+  onCycleReveal,
 }) => {
   const [hoveredMonth, setHoveredMonth] = useState<string | null>(null);
+  const touchRevealTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTouchRevealTimeout = () => {
+    if (touchRevealTimeout.current) {
+      clearTimeout(touchRevealTimeout.current);
+      touchRevealTimeout.current = null;
+    }
+  };
+
+  useEffect(() => () => clearTouchRevealTimeout(), []);
 
   return (
     <div
@@ -44,7 +56,7 @@ const MoonRow: React.FC<MoonRowProps> = ({
       }}
     >
       {months.map((month, idx) => {
-        const monthKey = `${month.year}-${String(month.monthNumber).padStart(2, '0')}`;
+        const monthKey = buildMonthKey(month);
         const isHovered = hoveredMonth === monthKey;
 
         const isHighlighted =
@@ -73,8 +85,42 @@ const MoonRow: React.FC<MoonRowProps> = ({
               scale: 1,
             }}
             initial={{ opacity: 0, y: diagonalOffset + 10, scale: 0.95 }}
-            onMouseEnter={() => setHoveredMonth(monthKey)}
-            onMouseLeave={() => setHoveredMonth(null)}
+            onPointerEnter={() => {
+              clearTouchRevealTimeout();
+              setHoveredMonth(monthKey);
+              onCycleReveal(monthKey);
+            }}
+            onPointerLeave={() => {
+              clearTouchRevealTimeout();
+              setHoveredMonth(null);
+              onCycleReveal(null);
+            }}
+            onTouchStart={() => {
+              clearTouchRevealTimeout();
+              setHoveredMonth(monthKey);
+              onCycleReveal(monthKey);
+            }}
+            onTouchEnd={() => {
+              setHoveredMonth(null);
+              clearTouchRevealTimeout();
+              touchRevealTimeout.current = setTimeout(() => {
+                onCycleReveal(null);
+                touchRevealTimeout.current = null;
+              }, 900);
+            }}
+            onTouchCancel={() => {
+              clearTouchRevealTimeout();
+              setHoveredMonth(null);
+              onCycleReveal(null);
+            }}
+            onFocus={() => {
+              setHoveredMonth(monthKey);
+              onCycleReveal(monthKey);
+            }}
+            onBlur={() => {
+              setHoveredMonth(null);
+              onCycleReveal(null);
+            }}
             style={{ width: tileWidth }}
             className="relative"
           >
