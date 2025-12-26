@@ -1,9 +1,9 @@
 export type NormalizedMoonPhase =
-  | "luaNova"
-  | "luaCrescente"
-  | "luaCheia"
-  | "luaMinguante"
-  | "desconhecida";
+  | 'luaNova'
+  | 'luaCrescente'
+  | 'luaCheia'
+  | 'luaMinguante'
+  | 'desconhecida';
 
 export type MoonEvent = {
   title: string;
@@ -27,21 +27,27 @@ export type MoonCalendarResponse = {
   source?: string;
 };
 
-const REMOTE_ENDPOINT = "/v1/moons";
-const FALLBACK_ENDPOINT = "/api/moons/lunations";
-const BASE_URL = (process.env.NEXT_PUBLIC_MOON_API_URL || process.env.NEXT_PUBLIC_BASE_URL || "").replace(/\/$/, "");
+const REMOTE_ENDPOINT = '/v1/moons';
+const FALLBACK_ENDPOINT = '/api/moons/lunations';
+const BASE_URL = (
+  process.env.NEXT_PUBLIC_MOON_API_URL ||
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  ''
+).replace(/\/$/, '');
 const REQUEST_TIMEOUT_MS = 12000;
 
 const buildEndpoint = () => (BASE_URL ? `${BASE_URL}${REMOTE_ENDPOINT}` : FALLBACK_ENDPOINT);
 
-const toIso = (value: string | undefined) => (value ? value.slice(0, 10) : "");
+const toIso = (value: string | undefined) => (value ? value.slice(0, 10) : '');
 
 const coerceDay = (input: any): MoonCalendarDay | null => {
   if (!input || typeof input !== 'object') return null;
 
   const date = toIso(input.date || input.data || input.day);
-  const moonPhase = (input.moonPhase || input.phase || input.fase || input.faseLua || "").toString().trim();
-  const sign = (input.sign || input.signo || input.zodiac || "").toString().trim();
+  const moonPhase = (input.moonPhase || input.phase || input.fase || input.faseLua || '')
+    .toString()
+    .trim();
+  const sign = (input.sign || input.signo || input.zodiac || '').toString().trim();
 
   // Validação: precisa de data E fase lunar
   if (!date || !moonPhase) {
@@ -53,29 +59,31 @@ const coerceDay = (input: any): MoonCalendarDay | null => {
     moonPhase,
     sign: sign || undefined,
     timezone: input.timezone || input.tz || undefined,
-    events: Array.isArray(input.events || input.eventos) ? input.events || input.eventos : undefined,
+    events: Array.isArray(input.events || input.eventos)
+      ? input.events || input.eventos
+      : undefined,
     meta: input.meta || undefined,
   };
 };
 
 export const normalizeMoonPhase = (phase?: string | null): NormalizedMoonPhase => {
-  if (!phase) return "desconhecida";
+  if (!phase) return 'desconhecida';
   const value = phase.toLowerCase();
 
-  if (value.includes("new") || value.includes("nova")) return "luaNova";
-  if (value.includes("full") || value.includes("cheia")) return "luaCheia";
-  if (value.includes("wax") || value.includes("cresc")) return "luaCrescente";
-  if (value.includes("wan") || value.includes("ming")) return "luaMinguante";
+  if (value.includes('new') || value.includes('nova')) return 'luaNova';
+  if (value.includes('full') || value.includes('cheia')) return 'luaCheia';
+  if (value.includes('wax') || value.includes('cresc')) return 'luaCrescente';
+  if (value.includes('wan') || value.includes('ming')) return 'luaMinguante';
 
-  return "desconhecida";
+  return 'desconhecida';
 };
 
 const parseBackendError = async (response: Response) => {
   try {
     const data = await response.json();
-    return typeof data?.error === "string"
+    return typeof data?.error === 'string'
       ? data.error
-      : typeof data?.message === "string"
+      : typeof data?.message === 'string'
         ? data.message
         : `Código ${response.status}`;
   } catch (error) {
@@ -91,7 +99,7 @@ export async function fetchMoonCalendar(params: {
 }): Promise<MoonCalendarResponse> {
   const endpoint = buildEndpoint();
   const searchParams = new URLSearchParams({ start: params.start, end: params.end });
-  if (params.tz) searchParams.set("tz", params.tz);
+  if (params.tz) searchParams.set('tz', params.tz);
 
   const url = `${endpoint}?${searchParams.toString()}`;
   const controller = new AbortController();
@@ -99,25 +107,25 @@ export async function fetchMoonCalendar(params: {
   const onAbort = () => controller.abort();
   if (params.signal) {
     if (params.signal.aborted) controller.abort();
-    params.signal.addEventListener("abort", onAbort, { once: true });
+    params.signal.addEventListener('abort', onAbort, { once: true });
   }
 
   let response: Response;
   try {
     response = await fetch(url, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
       signal: controller.signal,
     });
   } catch (error) {
     if (controller.signal.aborted && !params.signal?.aborted) {
-      throw new Error("Tempo limite ao consultar fases da lua.");
+      throw new Error('Tempo limite ao consultar fases da lua.');
     }
     throw error;
   } finally {
     clearTimeout(timeoutId);
     if (params.signal) {
-      params.signal.removeEventListener("abort", onAbort);
+      params.signal.removeEventListener('abort', onAbort);
     }
   }
 

@@ -3,18 +3,21 @@
 ## ✅ O que foi implementado
 
 ### 1. **Schema do Banco de Dados Atualizado**
+
 A tabela `lunations` agora inclui:
+
 - `moon_emoji` - Emoji da fase lunar (🌑 🌓 🌕 🌗)
 - `zodiac_emoji` - Emoji do signo zodiacal (⚖️ 🧊 🐂 🦁 etc)
 
 ### 2. **Interface TypeScript Atualizada**
+
 ```typescript
 export interface LunationData {
   lunation_date: string;
   moon_phase: string;
-  moon_emoji?: string;        // ✨ NOVO
+  moon_emoji?: string; // ✨ NOVO
   zodiac_sign: string;
-  zodiac_emoji?: string;      // ✨ NOVO
+  zodiac_emoji?: string; // ✨ NOVO
   illumination?: number;
   age_days?: number;
   description?: string;
@@ -23,11 +26,14 @@ export interface LunationData {
 ```
 
 ### 3. **Funções Atualizadas**
+
 - `saveLunations()` - Agora salva os emojis
 - `getLunations()` - Agora retorna os emojis
 
 ### 4. **API Atualizada**
+
 GET `/api/moons/lunations` agora retorna:
+
 ```json
 {
   "days": [
@@ -72,6 +78,7 @@ npx tsx scripts/seed-lunations.ts
 ```
 
 Saída esperada:
+
 ```
 🌙 Iniciando seed de lunações...
 📊 Total de registros: 4
@@ -94,7 +101,7 @@ A sincronização com LuaList acontece automaticamente via API.
 const response = await fetch('/api/moons/lunations?start=2025-10-01&end=2025-11-30');
 const data = await response.json();
 
-data.days.forEach(day => {
+data.days.forEach((day) => {
   console.log(`${day.moonEmoji} ${day.moonPhase} em ${day.signEmoji} ${day.sign}`);
 });
 ```
@@ -109,18 +116,19 @@ Edite [scripts/seed-lunations.ts](scripts/seed-lunations.ts) e adicione mais ent
 const lunationsData: LunationData[] = [
   // ... dados existentes
   {
-    lunation_date: "2025-11-20",
-    moon_phase: "Nova",
-    moon_emoji: "🌑",
-    zodiac_sign: "Escorpião",
-    zodiac_emoji: "♏",
-    source: "manual"
+    lunation_date: '2025-11-20',
+    moon_phase: 'Nova',
+    moon_emoji: '🌑',
+    zodiac_sign: 'Escorpião',
+    zodiac_emoji: '♏',
+    source: 'manual',
   },
   // ... mais dados
 ];
 ```
 
 Depois execute:
+
 ```bash
 npx tsx scripts/seed-lunations.ts
 ```
@@ -152,21 +160,24 @@ A sincronização acontece automaticamente quando o LuaList faz requisição par
 2. **Fallback:** Geração local (cálculo astronômico)
 
 Para forçar uso do banco de dados:
+
 ```typescript
-fetch('/api/moons/lunations?start=2025-10-01&end=2025-11-30&source=db')
+fetch('/api/moons/lunations?start=2025-10-01&end=2025-11-30&source=db');
 ```
 
 ## 🎨 Emojis Disponíveis
 
 ### Fases da Lua
+
 - 🌑 Nova
 - 🌓 Crescente
 - 🌕 Cheia
 - 🌗 Minguante
 
 ### Signos do Zodíaco
+
 - ♈ Áries
-- ♉ Touro  
+- ♉ Touro
 - ♊ Gêmeos
 - ♋ Câncer
 - ♌ Leão
@@ -185,7 +196,7 @@ import useSWR from 'swr';
 
 function LuaList() {
   const { data } = useSWR('/api/moons/lunations?start=2025-10-01&end=2025-11-30');
-  
+
   return (
     <div>
       {data?.days.map(day => (
@@ -215,17 +226,20 @@ function LuaList() {
 ## 🐛 Troubleshooting
 
 ### Erro: "DATABASE_URL não configurada"
+
 ```bash
 # Adicione no .env.local
 DATABASE_URL="postgresql://..."
 ```
 
 ### Dados não aparecem no LuaList
+
 1. Verifique se o seed foi executado com sucesso
 2. Confirme que o range de datas na API inclui seus dados
 3. Verifique os logs do console para erros
 
 ### Emojis não aparecem
+
 - Certifique-se de que seu terminal/navegador suporta UTF-8
 - Verifique se os emojis foram salvos corretamente no banco
 

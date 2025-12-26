@@ -1,6 +1,7 @@
-import * as fs from "fs";
-import * as path from "path";
-import { saveLunations, type LunationData } from "@/lib/forms";
+import * as fs from 'fs';
+import * as path from 'path';
+import { saveLunations } from '@/lib/forms';
+import type { LunationData } from '@/types/lunation';
 
 interface CSVRow {
   data: string;
@@ -14,13 +15,13 @@ interface CSVRow {
  * Converte data de formato DD/MM/YYYY para YYYY-MM-DD
  */
 function convertDateFormat(dateStr: string): string {
-  const parts = dateStr.trim().split("/");
+  const parts = dateStr.trim().split('/');
   if (parts.length !== 3) {
     throw new Error(`Formato de data inválido: ${dateStr}`);
   }
 
   const [day, month, year] = parts;
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
 
 /**
@@ -28,12 +29,12 @@ function convertDateFormat(dateStr: string): string {
  */
 function parseCSV(content: string): CSVRow[] {
   const lines = content
-    .split("\n")
+    .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
   if (lines.length < 2) {
-    throw new Error("CSV vazio ou sem dados");
+    throw new Error('CSV vazio ou sem dados');
   }
 
   // Pular header (primeira linha)
@@ -43,7 +44,7 @@ function parseCSV(content: string): CSVRow[] {
     .map((line) => {
       // Split por vírgula, mas trata aspas
       const parts: string[] = [];
-      let current = "";
+      let current = '';
       let inQuotes = false;
 
       for (let i = 0; i < line.length; i++) {
@@ -52,9 +53,9 @@ function parseCSV(content: string): CSVRow[] {
 
         if (char === '"') {
           inQuotes = !inQuotes;
-        } else if (char === "," && !inQuotes) {
+        } else if (char === ',' && !inQuotes) {
           parts.push(current.trim());
-          current = "";
+          current = '';
         } else {
           current += char;
         }
@@ -82,7 +83,7 @@ function parseCSV(content: string): CSVRow[] {
  */
 async function syncCSVToDatabase() {
   try {
-    const csvPath = path.join(process.cwd(), "Calendario - Lunações.csv");
+    const csvPath = path.join(process.cwd(), 'Calendario - Lunações.csv');
 
     if (!fs.existsSync(csvPath)) {
       console.error(`❌ Arquivo CSV não encontrado: ${csvPath}`);
@@ -90,7 +91,7 @@ async function syncCSVToDatabase() {
     }
 
     console.log(`📖 Lendo CSV: ${csvPath}`);
-    const fileContent = fs.readFileSync(csvPath, "utf-8");
+    const fileContent = fs.readFileSync(csvPath, 'utf-8');
 
     // Parse do CSV
     const rows = parseCSV(fileContent);
@@ -104,7 +105,7 @@ async function syncCSVToDatabase() {
       moon_emoji: row.emoji || undefined,
       zodiac_sign: row.signo,
       zodiac_emoji: row.signoEmoji || undefined,
-      source: "csv-sync",
+      source: 'csv-sync',
     }));
 
     console.log(`\n📝 Primeiras 3 lunações a sincronizar:`);
@@ -118,12 +119,10 @@ async function syncCSVToDatabase() {
     console.log(`\n💾 Salvando no banco de dados...`);
     const result = await saveLunations(lunations);
 
-    console.log(
-      `\n✅ Sincronização concluída com sucesso!`
-    );
+    console.log(`\n✅ Sincronização concluída com sucesso!`);
     console.log(`   ${result.length} lunações foram salvas/atualizadas`);
   } catch (error) {
-    console.error("❌ Erro ao sincronizar:", error);
+    console.error('❌ Erro ao sincronizar:', error);
     process.exit(1);
   }
 }

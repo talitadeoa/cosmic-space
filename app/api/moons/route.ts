@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
 const SYNODIC_MONTH = 29.53058867; // dias
 const MAX_DAYS = 550; // evita ranges absurdos em uma chamada
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 type MoonDay = {
   date: string;
@@ -11,23 +11,23 @@ type MoonDay = {
   sign: string;
   illumination: number;
   ageDays: number;
-  normalizedPhase: "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
-  signSource: "approx-solar-range";
+  normalizedPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
+  signSource: 'approx-solar-range';
 };
 
 const zodiacCutoffs: Array<[string, number]> = [
-  ["Capricórnio", 20],
-  ["Aquário", 19],
-  ["Peixes", 21],
-  ["Áries", 20],
-  ["Touro", 21],
-  ["Gêmeos", 21],
-  ["Câncer", 23],
-  ["Leão", 23],
-  ["Virgem", 23],
-  ["Libra", 23],
-  ["Escorpião", 22],
-  ["Sagitário", 22],
+  ['Capricórnio', 20],
+  ['Aquário', 19],
+  ['Peixes', 21],
+  ['Áries', 20],
+  ['Touro', 21],
+  ['Gêmeos', 21],
+  ['Câncer', 23],
+  ['Leão', 23],
+  ['Virgem', 23],
+  ['Libra', 23],
+  ['Escorpião', 22],
+  ['Sagitário', 22],
 ];
 
 const toJulianDay = (date: Date) => {
@@ -59,25 +59,25 @@ const calcMoonAge = (date: Date) => {
 const illuminationFromAge = (ageDays: number) =>
   0.5 * (1 - Math.cos((2 * Math.PI * ageDays) / SYNODIC_MONTH));
 
-const labelPhase = (ageDays: number): MoonDay["normalizedPhase"] => {
-  if (ageDays < 1.5 || ageDays > SYNODIC_MONTH - 1.5) return "luaNova";
-  if (ageDays < SYNODIC_MONTH / 2 - 1.2) return "luaCrescente";
-  if (ageDays < SYNODIC_MONTH / 2 + 1.2) return "luaCheia";
-  return "luaMinguante";
+const labelPhase = (ageDays: number): MoonDay['normalizedPhase'] => {
+  if (ageDays < 1.5 || ageDays > SYNODIC_MONTH - 1.5) return 'luaNova';
+  if (ageDays < SYNODIC_MONTH / 2 - 1.2) return 'luaCrescente';
+  if (ageDays < SYNODIC_MONTH / 2 + 1.2) return 'luaCheia';
+  return 'luaMinguante';
 };
 
-const describePhase = (norm: MoonDay["normalizedPhase"]) => {
+const describePhase = (norm: MoonDay['normalizedPhase']) => {
   switch (norm) {
-    case "luaNova":
-      return "Lua Nova";
-    case "luaCrescente":
-      return "Lua Crescente";
-    case "luaCheia":
-      return "Lua Cheia";
-    case "luaMinguante":
-      return "Lua Minguante";
+    case 'luaNova':
+      return 'Lua Nova';
+    case 'luaCrescente':
+      return 'Lua Crescente';
+    case 'luaCheia':
+      return 'Lua Cheia';
+    case 'luaMinguante':
+      return 'Lua Minguante';
     default:
-      return "Lua";
+      return 'Lua';
   }
 };
 
@@ -118,7 +118,7 @@ const generateRange = (start: Date, end: Date): MoonDay[] => {
       illumination,
       ageDays: Number(ageDays.toFixed(3)),
       normalizedPhase,
-      signSource: "approx-solar-range",
+      signSource: 'approx-solar-range',
     });
 
     cursor = new Date(cursor.getTime() + 24 * 60 * 60 * 1000);
@@ -133,17 +133,17 @@ export async function GET(request: NextRequest) {
   const now = new Date();
   const defaultYear = now.getUTCFullYear();
 
-  const startParam = searchParams.get("start") || `${defaultYear}-01-01`;
-  const endParam = searchParams.get("end") || `${defaultYear}-12-31`;
-  const tz = searchParams.get("tz") || "UTC";
+  const startParam = searchParams.get('start') || `${defaultYear}-01-01`;
+  const endParam = searchParams.get('end') || `${defaultYear}-12-31`;
+  const tz = searchParams.get('tz') || 'UTC';
 
   const startDate = parseIsoDate(startParam);
   const endDate = parseIsoDate(endParam);
 
   if (!startDate || !endDate || startDate > endDate) {
     return NextResponse.json(
-      { error: "Parâmetros start/end inválidos. Use ISO YYYY-MM-DD." },
-      { status: 400 },
+      { error: 'Parâmetros start/end inválidos. Use ISO YYYY-MM-DD.' },
+      { status: 400 }
     );
   }
 
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     days,
     generatedAt: new Date().toISOString(),
-    source: "app/api/moons (aproximação interna)",
+    source: 'app/api/moons (aproximação interna)',
     tz,
     range: { start: formatIsoDate(startDate), end: formatIsoDate(endDate) },
   });

@@ -25,12 +25,20 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const moonPhaseParam = searchParams.get('moonPhase');
+    const yearParam = searchParams.get('year');
     const monthNumberParam = searchParams.get('monthNumber');
+    const year = Number(yearParam);
     const monthNumber = Number(monthNumberParam);
 
-    if (!moonPhaseParam || !monthNumberParam || Number.isNaN(monthNumber)) {
+    if (
+      !moonPhaseParam ||
+      !yearParam ||
+      !monthNumberParam ||
+      Number.isNaN(year) ||
+      Number.isNaN(monthNumber)
+    ) {
       return NextResponse.json(
-        { error: 'moonPhase e monthNumber são obrigatórios' },
+        { error: 'moonPhase, year e monthNumber são obrigatórios' },
         { status: 400 }
       );
     }
@@ -42,7 +50,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Usuário não identificado' }, { status: 401 });
     }
 
-    const item = await getMonthlyInsight(userId, moonPhaseParam, monthNumber);
+    const item = await getMonthlyInsight(userId, moonPhaseParam, year, monthNumber);
 
     if (!item) {
       return NextResponse.json({ item: null }, { status: 200 });
@@ -53,6 +61,7 @@ export async function GET(request: NextRequest) {
         item: {
           id: item.id,
           moonPhase: item.moon_phase,
+          year: item.year,
           monthNumber: item.month_number,
           insight: item.insight,
           createdAt: item.created_at,
@@ -75,11 +84,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { moonPhase, monthNumber, insight } = body;
+    const { moonPhase, year, monthNumber, insight } = body;
 
-    if (!moonPhase || monthNumber === undefined || !insight) {
+    if (!moonPhase || year === undefined || monthNumber === undefined || !insight) {
       return NextResponse.json(
-        { error: 'Fase da lua, mês e insight são obrigatórios' },
+        { error: 'Fase da lua, ano, mês e insight são obrigatórios' },
         { status: 400 }
       );
     }
@@ -112,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Salvar no Neon (usando camelCase como chave, português para leitura)
     try {
-      await saveMonthlyInsight(userId, moonPhase, monthNumber, insight);
+      await saveMonthlyInsight(userId, moonPhase, year, monthNumber, insight);
     } catch (neonError) {
       console.error('Erro ao salvar no Neon:', neonError);
       // Continua para salvar no Sheets mesmo se Neon falhar
@@ -121,6 +130,7 @@ export async function POST(request: NextRequest) {
     // 2. Salvar no Google Sheets (manter compatibilidade)
     const data = {
       timestamp: new Date().toISOString(),
+      ano: year,
       mes: `${monthName} (Mês #${monthNumber})`,
       fase: phaseName,
       insight,

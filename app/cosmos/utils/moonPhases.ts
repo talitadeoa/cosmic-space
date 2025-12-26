@@ -1,24 +1,11 @@
-"use client";
+'use client';
 
-export type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
-
-export const MOON_PHASES: MoonPhase[] = [
-  "luaNova",
-  "luaCrescente",
-  "luaCheia",
-  "luaMinguante",
-];
-
-export const MOON_PHASE_LABELS: Record<MoonPhase, string> = {
-  luaNova: "Lua Nova",
-  luaCrescente: "Lua Crescente",
-  luaCheia: "Lua Cheia",
-  luaMinguante: "Lua Minguante",
-};
-
-export const MOON_PHASE_EMOJI_LABELS: Record<MoonPhase, string> = {
-  luaNova: "🌑 Lua Nova",
-  luaCrescente: "🌓 Lua Crescente",
-  luaCheia: "🌕 Lua Cheia",
-  luaMinguante: "🌗 Lua Minguante",
-};
+// Re-exportar tipos e constantes centralizadas de /types/moon.ts
+export type { MoonPhase } from '@/types/moon';
+export {
+  MOON_PHASES,
+  MOON_PHASE_LABELS,
+  MOON_PHASE_EMOJIS,
+  MOON_PHASE_EMOJI_LABELS,
+  MOON_PHASE_VIBES,
+} from '@/types/moon';

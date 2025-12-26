@@ -100,16 +100,16 @@ export function MyComponent() {
 
 ## 📦 O Que Foi Implementado
 
-| Componente | Local | Descrição |
-|-----------|-------|-----------|
-| 📊 **Tabela Lunations** | `infra/db/schema.sql` | Armazena datas de lunações |
-| 🔌 **API GET** | `app/api/moons/lunations/route.ts` | Busca lunações (banco + fallback) |
-| 🔌 **API POST** | `app/api/moons/lunations/route.ts` | Salva lunações no banco |
-| 📚 **Funções DB** | `lib/forms.ts` | `getLunations()`, `saveLunations()` |
-| 🎣 **Hook** | `hooks/useLunations.ts` | `useLunations()` / `useLunationsForRange()` |
-| ⚙️ **Componente Sync** | `components/LunationSync.tsx` | Sincronização automática |
-| 📝 **Script Sync** | `scripts/sync-lunations.js` | Sincronização manual |
-| 📖 **Documentação** | `doc/LUALIST_BANCO_DADOS.md` | Documentação completa |
+| Componente              | Local                              | Descrição                                   |
+| ----------------------- | ---------------------------------- | ------------------------------------------- |
+| 📊 **Tabela Lunations** | `infra/db/schema.sql`              | Armazena datas de lunações                  |
+| 🔌 **API GET**          | `app/api/moons/lunations/route.ts` | Busca lunações (banco + fallback)           |
+| 🔌 **API POST**         | `app/api/moons/lunations/route.ts` | Salva lunações no banco                     |
+| 📚 **Funções DB**       | `lib/forms.ts`                     | `getLunations()`, `saveLunations()`         |
+| 🎣 **Hook**             | `hooks/useLunations.ts`            | `useLunations()` / `useLunationsForRange()` |
+| ⚙️ **Componente Sync**  | `components/LunationSync.tsx`      | Sincronização automática                    |
+| 📝 **Script Sync**      | `scripts/sync-lunations.js`        | Sincronização manual                        |
+| 📖 **Documentação**     | `doc/LUALIST_BANCO_DADOS.md`       | Documentação completa                       |
 
 ---
 
@@ -193,8 +193,8 @@ psql $DATABASE_URL
 SELECT COUNT(*) FROM lunations;
 
 -- Ver dados de janeiro de 2024
-SELECT lunation_date, moon_phase, zodiac_sign 
-FROM lunations 
+SELECT lunation_date, moon_phase, zodiac_sign
+FROM lunations
 WHERE lunation_date >= '2024-01-01' AND lunation_date < '2024-02-01'
 ORDER BY lunation_date;
 ```
@@ -204,9 +204,11 @@ ORDER BY lunation_date;
 ## ⚙️ Variáveis de Ambiente
 
 Nenhuma variável adicional necessária! Já usa:
+
 - `DATABASE_URL` (existente)
 
 Opcional:
+
 - `API_URL` (para script `sync-lunations.js`)
 
 ---
@@ -282,12 +284,12 @@ export default function CosmosPage() {
   return (
     <>
       {/* Sincroniza lunações automaticamente em background */}
-      <LunationSync 
+      <LunationSync
         autoSync={true}
         years={[2024, 2025]}
         verbose={true}
       />
-      
+
       {/* LuaListScreen usa dados do banco automaticamente */}
       <LuaListScreen />
     </>
@@ -309,13 +311,13 @@ export function SyncButton() {
 
   return (
     <div>
-      <input 
-        type="number" 
-        value={year} 
+      <input
+        type="number"
+        value={year}
         onChange={(e) => setYear(Number(e.target.value))}
       />
-      
-      <button 
+
+      <button
         onClick={() => sync(year, true)}
         disabled={isSyncing}
       >

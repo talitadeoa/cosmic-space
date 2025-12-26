@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import type { MoonPhase, PhaseInputType, PhaseInputRecord } from "@/lib/phaseInputs";
+import { useCallback, useState } from 'react';
+import type { MoonPhase, PhaseInputType, PhaseInputRecord } from '@/lib/phaseInputs';
 
 export interface PhaseInputSave {
   moonPhase: MoonPhase;
@@ -21,22 +21,22 @@ export function usePhaseInputs() {
     setSaveError(null);
 
     try {
-      const response = await fetch("/api/phase-inputs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+      const response = await fetch('/api/phase-inputs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Erro ao salvar input da fase");
+        throw new Error(data.error || 'Erro ao salvar input da fase');
       }
 
       const data = await response.json();
       return data.item as PhaseInputRecord;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
+      const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setSaveError(message);
       throw err;
     } finally {
@@ -51,31 +51,31 @@ export function usePhaseInputs() {
 
       try {
         const searchParams = new URLSearchParams();
-        if (params?.moonPhase) searchParams.set("moonPhase", params.moonPhase);
-        if (params?.inputType) searchParams.set("inputType", params.inputType);
-        if (params?.limit) searchParams.set("limit", String(params.limit));
+        if (params?.moonPhase) searchParams.set('moonPhase', params.moonPhase);
+        if (params?.inputType) searchParams.set('inputType', params.inputType);
+        if (params?.limit) searchParams.set('limit', String(params.limit));
 
         const response = await fetch(`/api/phase-inputs?${searchParams.toString()}`, {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         });
 
         if (!response.ok) {
           const data = await response.json();
-          throw new Error(data.error || "Erro ao carregar inputs da fase");
+          throw new Error(data.error || 'Erro ao carregar inputs da fase');
         }
 
         const data = await response.json();
         return (data.items as PhaseInputRecord[]) ?? [];
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Erro desconhecido";
+        const message = err instanceof Error ? err.message : 'Erro desconhecido';
         setLoadError(message);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   return {

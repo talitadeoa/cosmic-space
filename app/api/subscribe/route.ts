@@ -10,19 +10,13 @@ export async function POST(request: NextRequest) {
 
     // Validação básica
     if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'Email é obrigatório' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email é obrigatório' }, { status: 400 });
     }
 
     // Validação de formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Email inválido' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -41,9 +35,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Erro ao processar subscription:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

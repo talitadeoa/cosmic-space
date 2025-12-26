@@ -10,6 +10,7 @@ cp .env.local.example .env.local
 ```
 
 Editar `.env.local`:
+
 ```env
 AUTH_PASSWORD=sua_senha_123
 GOOGLE_SHEET_ID=seu_id_da_planilha
@@ -19,10 +20,12 @@ GOOGLE_SHEETS_API_KEY=sua_chave_api
 ### 2️⃣ Obter Google Sheets Credentials
 
 **Onde encontrar GOOGLE_SHEET_ID:**
+
 - Abra sua planilha no [Google Sheets](https://sheets.google.com/)
 - Copie o ID da URL: `https://docs.google.com/spreadsheets/d/**{ID_AQUI}**/edit`
 
 **Onde encontrar GOOGLE_SHEETS_API_KEY:**
+
 1. Vá para [Google Cloud Console](https://console.cloud.google.com/)
 2. Crie um novo projeto
 3. Ative "Google Sheets API"

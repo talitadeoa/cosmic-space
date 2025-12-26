@@ -28,20 +28,32 @@ export function getLunarPhaseAndSign(date = new Date()) {
   const m = date.getUTCMonth() + 1;
   const d = date.getUTCDate();
   const zodiacRanges: [number, number, string][] = [
-    [1, 20, 'Capricórnio'], [1, 31, 'Aquário'],
+    [1, 20, 'Capricórnio'],
+    [1, 31, 'Aquário'],
   ];
 
   // Simples tabela por dias (mapa aproximado)
   const zodiac: [string, number][] = [
-    ['Capricórnio', 20], ['Aquário', 19], ['Peixes', 21], ['Áries', 20], ['Touro', 21], ['Gêmeos', 21],
-    ['Câncer', 23], ['Leão', 23], ['Virgem', 23], ['Libra', 23], ['Escorpião', 22], ['Sagitário', 22]
+    ['Capricórnio', 20],
+    ['Aquário', 19],
+    ['Peixes', 21],
+    ['Áries', 20],
+    ['Touro', 21],
+    ['Gêmeos', 21],
+    ['Câncer', 23],
+    ['Leão', 23],
+    ['Virgem', 23],
+    ['Libra', 23],
+    ['Escorpião', 22],
+    ['Sagitário', 22],
   ];
 
   let signo = 'Áries';
   const dayOfMonth = date.getUTCDate();
   const monthIndex = date.getUTCMonth();
   const cutoff = zodiac[monthIndex][1];
-  signo = dayOfMonth < cutoff ? zodiac[monthIndex === 0 ? 11 : monthIndex - 1][0] : zodiac[monthIndex][0];
+  signo =
+    dayOfMonth < cutoff ? zodiac[monthIndex === 0 ? 11 : monthIndex - 1][0] : zodiac[monthIndex][0];
 
   return {
     data: date.toISOString().slice(0, 10),

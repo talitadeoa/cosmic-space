@@ -3,11 +3,13 @@
 ## ✅ O Que Foi Implementado
 
 ### 1. **Nova Tabela no Banco de Dados**
+
 - ✅ Tabela `lunations` em `infra/db/schema.sql`
 - ✅ 3 índices para performance (data, fase, signo)
 - ✅ Campos: data, fase lunar, signo, iluminação, descrição
 
 ### 2. **Funções no Backend** (`lib/forms.ts`)
+
 ```typescript
 - ✅ saveLunations()     // Salvar múltiplas lunações
 - ✅ getLunations()      // Buscar por range de datas
@@ -15,6 +17,7 @@
 ```
 
 ### 3. **API de Lunações** (`app/api/moons/lunations/route.ts`)
+
 ```
 GET /api/moons/lunations
   ├─ source=auto      → Tenta banco, fallback para geração local
@@ -26,6 +29,7 @@ POST /api/moons/lunations
 ```
 
 ### 4. **Hook React** (`hooks/useLunations.ts`)
+
 ```typescript
 - ✅ useLunations()           // Hook para buscar lunações
 - ✅ useLunationsForRange()   // Hook com auto-fetch
@@ -33,12 +37,14 @@ POST /api/moons/lunations
 ```
 
 ### 5. **Componente de Sincronização** (`components/LunationSync.tsx`)
+
 ```typescript
 - ✅ <LunationSync />         // Componente automático
 - ✅ useSyncLunations()       // Hook para sincronização manual
 ```
 
 ### 6. **Script de Sincronização** (`scripts/sync-lunations.js`)
+
 ```bash
 node scripts/sync-lunations.js                    # Padrão (3 anos)
 node scripts/sync-lunations.js --years=2024,2025 # Específico
@@ -46,6 +52,7 @@ node scripts/sync-lunations.js --replace          # Limpar e recriar
 ```
 
 ### 7. **Documentação Completa**
+
 - ✅ `doc/LUALIST_BANCO_DADOS.md` - Documentação técnica completa
 - ✅ `doc/LUALIST_QUICKSTART.md` - Guia rápido de início
 
@@ -98,13 +105,13 @@ CREATE TABLE lunations (
 
 ```typescript
 interface LunationData {
-  lunation_date: string;      // "2024-12-13"
-  moon_phase: string;         // "Lua Nova" | "Lua Crescente" | "Lua Cheia" | "Lua Minguante"
-  zodiac_sign: string;        // "Áries", "Touro", etc
-  illumination?: number;      // 0-100 (%)
-  age_days?: number;          // 0-29.53 (dias)
-  description?: string;       // opcional
-  source?: string;            // "generated" | "synced" | "manual"
+  lunation_date: string; // "2024-12-13"
+  moon_phase: string; // "Lua Nova" | "Lua Crescente" | "Lua Cheia" | "Lua Minguante"
+  zodiac_sign: string; // "Áries", "Touro", etc
+  illumination?: number; // 0-100 (%)
+  age_days?: number; // 0-29.53 (dias)
+  description?: string; // opcional
+  source?: string; // "generated" | "synced" | "manual"
 }
 ```
 
@@ -115,6 +122,7 @@ interface LunationData {
 ### GET `/api/moons/lunations`
 
 **Parâmetros:**
+
 ```
 start     string    YYYY-MM-DD  obrigatório
 end       string    YYYY-MM-DD  obrigatório
@@ -122,6 +130,7 @@ source    string    auto|db|generated  (padrão: auto)
 ```
 
 **Resposta (200 OK):**
+
 ```json
 {
   "days": [
@@ -129,8 +138,8 @@ source    string    auto|db|generated  (padrão: auto)
       "date": "2024-12-13",
       "moonPhase": "Lua Crescente",
       "sign": "Sagitário",
-      "illumination": 65.50,
-      "ageDays": 15.300,
+      "illumination": 65.5,
+      "ageDays": 15.3,
       "description": null,
       "source": "database"
     }
@@ -144,6 +153,7 @@ source    string    auto|db|generated  (padrão: auto)
 ### POST `/api/moons/lunations`
 
 **Body:**
+
 ```json
 {
   "days": [
@@ -161,6 +171,7 @@ source    string    auto|db|generated  (padrão: auto)
 ```
 
 **Resposta (200 OK):**
+
 ```json
 {
   "success": true,
@@ -176,11 +187,13 @@ source    string    auto|db|generated  (padrão: auto)
 ### Setup Inicial (5 minutos)
 
 1. **Criar tabela no banco:**
+
    ```bash
    psql $DATABASE_URL < infra/db/schema.sql
    ```
 
 2. **Sincronizar dados:**
+
    ```bash
    npm run dev  # Ou em outro terminal
    node scripts/sync-lunations.js
@@ -233,6 +246,7 @@ export function SyncButton() {
 ## 📁 Arquivos Criados/Modificados
 
 ### ✅ Criados
+
 - `app/api/moons/lunations/route.ts` - API de lunações (280 linhas)
 - `hooks/useLunations.ts` - Hook React (86 linhas)
 - `components/LunationSync.tsx` - Componente de sync (180 linhas)
@@ -241,10 +255,12 @@ export function SyncButton() {
 - `doc/LUALIST_QUICKSTART.md` - Guia rápido
 
 ### ✏️ Modificados
+
 - `infra/db/schema.sql` - +18 linhas (tabela + índices)
 - `lib/forms.ts` - +95 linhas (funções de lunações)
 
 ### 📊 Total de Código
+
 - **~1000 linhas** de código TypeScript/SQL
 - **~2000 linhas** de documentação
 - **0 linhas** quebradas em `LuaListScreen` (compatível!)
@@ -318,11 +334,11 @@ node scripts/sync-lunations.js --years=2024 --replace
 
 ## 🐛 Troubleshooting
 
-| Problema | Solução |
-|----------|---------|
-| "Tabela não existe" | `psql $DATABASE_URL < infra/db/schema.sql` |
-| "Nenhum dado" | `node scripts/sync-lunations.js` |
-| "API retorna erro" | Testar com `source=generated` |
+| Problema               | Solução                                    |
+| ---------------------- | ------------------------------------------ |
+| "Tabela não existe"    | `psql $DATABASE_URL < infra/db/schema.sql` |
+| "Nenhum dado"          | `node scripts/sync-lunations.js`           |
+| "API retorna erro"     | Testar com `source=generated`              |
 | "Dados desatualizados" | `node scripts/sync-lunations.js --replace` |
 
 ---

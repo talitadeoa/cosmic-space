@@ -13,9 +13,10 @@
 - [ ] Verifique se não houve erros
 
 **Comandos para verificar:**
+
 ```sql
 -- Ver as tabelas criadas
-SELECT table_name FROM information_schema.tables 
+SELECT table_name FROM information_schema.tables
 WHERE table_name IN ('monthly_insights', 'quarterly_insights', 'annual_insights');
 
 -- Ver as colunas
@@ -38,6 +39,7 @@ WHERE table_name = 'monthly_insights' ORDER BY ordinal_position;
 - [ ] Verifique se existe função `getAllInsights`
 
 **Verificar estrutura:**
+
 ```bash
 grep -n "export async function" lib/forms.ts | grep -i insight
 ```
@@ -56,6 +58,7 @@ grep -n "export async function" lib/forms.ts | grep -i insight
 - [ ] Testar com curl ou Postman
 
 **Comando para testar:**
+
 ```bash
 curl -X POST http://localhost:3000/api/form/monthly-insight \
   -H "Content-Type: application/json" \
@@ -146,7 +149,7 @@ curl -X POST http://localhost:3000/api/form/monthly-insight \
 -- Testar INSERT mensal
 INSERT INTO monthly_insights (user_id, moon_phase, month_number, insight)
 VALUES (1, 'luaNova', 1, 'Test insight')
-ON CONFLICT (user_id, moon_phase, month_number) 
+ON CONFLICT (user_id, moon_phase, month_number)
 DO UPDATE SET insight = EXCLUDED.insight, updated_at = NOW();
 
 -- Verificar resultado
@@ -206,6 +209,7 @@ SELECT * FROM monthly_insights WHERE user_id = 1;
 - [ ] Limpar dados de teste do banco
 
 **Comando para limpar:**
+
 ```sql
 DELETE FROM monthly_insights WHERE user_id = 1;
 DELETE FROM quarterly_insights WHERE user_id = 1;
@@ -249,6 +253,7 @@ DELETE FROM annual_insights WHERE user_id = 1;
 ### Problema: Erro ao criar tabela
 
 **Solução:**
+
 - Verifique se a tabela `users` existe
 - Verifique a sintaxe SQL
 - Verifique permissões no banco
@@ -256,6 +261,7 @@ DELETE FROM annual_insights WHERE user_id = 1;
 ### Problema: Erro 401 (Unauthorized)
 
 **Solução:**
+
 - Verifique se está autenticado
 - Verifique se a sessão é válida
 - Verifique `lib/auth.ts`
@@ -263,6 +269,7 @@ DELETE FROM annual_insights WHERE user_id = 1;
 ### Problema: Erro ao salvar insight
 
 **Solução:**
+
 - Verifique os logs no servidor (`npm run dev`)
 - Verifique se o banco está acessível
 - Verifique a conexão `DATABASE_URL`
@@ -270,6 +277,7 @@ DELETE FROM annual_insights WHERE user_id = 1;
 ### Problema: Modal não abre
 
 **Solução:**
+
 - Verifique se o modal está importado
 - Verifique se o estado está sendo controlado
 - Verifique console.log do browser
@@ -285,6 +293,7 @@ DELETE FROM annual_insights WHERE user_id = 1;
 - [ ] Documentação atualizada
 
 **Próximos passos:**
+
 - Implementar leitura/edição/deleção de insights
 - Criar dashboard para visualizar insights
 - Integrar com Google Sheets (se desejar)

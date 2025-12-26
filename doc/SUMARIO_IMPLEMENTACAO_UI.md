@@ -1,7 +1,9 @@
 # 📦 Sumário Executivo - Implementação UI com Acessibilidade
 
 ## 🎯 Objetivo
+
 Implementar melhorias na tela **SidePlanetCardScreen** com foco em:
+
 - ✨ **Empty State real** (sem "Nenhum to-do salvo" como item clicável)
 - ♿ **Acessibilidade completa** (WAI-ARIA, navegação por teclado)
 - 🎨 **Estados visuais claros** (seleção de ilhas e fases lunares)
@@ -13,13 +15,20 @@ Implementar melhorias na tela **SidePlanetCardScreen** com foco em:
 ## ✅ O que foi implementado
 
 ### 1. **Tipos Estendidos** (`app/cosmos/types/screen.ts`)
+
 ```typescript
-export type IslandId = "ilha1" | "ilha2" | "ilha3" | "ilha4";
-export interface TaskWithState extends SavedTodo { phase: MoonPhase | null; }
-export interface ScreenSelectionState { selectedIsland: IslandId | null; selectedPhase: MoonPhase | null; }
+export type IslandId = 'ilha1' | 'ilha2' | 'ilha3' | 'ilha4';
+export interface TaskWithState extends SavedTodo {
+  phase: MoonPhase | null;
+}
+export interface ScreenSelectionState {
+  selectedIsland: IslandId | null;
+  selectedPhase: MoonPhase | null;
+}
 ```
 
 ### 2. **EmptyState Component** (`app/cosmos/components/EmptyState.tsx`)
+
 - ✨ Renderizado APENAS quando não há tarefas
 - 🎨 Opacidade reduzida (60%) + borda tracejada
 - ♿ `role="status"` + `aria-live="polite"` + `aria-label`
@@ -27,11 +36,13 @@ export interface ScreenSelectionState { selectedIsland: IslandId | null; selecte
 - 🎭 Ícone sutil (default: "✨")
 
 **Classes:**
+
 ```tailwind
 border-dashed border-slate-700/40 bg-slate-900/30 opacity-60 transition-opacity
 ```
 
 ### 3. **AccessibleTabs Component** (`app/cosmos/components/AccessibleTabs.tsx`)
+
 - ♿ WAI-ARIA: `role="tablist"` + `role="tab"` + `aria-selected` + `aria-controls`
 - ⌨️ Navegação: Arrow Keys (←→↓↑), Home, End
 - 👁️ Focus ring: `focus-visible:ring-2 focus-visible:ring-indigo-500`
@@ -39,6 +50,7 @@ border-dashed border-slate-700/40 bg-slate-900/30 opacity-60 transition-opacity
 - 📍 Ready para futura integração com "Inbox" e "Lua Atual"
 
 ### 4. **IslandsList Component** (`app/cosmos/components/IslandsList.tsx`)
+
 - 🏝️ Lista de 4 ilhas: "Ilha 1" até "Ilha 4"
 - 👁️ Estado ativo com borda + glow + contraste
 - ⌨️ Navegação: Tab, Enter, Space para selecionar/desselecionar
@@ -46,11 +58,13 @@ border-dashed border-slate-700/40 bg-slate-900/30 opacity-60 transition-opacity
 - 🔘 Botão "Limpar seleção" após selecionar
 
 **Estado ativo:**
+
 ```tailwind
 border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-500/20
 ```
 
 ### 5. **MoonPhasesRail Component** (`app/cosmos/components/MoonPhasesRail.tsx`)
+
 - 🌙 4 fases lunares: Lua Nova, Crescente, Cheia, Minguante
 - 📊 Emojis + labels + badges com contagem de tarefas
 - 👁️ Fase selecionada destacada (border + glow + scale-105)
@@ -59,11 +73,13 @@ border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-50
 - 🔌 Callbacks preparados para drag-and-drop futuro
 
 **Estado selecionado:**
+
 ```tailwind
 border-indigo-400 bg-indigo-500/30 text-indigo-100 shadow-lg shadow-indigo-500/30 scale-105
 ```
 
 ### 6. **SavedTodosPanel Refatorado** (`app/cosmos/components/SavedTodosPanel.tsx`)
+
 - ✨ Usa novo componente `EmptyState`
 - 🔍 Filtra por fase lunar quando `selectedPhase` está definida
 - 📝 Título dinâmico (muda com fase selecionada)
@@ -71,6 +87,7 @@ border-indigo-400 bg-indigo-500/30 text-indigo-100 shadow-lg shadow-indigo-500/3
 - 🔄 Mantém suporte a projeto e drag-and-drop
 
 **Lógica de filtro:**
+
 ```typescript
 const displayedTodos = selectedPhase
   ? savedTodos.filter((todo) => todo.phase === selectedPhase)
@@ -78,6 +95,7 @@ const displayedTodos = selectedPhase
 ```
 
 ### 7. **SidePlanetCardScreen Refatorado** (`app/cosmos/screens/SidePlanetCardScreen.tsx`)
+
 - 🎛️ Novos estados: `selectedIsland` + `selectedPhase`
 - 📐 Layout 3 colunas responsivo:
   - **Esquerda**: MoonCluster + IslandsList
@@ -91,22 +109,23 @@ const displayedTodos = selectedPhase
 
 ## 📊 Comparação Antes vs Depois
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Empty State** | "Nenhum to-do salvo" como item clicável | Componente visual dedicado (não interativo) |
-| **Seleção de Ilha** | Não existia | ✓ IslandsList com 4 ilhas |
-| **Seleção de Fase** | Só via drag-and-drop | ✓ MoonPhasesRail + filtragem |
-| **Acessibilidade** | Básica | ✓ WAI-ARIA completo + navegação teclado |
-| **Layout** | 2 colunas | ✓ 3 colunas responsivo (mobile → desktop) |
-| **Filtragem** | Só por projeto | ✓ Por projeto + fase + ilha (preparado) |
-| **Focus Ring** | Não havia | ✓ `focus-visible:ring-2` em todos |
-| **Aria Labels** | Mínimas | ✓ Completas em todos os botões |
+| Aspecto             | Antes                                   | Depois                                      |
+| ------------------- | --------------------------------------- | ------------------------------------------- |
+| **Empty State**     | "Nenhum to-do salvo" como item clicável | Componente visual dedicado (não interativo) |
+| **Seleção de Ilha** | Não existia                             | ✓ IslandsList com 4 ilhas                   |
+| **Seleção de Fase** | Só via drag-and-drop                    | ✓ MoonPhasesRail + filtragem                |
+| **Acessibilidade**  | Básica                                  | ✓ WAI-ARIA completo + navegação teclado     |
+| **Layout**          | 2 colunas                               | ✓ 3 colunas responsivo (mobile → desktop)   |
+| **Filtragem**       | Só por projeto                          | ✓ Por projeto + fase + ilha (preparado)     |
+| **Focus Ring**      | Não havia                               | ✓ `focus-visible:ring-2` em todos           |
+| **Aria Labels**     | Mínimas                                 | ✓ Completas em todos os botões              |
 
 ---
 
 ## 🎨 Classes Tailwind Chave
 
 ### Estados Ativos
+
 ```tailwind
 border-indigo-400 (ou 300/80)
 bg-indigo-500/20 (ou 500/30)
@@ -115,6 +134,7 @@ shadow-md shadow-indigo-500/20
 ```
 
 ### Estados Inativos
+
 ```tailwind
 border-slate-700
 bg-slate-900/70 (ou slate-950/50)
@@ -123,6 +143,7 @@ hover:border-indigo-400/60
 ```
 
 ### Focus Ring
+
 ```tailwind
 focus:outline-none
 focus-visible:ring-2 focus-visible:ring-indigo-500
@@ -130,6 +151,7 @@ focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950
 ```
 
 ### Empty State
+
 ```tailwind
 border-dashed border-slate-700/40
 bg-slate-900/30 opacity-60
@@ -137,6 +159,7 @@ transition-opacity
 ```
 
 ### Badges/Contadores
+
 ```tailwind
 rounded-full bg-indigo-600
 px-2 py-1 text-[0.6rem] font-bold text-white
@@ -146,18 +169,18 @@ px-2 py-1 text-[0.6rem] font-bold text-white
 
 ## 📁 Arquivos Criados/Modificados
 
-| Arquivo | Status | Descrição |
-|---------|--------|-----------|
-| `app/cosmos/types/screen.ts` | ✨ **NOVO** | Tipos estendidos (IslandId, TaskWithState, etc) |
-| `app/cosmos/components/EmptyState.tsx` | ✨ **NOVO** | Empty state visual |
-| `app/cosmos/components/AccessibleTabs.tsx` | ✨ **NOVO** | Tabs com WAI-ARIA |
-| `app/cosmos/components/IslandsList.tsx` | ✨ **NOVO** | Seleção de ilhas |
-| `app/cosmos/components/MoonPhasesRail.tsx` | ✨ **NOVO** | Fases lunares selecionáveis |
-| `app/cosmos/components/SavedTodosPanel.tsx` | 🔄 **REFATOR** | Com EmptyState + filtros |
-| `app/cosmos/screens/SidePlanetCardScreen.tsx` | 🔄 **REFATOR** | Layout 3 colunas + novos states |
-| `doc/IMPLEMENTACAO_UI_ACESSIBILIDADE.md` | ✨ **NOVO** | Documentação completa |
-| `doc/REFERENCIA_COMPONENTES_UI.ts` | ✨ **NOVO** | Code snippets e referência |
-| `doc/GUIA_VISUAL_TAILWIND.md` | ✨ **NOVO** | Classes Tailwind e estados |
+| Arquivo                                       | Status         | Descrição                                       |
+| --------------------------------------------- | -------------- | ----------------------------------------------- |
+| `app/cosmos/types/screen.ts`                  | ✨ **NOVO**    | Tipos estendidos (IslandId, TaskWithState, etc) |
+| `app/cosmos/components/EmptyState.tsx`        | ✨ **NOVO**    | Empty state visual                              |
+| `app/cosmos/components/AccessibleTabs.tsx`    | ✨ **NOVO**    | Tabs com WAI-ARIA                               |
+| `app/cosmos/components/IslandsList.tsx`       | ✨ **NOVO**    | Seleção de ilhas                                |
+| `app/cosmos/components/MoonPhasesRail.tsx`    | ✨ **NOVO**    | Fases lunares selecionáveis                     |
+| `app/cosmos/components/SavedTodosPanel.tsx`   | 🔄 **REFATOR** | Com EmptyState + filtros                        |
+| `app/cosmos/screens/SidePlanetCardScreen.tsx` | 🔄 **REFATOR** | Layout 3 colunas + novos states                 |
+| `doc/IMPLEMENTACAO_UI_ACESSIBILIDADE.md`      | ✨ **NOVO**    | Documentação completa                           |
+| `doc/REFERENCIA_COMPONENTES_UI.ts`            | ✨ **NOVO**    | Code snippets e referência                      |
+| `doc/GUIA_VISUAL_TAILWIND.md`                 | ✨ **NOVO**    | Classes Tailwind e estados                      |
 
 ---
 
@@ -167,19 +190,19 @@ px-2 py-1 text-[0.6rem] font-bold text-white
 const mockState = {
   savedTodos: [
     {
-      id: "todo-1",
-      text: "Revisar documentação",
+      id: 'todo-1',
+      text: 'Revisar documentação',
       completed: false,
       depth: 0,
-      phase: "luaNova",
-      islandId: "ilha1",
-      project: "Cosmic Space",
+      phase: 'luaNova',
+      islandId: 'ilha1',
+      project: 'Cosmic Space',
     },
     // ... mais tarefas
   ],
-  selectedProject: "Cosmic Space",
-  selectedIsland: "ilha1",
-  selectedPhase: "luaNova",
+  selectedProject: 'Cosmic Space',
+  selectedIsland: 'ilha1',
+  selectedPhase: 'luaNova',
   moonCounts: {
     luaNova: 1,
     luaCrescente: 1,
@@ -190,6 +213,7 @@ const mockState = {
 ```
 
 **Para usar:**
+
 ```tsx
 const [selectedPhase, setSelectedPhase] = useState<MoonPhase | null>(mockState.selectedPhase);
 const [selectedIsland, setSelectedIsland] = useState<IslandId | null>(mockState.selectedIsland);
@@ -213,19 +237,22 @@ const [savedTodos, setSavedTodos] = useState<SavedTodo[]>(mockState.savedTodos);
 ## 🚀 Integração Imediata
 
 ### 1. Importar componentes:
+
 ```tsx
-import { SavedTodosPanel } from "../components/SavedTodosPanel";
-import { MoonPhasesRail } from "../components/MoonPhasesRail";
-import { IslandsList } from "../components/IslandsList";
+import { SavedTodosPanel } from '../components/SavedTodosPanel';
+import { MoonPhasesRail } from '../components/MoonPhasesRail';
+import { IslandsList } from '../components/IslandsList';
 ```
 
 ### 2. Adicionar estados:
+
 ```tsx
 const [selectedIsland, setSelectedIsland] = useState<IslandId | null>(null);
 const [selectedPhase, setSelectedPhase] = useState<MoonPhase | null>(null);
 ```
 
 ### 3. Usar no template:
+
 ```tsx
 <MoonPhasesRail
   selectedPhase={selectedPhase}
@@ -274,7 +301,7 @@ const [selectedPhase, setSelectedPhase] = useState<MoonPhase | null>(null);
 ✅ **Sem quebra visual** - Mantém glassmorphism + glow  
 ✅ **Performance otimizada** - `useMemo` + `useCallback` onde necessário  
 ✅ **Componentes reutilizáveis** - Podem ser usados em outras telas  
-✅ **Base pronta para DnD** - Handlers já implementados  
+✅ **Base pronta para DnD** - Handlers já implementados
 
 ---
 

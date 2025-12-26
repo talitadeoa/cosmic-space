@@ -1,12 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CelestialObject } from "../components/CelestialObject";
-import type { ScreenProps } from "../types";
+import React from 'react';
+import { CelestialObject } from '../components/CelestialObject';
+import type { ScreenProps } from '../types';
 
-const ColumnSolLuaPlanetaScreen: React.FC<ScreenProps> = ({
-  navigateWithFocus,
-}) => {
+const ColumnSolLuaPlanetaScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <div className="flex flex-col items-center gap-10">
@@ -14,18 +12,14 @@ const ColumnSolLuaPlanetaScreen: React.FC<ScreenProps> = ({
           type="sol"
           size="lg"
           interactive
-          onClick={(e) =>
-            navigateWithFocus("home", { event: e, type: "sol", size: "lg" })
-          }
+          onClick={(e) => navigateWithFocus('home', { event: e, type: 'sol', size: 'lg' })}
           floatOffset={-4}
         />
         <CelestialObject
           type="lua"
           size="md"
           interactive
-          onClick={(e) =>
-            navigateWithFocus("luaList", { event: e, type: "lua", size: "md" })
-          }
+          onClick={(e) => navigateWithFocus('luaList', { event: e, type: 'lua', size: 'md' })}
           floatOffset={0}
         />
         <CelestialObject
@@ -33,10 +27,10 @@ const ColumnSolLuaPlanetaScreen: React.FC<ScreenProps> = ({
           size="lg"
           interactive
           onClick={(e) =>
-            navigateWithFocus("planetCardStandalone", {
+            navigateWithFocus('planetCardStandalone', {
               event: e,
-              type: "planeta",
-              size: "lg",
+              type: 'planeta',
+              size: 'lg',
             })
           }
           floatOffset={3}

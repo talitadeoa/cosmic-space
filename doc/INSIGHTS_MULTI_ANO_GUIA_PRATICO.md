@@ -5,6 +5,7 @@
 ### 1️⃣ Usuário Navegando pela Galáxia
 
 **O que ele vê:**
+
 ```
 ┌─────────────────────────────────┐
 │    Galáxia Cronológica          │
@@ -20,6 +21,7 @@
 ```
 
 **Cenário Prático:**
+
 - Usuário quer registrar insights para 2023 (ano passado)
 - Clica no sol de 2023
 
@@ -28,6 +30,7 @@
 ### 2️⃣ Fluxo: Clicar em Sol de 2023
 
 **Antes (❌ Bug):**
+
 ```
 GalaxySunsScreen.tsx
   ↓
@@ -38,11 +41,12 @@ GalaxySunsScreen.tsx
 SolOrbitScreen.tsx
   const currentYear = new Date().getFullYear()  // ❌ 2025 SEMPRE
   const title = "2025"  // ❌ ERRADO!
-  
+
   saveAnnualInsight(insight)  // ❌ SALVA PARA 2025
 ```
 
 **Depois (✅ Corrigido):**
+
 ```
 GalaxySunsScreen.tsx
   sun.year = 2023
@@ -57,7 +61,7 @@ CosmosPageContent.tsx
 SolOrbitScreen.tsx
   const { selectedYear } = useYear()  // ✅ 2023
   const title = "2023"  // ✅ CORRETO!
-  
+
   saveAnnualInsight(insight, 2023)  // ✅ SALVA PARA 2023
   ↓
 API: /api/form/annual-insight
@@ -87,6 +91,7 @@ const handleAnnualInsightSubmit = async (insight: string) => {
 ```
 
 **Banco de dados resultante:**
+
 ```sql
 INSERT INTO annual_insights (user_id, year, insight, created_at)
 VALUES (
@@ -103,7 +108,7 @@ VALUES (
 
 ```typescript
 // Em SolOrbitScreen.tsx
-const selectedMoonPhase = "luaCheia";  // 3º trimestre
+const selectedMoonPhase = 'luaCheia'; // 3º trimestre
 const selectedYear = 2024;
 
 const handleQuarterlyInsightSubmit = async (insight: string) => {
@@ -111,8 +116,8 @@ const handleQuarterlyInsightSubmit = async (insight: string) => {
   await saveQuarterlyInsight(
     selectedMoonPhase,
     insight,
-    3,  // Q3
-    selectedYear  // 2024
+    3, // Q3
+    selectedYear // 2024
   );
   // ↓
   // POST /api/form/quarterly-insight
@@ -126,8 +131,9 @@ const handleQuarterlyInsightSubmit = async (insight: string) => {
 ```
 
 **Banco de dados resultante:**
+
 ```sql
-INSERT INTO quarterly_insights 
+INSERT INTO quarterly_insights
   (user_id, moon_phase, quarter_number, insight, created_at)
 VALUES (
   123,
@@ -146,11 +152,11 @@ O `buildAnnualStorageKey` agora inclui o ano:
 
 ```typescript
 // Antes (❌):
-buildAnnualStorageKey(2025)
+buildAnnualStorageKey(2025);
 // → "cosmic_insight_annual_2025"
 
 // Depois (✅):
-buildAnnualStorageKey(selectedYear)
+buildAnnualStorageKey(selectedYear);
 // → "cosmic_insight_annual_2023"  (se clicou em 2023)
 // → "cosmic_insight_annual_2024"  (se clicou em 2024)
 // → "cosmic_insight_annual_2025"  (se clicou em 2025)
@@ -166,10 +172,10 @@ buildAnnualStorageKey(selectedYear)
 
 ```typescript
 // app/cosmos/context/YearContext.tsx
-const [selectedYear, setSelectedYear] = useState(2025);  // Padrão: ano atual
+const [selectedYear, setSelectedYear] = useState(2025); // Padrão: ano atual
 
 // Quando usuário clica em um sol:
-setSelectedYear(2024)  // → Qualquer componente que use useYear() é atualizado
+setSelectedYear(2024); // → Qualquer componente que use useYear() é atualizado
 
 // Em SolOrbitScreen.tsx
 const { selectedYear } = useYear();
@@ -189,11 +195,13 @@ const { selectedYear } = useYear();
 ### Teste Manual
 
 **Passo 1:** Navegue até GalaxySunsScreen
+
 ```
 cosmos/ → Home → Galáxia Cronológica
 ```
 
 **Passo 2:** Clique em 2023
+
 ```
 Click no sol de 2023
 → Abre SolOrbitScreen
@@ -201,6 +209,7 @@ Click no sol de 2023
 ```
 
 **Passo 3:** Clique em uma lua (trimestral)
+
 ```
 Click na Lua Cheia
 → Modal abre
@@ -209,6 +218,7 @@ Click na Lua Cheia
 ```
 
 **Passo 4:** Escreva e salve
+
 ```
 Insight: "Colhemos bons frutos em 2023"
 Click: "✨ Concluir insight trimestral"
@@ -217,8 +227,9 @@ Click: "✨ Concluir insight trimestral"
 ```
 
 **Passo 5:** Verifique no banco de dados
+
 ```sql
-SELECT * FROM quarterly_insights 
+SELECT * FROM quarterly_insights
 WHERE user_id = YOUR_ID AND year = 2023;
 -- Deve retornar seu insight!
 ```
@@ -232,6 +243,7 @@ WHERE user_id = YOUR_ID AND year = 2023;
 **Problema:** Clica em 2024, mas ainda mostra "2025"
 
 **Solução:**
+
 ```typescript
 // Verificar se YearProvider está envolvendo a app
 // app/cosmos/page.tsx
@@ -253,14 +265,15 @@ console.log("Selected Year:", selectedYear);  // Debug
 **Problema:** Insight é salvo, mas para ano 2025
 
 **Solução:**
+
 1. Verificar network no DevTools
    - Deve enviar: `{ year: 2023 }`
 2. Verificar backend logs
    - `console.log('selectedYear:', selectedYear)`
 3. Verificar banco de dados
    ```sql
-   SELECT * FROM annual_insights 
-   WHERE user_id = X 
+   SELECT * FROM annual_insights
+   WHERE user_id = X
    ORDER BY created_at DESC;
    ```
 
@@ -278,7 +291,7 @@ CREATE TABLE annual_insights (
   insight TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- Índices para performance
   UNIQUE (user_id, year)
 );
@@ -341,6 +354,7 @@ const selectedYear = year ?? new Date().getFullYear();
 ```
 
 **Casos de uso:**
+
 - Cliques diretos (sem passar year)
 - Funcionalidades futuras que não especificam ano
 - Compatibilidade com código legado
@@ -350,6 +364,7 @@ const selectedYear = year ?? new Date().getFullYear();
 ## 🔟 Próximas Features
 
 ### 1. Ler Insights de Anos Anteriores
+
 ```typescript
 // Novo endpoint
 GET /api/insights/annual/2023
@@ -362,6 +377,7 @@ GET /api/insights/annual/2023
 ```
 
 ### 2. Timeline Visual
+
 ```
 2023: [Insight A] [Insight B]
 2024: [Insight C] [Insight D]
@@ -369,6 +385,7 @@ GET /api/insights/annual/2023
 ```
 
 ### 3. Comparação Entre Anos
+
 ```
 2023 vs 2024 vs 2025
 Temas mais frequentes

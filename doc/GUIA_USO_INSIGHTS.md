@@ -43,10 +43,7 @@ Quando você clica em uma lua, um modal aparece:
 ### 1️⃣ Usuário Clica na Lua
 
 ```tsx
-<CelestialObject
-  type="luaCheia"
-  onClick={() => handleMoonClick('luaCheia')}
-/>
+<CelestialObject type="luaCheia" onClick={() => handleMoonClick('luaCheia')} />
 ```
 
 ### 2️⃣ Modal Abre
@@ -141,7 +138,7 @@ const moonPhaseInfo = {
   luaNova: {
     name: 'Lua Nova', // customize
     quarter: '1º Trimestre', // customize
-    months: 'Jan - Mar' // customize
+    months: 'Jan - Mar', // customize
   },
   // ... outros
 };
@@ -174,21 +171,25 @@ const moonPhaseInfo = {
 ## 🐛 Troubleshooting
 
 ### "Modal não abre"
+
 - Verifique se o `SolOrbitScreen` está renderizando
 - Cheque o console para erros
 
 ### "Insight não salva"
+
 - Verifique se está autenticado (cookie `auth_token`)
 - Cheque erros na aba Network do DevTools
 - Verifique se Google Sheets está conectado
 
 ### "Erro de validação"
+
 - Verifique se preencheu o campo de insight
 - Campo não pode ficar vazio
 
 ## 📊 Próximas Ideias
 
 Você pode:
+
 - ✨ Adicionar emoji picker para insights
 - 📸 Adicionar imagem/foto
 - 🏷️ Adicionar tags ou categorias

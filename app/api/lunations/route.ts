@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
 
 /**
  * GET /api/lunations
@@ -19,11 +19,11 @@ export async function GET(request: NextRequest) {
       data: results,
     });
   } catch (error) {
-    console.error("Erro ao buscar lunações:", error);
+    console.error('Erro ao buscar lunações:', error);
     return NextResponse.json(
       {
         success: false,
-        error: "Erro ao buscar lunações",
+        error: 'Erro ao buscar lunações',
       },
       { status: 500 }
     );
@@ -43,7 +43,7 @@ export async function getByDate(date: string) {
     const results = Array.isArray(result) ? result : [];
     return results.length > 0 ? results[0] : null;
   } catch (error) {
-    console.error("Erro ao buscar lunação:", error);
+    console.error('Erro ao buscar lunação:', error);
     return null;
   }
 }

@@ -1,0 +1,252 @@
+# Mapa Visual - Rota Planeta e Suas Dependências
+
+## 🗺️ Estrutura Completa por Camadas
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    URL: /planeta                                │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ CAMADA 1: ROTA (Next.js App Router)                             │
+├─────────────────────────────────────────────────────────────────┤
+│ /app/planeta/                                                    │
+│   ├── layout.tsx (Metadata + estilos base)                      │
+│   └── page.tsx   (Página Principal)                             │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ CAMADA 2: CONTEXTO (Context Layer)                              │
+├─────────────────────────────────────────────────────────────────┤
+│ /app/cosmos/context/                                             │
+│   └── YearContext.tsx (Gerencia ano lunar)                      │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ CAMADA 3: LAYOUT (Layout Components)                            │
+├─────────────────────────────────────────────────────────────────┤
+│ /app/cosmos/components/                                          │
+│   ├── SpaceBackground.tsx (Background animado)                  │
+│   └── Card.tsx (Wrapper visual)                                 │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ CAMADA 4: TELA PRINCIPAL (Screen Layer)                         │
+├─────────────────────────────────────────────────────────────────┤
+│ /app/cosmos/screens/planet.tsx                                  │
+│                                                                  │
+│ Estado:                                                          │
+│  • savedTodos (SavedTodo[])                                     │
+│  • filters (FilterState)                                        │
+│  • activeDrop (MoonPhase | null)                               │
+│  • activeIslandDrop (IslandId | null)                          │
+│  • isDraggingTodo (boolean)                                    │
+│  • showDeleteConfirm (boolean)                                 │
+│                                                                  │
+│ Exports:                                                         │
+│  • PlanetScreen: React.FC<ScreenProps>                         │
+└─────────────────────────────────────────────────────────────────┘
+           ↙           ↓           ↓           ↘
+    ┌─────┴────┬───────┴────┬───────┴────┬────────┴────┐
+    ↓          ↓            ↓            ↓             ↓
+┌────────┐ ┌────────┐ ┌─────────┐ ┌──────────┐ ┌────────────┐
+│ LUAS   │ │ PLANETA│ │CARD COM │ │ ILHAS    │ │ SOL        │
+│        │ │        │ │TAREFAS  │ │          │ │            │
+└────────┘ └────────┘ └─────────┘ └──────────┘ └────────────┘
+                             ↓
+                    ┌────────┴──────────┐
+                    ↓                   ↓
+             ┌────────────┐      ┌──────────────┐
+             │ Filtros    │      │ TodoInput    │
+             │SavedTodos  │      │(nova tarefa) │
+             │Panel       │      └──────────────┘
+             └────────────┘
+```
+
+## 🎯 Componentes Utilizados
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ CAMADA 5: COMPONENTES (Component Layer)                     │
+├─────────────────────────────────────────────────────────────┤
+│ /app/cosmos/components/                                      │
+│                                                              │
+│ ✓ SpaceBackground.tsx     → Fundo animado                  │
+│ ✓ CelestialObject.tsx     → Luas, Planeta, Sol             │
+│ ✓ Card.tsx                → Container com estilo           │
+│ ✓ TodoInput.tsx           → Input de tarefas               │
+│ ✓ SavedTodosPanel.tsx     → Painel de tarefas salvas       │
+│ ✓ IslandsList.tsx         → Lista de ilhas                 │
+│ ✓ AccessibleTabs.tsx      → Abas acessíveis               │
+│                                                              │
+│ Sub-componentes (lua-list/):                               │
+│ ✓ MoonPhase.tsx           → Fase lunar                     │
+│ ✓ MoonPhaseDisplay.tsx    → Display de fase                │
+│ ✓ MoonPhasesRail.tsx      → Rail de fases                  │
+│ ✓ PhaseTag.tsx            → Tag de fase                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🪝 Hooks Customizados
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ CAMADA 6: HOOKS (Custom Hooks Layer)                        │
+├─────────────────────────────────────────────────────────────┤
+│ /hooks/                                                      │
+│                                                              │
+│ usePhaseInputs()                                            │
+│   • saveInput(moonPhase, inputType, content, vibe, meta)   │
+│   • Sincroniza tarefas com backend                         │
+│                                                              │
+│ useFilteredTodos(savedTodos, filters)                      │
+│   • Aplica filtros (view, inputType, phase, island)        │
+│   • Retorna tarefas filtradas                              │
+│                                                              │
+│ useIslandNames()                                            │
+│   • islandNames (Record<IslandId, string>)                 │
+│   • renameIsland(islandId, newName)                        │
+│                                                              │
+│ useYear()                                                   │
+│   • Acessa ano lunar do contexto                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 📦 Tipos
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ CAMADA 7: TIPOS (Type Layer)                                │
+├─────────────────────────────────────────────────────────────┤
+│ /app/cosmos/types/                                           │
+│                                                              │
+│ ScreenProps                                                 │
+│   • navigateWithFocus: (screenId, options) => void         │
+│                                                              │
+│ ScreenId = 'home' | 'solOrbit' | 'luaList' | ... (15+)    │
+│                                                              │
+│ IslandId                                                    │
+│ CelestialType = 'planeta' | 'luaNova' | 'sol' | ...       │
+│ CelestialSize = 'sm' | 'md' | 'lg'                        │
+│                                                              │
+│ /app/cosmos/utils/ (tipos também):                          │
+│                                                              │
+│ MoonPhase = 'luaNova' | 'luaCrescente' | 'luaCheia' | ...│
+│ SavedTodo {                                                 │
+│   id: string                                                │
+│   text: string                                              │
+│   phase?: MoonPhase                                         │
+│   islandId?: IslandId                                       │
+│   inputType: 'text' | 'checkbox'                           │
+│   completed: boolean                                        │
+│   category?: string                                         │
+│   dueDate?: string                                          │
+│   depth: number                                             │
+│ }                                                            │
+│                                                              │
+│ FilterState {                                               │
+│   view: 'inbox' | 'lua-atual'                             │
+│   inputType: 'all' | 'text' | 'checkbox'                  │
+│   todoStatus: 'all' | 'completed' | 'open'                │
+│   phase?: MoonPhase | null                                 │
+│   island?: IslandId | null                                 │
+│ }                                                            │
+│                                                              │
+│ IslandNames = Record<IslandId, string>                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🛠️ Utilitários
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ CAMADA 8: UTILITIES (Utility Layer)                         │
+├─────────────────────────────────────────────────────────────┤
+│ /app/cosmos/utils/                                           │
+│                                                              │
+│ todoStorage.ts                                              │
+│   • loadSavedTodos(): SavedTodo[]                          │
+│   • saveSavedTodos(todos: SavedTodo[]): void              │
+│   • phaseLabels: Record<MoonPhase, string>                │
+│                                                              │
+│ phaseVibes.ts                                               │
+│   • PHASE_VIBES: Record<MoonPhase, {                       │
+│       label: string                                         │
+│       emoji: string                                         │
+│       color: string                                         │
+│     }>                                                       │
+│                                                              │
+│ islandNames.ts                                              │
+│   • getIslandLabel(id?: IslandId, names?: IslandNames)    │
+│   • type IslandNames = Record<IslandId, string>           │
+│                                                              │
+│ moonPhases.ts                                               │
+│   • Informações sobre fases lunares                        │
+│                                                              │
+│ luaList.ts                                                  │
+│   • Utilitários da lista de luas                           │
+│                                                              │
+│ insightChatPresets.ts                                       │
+│   • Presets para chat                                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🔄 Fluxo de Dados
+
+```
+PlanetScreen
+    ↓
+┌───────────────────────────────────────┐
+│ Estado Local                           │
+│ - savedTodos (localStorage)            │
+│ - filters                              │
+│ - activeDrop                           │
+│ - isDraggingTodo                       │
+└───────────────────────────────────────┘
+    ↓                   ↓                   ↓
+┌────────────┐ ┌────────────────┐ ┌────────────┐
+│ usePhase   │ │ useFiltered    │ │ useIsland  │
+│ Inputs     │ │ Todos          │ │ Names      │
+└────────────┘ └────────────────┘ └────────────┘
+    ↓                   ↓                   ↓
+┌────────────────────────────────────────────┐
+│ Componentes Filhos                         │
+│ - MoonCluster                              │
+│ - IslandsList                              │
+│ - SavedTodosPanel                          │
+│ - TodoInput                                │
+│ - FiltersPanel                             │
+└────────────────────────────────────────────┘
+```
+
+## 📊 Tabela de Dependências
+
+| Camada | Arquivo               | Dependências                                |
+| ------ | --------------------- | ------------------------------------------- |
+| 1      | /app/planeta/page.tsx | YearProvider, SpaceBackground, PlanetScreen |
+| 2      | YearContext           | React Context API                           |
+| 3      | SpaceBackground       | CSS, Framer Motion                          |
+| 4      | planet.tsx            | Camada 5-8, React Hooks                     |
+| 5      | Componentes           | React, Tailwind, Framer Motion              |
+| 6      | Hooks                 | React Hooks, Utils                          |
+| 7      | Types                 | TypeScript                                  |
+| 8      | Utils                 | localStorage, array/object utilities        |
+
+## 🚀 Como Navegar entre Telas
+
+A página planeta implementa um sistema de navegação de telas dentro dela:
+
+```
+planeta (página)
+    ├── Home Screen
+    ├── Sol Orbit Screen
+    ├── Lua List Screen
+    ├── Planet Card Below Sun
+    ├── Planet Card Standalone  ← Acionado ao clicar nas Luas
+    ├── Galaxy Suns Screen
+    ├── Ring Galaxy Screen
+    ├── Column Sol Lua Planeta
+    └── Eclipse Productivity
+```
+
+Cada tela pode ser acessada através da função `navigateWithFocus()` passada como prop.

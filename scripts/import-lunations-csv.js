@@ -1,23 +1,23 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const path = require("path");
-const { neon } = require("@neondatabase/serverless");
+const fs = require('fs');
+const path = require('path');
+const { neon } = require('@neondatabase/serverless');
 
-const DEFAULT_SOURCE = "csv";
+const DEFAULT_SOURCE = 'csv';
 
 const toNormalizedHeader = (value) =>
   value
     .toString()
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[^a-z0-9]/g, '');
 
 const parseCsv = (input) => {
   const rows = [];
   let row = [];
-  let value = "";
+  let value = '';
   let inQuotes = false;
   let i = 0;
 
@@ -47,23 +47,23 @@ const parseCsv = (input) => {
       continue;
     }
 
-    if (char === ",") {
+    if (char === ',') {
       row.push(value);
-      value = "";
+      value = '';
       i += 1;
       continue;
     }
 
-    if (char === "\n") {
+    if (char === '\n') {
       row.push(value);
       rows.push(row);
       row = [];
-      value = "";
+      value = '';
       i += 1;
       continue;
     }
 
-    if (char === "\r") {
+    if (char === '\r') {
       i += 1;
       continue;
     }
@@ -92,8 +92,8 @@ const parseDateToIso = (value) => {
   const match = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
   if (!match) return null;
 
-  const day = match[1].padStart(2, "0");
-  const month = match[2].padStart(2, "0");
+  const day = match[1].padStart(2, '0');
+  const month = match[2].padStart(2, '0');
   const year = match[3].length === 2 ? `20${match[3]}` : match[3];
   return `${year}-${month}-${day}`;
 };
@@ -119,9 +119,9 @@ const readRows = (rows, headerIndexes) => {
     const row = rows[i];
     if (!row || row.length === 0) continue;
 
-    const dateRaw = row[headerIndexes.data] || "";
-    const phaseRaw = row[headerIndexes.fase] || "";
-    const signRaw = row[headerIndexes.signo] || "";
+    const dateRaw = row[headerIndexes.data] || '';
+    const phaseRaw = row[headerIndexes.fase] || '';
+    const signRaw = row[headerIndexes.signo] || '';
 
     const lunationDate = parseDateToIso(dateRaw);
     const moonPhase = phaseRaw.toString().trim();
@@ -143,25 +143,23 @@ const readRows = (rows, headerIndexes) => {
 
 const run = async () => {
   const [, , inputPathArg] = process.argv;
-  const inputPath = inputPathArg
-    ? path.resolve(process.cwd(), inputPathArg)
-    : null;
+  const inputPath = inputPathArg ? path.resolve(process.cwd(), inputPathArg) : null;
 
   if (!inputPath) {
-    console.error("Uso: node scripts/import-lunations-csv.js <caminho-do-csv>");
+    console.error('Uso: node scripts/import-lunations-csv.js <caminho-do-csv>');
     process.exit(1);
   }
 
   if (!process.env.DATABASE_URL) {
-    console.error("DATABASE_URL não configurada.");
+    console.error('DATABASE_URL não configurada.');
     process.exit(1);
   }
 
-  const content = fs.readFileSync(inputPath, "utf8");
+  const content = fs.readFileSync(inputPath, 'utf8');
   const rows = parseCsv(content);
 
   if (!rows.length) {
-    console.error("CSV vazio ou inválido.");
+    console.error('CSV vazio ou inválido.');
     process.exit(1);
   }
 
@@ -171,14 +169,14 @@ const run = async () => {
     headerIndexes.fase === undefined ||
     headerIndexes.signo === undefined
   ) {
-    console.error("Cabeçalho inválido. Esperado: Data, FasedaLua, Signo.");
+    console.error('Cabeçalho inválido. Esperado: Data, FasedaLua, Signo.');
     process.exit(1);
   }
 
   const entries = readRows(rows, headerIndexes);
 
   if (!entries.length) {
-    console.error("Nenhuma lunação válida encontrada no CSV.");
+    console.error('Nenhuma lunação válida encontrada no CSV.');
     process.exit(1);
   }
 
@@ -201,6 +199,6 @@ const run = async () => {
 };
 
 run().catch((error) => {
-  console.error("Erro ao importar lunações:", error);
+  console.error('Erro ao importar lunações:', error);
   process.exit(1);
 });

@@ -8,17 +8,18 @@ Copie e cole estes comandos no SQL Editor do Neon para testar a estrutura.
 
 ```sql
 -- Verificar se as tabelas foram criadas
-SELECT table_name 
-FROM information_schema.tables 
+SELECT table_name
+FROM information_schema.tables
 WHERE table_name IN (
-  'monthly_insights', 
-  'quarterly_insights', 
+  'monthly_insights',
+  'quarterly_insights',
   'annual_insights'
 )
 ORDER BY table_name;
 ```
 
 **Resultado esperado:**
+
 ```
 table_name
 ─────────────────────
@@ -33,9 +34,9 @@ quarterly_insights
 
 ```sql
 -- Ver colunas de monthly_insights
-SELECT 
-  column_name, 
-  data_type, 
+SELECT
+  column_name,
+  data_type,
   is_nullable,
   column_default
 FROM information_schema.columns
@@ -44,6 +45,7 @@ ORDER BY ordinal_position;
 ```
 
 **Resultado esperado:**
+
 ```
 column_name   | data_type          | is_nullable | column_default
 ──────────────┼────────────────────┼─────────────┼───────────────
@@ -62,17 +64,18 @@ updated_at    | timestamp with...  | YES         | now()
 
 ```sql
 -- Ver índices criados
-SELECT indexname 
-FROM pg_indexes 
+SELECT indexname
+FROM pg_indexes
 WHERE tablename IN (
-  'monthly_insights', 
-  'quarterly_insights', 
+  'monthly_insights',
+  'quarterly_insights',
   'annual_insights'
 )
 ORDER BY tablename, indexname;
 ```
 
 **Resultado esperado:**
+
 ```
 indexname
 ────────────────────────────────────
@@ -94,12 +97,13 @@ idx_quarterly_insights_user_quarter
 -- Inserir um insight mensal
 INSERT INTO monthly_insights (user_id, moon_phase, month_number, insight)
 VALUES (1, 'luaNova', 1, 'Test insight for January Luna Nova')
-ON CONFLICT (user_id, moon_phase, month_number) 
+ON CONFLICT (user_id, moon_phase, month_number)
 DO UPDATE SET insight = EXCLUDED.insight, updated_at = NOW()
 RETURNING id, user_id, moon_phase, month_number, insight, created_at;
 ```
 
 **Resultado esperado:**
+
 ```
 id | user_id | moon_phase | month_number | insight                          | created_at
 ───┼─────────┼────────────┼──────────────┼──────────────────────────────────┼────────────────
@@ -114,12 +118,13 @@ id | user_id | moon_phase | month_number | insight                          | cr
 -- Tentar inserir duplicado (deve atualizar)
 INSERT INTO monthly_insights (user_id, moon_phase, month_number, insight)
 VALUES (1, 'luaNova', 1, 'Updated insight!')
-ON CONFLICT (user_id, moon_phase, month_number) 
+ON CONFLICT (user_id, moon_phase, month_number)
 DO UPDATE SET insight = EXCLUDED.insight, updated_at = NOW()
 RETURNING id, user_id, insight, updated_at;
 ```
 
 **Resultado esperado:**
+
 ```
 id | user_id | insight           | updated_at
 ───┼─────────┼───────────────────┼────────────────
@@ -139,7 +144,7 @@ Depois verifique:
 
 ```sql
 -- Contar insights por tipo
-SELECT 
+SELECT
   'Mensais' as tipo,
   COUNT(*) as total
 FROM monthly_insights
@@ -147,7 +152,7 @@ WHERE user_id = 1
 
 UNION ALL
 
-SELECT 
+SELECT
   'Trimestrais',
   COUNT(*)
 FROM quarterly_insights
@@ -155,7 +160,7 @@ WHERE user_id = 1
 
 UNION ALL
 
-SELECT 
+SELECT
   'Anuais',
   COUNT(*)
 FROM annual_insights
@@ -163,6 +168,7 @@ WHERE user_id = 1;
 ```
 
 **Resultado esperado:**
+
 ```
 tipo        | total
 ────────────┼───────
@@ -189,6 +195,7 @@ curl -X POST http://localhost:3000/api/form/monthly-insight \
 ```
 
 **Resultado esperado (200 OK):**
+
 ```json
 {
   "id": 1,
@@ -217,6 +224,7 @@ curl -X POST http://localhost:3000/api/form/quarterly-insight \
 ```
 
 **Resultado esperado (200 OK):**
+
 ```json
 {
   "id": 1,
@@ -244,6 +252,7 @@ curl -X POST http://localhost:3000/api/form/annual-insight \
 ```
 
 **Resultado esperado (200 OK):**
+
 ```json
 {
   "id": 1,
@@ -271,6 +280,7 @@ curl -X POST http://localhost:3000/api/form/monthly-insight \
 ```
 
 **Resultado esperado (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid moon phase"
@@ -292,6 +302,7 @@ curl -X POST http://localhost:3000/api/form/monthly-insight \
 ```
 
 **Resultado esperado (401 Unauthorized):**
+
 ```json
 {
   "error": "Unauthorized"
@@ -309,9 +320,9 @@ import { saveMonthlyInsight } from '@/lib/forms';
 
 // Teste
 const result = await saveMonthlyInsight(
-  '1',  // userId
+  '1', // userId
   'luaNova',
-  1,    // janeiro
+  1, // janeiro
   'Test insight'
 );
 
@@ -428,13 +439,13 @@ fetch('/api/form/monthly-insight', {
   body: JSON.stringify({
     moonPhase: 'luaNova',
     monthNumber: 1,
-    insight: 'Test'
+    insight: 'Test',
   }),
-  credentials: 'include'
+  credentials: 'include',
 })
-.then(r => r.json())
-.then(data => console.log('Response:', data))
-.catch(e => console.error('Error:', e));
+  .then((r) => r.json())
+  .then((data) => console.log('Response:', data))
+  .catch((e) => console.error('Error:', e));
 ```
 
 ---
@@ -442,6 +453,7 @@ fetch('/api/form/monthly-insight', {
 ## 📋 Checklist de Testes
 
 ### Banco de Dados
+
 - [ ] Tabelas criadas
 - [ ] Índices criados
 - [ ] Constraints verificados
@@ -449,6 +461,7 @@ fetch('/api/form/monthly-insight', {
 - [ ] Unicidade funcionando (UPDATE em duplicado)
 
 ### Backend
+
 - [ ] Funções em `lib/forms.ts` importam sem erro
 - [ ] Pode salvar mensal
 - [ ] Pode salvar trimestral
@@ -457,6 +470,7 @@ fetch('/api/form/monthly-insight', {
 - [ ] Validação funciona
 
 ### APIs
+
 - [ ] POST `/api/form/monthly-insight` retorna 200
 - [ ] POST `/api/form/quarterly-insight` retorna 200
 - [ ] POST `/api/form/annual-insight` retorna 200
@@ -465,6 +479,7 @@ fetch('/api/form/monthly-insight', {
 - [ ] Dados salvos no banco
 
 ### Frontend
+
 - [ ] Modal abre
 - [ ] Modal fecha
 - [ ] Texto pode ser digitado
@@ -474,6 +489,7 @@ fetch('/api/form/monthly-insight', {
 - [ ] Dados salvos verificáveis no banco
 
 ### Performance
+
 - [ ] Salvamento < 1 segundo
 - [ ] Sem erro no console
 - [ ] Sem avisos de performance
@@ -486,6 +502,7 @@ fetch('/api/form/monthly-insight', {
 Após todos os testes passarem:
 
 1. Remova dados de teste
+
 ```sql
 DELETE FROM monthly_insights WHERE user_id IN (1, 2);
 DELETE FROM quarterly_insights WHERE user_id IN (1, 2);
@@ -493,6 +510,7 @@ DELETE FROM annual_insights WHERE user_id IN (1, 2);
 ```
 
 2. Faça commit dos arquivos
+
 ```bash
 git add .
 git commit -m "feat: add insights tables and functions"
@@ -508,6 +526,6 @@ git commit -m "feat: add insights tables and functions"
 ✅ Funções de CRUD em TypeScript  
 ✅ APIs de salvamento funcionando  
 ✅ Componentes React integrados  
-✅ Tudo testado e validado  
+✅ Tudo testado e validado
 
 **Pronto para usar! 🎉**

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react';
 
 /**
  * Componente que sincroniza lunações do banco de dados
  * Executa automaticamente ao montar
- * 
+ *
  * Uso:
  *   <LunationSync autoSync={true} years={[2024, 2025]} onSuccess={handleSuccess} />
  */
@@ -31,13 +31,10 @@ export function LunationSync({
   useEffect(() => {
     if (!autoSync) return;
 
-    const yearsToSync = years.length > 0 
-      ? years 
-      : [
-          new Date().getFullYear() - 1,
-          new Date().getFullYear(),
-          new Date().getFullYear() + 1,
-        ];
+    const yearsToSync =
+      years.length > 0
+        ? years
+        : [new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1];
 
     async function sync() {
       for (const year of yearsToSync) {
@@ -62,7 +59,8 @@ export function LunationSync({
           const existingData = checkResponse.ok ? await checkResponse.json() : null;
 
           if (existingData?.days?.length > 0) {
-            if (verbose) console.log(`✅ ${year} já sincronizado (${existingData.days.length} dias)`);
+            if (verbose)
+              console.log(`✅ ${year} já sincronizado (${existingData.days.length} dias)`);
             setSyncedYears((prev) => new Set([...prev, year]));
             if (onSuccess) onSuccess(existingData.days.length);
             continue;
@@ -94,7 +92,9 @@ export function LunationSync({
 
           if (!saveResponse.ok) {
             const errorData = await saveResponse.json().catch(() => ({}));
-            throw new Error(`Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`);
+            throw new Error(
+              `Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`
+            );
           }
 
           const saveResult = await saveResponse.json();
@@ -157,7 +157,9 @@ export function useSyncLunations() {
 
       if (!saveResponse.ok) {
         const errorData = await saveResponse.json().catch(() => ({}));
-        throw new Error(`Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`);
+        throw new Error(
+          `Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`
+        );
       }
 
       const result = await saveResponse.json();

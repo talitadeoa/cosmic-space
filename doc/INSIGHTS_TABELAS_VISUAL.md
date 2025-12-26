@@ -51,6 +51,7 @@
 ```
 
 **Exemplo de dados:**
+
 ```
 id | user_id | moon_phase   | month | insight                      | created_at
 1  | 123     | luaNova      | 1     | "Intenções para janeiro..."  | 2024-01-02
@@ -91,6 +92,7 @@ id | user_id | moon_phase   | month | insight                      | created_at
 | 4 | Out-Dez | Q4 |
 
 **Exemplo de dados:**
+
 ```
 id | user_id | moon_phase   | quarter | insight                         | created_at
 1  | 123     | luaNova      | 1       | "Plantei sementes no Q1..."     | 2024-01-05
@@ -121,6 +123,7 @@ id | user_id | moon_phase   | quarter | insight                         | create
 ```
 
 **Exemplo de dados:**
+
 ```
 id | user_id | year | insight                                  | created_at
 1  | 123     | 2024 | "2024 foi um ano de transformações..."  | 2024-12-31
@@ -194,8 +197,8 @@ import { saveMonthlyInsight, getMonthlyInsights } from '@/lib/forms';
 // Salvar um insight
 const result = await saveMonthlyInsight(
   userId,
-  'luaNova',           // fase lunar
-  1,                   // janeiro
+  'luaNova', // fase lunar
+  1, // janeiro
   'Meu insight aqui...'
 );
 
@@ -212,14 +215,9 @@ import { saveMonthlyInsight } from '@/lib/forms';
 export async function POST(request: Request) {
   const { moonPhase, monthNumber, insight } = await request.json();
   const userId = session.user.id;
-  
-  const result = await saveMonthlyInsight(
-    userId,
-    moonPhase,
-    monthNumber,
-    insight
-  );
-  
+
+  const result = await saveMonthlyInsight(userId, moonPhase, monthNumber, insight);
+
   return Response.json(result);
 }
 ```
@@ -229,18 +227,21 @@ export async function POST(request: Request) {
 ## ✅ Dados Importantes
 
 ### Fases Lunares (enum)
+
 - `luaNova` - Lua Nova
 - `luaCrescente` - Lua Crescente
 - `luaCheia` - Lua Cheia
 - `luaMinguante` - Lua Minguante
 
 ### Restrições
+
 - `month_number`: 1-12
 - `quarter_number`: 1-4
 - `year`: 2000-2999
 - `moon_phase`: deve ser um dos 4 valores acima
 
 ### Constraints de Unicidade
+
 - **Monthly**: Um insight por (user, fase, mês)
 - **Quarterly**: Um insight por (user, fase, trimestre)
 - **Annual**: Um insight por (user, ano)

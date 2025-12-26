@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { validateToken, getTokenPayload } from "@/lib/auth";
-import { getAllInsights } from "@/lib/forms";
+import { NextRequest, NextResponse } from 'next/server';
+import { validateToken, getTokenPayload } from '@/lib/auth';
+import { getAllInsights } from '@/lib/forms';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-type InsightCategory = "mensal" | "trimestral" | "anual";
+type InsightCategory = 'mensal' | 'trimestral' | 'anual';
 
 type InsightCalendarItem = {
   category: InsightCategory;
@@ -15,7 +15,7 @@ type InsightCalendarItem = {
   createdAt: string;
 };
 
-const allowedCategories: InsightCategory[] = ["mensal", "trimestral", "anual"];
+const allowedCategories: InsightCategory[] = ['mensal', 'trimestral', 'anual'];
 
 const parseIsoDate = (value: string | null) => {
   if (!value) return null;
@@ -28,7 +28,7 @@ const formatIsoDate = (date: Date) => date.toISOString().slice(0, 10);
 const parseCategories = (value: string | null): InsightCategory[] | null => {
   if (!value) return null;
   const items = value
-    .split(",")
+    .split(',')
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean);
   const filtered = items.filter((item): item is InsightCategory =>
@@ -37,29 +37,25 @@ const parseCategories = (value: string | null): InsightCategory[] | null => {
   return filtered.length ? filtered : [];
 };
 
-const toCalendarDate = (row: {
-  tipo: InsightCategory;
-  periodo: string;
-  created_at: string;
-}) => {
+const toCalendarDate = (row: { tipo: InsightCategory; periodo: string; created_at: string }) => {
   // Usa o ano do created_at para mensal/trimestral enquanto não há coluna de ano.
   const createdAt = new Date(row.created_at);
   const createdYear = createdAt.getUTCFullYear();
 
-  if (row.tipo === "mensal") {
+  if (row.tipo === 'mensal') {
     const month = Number(row.periodo);
     if (!Number.isInteger(month) || month < 1 || month > 12) return null;
     return new Date(Date.UTC(createdYear, month - 1, 1));
   }
 
-  if (row.tipo === "trimestral") {
+  if (row.tipo === 'trimestral') {
     const quarter = Number(row.periodo);
     if (!Number.isInteger(quarter) || quarter < 1 || quarter > 4) return null;
     const startMonth = (quarter - 1) * 3;
     return new Date(Date.UTC(createdYear, startMonth, 1));
   }
 
-  if (row.tipo === "anual") {
+  if (row.tipo === 'anual') {
     const year = Number(row.periodo);
     if (!Number.isInteger(year)) return null;
     return new Date(Date.UTC(year, 0, 1));
@@ -70,30 +66,30 @@ const toCalendarDate = (row: {
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get("auth_token")?.value;
+    const token = request.cookies.get('auth_token')?.value;
     if (!token || !validateToken(token)) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const startParam = searchParams.get("start");
-    const endParam = searchParams.get("end");
-    const categoriesParam = searchParams.get("categories");
-    const moonPhase = searchParams.get("moonPhase");
+    const startParam = searchParams.get('start');
+    const endParam = searchParams.get('end');
+    const categoriesParam = searchParams.get('categories');
+    const moonPhase = searchParams.get('moonPhase');
 
     const startDate = parseIsoDate(startParam);
     const endDate = parseIsoDate(endParam);
 
     if ((startParam && !startDate) || (endParam && !endDate)) {
       return NextResponse.json(
-        { error: "Parâmetros start/end inválidos. Use ISO YYYY-MM-DD." },
+        { error: 'Parâmetros start/end inválidos. Use ISO YYYY-MM-DD.' },
         { status: 400 }
       );
     }
 
     if (startDate && endDate && startDate > endDate) {
       return NextResponse.json(
-        { error: "Intervalo inválido: start deve ser menor que end." },
+        { error: 'Intervalo inválido: start deve ser menor que end.' },
         { status: 400 }
       );
     }
@@ -101,7 +97,7 @@ export async function GET(request: NextRequest) {
     const categories = parseCategories(categoriesParam);
     if (categoriesParam && categories && categories.length === 0) {
       return NextResponse.json(
-        { error: "Categorias inválidas. Use mensal,trimestral,anual." },
+        { error: 'Categorias inválidas. Use mensal,trimestral,anual.' },
         { status: 400 }
       );
     }
@@ -110,7 +106,7 @@ export async function GET(request: NextRequest) {
     const userId = tokenPayload?.userId;
 
     if (!userId) {
-      return NextResponse.json({ error: "Usuário não identificado" }, { status: 401 });
+      return NextResponse.json({ error: 'Usuário não identificado' }, { status: 401 });
     }
 
     const insights = await getAllInsights(userId);
@@ -157,7 +153,7 @@ export async function GET(request: NextRequest) {
       categories: categories ?? allowedCategories,
     });
   } catch (error) {
-    console.error("Erro ao buscar insights:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    console.error('Erro ao buscar insights:', error);
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }

@@ -38,9 +38,9 @@ GOOGLE_SHEETS_API_KEY=sua_chave_de_api
 
 Crie uma aba chamada "Dados" com as seguintes colunas:
 
-| Timestamp | Nome | Email | Mensagem | Data Criação | Status |
-|-----------|------|-------|----------|--------------|--------|
-| ISO String | Text | Email | Text | Datetime | Text |
+| Timestamp  | Nome | Email | Mensagem | Data Criação | Status |
+| ---------- | ---- | ----- | -------- | ------------ | ------ |
+| ISO String | Text | Email | Text     | Datetime     | Text   |
 
 ## 3. Usar em uma Página
 
