@@ -15,8 +15,6 @@ type HiddenPhasesBridgeProps = {
   anchors: OrbitAnchor[];
   tileWidth: number;
   gap: number;
-  virtualOffsetPx: number;
-  trackWidth: number;
   revealedCycleKey: string | null;
   orbitRadius: number;
 };
@@ -30,8 +28,6 @@ const HiddenPhasesBridge: React.FC<HiddenPhasesBridgeProps> = ({
   anchors,
   tileWidth,
   gap,
-  virtualOffsetPx,
-  trackWidth,
   revealedCycleKey,
   orbitRadius,
 }) => {
@@ -42,11 +38,11 @@ const HiddenPhasesBridge: React.FC<HiddenPhasesBridgeProps> = ({
   const circleDiameter = adjustedOrbitRadius * 2 + 80;
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-10" style={{ minWidth: trackWidth }}>
+    <div className="pointer-events-none absolute inset-0 z-10">
       {anchors.map(({ month, localIndex }) => {
         const monthKey = buildMonthKey(month);
         const isActive = revealedCycleKey === monthKey;
-        const centerLeft = virtualOffsetPx + localIndex * tileSpan + tileWidth / 2;
+        const centerLeft = localIndex * tileSpan + tileWidth / 2;
 
         return (
           <motion.div

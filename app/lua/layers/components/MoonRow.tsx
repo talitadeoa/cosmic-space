@@ -13,8 +13,6 @@ type MoonRowItem = {
 type MoonRowProps = {
   items: MoonRowItem[];
   highlightTarget: HighlightTarget | null;
-  trackWidth: number;
-  virtualOffsetPx: number;
   tileWidth: number;
   gap: number;
   onMoonClick: (month: MonthEntry, phase: MoonPhase) => void;
@@ -26,8 +24,6 @@ type MoonRowProps = {
 const MoonRow: React.FC<MoonRowProps> = ({
   items,
   highlightTarget,
-  trackWidth,
-  virtualOffsetPx,
   tileWidth,
   gap,
   onMoonClick,
@@ -196,16 +192,11 @@ const MoonRow: React.FC<MoonRowProps> = ({
   return (
     <div
       className="flex w-full flex-col gap-12"
-      style={{
-        minWidth: trackWidth,
-      }}
     >
       {/* Linha de Luas Novas */}
       <div
         className="flex min-w-max items-center"
         style={{
-          minWidth: trackWidth,
-          paddingLeft: virtualOffsetPx,
           columnGap: gap,
         }}
       >
@@ -216,8 +207,6 @@ const MoonRow: React.FC<MoonRowProps> = ({
       <div
         className="flex min-w-max items-center"
         style={{
-          minWidth: trackWidth,
-          paddingLeft: virtualOffsetPx,
           columnGap: gap,
         }}
       >

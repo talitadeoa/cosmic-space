@@ -21,19 +21,30 @@ type ArrowButtonProps = {
   disabled: boolean;
   onClick: () => void;
   label: string;
+  placement?: 'floating' | 'inline';
 };
 
-const ArrowButton: React.FC<ArrowButtonProps> = ({ direction, disabled, onClick, label }) => (
-  <button
-    type="button"
-    aria-label={label}
-    onClick={onClick}
-    disabled={disabled}
-    className="absolute top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-slate-900/85 text-slate-50 shadow-[0_10px_30px_rgba(8,47,73,0.55)] backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-sky-300/60 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-40"
-    style={{ [direction === 'left' ? 'left' : 'right']: '8px' }}
-  >
-    <ArrowIcon direction={direction} />
-  </button>
-);
+const ArrowButton: React.FC<ArrowButtonProps> = ({
+  direction,
+  disabled,
+  onClick,
+  label,
+  placement = 'floating',
+}) => {
+  const isFloating = placement === 'floating';
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/85 text-slate-50 shadow-[0_10px_30px_rgba(8,47,73,0.55)] backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-sky-300/60 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-40 sm:h-11 sm:w-11 ${
+        isFloating ? 'absolute top-1/2 z-20 -translate-y-1/2' : 'relative z-10 shrink-0'
+      } ${isFloating ? (direction === 'left' ? 'left-2 sm:left-3' : 'right-2 sm:right-3') : ''}`}
+    >
+      <ArrowIcon direction={direction} />
+    </button>
+  );
+};
 
 export default ArrowButton;

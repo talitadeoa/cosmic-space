@@ -26,7 +26,8 @@ export type LuaListLayout = {
 };
 
 const LAYOUT_BREAKPOINTS: Array<{ maxWidth: number; layout: LuaListLayout }> = [
-  { maxWidth: 480, layout: { tileWidth: 80, gap: 10, padding: 24, visibleColumns: 3.6 } },
+  { maxWidth: 360, layout: { tileWidth: 68, gap: 8, padding: 18, visibleColumns: 3.1 } },
+  { maxWidth: 480, layout: { tileWidth: 80, gap: 10, padding: 22, visibleColumns: 3.6 } },
   { maxWidth: 768, layout: { tileWidth: 90, gap: 12, padding: 28, visibleColumns: 4.3 } },
   { maxWidth: 1200, layout: { tileWidth: 96, gap: 12, padding: 32, visibleColumns: 4.8 } },
   { maxWidth: 1600, layout: { tileWidth: 104, gap: 14, padding: 36, visibleColumns: 5.2 } },

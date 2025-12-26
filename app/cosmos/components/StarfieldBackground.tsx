@@ -22,9 +22,20 @@ export const StarfieldBackground: React.FC = () => {
       twinklePhase: number;
     }> = [];
 
+    const getCanvasSize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) {
+        return { width: window.innerWidth, height: window.innerHeight };
+      }
+      const width = parent.clientWidth || window.innerWidth;
+      const height = Math.max(parent.clientHeight, parent.scrollHeight, window.innerHeight);
+      return { width, height };
+    };
+
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const { width, height } = getCanvasSize();
+      canvas.width = Math.max(1, Math.round(width));
+      canvas.height = Math.max(1, Math.round(height));
     }
 
     function normToPixelX(nx: number) {
@@ -89,17 +100,23 @@ export const StarfieldBackground: React.FC = () => {
       resizeCanvas();
       createStars();
       window.addEventListener('resize', resizeCanvas);
+      const parent = canvas.parentElement;
+      const observer = parent ? new ResizeObserver(() => resizeCanvas()) : null;
+      observer?.observe(parent);
       frameId = requestAnimationFrame(render);
+
+      return () => observer?.disconnect();
     }
 
-    function stop() {
+    function stop(cleanup?: () => void) {
       if (frameId != null) cancelAnimationFrame(frameId);
       window.removeEventListener('resize', resizeCanvas);
+      cleanup?.();
     }
 
-    start();
+    const cleanup = start();
 
-    return () => stop();
+    return () => stop(cleanup);
   }, []);
 
   return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" />;

@@ -28,10 +28,8 @@ type MoonCarouselProps = {
   monthEntries: MonthEntry[];
   calendarError: string | null;
   skeletonCount: number;
-  trackWidth: number;
   virtualizedPhases: PhaseItem[];
   highlightTarget: HighlightTarget | null;
-  virtualOffsetPx: number;
   onMoonClick: (month: MonthEntry, phase: MoonPhase) => void;
   revealedCycleKey: string | null;
   onCycleReveal: (monthKey: string | null) => void;
@@ -53,10 +51,8 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
   monthEntries,
   calendarError,
   skeletonCount,
-  trackWidth,
   virtualizedPhases,
   highlightTarget,
-  virtualOffsetPx,
   onMoonClick,
   revealedCycleKey,
   onCycleReveal,
@@ -90,41 +86,39 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
 
   return (
     <div
-    ref={scrollerRef}
-    className="group relative w-full min-h-[24rem] overflow-x-auto overflow-y-visible rounded-3xl py-12 sm:min-h-[26rem] sm:py-14 lg:min-h-[30rem] lg:py-16 transition-[max-width] duration-200"
-    onKeyDown={onKeyDown}
-    tabIndex={0}
-    aria-label="Carrossel de luas"
-    style={{
-      maxWidth: scrollerMaxWidth,
-      paddingLeft: layoutPadding,
-      paddingRight: layoutPadding,
-      marginLeft: 'auto',
-      marginRight: 'auto',
-      display: 'flex',
-      alignItems: 'center',
-    }}
-  >
-    <ArrowButton
-      direction="left"
-      disabled={!canScrollLeft}
-      onClick={onScrollLeft}
-      label="Ver luas anteriores"
-    />
-    <ArrowButton
-      direction="right"
-      disabled={!canScrollRight}
-      onClick={onScrollRight}
-      label="Ver próximas luas"
-    />
-
+      ref={scrollerRef}
+      className="group relative w-full min-h-[20rem] overflow-x-auto overflow-y-visible rounded-3xl py-8 sm:min-h-[24rem] sm:py-12 lg:min-h-[30rem] lg:py-16 transition-[max-width] duration-200"
+      onKeyDown={onKeyDown}
+      tabIndex={0}
+      aria-label="Carrossel de luas"
+      style={{
+        maxWidth: scrollerMaxWidth,
+        paddingLeft: layoutPadding,
+        paddingRight: layoutPadding,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
     {isInitialLoading && (
-      <MoonRowSkeleton
-        count={skeletonCount}
-        trackWidth={trackWidth}
-        tileWidth={tileWidth}
-        gap={gap}
-      />
+      <div className="flex items-center gap-4">
+        <ArrowButton
+          direction="left"
+          disabled={!canScrollLeft}
+          onClick={onScrollLeft}
+          label="Ver luas anteriores"
+          placement="inline"
+        />
+        <MoonRowSkeleton count={skeletonCount} tileWidth={tileWidth} gap={gap} />
+        <ArrowButton
+          direction="right"
+          disabled={!canScrollRight}
+          onClick={onScrollRight}
+          label="Ver próximas luas"
+          placement="inline"
+        />
+      </div>
     )}
 
     {!isInitialLoading && monthEntries.length === 0 && !calendarError && (
@@ -132,28 +126,40 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
     )}
 
       {!isInitialLoading && monthEntries.length > 0 && (
-        <div className="relative flex min-w-max items-center" style={{ minWidth: trackWidth }}>
-          <HiddenPhasesBridge
-            anchors={cycleAnchors}
-            tileWidth={tileWidth}
-            gap={gap}
-            virtualOffsetPx={virtualOffsetPx}
-            trackWidth={trackWidth}
-            revealedCycleKey={revealedCycleKey}
-            orbitRadius={orbitRadius}
+        <div className="flex items-center gap-4">
+          <ArrowButton
+            direction="left"
+            disabled={!canScrollLeft}
+            onClick={onScrollLeft}
+            label="Ver luas anteriores"
+            placement="inline"
           />
+          <div className="relative flex items-center">
+            <HiddenPhasesBridge
+              anchors={cycleAnchors}
+              tileWidth={tileWidth}
+              gap={gap}
+              revealedCycleKey={revealedCycleKey}
+              orbitRadius={orbitRadius}
+            />
 
-          <MoonRow
-            items={virtualizedPhases}
-            highlightTarget={highlightTarget}
-            trackWidth={trackWidth}
-            virtualOffsetPx={virtualOffsetPx}
-            onMoonClick={onMoonClick}
-            tileWidth={tileWidth}
-            gap={gap}
-            orbitRadius={orbitRadius}
-            revealedCycleKey={revealedCycleKey}
-            onCycleReveal={onCycleReveal}
+            <MoonRow
+              items={virtualizedPhases}
+              highlightTarget={highlightTarget}
+              onMoonClick={onMoonClick}
+              tileWidth={tileWidth}
+              gap={gap}
+              orbitRadius={orbitRadius}
+              revealedCycleKey={revealedCycleKey}
+              onCycleReveal={onCycleReveal}
+            />
+          </div>
+          <ArrowButton
+            direction="right"
+            disabled={!canScrollRight}
+            onClick={onScrollRight}
+            label="Ver próximas luas"
+            placement="inline"
           />
         </div>
       )}
