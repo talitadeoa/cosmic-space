@@ -1,7 +1,7 @@
 // hooks/useAuth.ts
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -22,39 +22,98 @@ const INITIAL_STATE: AuthState = {
   user: null,
 };
 
+const AUTH_CACHE_KEY = 'cosmic-space-auth-state';
+
+type CachedAuthPayload = Pick<AuthState, 'isAuthenticated' | 'user' | 'error'>;
+
+const readCachedAuthState = (): AuthState => {
+  if (typeof window === 'undefined') {
+    return INITIAL_STATE;
+  }
+
+  try {
+    const stored = window.sessionStorage.getItem(AUTH_CACHE_KEY);
+    if (!stored) {
+      return INITIAL_STATE;
+    }
+
+    const parsed = JSON.parse(stored) as CachedAuthPayload;
+    return {
+      ...INITIAL_STATE,
+      ...parsed,
+      loading: false,
+    };
+  } catch {
+    return INITIAL_STATE;
+  }
+};
+
+const persistAuthState = (state: AuthState) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const payload: CachedAuthPayload = {
+    isAuthenticated: state.isAuthenticated,
+    user: state.user,
+    error: state.error,
+  };
+
+  window.sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(payload));
+};
+
+const clearAuthStateCache = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.sessionStorage.removeItem(AUTH_CACHE_KEY);
+};
+
 /**
  * Hook centralizado para autenticação
  * Gerencia login, signup, logout e OAuth Google
  */
 export function useAuth() {
   const router = useRouter();
-  const [state, setState] = useState<AuthState>(INITIAL_STATE);
+  const [state, setState] = useState<AuthState>(() => readCachedAuthState());
+  const hadCachedAuthRef = useRef(state.isAuthenticated);
 
   // Verificar autenticação ao montar
-  const verifyAuth = useCallback(async () => {
+  const verifyAuth = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+      if (!silent) {
+        setState((prev) => ({ ...prev, loading: true, error: null }));
+      } else {
+        setState((prev) => ({ ...prev, error: null }));
+      }
       const response = await fetch('/api/auth/verify');
       const data = await response.json();
 
-      setState((prev) => ({
-        ...prev,
+      const nextState: AuthState = {
         isAuthenticated: Boolean(data.authenticated),
         loading: false,
+        error: null,
         user: data.user ?? null,
-      }));
+      };
+
+      setState(nextState);
+      persistAuthState(nextState);
     } catch (error) {
-      setState((prev) => ({
-        ...prev,
+      const nextState: AuthState = {
         isAuthenticated: false,
         loading: false,
         error: 'Erro ao verificar autenticação',
-      }));
+        user: null,
+      };
+
+      setState(nextState);
+      persistAuthState(nextState);
     }
   }, []);
 
   useEffect(() => {
-    verifyAuth();
+    verifyAuth({ silent: hadCachedAuthRef.current });
   }, [verifyAuth]);
 
   /**
@@ -80,7 +139,9 @@ export function useAuth() {
             loading: false,
             error: data.error || errorMessage,
             isAuthenticated: false,
+            user: null,
           }));
+          clearAuthStateCache();
           return false;
         }
 
@@ -102,7 +163,9 @@ export function useAuth() {
           loading: false,
           error: errorMessage,
           isAuthenticated: false,
+          user: null,
         }));
+        clearAuthStateCache();
         return false;
       }
     },
@@ -127,6 +190,7 @@ export function useAuth() {
       await fetch('/api/auth/logout', { method: 'POST' });
 
       setState(INITIAL_STATE);
+      clearAuthStateCache();
       router.refresh();
     } catch (error) {
       setState((prev) => ({
