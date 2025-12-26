@@ -70,7 +70,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
                 width: size,
                 height: size,
                 right: '50%',
-                translateY: '-50%',
+                transform: 'translateY(-50%)',
                 rotate: `${idx * 8}deg`,
                 zIndex: 10,
                 boxShadow: idx % 2 === 0 ? '0 0 28px rgba(14,165,233,0.14)' : undefined,
