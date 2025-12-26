@@ -5,6 +5,8 @@ import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
 const MOON_RING_RADIUS_PERCENT = 42;
+const RING_HIT_BAND_PERCENT = 10;
+const INNER_SAFE_RADIUS_PERCENT = 22;
 const DIAGONAL_MOONS: Array<{
   phase: MoonPhase;
   angleDeg: number;
@@ -19,10 +21,44 @@ const DIAGONAL_MOONS: Array<{
 type SolOrbitStageProps = {
   onSolClick: () => void;
   onMoonClick: (phase: MoonPhase) => void;
+  onSpaceClick?: () => void;
 };
 
-const SolOrbitStage: React.FC<SolOrbitStageProps> = ({ onSolClick, onMoonClick }) => {
+const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
+  onSolClick,
+  onMoonClick,
+  onSpaceClick,
+}) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const handleSpaceClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (event.target !== event.currentTarget) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height);
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = event.clientX - centerX;
+      const dy = event.clientY - centerY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      const ringRadius = (MOON_RING_RADIUS_PERCENT / 100) * size;
+      const band = (RING_HIT_BAND_PERCENT / 100) * size;
+      const innerRadius = ringRadius - band;
+      const outerRadius = ringRadius + band;
+      const innerSafeRadius = (INNER_SAFE_RADIUS_PERCENT / 100) * size;
+
+      if (distance >= innerRadius && distance <= outerRadius) {
+        event.stopPropagation();
+        onSpaceClick?.();
+        return;
+      }
+
+      if (distance <= innerSafeRadius) {
+        event.stopPropagation();
+      }
+    },
+    [onSpaceClick]
+  );
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -220,7 +256,10 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({ onSolClick, onMoonClick }
 
   return (
     <div className="flex h-full w-full items-center justify-center overflow-hidden px-4">
-      <div className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]">
+      <div
+        className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]"
+        onClick={handleSpaceClick}
+      >
         <canvas
           ref={canvasRef}
           className="pointer-events-none absolute inset-0 bg-transparent"

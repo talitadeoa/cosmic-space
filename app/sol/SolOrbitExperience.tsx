@@ -16,7 +16,7 @@ import {
 } from '@/app/cosmos/utils/insightChatPresets';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
-const SolOrbitExperience: React.FC = () => {
+const SolOrbitExperience: React.FC<{ onSpaceClick?: () => void }> = ({ onSpaceClick }) => {
   const [isQuarterlyModalOpen, setIsQuarterlyModalOpen] = useState(false);
   const [isAnnualModalOpen, setIsAnnualModalOpen] = useState(false);
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>('luaNova');
@@ -57,7 +57,11 @@ const SolOrbitExperience: React.FC = () => {
 
   return (
     <>
-      <StageLayer onSolClick={handleSolClick} onMoonClick={handleMoonClick} />
+      <StageLayer
+        onSolClick={handleSolClick}
+        onMoonClick={handleMoonClick}
+        onSpaceClick={onSpaceClick}
+      />
 
       <QuarterlyModalLayer
         isOpen={isQuarterlyModalOpen}

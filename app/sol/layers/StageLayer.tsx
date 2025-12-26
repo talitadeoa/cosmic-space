@@ -7,10 +7,13 @@ import SolOrbitStage from '../components/SolOrbitStage';
 type StageLayerProps = {
   onSolClick: () => void;
   onMoonClick: (phase: MoonPhase) => void;
+  onSpaceClick?: () => void;
 };
 
-const StageLayer: React.FC<StageLayerProps> = ({ onSolClick, onMoonClick }) => {
-  return <SolOrbitStage onSolClick={onSolClick} onMoonClick={onMoonClick} />;
+const StageLayer: React.FC<StageLayerProps> = ({ onSolClick, onMoonClick, onSpaceClick }) => {
+  return (
+    <SolOrbitStage onSolClick={onSolClick} onMoonClick={onMoonClick} onSpaceClick={onSpaceClick} />
+  );
 };
 
 export default StageLayer;
