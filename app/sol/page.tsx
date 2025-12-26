@@ -14,7 +14,8 @@ const SolRouteContent: React.FC<{
   screen: SolScreen;
   onSpaceClick: () => void;
   onSunSelect: () => void;
-}> = ({ screen, onSpaceClick, onSunSelect }) => {
+  onBackgroundClick: () => void;
+}> = ({ screen, onSpaceClick, onSunSelect, onBackgroundClick }) => {
   const { setSelectedYear } = useYear();
   const handleSunSelect = (year: number) => {
     setSelectedYear(year);
@@ -32,7 +33,10 @@ const SolRouteContent: React.FC<{
           className="mx-auto w-full max-w-5xl"
           onClick={(event) => event.stopPropagation()}
         >
-          <GalaxySunsExperience onSunSelect={(year) => handleSunSelect(year)} />
+          <GalaxySunsExperience
+            onSunSelect={(year) => handleSunSelect(year)}
+            onBackgroundClick={onBackgroundClick}
+          />
         </section>
       )}
     </div>
@@ -55,6 +59,7 @@ const SolPage = () => {
             screen={screen}
             onSpaceClick={() => setScreen('galaxysuns')}
             onSunSelect={() => setScreen('solorbit')}
+            onBackgroundClick={handleBackgroundClick}
           />
         </SpacePageLayout>
       </YearProvider>

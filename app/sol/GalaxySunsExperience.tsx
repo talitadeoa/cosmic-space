@@ -10,7 +10,8 @@ import type { YearSun } from './components/GalaxySunsStage';
 const GalaxySunsExperience: React.FC<{
   onSunSelect?: (year: number, event?: React.MouseEvent<HTMLDivElement>) => void;
   onGalaxyCoreClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
-}> = ({ onSunSelect, onGalaxyCoreClick }) => {
+  onBackgroundClick?: () => void;
+}> = ({ onSunSelect, onGalaxyCoreClick, onBackgroundClick }) => {
   const currentYear = new Date().getFullYear();
   const { data: moonData, isLoading } = useGalaxySunsSync();
 
@@ -23,8 +24,18 @@ const GalaxySunsExperience: React.FC<{
     ];
   }, [currentYear]);
 
+  const handleBackgroundClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Verifica se o clique foi no background (não em elementos filhos)
+    if (event.target === event.currentTarget) {
+      onBackgroundClick?.();
+    }
+  };
+
   return (
-    <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-[28px] px-3 py-5 sm:px-6">
+    <div
+      className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-[28px] px-3 py-5 sm:px-6 cursor-pointer"
+      onClick={handleBackgroundClick}
+    >
       <GalaxyBackgroundLayer />
       <GalaxyMetaLayer isLoading={isLoading} />
       <GalaxyStageLayer
