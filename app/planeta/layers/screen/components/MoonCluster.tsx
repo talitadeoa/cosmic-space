@@ -40,7 +40,12 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
           const floatOffset = index * 1.5 - 3;
 
           return (
-            <div key={`moon-${index}`} className="relative flex items-center justify-center">
+            <div
+              key={`moon-${index}`}
+              data-drop-target="moon"
+              data-phase={moonType}
+              className="relative flex items-center justify-center"
+            >
               {badgeCount > 0 && (
                 <span className="absolute -right-3 top-1/2 flex h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-full bg-indigo-600 px-2 text-[0.65rem] font-semibold text-white shadow-md">
                   {badgeCount}

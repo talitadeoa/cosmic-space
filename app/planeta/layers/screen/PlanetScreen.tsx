@@ -25,12 +25,15 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [hasLoadedTodos, setHasLoadedTodos] = useState(false);
   const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
+  const [showIslands, setShowIslands] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
   const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null);
   const dropHandledRef = useRef(false);
+  const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
   const { islandNames, renameIsland } = useIslandNames();
 
@@ -203,6 +206,67 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setActiveIslandDrop(null);
   };
 
+  // Funções para suporte a touch (mobile drag and drop)
+  const handleTouchStart = (todoId: string) => (e: React.TouchEvent) => {
+    setTouchStartPos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    touchIdRef.current = todoId;
+    setIsDraggingTodo(true);
+    setDraggingTodoId(todoId);
+    dropHandledRef.current = false;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchIdRef.current && isDraggingTodo) {
+      // Verificar se houver um drop ativo e processar
+      if (activeDrop) {
+        assignTodoToPhase(touchIdRef.current, activeDrop);
+        dropHandledRef.current = true;
+      } else if (activeIslandDrop) {
+        assignTodoToIsland(touchIdRef.current, activeIslandDrop);
+        dropHandledRef.current = true;
+      }
+    }
+
+    if (!dropHandledRef.current && touchIdRef.current) {
+      setShowDeleteConfirm(true);
+    } else {
+      setDraggingTodoId(null);
+    }
+    setTouchStartPos(null);
+    touchIdRef.current = null;
+    setIsDraggingTodo(false);
+    setActiveDrop(null);
+    setActiveIslandDrop(null);
+    dropHandledRef.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDraggingTodo || !touchStartPos) return;
+    
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    if (!element) return;
+
+    // Detectar se é uma lua (MoonCluster)
+    const moonContainer = element.closest('[data-drop-target="moon"]');
+    if (moonContainer) {
+      const phase = moonContainer.getAttribute('data-phase') as MoonPhase;
+      if (phase) {
+        setActiveDrop(phase);
+      }
+    }
+
+    // Detectar se é uma ilha
+    const islandContainer = element.closest('[data-drop-target="island"]');
+    if (islandContainer) {
+      const islandId = islandContainer.getAttribute('data-island-id') as IslandId;
+      if (islandId) {
+        setActiveIslandDrop(islandId);
+      }
+    }
+  };
+
   // Usar o hook useFilteredTodos para aplicar todos os filtros
   const displayedTodos = useFilteredTodos(savedTodos, filters);
 
@@ -219,35 +283,42 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   );
 
   return (
-    <div className="relative flex w-full items-start justify-center px-4 sm:px-8 pt-4 sm:pt-6">
+    <div
+      className="relative flex w-full min-h-screen items-start justify-center px-4 sm:px-8 pt-4 sm:pt-6"
+      onTouchMove={handleTouchMove}
+    >
       <div className="relative flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-        {/* Coluna esquerda: Planeta + Ilhas */}
-        <div className="flex w-full flex-col items-center gap-8 lg:w-auto lg:max-w-xs">
+        {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
+        <div className="order-4 flex w-full flex-col items-center gap-8 lg:order-1 lg:w-auto lg:max-w-xs">
           {/* Planeta */}
           <div className="flex justify-center">
             <CelestialObject
               type="planeta"
               size="lg"
+              interactive
+              onClick={() => setShowIslands((prev) => !prev)}
               className="scale-75 transition-transform xl:scale-90 2xl:scale-100"
             />
           </div>
 
           {/* Ilhas abaixo do planeta */}
-          <IslandsList
-            selectedIsland={filters.island}
-            onSelectIsland={(island) => setFilters((prev) => ({ ...prev, island }))}
-            activeDropIsland={activeIslandDrop}
-            onDropIsland={handleDropOnIsland}
-            onDragOverIsland={handleDragOverIsland}
-            onDragLeaveIsland={handleDragLeaveIsland}
-            isDraggingTodo={isDraggingTodo}
-            islandNames={islandNames}
-            onRenameIsland={renameIsland}
-          />
+          {showIslands && (
+            <IslandsList
+              selectedIsland={filters.island}
+              onSelectIsland={(island) => setFilters((prev) => ({ ...prev, island }))}
+              activeDropIsland={activeIslandDrop}
+              onDropIsland={handleDropOnIsland}
+              onDragOverIsland={handleDragOverIsland}
+              onDragLeaveIsland={handleDragLeaveIsland}
+              isDraggingTodo={isDraggingTodo}
+              islandNames={islandNames}
+              onRenameIsland={renameIsland}
+            />
+          )}
         </div>
 
-        {/* Coluna central: Card com To-dos */}
-        <div className="relative w-full lg:flex-1">
+        {/* Coluna central: Card com To-dos (ordem 3 no mobile, 2 no desktop) */}
+        <div className="order-3 relative w-full lg:order-2 lg:flex-1">
           <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-lg sm:p-6">
             <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
               <div className="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
@@ -287,6 +358,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   }
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchMove={handleTouchMove}
                   onToggleComplete={handleToggleComplete}
                   onAssignPhase={assignTodoToPhase}
                   onDropInside={() => {
@@ -324,35 +398,39 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           </Card>
         </div>
 
-        {/* Coluna direita: Luas + Sol */}
-        <div className="flex w-full flex-col items-center justify-center gap-6 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
-          {/* MoonCluster com as luas interativas */}
-          <MoonCluster
-            activeDrop={activeDrop}
-            moonCounts={moonCounts}
-            isDraggingTodo={isDraggingTodo}
-            selectedPhase={filters.phase}
-            onMoonNavigate={(phase, event) =>
-              navigateWithFocus('planetCardStandalone', { event, type: phase, size: 'sm' })
-            }
-            onMoonFilter={(phase) => setFilters((prev) => ({ ...prev, phase }))}
-            onDrop={handleDropOnPhase}
-            onDragOver={handleDragOverPhase}
-            onDragLeave={handleDragLeavePhase}
-          />
+        {/* Coluna direita: Luas + Sol (ordem 2 e 1 no mobile, 3 no desktop) */}
+        <div className="order-1 flex w-full flex-col items-center justify-center gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
+          {/* Sol (ordem 1 no mobile) */}
+          <div className="order-1 lg:order-2">
+            <CelestialObject
+              type="sol"
+              size="md"
+              interactive
+              onClick={(event) => {
+                if (isDraggingTodo) return;
+                navigateWithFocus('planetCardBelowSun', { event, type: 'sol', size: 'md' });
+              }}
+              floatOffset={-2}
+              className="scale-90 sm:scale-100"
+            />
+          </div>
 
-          {/* Sol */}
-          <CelestialObject
-            type="sol"
-            size="md"
-            interactive
-            onClick={(event) => {
-              if (isDraggingTodo) return;
-              navigateWithFocus('planetCardBelowSun', { event, type: 'sol', size: 'md' });
-            }}
-            floatOffset={-2}
-            className="scale-90 sm:scale-100"
-          />
+          {/* MoonCluster com as luas interativas (ordem 2 no mobile) */}
+          <div className="order-2 lg:order-1">
+            <MoonCluster
+              activeDrop={activeDrop}
+              moonCounts={moonCounts}
+              isDraggingTodo={isDraggingTodo}
+              selectedPhase={filters.phase}
+              onMoonNavigate={(phase, event) =>
+                navigateWithFocus('planetCardStandalone', { event, type: phase, size: 'sm' })
+              }
+              onMoonFilter={(phase) => setFilters((prev) => ({ ...prev, phase }))}
+              onDrop={handleDropOnPhase}
+              onDragOver={handleDragOverPhase}
+              onDragLeave={handleDragLeavePhase}
+            />
+          </div>
         </div>
       </div>
 

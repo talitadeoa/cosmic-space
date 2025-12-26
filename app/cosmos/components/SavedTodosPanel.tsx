@@ -12,6 +12,9 @@ interface SavedTodosPanelProps {
   onViewChange?: (view: 'inbox' | 'lua-atual') => void;
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
+  onTouchStart?: (todoId: string) => (event: React.TouchEvent) => void;
+  onTouchEnd?: () => void;
+  onTouchMove?: (event: React.TouchEvent) => void;
   onToggleComplete: (todoId: string) => void;
   onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
   onDropInside?: () => void;
@@ -40,6 +43,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onViewChange,
   onDragStart,
   onDragEnd,
+  onTouchStart,
+  onTouchEnd,
+  onTouchMove,
   onToggleComplete,
   onAssignPhase,
   onDropInside,
@@ -327,6 +333,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                 draggable={canDrag}
                 onDragStart={canDrag ? onDragStart(todo.id) : undefined}
                 onDragEnd={canDrag ? onDragEnd : undefined}
+                onTouchStart={canDrag && onTouchStart ? onTouchStart(todo.id) : undefined}
+                onTouchEnd={canDrag && onTouchEnd ? onTouchEnd : undefined}
+                onTouchMove={canDrag && onTouchMove ? onTouchMove : undefined}
                 className="group flex items-start justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
               >
                 <div className="flex items-start gap-3">

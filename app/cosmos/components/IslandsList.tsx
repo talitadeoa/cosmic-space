@@ -157,7 +157,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
         const isEditing = editingIslandId === islandId;
 
         return (
-          <div key={islandId} className="flex flex-col gap-2">
+          <div key={islandId} data-drop-target="island" data-island-id={islandId} className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <button
                 type="button"

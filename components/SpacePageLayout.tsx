@@ -35,8 +35,9 @@ export const SpacePageLayout: React.FC<SpacePageLayoutProps> = React.memo(({
 
   return (
     <div
-      className={`relative min-h-[100dvh] w-full overflow-hidden bg-slate-950 ${className}`}
+      className={`relative w-full overflow-hidden bg-slate-950 ${className}`}
       onClick={handleBackgroundClick}
+      style={{ minHeight: '100vh' }}
     >
       <SpaceBackground />
       <div className="relative z-10">{children}</div>
