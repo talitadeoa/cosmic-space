@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import StageLayer from './components/StageLayer';
-import QuarterlyModalLayer from './components/QuarterlyModalLayer';
-import AnnualModalLayer from './components/AnnualModalLayer';
+import StageLayer from '../components/StageLayer';
+import QuarterlyModalLayer from '../components/QuarterlyModalLayer';
+import AnnualModalLayer from '../components/AnnualModalLayer';
 import { useQuarterlyInsights } from '@/hooks/useQuarterlyInsights';
 import { useAnnualInsights } from '@/hooks/useAnnualInsights';
 import { useYear } from '@/app/cosmos/context/YearContext';

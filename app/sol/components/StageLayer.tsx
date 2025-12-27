@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
-import SolOrbitStage from '../components/SolOrbitStage';
+import SolOrbitStage from './SolOrbitStage';
 
 type StageLayerProps = {
   onSolClick: () => void;

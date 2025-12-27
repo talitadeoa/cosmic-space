@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { PlanetaProviders } from './layers/providers/PlanetaProviders';
-import { PlanetaScene } from './layers/background/PlanetaScene';
-import PlanetScreen from './layers/screen/PlanetScreen';
-import type { ScreenProps } from '@/app/cosmos/types';
+import { PlanetaProviders } from './state/PlanetaProviders';
+import { PlanetaScene } from './visuals/PlanetaScene';
+import PlanetScreen from './components/PlanetScreen';
+import { usePlanetaNavigation } from './hooks/usePlanetaNavigation';
 
 /**
  * Página Planeta - Tela principal de organização de tarefas por fases lunares
@@ -16,20 +16,12 @@ import type { ScreenProps } from '@/app/cosmos/types';
  */
 
 const PlanetaPage: React.FC = () => {
-  const handleNavigateWithFocus: ScreenProps['navigateWithFocus'] = (screenId, options) => {
-    // Implementar navegação conforme necessário
-    console.log('Navigation request:', screenId, options);
-  };
-
-  const handleNavigateTo: ScreenProps['navigateTo'] = (screenId) => {
-    // Placeholder até integrar a navegação real
-    console.log('Navigation request:', screenId);
-  };
+  const { navigateTo, navigateWithFocus } = usePlanetaNavigation();
 
   return (
     <PlanetaProviders>
       <PlanetaScene>
-        <PlanetScreen navigateTo={handleNavigateTo} navigateWithFocus={handleNavigateWithFocus} />
+        <PlanetScreen navigateTo={navigateTo} navigateWithFocus={navigateWithFocus} />
       </PlanetaScene>
     </PlanetaProviders>
   );

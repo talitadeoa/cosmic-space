@@ -28,9 +28,9 @@ import { useMonthlyInsights } from '@/hooks/useMonthlyInsights';
 import { fetchLunations } from '@/hooks/useLunations';
 import { normalizeMoonPhase, type MoonCalendarDay } from '@/lib/api/moonCalendar';
 import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
-import HighlightBanner from '../../components/HighlightBanner';
-import MoonCarousel from '../../components/MoonCarousel';
-import CalendarStatus from '../../components/CalendarStatus';
+import HighlightBanner from '../components/HighlightBanner';
+import MoonCarousel from '../components/MoonCarousel';
+import CalendarStatus from '../components/CalendarStatus';
 
 type LuaScreenProps = {
   navigateWithFocus?: ScreenProps['navigateWithFocus'];

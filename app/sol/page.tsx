@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
 import { SpacePageLayout } from '@/components/SpacePageLayout';
 import { YearProvider, useYear } from '@/app/cosmos/context/YearContext';
-import SolOrbitExperience from './SolOrbitExperience';
-import GalaxySunsExperience from './GalaxySunsExperience';
+import SolOrbitExperience from './visuals/SolOrbitExperience';
+import GalaxySunsExperience from './visuals/GalaxySunsExperience';
 
 type SolScreen = 'solorbit' | 'galaxysuns';
 

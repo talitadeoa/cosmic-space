@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import GalaxyBackgroundLayer from './components/GalaxyBackgroundLayer';
-import GalaxyMetaLayer from './components/GalaxyMetaLayer';
-import GalaxyStageLayer from './components/GalaxyStageLayer';
+import GalaxyBackgroundLayer from '../components/GalaxyBackgroundLayer';
+import GalaxyMetaLayer from '../components/GalaxyMetaLayer';
+import GalaxyStageLayer from '../components/GalaxyStageLayer';
 import { useGalaxySunsSync } from '@/hooks/useGalaxySunsSync';
-import type { YearSun } from './components/GalaxySunsStage';
+import type { YearSun } from '../components/GalaxySunsStage';
 
 const GalaxySunsExperience: React.FC<{
   onSunSelect?: (year: number, event?: React.MouseEvent<HTMLDivElement>) => void;

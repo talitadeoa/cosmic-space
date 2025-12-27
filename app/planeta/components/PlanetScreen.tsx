@@ -18,8 +18,8 @@ import { useFilteredTodos, type FilterState } from '@/hooks/useFilteredTodos';
 import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/components/IslandsList';
 import { useIslandNames } from '@/hooks/useIslandNames';
-import { FiltersPanel } from './components/FiltersPanel';
-import { MoonCluster } from './components/MoonCluster';
+import { FiltersPanel } from './FiltersPanel';
+import { MoonCluster } from './MoonCluster';
 
 const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);

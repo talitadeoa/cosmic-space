@@ -2,7 +2,7 @@
 
 import AuthGate from '@/components/AuthGate';
 import { SpacePageLayout } from '@/components/SpacePageLayout';
-import LuaScreen from './layers/screen/LuaScreen';
+import LuaScreen from './screen/LuaScreen';
 
 const LuaPage = () => {
   return (

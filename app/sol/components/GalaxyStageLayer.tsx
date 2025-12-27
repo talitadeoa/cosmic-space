@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import GalaxySunsStage, { type YearSun } from '../components/GalaxySunsStage';
+import GalaxySunsStage, { type YearSun } from './GalaxySunsStage';
 import type { YearMoonData } from '@/hooks/useGalaxySunsSync';
 
 const BASE_ORBIT_SIZE = 240;
