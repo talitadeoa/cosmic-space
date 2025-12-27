@@ -13,8 +13,8 @@ export const LuminousTrail: React.FC = () => {
     if (!ctx) return;
 
     const config = {
-      amplitude: 0.045, // oscilação vertical principal
-      frequency: 2.2, // quantas ondas cabem no traço
+      amplitude: 0.025, // oscilação vertical principal
+      frequency: 4.0, // quantas ondas cabem no traço
       phaseSpeed: 0.001, // velocidade de deslocamento da onda
       segments: 240,
     };
@@ -41,8 +41,8 @@ export const LuminousTrail: React.FC = () => {
       // Onda senoidal única para manter movimento uniforme e consistente
       const wave = config.amplitude * Math.sin(config.frequency * t * Math.PI * 2 + phase);
 
-      const baseX = t;
-      const baseY = 1 - t;
+      const baseX = 1 - t;
+      const baseY = t;
 
       return { x: baseX, y: baseY + wave };
     }
