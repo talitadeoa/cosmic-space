@@ -31,6 +31,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
   const stagePadding = 120;
   const stageSize = largestOrbit + stagePadding;
   const angleStep = yearSuns.length > 0 ? 360 / yearSuns.length : 0;
+  const leftOrbitPositioning = { right: '50%', translateY: '-50%' };
 
   const polarToCartesian = (orbitIndex: number, angle: number) => {
     const orbitSize = orbitSizes[orbitIndex] ?? orbitSizes[orbitSizes.length - 1] ?? 0;
@@ -69,8 +70,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
               style={{
                 width: size,
                 height: size,
-                right: '50%',
-                translateY: '-50%',
+                ...leftOrbitPositioning,
                 rotate: `${idx * 8}deg`,
                 zIndex: 10,
                 boxShadow: idx % 2 === 0 ? '0 0 28px rgba(14,165,233,0.14)' : undefined,
