@@ -1,0 +1,63 @@
+Padronizar layout e providers das rotas Planeta e Lua”}
+	1.	Criar um layout compartilhado para as rotas “universo” (por exemplo app/(universe)/layout.tsx) ou aplicar layout.tsx consistente em app/planeta/layout.tsx e app/lua/layout.tsx.
+	2.	Mover AuthGate e SpacePageLayout para esse layout quando aplicável.
+	3.	Garantir que PlanetaProviders e PlanetaScene sejam aplicados via layout (ou padronizar a composição em ambas as rotas).
+	4.	Ajustar app/planeta/page.tsx e app/lua/page.tsx para ficarem enxutas, apenas renderizando o Screen.
+Localize os pontos atuais em:
+
+
+1. Padronizar a composição das rotas (Layouts/Providers/Scene)
+
+Hoje cada rota monta sua “stack” de providers de forma diferente.
+Sugestão: criar um layout compartilhado por domínio (ex.: app/planeta/layout.tsx, app/lua/layout.tsx ou até app/(universe)/layout.tsx) que:
+	•	injete auth/contextos globais,
+	•	aplique o plano de fundo espacial,
+	•	exponha uma API comum de navegação e gesto.
+
+Isso deixaria as páginas enxutas e consistentes, sem duplicar padrões de composição.
+(Ref: app/planeta/page.tsx, app/lua/page.tsx)
+
+2. Introduzir uma estrutura de “feature modules” real
+
+Você já usa layers/ dentro de app/planeta e app/lua, o que é bom, mas pode escalar melhor se cada domínio virar um “módulo”. Exemplo sugerido:
+
+features/
+ ├── planeta/
+ │    ├── components/
+ │    ├── hooks/
+ │    ├── state/
+ │    ├── visuals/
+ ├── lua/
+ │    ├── components/
+ │    ├── hooks/
+ │    ├── state/
+
+
+
+(Ref: components/)
+
+3. Centralizar padrões de navegação/gestos
+
+Na rota planeta, a navegação ainda é um placeholder.
+Sugestão: criar uma API de navegação e gestos comum para todas as entidades (Planeta, Lua, Galáxia etc), talvez em hooks/ ou app/cosmos/hooks, para:
+	•	padronizar navigateTo / navigateWithFocus,
+	•	permitir gestos como forma primária de transição.
+
+Isso evita que cada página implemente navegação de forma isolada.
+(Ref: app/planeta/page.tsx)
+
+4. Clarificar “componentes globais” vs “componentes de domínio”
+
+Hoje o diretório components/ mistura globais (AuthGate, SpacePageLayout) com pastas específicas (home, timeline).
+Sugestão: separar explicitamente em:
+
+components/ui/    -> shared UI primitives
+components/layout/ -> layouts
+features/<dominio>/components -> domínio específico
+
+5. Uniformizar o naming e a metáfora entre domínios
+
+A rota planeta já está muito alinhada com a metáfora (“layers”, “scene”, “screen”).
+A rota lua está mais “genérica” (AuthGate + SpacePageLayout + LuaScreen).
+Sugestão: alinhar a nomenclatura para refletir o universo de forma consistente (Scene, Orbit, Screen, etc). Isso melhora clareza e identidade arquitetural.
+(Ref: app/planeta/page.tsx, app/lua/page.tsx)
