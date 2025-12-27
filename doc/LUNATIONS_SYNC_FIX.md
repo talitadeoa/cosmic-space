@@ -5,11 +5,13 @@
 O componente `LunationSync` estava enviando dados para a API com nomes de campos diferentes do esperado:
 
 ### Campos Enviados pelo LunationSync ❌
+
 - `date` (em vez de `lunation_date`)
 - `moonPhase` (em vez de `moon_phase`)
 - `sign` (em vez de `zodiac_sign`)
 
 ### Campos Esperados pela API ✅
+
 - `lunation_date`
 - `moon_phase`
 - `zodiac_sign`
@@ -37,6 +39,7 @@ if (!lunation_date || !moon_phase || !zodiac_sign) {
 ### 2. Melhorias no Componente LunationSync
 
 #### ✅ Melhor Tratamento de Erros
+
 - Captura mensagens de erro da API
 - Log detalhado de erros
 - Callback `onSuccess` agora é chamado corretamente
@@ -44,18 +47,21 @@ if (!lunation_date || !moon_phase || !zodiac_sign) {
 ```typescript
 if (!saveResponse.ok) {
   const errorData = await saveResponse.json().catch(() => ({}));
-  throw new Error(`Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`);
+  throw new Error(
+    `Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`
+  );
 }
 ```
 
 #### ✅ Chamada de Callback onSuccess
+
 - Agora chama `onSuccess` quando dados já estão sincronizados
 - Passa o número de dias sincronizados
 
 ```typescript
 if (existingData?.days?.length > 0) {
   setSyncedYears((prev) => new Set([...prev, year]));
-  if (onSuccess) onSuccess(existingData.days.length);  // ← Adicionado
+  if (onSuccess) onSuccess(existingData.days.length); // ← Adicionado
   continue;
 }
 ```
@@ -68,14 +74,17 @@ if (verbose) console.log(`✨ ${days.length} dias gerados`);
 
 // Extração e exibição de erro detalhado
 const errorData = await saveResponse.json().catch(() => ({}));
-throw new Error(`Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`);
+throw new Error(
+  `Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`
+);
 ```
 
 ## Como Testar
 
 ### 1. Via Componente (no aplicativo)
+
 ```tsx
-<LunationSync 
+<LunationSync
   autoSync={true}
   years={[2025]}
   verbose={true}
@@ -85,6 +94,7 @@ throw new Error(`Erro ao salvar: ${saveResponse.status} - ${errorData.error || '
 ```
 
 ### 2. Via Hook (programmaticamente)
+
 ```tsx
 const { sync, isSyncing, lastError } = useSyncLunations();
 
@@ -94,6 +104,7 @@ console.log(result); // { success: true, message: "...", count: 365 }
 ```
 
 ### 3. Via API direta
+
 ```bash
 # Gerar dados
 curl "http://localhost:3000/api/moons/lunations?start=2025-01-01&end=2025-12-31&source=generated"

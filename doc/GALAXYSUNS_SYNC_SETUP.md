@@ -10,7 +10,8 @@ Configuração de sincronização de dados lunares para o `GalaxySunsScreen`. Os
 
 ## 🏗️ Arquitetura Implementada
 
-### 1. **Hook: `useGalaxySunsSync`** 
+### 1. **Hook: `useGalaxySunsSync`**
+
 **Arquivo:** [`hooks/useGalaxySunsSync.ts`](hooks/useGalaxySunsSync.ts)
 
 ```typescript
@@ -22,6 +23,7 @@ const { data, isLoading, error, refresh } = useGalaxySunsSync(years);
 - Retorna dados estruturados com interface `YearMoonData`
 
 **Dados retornados por ano:**
+
 ```typescript
 {
   year: 2024,
@@ -43,6 +45,7 @@ const { data, isLoading, error, refresh } = useGalaxySunsSync(years);
 ```
 
 ### 2. **API: `/api/galaxysuns/sync`**
+
 **Arquivo:** [`app/api/galaxysuns/sync/route.ts`](app/api/galaxysuns/sync/route.ts)
 
 ```bash
@@ -50,10 +53,12 @@ GET /api/galaxysuns/sync?years=2024,2025,2026
 ```
 
 **Query params:**
+
 - `years`: anos separados por vírgula (ex: `2024,2025,2026`)
 - default: últimos 2 anos, presente e próximos 2 anos
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -72,6 +77,7 @@ GET /api/galaxysuns/sync?years=2024,2025,2026
 ```
 
 ### 3. **Componente: `GalaxySunsSync`**
+
 **Arquivo:** [`components/GalaxySunsSync.tsx`](components/GalaxySunsSync.tsx)
 
 Componente sem UI que sincroniza dados em background:
@@ -86,14 +92,16 @@ Componente sem UI que sincroniza dados em background:
 - Sem impacto visual na UI
 
 **Hook para sincronização manual:**
+
 ```typescript
 const { sync, isSyncing, lastError } = useSyncGalaxySuns();
 
 // Sincronizar anos específicos
-await sync([2024, 2025, 2026], verbose = true);
+await sync([2024, 2025, 2026], (verbose = true));
 ```
 
 ### 4. **Screen: `GalaxySunsScreen`**
+
 **Arquivo:** [`app/cosmos/screens/GalaxySunsScreen.tsx`](app/cosmos/screens/GalaxySunsScreen.tsx)
 
 Atualizado para exibir emoji de fase lunar em cada sol:
@@ -102,14 +110,16 @@ Atualizado para exibir emoji de fase lunar em cada sol:
 const { data: moonData } = useGalaxySunsSync();
 
 // Em cada sol:
-{yearData?.dominantPhase && (
-  <span>
-    {yearData.dominantPhase === "luaNova" && "🌑"}
-    {yearData.dominantPhase === "luaCrescente" && "🌓"}
-    {yearData.dominantPhase === "luaCheia" && "🌕"}
-    {yearData.dominantPhase === "luaMinguante" && "🌗"}
-  </span>
-)}
+{
+  yearData?.dominantPhase && (
+    <span>
+      {yearData.dominantPhase === 'luaNova' && '🌑'}
+      {yearData.dominantPhase === 'luaCrescente' && '🌓'}
+      {yearData.dominantPhase === 'luaCheia' && '🌕'}
+      {yearData.dominantPhase === 'luaMinguante' && '🌗'}
+    </span>
+  );
+}
 ```
 
 ---
@@ -188,8 +198,8 @@ export function MyComponent() {
   };
 
   return (
-    <button 
-      onClick={handleSync} 
+    <button
+      onClick={handleSync}
       disabled={isSyncing}
     >
       {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
@@ -260,11 +270,13 @@ curl "http://localhost:3000/api/galaxysuns/sync?years=2024,2025"
 ## 📁 Arquivos Criados/Modificados
 
 ### Criados:
+
 - ✅ `hooks/useGalaxySunsSync.ts` - Hook de sincronização
 - ✅ `components/GalaxySunsSync.tsx` - Componente de sincronização automática
 - ✅ `app/api/galaxysuns/sync/route.ts` - Endpoint de sincronização
 
 ### Modificados:
+
 - ✅ `app/cosmos/screens/GalaxySunsScreen.tsx` - Integração de dados lunares
 - ✅ `app/layout.tsx` - Adição de `<GalaxySunsSync />`
 

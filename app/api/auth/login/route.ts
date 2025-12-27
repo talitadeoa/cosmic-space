@@ -10,34 +10,25 @@ export async function POST(request: NextRequest) {
     const { email, password } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email é obrigatório' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email é obrigatório' }, { status: 400 });
     }
 
     if (!password) {
-      return NextResponse.json(
-        { error: 'Senha é obrigatória' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Senha é obrigatória' }, { status: 400 });
     }
 
     if (!validatePassword(password)) {
-      return NextResponse.json(
-        { error: 'Senha incorreta' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
     }
 
     const db = getDb();
-    const userRows = await db`
+    const userRows = (await db`
       INSERT INTO users (email, provider, last_login)
       VALUES (${email}, 'password', NOW())
       ON CONFLICT (email) DO UPDATE
       SET last_login = NOW()
       RETURNING id
-    ` as Array<{ id: string }>;
+    `) as Array<{ id: string }>;
     const userId = userRows?.[0]?.id;
 
     if (!userId) {
@@ -65,9 +56,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Erro no login:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

@@ -7,6 +7,7 @@ Você recebeu um **sistema completo e pronto para usar** para armazenar insights
 ### 📦 Pacote Inclui:
 
 #### 1. **Banco de Dados** (PostgreSQL/Neon)
+
 - ✅ 3 tabelas otimizadas (`monthly_insights`, `quarterly_insights`, `annual_insights`)
 - ✅ Índices para performance
 - ✅ Constraints de validação
@@ -14,6 +15,7 @@ Você recebeu um **sistema completo e pronto para usar** para armazenar insights
 - ✅ Timestamps automáticos
 
 #### 2. **Backend** (TypeScript/Node.js)
+
 - ✅ Funções de CRUD em `lib/forms.ts`
 - ✅ Salvar insights (INSERT/UPDATE)
 - ✅ Obter insights (SELECT)
@@ -21,6 +23,7 @@ Você recebeu um **sistema completo e pronto para usar** para armazenar insights
 - ✅ Validação completa
 
 #### 3. **APIs** (Next.js Route Handlers)
+
 - ✅ `POST /api/form/monthly-insight`
 - ✅ `POST /api/form/quarterly-insight`
 - ✅ `POST /api/form/annual-insight`
@@ -28,6 +31,7 @@ Você recebeu um **sistema completo e pronto para usar** para armazenar insights
 - ✅ Tratamento de erros
 
 #### 4. **Documentação** (9 arquivos)
+
 - ✅ Guia completo das tabelas
 - ✅ Documentação das APIs
 - ✅ Checklist passo a passo
@@ -39,6 +43,7 @@ Você recebeu um **sistema completo e pronto para usar** para armazenar insights
 - ✅ Resumo executivo
 
 #### 5. **Scripts SQL** (Prontos para Executar)
+
 - ✅ Migration para criar tabelas
 - ✅ Dados de teste para validação
 - ✅ Exemplos de queries úteis
@@ -124,18 +129,21 @@ curl -X POST http://localhost:3000/api/form/monthly-insight \
 ## 📊 Estrutura das 3 Tabelas
 
 ### 🌙 monthly_insights
+
 - **Frequência:** 4 por mês (uma por fase lunar)
 - **Por ano:** 48 insights
 - **Uso:** Acompanhar crescimento mensal
 - **Exemplo:** Lua Nova em Janeiro: \"Minhas intenções...\"
 
 ### ⭐ quarterly_insights
+
 - **Frequência:** 4 por trimestre (uma por fase lunar)
 - **Por ano:** 4 insights
 - **Uso:** Refletir sobre o trimestre
 - **Exemplo:** Q1 Lua Nova: \"Intenções do trimestre...\"
 
 ### ☀️ annual_insights
+
 - **Frequência:** 1 por ano
 - **Por ano:** 1 insight
 - **Uso:** Refletir sobre o ano completo
@@ -152,7 +160,7 @@ curl -X POST http://localhost:3000/api/form/monthly-insight \
 ✅ **Segurança** - Autenticação, parameterized queries, autorização  
 ✅ **Escalável** - Suporta milhões de usuários  
 ✅ **Documentado** - 9 arquivos de documentação  
-✅ **Testado** - Scripts SQL e exemplos prontos  
+✅ **Testado** - Scripts SQL e exemplos prontos
 
 ---
 
@@ -167,9 +175,9 @@ const response = await fetch('/api/form/monthly-insight', {
   body: JSON.stringify({
     moonPhase: 'luaNova',
     monthNumber: 1,
-    insight: 'Meu insight aqui'
+    insight: 'Meu insight aqui',
   }),
-  credentials: 'include'
+  credentials: 'include',
 });
 
 const data = await response.json();
@@ -203,16 +211,19 @@ const result = await saveMonthlyInsight(
 ## 🎯 Próximos Passos (Opcional)
 
 ### Curto Prazo
+
 - [ ] Implementar API de GET para obter insights
 - [ ] Criar dashboard para visualizar insights
 - [ ] Adicionar edição e deleção
 
 ### Médio Prazo
+
 - [ ] Sincronizar com Google Sheets
 - [ ] Criar relatórios mensais/trimestrais
 - [ ] Exportar para PDF
 
 ### Longo Prazo
+
 - [ ] Dashboard com estatísticas
 - [ ] Análise de padrões
 - [ ] Sugestões baseadas em IA
@@ -222,17 +233,17 @@ const result = await saveMonthlyInsight(
 
 ## 📚 Documentação Quick Links
 
-| Preciso de | Arquivo |
-|-----------|---------|
-| Entender o conceito | `INSIGHTS_RESUMO.md` |
-| Implementar passo a passo | `CHECKLIST_INSIGHTS.md` |
-| Estrutura das tabelas | `INSIGHTS_BANCO_DADOS.md` |
-| Ver diagramas | `INSIGHTS_TABELAS_VISUAL.md` |
-| Integrar APIs | `INSIGHTS_API.md` |
-| Otimizar performance | `INSIGHTS_OTIMIZACAO.md` |
-| Testar rápido | `TESTES_INSIGHTS.md` |
-| Entender fases lunares | `FASES_LUNARES.md` |
-| Navegar tudo | `INSIGHTS_INDICE.md` |
+| Preciso de                | Arquivo                      |
+| ------------------------- | ---------------------------- |
+| Entender o conceito       | `INSIGHTS_RESUMO.md`         |
+| Implementar passo a passo | `CHECKLIST_INSIGHTS.md`      |
+| Estrutura das tabelas     | `INSIGHTS_BANCO_DADOS.md`    |
+| Ver diagramas             | `INSIGHTS_TABELAS_VISUAL.md` |
+| Integrar APIs             | `INSIGHTS_API.md`            |
+| Otimizar performance      | `INSIGHTS_OTIMIZACAO.md`     |
+| Testar rápido             | `TESTES_INSIGHTS.md`         |
+| Entender fases lunares    | `FASES_LUNARES.md`           |
+| Navegar tudo              | `INSIGHTS_INDICE.md`         |
 
 ---
 
@@ -242,7 +253,7 @@ const result = await saveMonthlyInsight(
 
 ```bash
 # 1. Ver if tabelas existem (no Neon Console)
-SELECT table_name FROM information_schema.tables 
+SELECT table_name FROM information_schema.tables
 WHERE table_name IN ('monthly_insights', 'quarterly_insights', 'annual_insights');
 
 # 2. Ver se tem dados
@@ -279,12 +290,12 @@ Escalabilidade:
 
 ## ⚡ Performance
 
-| Operação | Tempo | Status |
-|----------|-------|--------|
-| Salvar insight | <100ms | ✅ Rápido |
-| Obter insights/mês | <50ms | ✅ Muito rápido |
-| Listar todos (ano) | <200ms | ✅ Aceitável |
-| Obter estatísticas | <150ms | ✅ Rápido |
+| Operação           | Tempo  | Status          |
+| ------------------ | ------ | --------------- |
+| Salvar insight     | <100ms | ✅ Rápido       |
+| Obter insights/mês | <50ms  | ✅ Muito rápido |
+| Listar todos (ano) | <200ms | ✅ Aceitável    |
+| Obter estatísticas | <150ms | ✅ Rápido       |
 
 ---
 
@@ -295,7 +306,7 @@ Escalabilidade:
 ✅ Validação frontend e backend  
 ✅ Autorização por usuário (user_id)  
 ✅ Constraints de banco  
-✅ HTTPS em produção  
+✅ HTTPS em produção
 
 ---
 
@@ -313,13 +324,13 @@ Escalabilidade:
 
 ## 📞 Troubleshooting Rápido
 
-| Problema | Solução |
-|----------|---------|
-| Tabelas não aparecem | Execute `migration-insights.sql` |
-| Erro ao salvar | Verifique autenticação (`getSession()`) |
-| Dados não salvam | Verifique `DATABASE_URL` e logs |
-| Query lenta | Verifique índices com `EXPLAIN` |
-| Modal não abre | Verifique imports e estado |
+| Problema             | Solução                                 |
+| -------------------- | --------------------------------------- |
+| Tabelas não aparecem | Execute `migration-insights.sql`        |
+| Erro ao salvar       | Verifique autenticação (`getSession()`) |
+| Dados não salvam     | Verifique `DATABASE_URL` e logs         |
+| Query lenta          | Verifique índices com `EXPLAIN`         |
+| Modal não abre       | Verifique imports e estado              |
 
 ---
 
@@ -334,7 +345,7 @@ Você agora tem:
 ✅ **Exemplos** de teste e uso  
 ✅ **Performance** garantida com índices  
 ✅ **Segurança** implementada  
-✅ **Escalabilidade** para milhões de usuários  
+✅ **Escalabilidade** para milhões de usuários
 
 ---
 

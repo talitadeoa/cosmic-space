@@ -5,7 +5,7 @@
 ### 1. Ver Todos os Insights Anuais de um Usuário
 
 ```sql
-SELECT 
+SELECT
   id,
   user_id,
   year,
@@ -24,7 +24,7 @@ ORDER BY year DESC, created_at DESC;
 ### 2. Ver Insights Anuais de um Ano Específico
 
 ```sql
-SELECT 
+SELECT
   id,
   user_id,
   year,
@@ -42,7 +42,7 @@ ORDER BY created_at DESC;
 ### 3. Ver Insights Trimestrais por Ano
 
 ```sql
-SELECT 
+SELECT
   q.id,
   q.user_id,
   q.moon_phase,
@@ -61,7 +61,7 @@ ORDER BY q.quarter_number DESC, q.created_at DESC;
 ### 4. Contar Insights por Ano
 
 ```sql
-SELECT 
+SELECT
   year,
   COUNT(*) as total_insights
 FROM annual_insights
@@ -70,6 +70,7 @@ ORDER BY year DESC;
 ```
 
 **Esperado:**
+
 ```
 year | total_insights
 -----|---------------
@@ -85,7 +86,7 @@ year | total_insights
 ### 5. Verificar Integridade: Anos Válidos
 
 ```sql
-SELECT 
+SELECT
   id,
   user_id,
   year,
@@ -130,6 +131,7 @@ ORDER BY year DESC, created_at DESC;
 ```
 
 **Esperado:**
+
 ```
 year | user_id | insight                    | created_at
 -----|---------|----------------------------|-------------------
@@ -145,7 +147,7 @@ year | user_id | insight                    | created_at
 ### 8. Quantidade de Insights por Usuário por Ano
 
 ```sql
-SELECT 
+SELECT
   ai.user_id,
   ai.year,
   COUNT(ai.id) as annual_count,
@@ -157,6 +159,7 @@ ORDER BY ai.user_id, ai.year DESC;
 ```
 
 **Esperado:**
+
 ```
 user_id | year | annual_count | quarterly_count
 --------|------|--------------|----------------
@@ -170,7 +173,7 @@ user_id | year | annual_count | quarterly_count
 ### 9. Usuários com Insights Contínuos
 
 ```sql
-SELECT 
+SELECT
   user_id,
   COUNT(DISTINCT year) as anos_com_insights,
   MIN(year) as ano_primeiro,
@@ -183,6 +186,7 @@ ORDER BY COUNT(DISTINCT year) DESC;
 ```
 
 **Esperado:**
+
 ```
 user_id | anos_com_insights | ano_primeiro | ano_ultimo | anos
 --------|-------------------|--------------|------------|-------
@@ -194,7 +198,7 @@ user_id | anos_com_insights | ano_primeiro | ano_ultimo | anos
 ### 10. Distribuição de Insights por Fase Lunar
 
 ```sql
-SELECT 
+SELECT
   moon_phase,
   COUNT(*) as total,
   COUNT(DISTINCT user_id) as usuarios_unicos
@@ -204,6 +208,7 @@ ORDER BY total DESC;
 ```
 
 **Esperado:**
+
 ```
 moon_phase  | total | usuarios_unicos
 ------------|-------|----------------
@@ -220,12 +225,14 @@ luaMinguante| 28    | 9
 ### 11. Verificar se Dados Estão Sendo Salvos
 
 **Antes de salvar:**
+
 ```sql
 SELECT COUNT(*) as total FROM annual_insights WHERE user_id = 123;
 -- Resultado: 2
 ```
 
 **Após salvar insight:**
+
 ```sql
 SELECT COUNT(*) as total FROM annual_insights WHERE user_id = 123;
 -- Resultado: 3 (aumentou em 1)
@@ -236,7 +243,7 @@ SELECT COUNT(*) as total FROM annual_insights WHERE user_id = 123;
 ### 12. Ver Insights Recentes de Todos os Usuários
 
 ```sql
-SELECT 
+SELECT
   ai.id,
   ai.user_id,
   ai.year,
@@ -255,7 +262,7 @@ LIMIT 10;
 ### 13. Verificar Dados Órfãos (user não existe)
 
 ```sql
-SELECT 
+SELECT
   ai.id,
   ai.user_id,
   ai.year
@@ -275,7 +282,7 @@ WHERE u.id IS NULL;
 ```sql
 -- Setup: User ID 999
 INSERT INTO annual_insights (user_id, year, insight, created_at)
-VALUES 
+VALUES
   (999, 2023, 'Ano 2023: aprendizado', NOW() - INTERVAL '2 years'),
   (999, 2024, 'Ano 2024: crescimento', NOW() - INTERVAL '1 year'),
   (999, 2025, 'Ano 2025: novos objetivos', NOW());
@@ -303,7 +310,7 @@ ON CONFLICT (user_id, year)
 DO UPDATE SET insight = EXCLUDED.insight, updated_at = NOW();
 
 -- Verificação
-SELECT insight, updated_at FROM annual_insights 
+SELECT insight, updated_at FROM annual_insights
 WHERE user_id = 999 AND year = 2024;
 -- Esperado: 1 registro com "Insight atualizado"
 ```
@@ -314,7 +321,7 @@ WHERE user_id = 999 AND year = 2024;
 
 ```sql
 INSERT INTO annual_insights (user_id, year, insight)
-VALUES 
+VALUES
   (123, 2024, 'Insight do usuário 123'),
   (456, 2024, 'Insight do usuário 456'),
   (789, 2024, 'Insight do usuário 789');
@@ -347,15 +354,15 @@ SELECT * FROM annual_insights WHERE year = 2024;
 
 ```sql
 -- Todos os insights de um usuário (< 1ms)
-SELECT * FROM annual_insights 
+SELECT * FROM annual_insights
 WHERE user_id = 123;
 
 -- Insights de um usuário em um ano (< 1ms)
-SELECT * FROM annual_insights 
+SELECT * FROM annual_insights
 WHERE user_id = 123 AND year = 2024;
 
 -- Últimos N insights (< 10ms)
-SELECT * FROM annual_insights 
+SELECT * FROM annual_insights
 ORDER BY created_at DESC LIMIT 10;
 ```
 
@@ -363,11 +370,11 @@ ORDER BY created_at DESC LIMIT 10;
 
 ```sql
 -- Ruim: Sem filtro por user_id
-SELECT * FROM annual_insights 
+SELECT * FROM annual_insights
 WHERE year = 2024;  -- ❌ LENTO se muitos usuários
 
 -- Bom: Com user_id
-SELECT * FROM annual_insights 
+SELECT * FROM annual_insights
 WHERE user_id = 123 AND year = 2024;  -- ✅ RÁPIDO
 ```
 
@@ -378,6 +385,7 @@ WHERE user_id = 123 AND year = 2024;  -- ✅ RÁPIDO
 Se algo não funcionar:
 
 1. **Verifique o YearContext**
+
    ```typescript
    const { selectedYear } = useYear();
    console.log('Selected Year:', selectedYear);

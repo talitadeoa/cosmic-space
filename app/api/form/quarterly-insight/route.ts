@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
     const { moonPhase, insight, quarterNumber, year } = body;
 
     if (!moonPhase || !insight) {
-      return NextResponse.json({ error: 'Fase da lua e insight são obrigatórios' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Fase da lua e insight são obrigatórios' },
+        { status: 400 }
+      );
     }
 
     // Se não informar trimestre, calcular o atual
@@ -41,10 +44,10 @@ export async function POST(request: NextRequest) {
     };
 
     const phaseVibes: Record<string, string> = {
-      luaNova: "Ideias · Intenções · Sementes",
-      luaCrescente: "Checklists · Rituais · To-dos · Planejamento · Ação",
-      luaCheia: "Tesouros · Recompensas · Frutos · Colheita",
-      luaMinguante: "Aprendizados · Desapegos",
+      luaNova: 'Ideias · Intenções · Sementes',
+      luaCrescente: 'Checklists · Rituais · To-dos · Planejamento · Ação',
+      luaCheia: 'Tesouros · Recompensas · Frutos · Colheita',
+      luaMinguante: 'Aprendizados · Desapegos',
     };
 
     const quarterMap: Record<number, string> = {
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
       const sourceId = `${selectedYear}-q${quarter}-${moonPhase}`;
       await savePhaseInput(userId, {
         moonPhase,
-        inputType: "insight_trimestral",
+        inputType: 'insight_trimestral',
         sourceId,
         content: insight,
         vibe: phaseVibes[moonPhase] || null,
@@ -86,7 +89,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (phaseError) {
-      console.error("Erro ao salvar input trimestral agregado:", phaseError);
+      console.error('Erro ao salvar input trimestral agregado:', phaseError);
     }
 
     // 2. Salvar no Google Sheets (manter compatibilidade)
@@ -104,7 +107,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Erro ao salvar insight' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, message: 'Insight salvo com sucesso' }, { status: 200 });
+    return NextResponse.json(
+      { success: true, message: 'Insight salvo com sucesso' },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Erro ao salvar insight trimestral:', error);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });

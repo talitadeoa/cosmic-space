@@ -28,6 +28,7 @@ CREATE TABLE users (
 ```
 
 **Campos:**
+
 - `id`: Identificador único
 - `email`: Email único do usuário
 - `provider`: Tipo de autenticação ('password')
@@ -35,25 +36,30 @@ CREATE TABLE users (
 - `last_login`: Data do último login
 
 **Índices:**
+
 - `idx_users_email`: Para buscas rápidas por email
 - `idx_users_created_at`: Para análise de dados históricos
 
 ## 📝 Arquivos Modificados
 
 ### 1. `infra/db/schema.sql`
+
 - ✅ Adicionada tabela `users`
 - ✅ Adicionados índices
 
 ### 2. `components/AuthGate.tsx`
+
 - ✅ Adicionado campo de input para email
 - ✅ Validação de email obrigatório
 - ✅ Atualizado o handler de submit para enviar email
 
 ### 3. `hooks/useAuth.ts`
+
 - ✅ Atualizado hook `login()` para aceitar `email` e `password`
 - ✅ Enviado email para a rota de autenticação
 
 ### 4. `app/api/auth/login/route.ts`
+
 - ✅ Recebe email e password
 - ✅ Armazena/atualiza usuário no banco de dados
 - ✅ Usa `ON CONFLICT` para atualizar `last_login` se email já existe

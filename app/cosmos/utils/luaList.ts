@@ -1,19 +1,19 @@
-import type { MoonCalendarDay } from "@/lib/api/moonCalendar";
-import type { CelestialType } from "../types";
+import type { MoonCalendarDay } from '@/lib/api/moonCalendar';
+import type { CelestialType } from '../types';
 
 export const MONTH_NAMES = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
 ];
 
 export const MONTHS_PER_YEAR = 12;
@@ -26,11 +26,12 @@ export type LuaListLayout = {
 };
 
 const LAYOUT_BREAKPOINTS: Array<{ maxWidth: number; layout: LuaListLayout }> = [
-  { maxWidth: 480, layout: { tileWidth: 80, gap: 10, padding: 24, visibleColumns: 3.6 } },
-  { maxWidth: 768, layout: { tileWidth: 90, gap: 12, padding: 28, visibleColumns: 4.3 } },
-  { maxWidth: 1200, layout: { tileWidth: 96, gap: 12, padding: 32, visibleColumns: 4.8 } },
-  { maxWidth: 1600, layout: { tileWidth: 104, gap: 14, padding: 36, visibleColumns: 5.2 } },
-  { maxWidth: Infinity, layout: { tileWidth: 112, gap: 16, padding: 40, visibleColumns: 5.6 } },
+  { maxWidth: 360, layout: { tileWidth: 68, gap: 8, padding: 18, visibleColumns: 4 } },
+  { maxWidth: 480, layout: { tileWidth: 80, gap: 10, padding: 22, visibleColumns: 4 } },
+  { maxWidth: 768, layout: { tileWidth: 90, gap: 12, padding: 28, visibleColumns: 4 } },
+  { maxWidth: 1200, layout: { tileWidth: 96, gap: 12, padding: 32, visibleColumns: 4 } },
+  { maxWidth: 1600, layout: { tileWidth: 104, gap: 14, padding: 36, visibleColumns: 4 } },
+  { maxWidth: Infinity, layout: { tileWidth: 112, gap: 16, padding: 40, visibleColumns: 4 } },
 ];
 
 export const getResponsiveLayout = (viewportWidth?: number | null): LuaListLayout => {
@@ -41,9 +42,9 @@ export const getResponsiveLayout = (viewportWidth?: number | null): LuaListLayou
 
 // Configurações de animação
 export const ANIMATION_CONFIG = {
-  spring: { type: "spring" as const, stiffness: 260, damping: 18 },
-  float: { duration: 6, repeat: Infinity, ease: "easeInOut" },
-  glow: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
+  spring: { type: 'spring' as const, stiffness: 260, damping: 18 },
+  float: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+  glow: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
 } as const;
 
 export type MonthEntry = {
@@ -56,40 +57,45 @@ export type MonthEntry = {
   fullMoonDate: string;
 };
 
+export const buildMonthKey = (month: Pick<MonthEntry, 'year' | 'monthNumber'>) =>
+  `${month.year}-${String(month.monthNumber).padStart(2, '0')}`;
+
 export type HighlightTarget = MonthEntry & {
-  phase: "luaNova" | "luaCheia";
+  phase: 'luaNova' | 'luaCheia';
   date: string;
 };
 
-export const HIGHLIGHTABLE_PHASES = ["luaNova", "luaCheia"] as const;
+export const HIGHLIGHTABLE_PHASES = ['luaNova', 'luaCheia'] as const;
 export type HighlightablePhase = (typeof HIGHLIGHTABLE_PHASES)[number];
 
 export const formatDateInTimezone = (date: Date, timeZone: string) => {
-  const parts = new Intl.DateTimeFormat("en-CA", {
+  const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   }).formatToParts(date);
 
-  const get = (type: string) => parts.find((p) => p.type === type)?.value || "";
-  return `${get("year")}-${get("month")}-${get("day")}`;
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
 };
 
 export const formatDateLabel = (isoDate?: string) => {
-  if (!isoDate) return "";
+  if (!isoDate) return '';
   try {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      timeZone: "UTC",
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      timeZone: 'UTC',
     }).format(new Date(`${isoDate}T00:00:00Z`));
   } catch (error) {
     return isoDate;
   }
 };
 
-export const buildMonthEntries = (calendarByYear: Record<number, MoonCalendarDay[]>): MonthEntry[] => {
+export const buildMonthEntries = (
+  calendarByYear: Record<number, MoonCalendarDay[]>
+): MonthEntry[] => {
   const years = Object.keys(calendarByYear)
     .map(Number)
     .sort((a, b) => a - b);
@@ -99,10 +105,10 @@ export const buildMonthEntries = (calendarByYear: Record<number, MoonCalendarDay
       year,
       monthNumber: idx + 1,
       monthName: month,
-      newMoonSign: "",
-      fullMoonSign: "",
-      newMoonDate: "",
-      fullMoonDate: "",
+      newMoonSign: '',
+      fullMoonSign: '',
+      newMoonDate: '',
+      fullMoonDate: '',
     }));
 
     (calendarByYear[year] || []).forEach((day) => {
@@ -110,14 +116,14 @@ export const buildMonthEntries = (calendarByYear: Record<number, MoonCalendarDay
       const monthIndex = Number.isNaN(date.getTime()) ? null : date.getUTCMonth();
       if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
 
-      const sign = day.sign?.trim() || "";
+      const sign = day.sign?.trim() || '';
 
-      if (day.normalizedPhase === "luaNova" && !base[monthIndex].newMoonSign) {
+      if (day.normalizedPhase === 'luaNova' && !base[monthIndex].newMoonSign) {
         base[monthIndex].newMoonSign = sign;
         base[monthIndex].newMoonDate = day.date;
       }
 
-      if (day.normalizedPhase === "luaCheia" && !base[monthIndex].fullMoonSign) {
+      if (day.normalizedPhase === 'luaCheia' && !base[monthIndex].fullMoonSign) {
         base[monthIndex].fullMoonSign = sign;
         base[monthIndex].fullMoonDate = day.date;
       }
@@ -146,7 +152,7 @@ export const isHighlightablePhase = (phase?: string | null): phase is Highlighta
 export const deriveHighlightTarget = (
   allDays: MoonCalendarDay[],
   todayIso: string,
-  monthEntries: MonthEntry[],
+  monthEntries: MonthEntry[]
 ): HighlightTarget | null => {
   const sortedMoonEvents = allDays
     .filter((day) => isHighlightablePhase(day.normalizedPhase))
@@ -169,22 +175,22 @@ export const deriveHighlightTarget = (
 };
 
 export const buildMoonInfo = (month: MonthEntry | null, phase: CelestialType) => {
-  const monthName = month?.monthName ?? "Mês";
-  const isNewMoon = phase === "luaNova";
-  const isFullMoon = phase === "luaCheia";
+  const monthName = month?.monthName ?? 'Mês';
+  const isNewMoon = phase === 'luaNova';
+  const isFullMoon = phase === 'luaCheia';
   const signRaw = isNewMoon ? month?.newMoonSign : month?.fullMoonSign;
   const sign = signRaw?.trim();
-  const signLabel = sign && sign.length > 0 ? `em ${sign}` : "— aguardando sincronização";
+  const signLabel = sign && sign.length > 0 ? `em ${sign}` : '— aguardando sincronização';
 
   return {
     monthName,
     signLabel,
-    phaseLabel: isNewMoon ? "Lua Nova" : isFullMoon ? "Lua Cheia" : "Lua",
+    phaseLabel: isNewMoon ? 'Lua Nova' : isFullMoon ? 'Lua Cheia' : 'Lua',
   };
 };
 
 // Utilidade para calcular float offset com base na direção e índice
-export const getFloatOffset = (direction: "up" | "down", globalIdx: number): number => {
-  const base = direction === "up" ? -1.5 : 1.5;
-  return direction === "up" ? base + globalIdx * 0.05 : base - globalIdx * 0.05;
+export const getFloatOffset = (direction: 'up' | 'down', globalIdx: number): number => {
+  const base = direction === 'up' ? -1.5 : 1.5;
+  return direction === 'up' ? base + globalIdx * 0.05 : base - globalIdx * 0.05;
 };

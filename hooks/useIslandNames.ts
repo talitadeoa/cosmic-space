@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   DEFAULT_ISLAND_NAMES,
   loadIslandNames,
   saveIslandNames,
   type IslandId,
   type IslandNames,
-} from "@/app/cosmos/utils/islandNames";
+} from '@/app/cosmos/utils/islandNames';
 
 export const useIslandNames = () => {
   const [islandNames, setIslandNames] = useState<IslandNames>(DEFAULT_ISLAND_NAMES);

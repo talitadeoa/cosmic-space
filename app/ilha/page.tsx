@@ -1,5 +1,5 @@
-import styles from "./ilha.module.css";
-import IlhaClient from "./IlhaClient";
+import styles from './ilha.module.css';
+import IlhaClient from './IlhaClient';
 
 export default function IlhaPage() {
   return (

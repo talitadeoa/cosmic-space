@@ -3,6 +3,7 @@
 ## 📊 Visão Geral
 
 Este documento detalha as tabelas de banco de dados para armazenar os três tipos de insights:
+
 - **Insights Mensais** - Um por lua em cada mês
 - **Insights Trimestrais** - Um por trimestre (4 luas)
 - **Insights Anuais** - Um por ano
@@ -24,22 +25,23 @@ CREATE TABLE IF NOT EXISTS monthly_insights (
   updated_at TIMESTAMPTZ DEFAULT NOW()   -- Para futuras edições
 );
 
-CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_date 
+CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_date
   ON monthly_insights (user_id, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_month 
+CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_month
   ON monthly_insights (user_id, month_number);
 
-CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_phase 
+CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_phase
   ON monthly_insights (user_id, moon_phase);
 
 -- Constraint único: um insight por fase por mês
-ALTER TABLE monthly_insights 
-  ADD CONSTRAINT unique_monthly_per_phase_month 
+ALTER TABLE monthly_insights
+  ADD CONSTRAINT unique_monthly_per_phase_month
   UNIQUE (user_id, moon_phase, month_number);
 ```
 
 **Exemplo de dados:**
+
 ```
 id | user_id | moon_phase    | month_number | insight                          | created_at
 1  | 123     | luaNova       | 1            | "Começar com intenções..."      | 2024-01-15
@@ -65,18 +67,18 @@ CREATE TABLE IF NOT EXISTS quarterly_insights (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_date 
+CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_date
   ON quarterly_insights (user_id, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_quarter 
+CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_quarter
   ON quarterly_insights (user_id, quarter_number);
 
-CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_phase 
+CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_phase
   ON quarterly_insights (user_id, moon_phase);
 
 -- Constraint único: um insight por fase por trimestre
-ALTER TABLE quarterly_insights 
-  ADD CONSTRAINT unique_quarterly_per_phase_quarter 
+ALTER TABLE quarterly_insights
+  ADD CONSTRAINT unique_quarterly_per_phase_quarter
   UNIQUE (user_id, moon_phase, quarter_number);
 ```
 
@@ -89,6 +91,7 @@ ALTER TABLE quarterly_insights
 | 4º | Out - Dez | 4 (uma por mês) |
 
 **Exemplo de dados:**
+
 ```
 id | user_id | moon_phase   | quarter_number | insight                      | created_at
 1  | 123     | luaNova      | 1              | "Intenções do trimestre..."  | 2024-01-10
@@ -113,19 +116,20 @@ CREATE TABLE IF NOT EXISTS annual_insights (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_annual_insights_user_date 
+CREATE INDEX IF NOT EXISTS idx_annual_insights_user_date
   ON annual_insights (user_id, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_annual_insights_user_year 
+CREATE INDEX IF NOT EXISTS idx_annual_insights_user_year
   ON annual_insights (user_id, year);
 
 -- Constraint único: um insight por ano por usuário
-ALTER TABLE annual_insights 
-  ADD CONSTRAINT unique_annual_per_year 
+ALTER TABLE annual_insights
+  ADD CONSTRAINT unique_annual_per_year
   UNIQUE (user_id, year);
 ```
 
 **Exemplo de dados:**
+
 ```
 id | user_id | year | insight                                    | created_at
 1  | 123     | 2024 | "Este foi um ano de transformações..."     | 2024-12-20
@@ -154,7 +158,7 @@ id | user_id | year | insight                                    | created_at
 
 ```sql
 SELECT * FROM monthly_insights
-WHERE user_id = $1 
+WHERE user_id = $1
   AND month_number = EXTRACT(MONTH FROM NOW())::INT
 ORDER BY moon_phase;
 ```
@@ -163,7 +167,7 @@ ORDER BY moon_phase;
 
 ```sql
 SELECT * FROM quarterly_insights
-WHERE user_id = $1 
+WHERE user_id = $1
   AND quarter_number = CEIL(EXTRACT(MONTH FROM NOW())::INT / 3)
 ORDER BY moon_phase;
 ```
@@ -172,7 +176,7 @@ ORDER BY moon_phase;
 
 ```sql
 SELECT * FROM annual_insights
-WHERE user_id = $1 
+WHERE user_id = $1
   AND year = EXTRACT(YEAR FROM NOW())::INT;
 ```
 
@@ -196,7 +200,7 @@ ORDER BY created_at DESC;
 ### Contar insights por tipo
 
 ```sql
-SELECT 
+SELECT
   COUNT(CASE WHEN type = 'mensal' THEN 1 END) as insights_mensais,
   COUNT(CASE WHEN type = 'trimestral' THEN 1 END) as insights_trimestrais,
   COUNT(CASE WHEN type = 'anual' THEN 1 END) as insights_anuais
@@ -234,7 +238,7 @@ export async function saveMonthlyInsight(
 
     return rows[0];
   } catch (error) {
-    console.error("Erro ao salvar monthly insight", error);
+    console.error('Erro ao salvar monthly insight', error);
     throw error;
   }
 }
@@ -243,14 +247,11 @@ export async function saveMonthlyInsight(
 ### Obter Insights Mensais
 
 ```typescript
-export async function getMonthlyInsights(
-  userId: string | number,
-  monthNumber?: number
-) {
+export async function getMonthlyInsights(userId: string | number, monthNumber?: number) {
   try {
     const db = getDb();
     const month = monthNumber ?? new Date().getMonth() + 1;
-    
+
     const rows = (await db`
       SELECT id, user_id, moon_phase, month_number, insight, created_at, updated_at
       FROM monthly_insights
@@ -260,7 +261,7 @@ export async function getMonthlyInsights(
 
     return rows;
   } catch (error) {
-    console.error("Erro ao obter monthly insights", error);
+    console.error('Erro ao obter monthly insights', error);
     throw error;
   }
 }
@@ -287,7 +288,7 @@ export async function saveQuarterlyInsight(
 
     return rows[0];
   } catch (error) {
-    console.error("Erro ao salvar quarterly insight", error);
+    console.error('Erro ao salvar quarterly insight', error);
     throw error;
   }
 }
@@ -296,16 +297,13 @@ export async function saveQuarterlyInsight(
 ### Obter Insights Trimestrais
 
 ```typescript
-export async function getQuarterlyInsights(
-  userId: string | number,
-  quarterNumber?: number
-) {
+export async function getQuarterlyInsights(userId: string | number, quarterNumber?: number) {
   try {
     const db = getDb();
     const month = new Date().getMonth() + 1;
     const quarter = Math.ceil(month / 3);
     const q = quarterNumber ?? quarter;
-    
+
     const rows = (await db`
       SELECT id, user_id, moon_phase, quarter_number, insight, created_at, updated_at
       FROM quarterly_insights
@@ -315,7 +313,7 @@ export async function getQuarterlyInsights(
 
     return rows;
   } catch (error) {
-    console.error("Erro ao obter quarterly insights", error);
+    console.error('Erro ao obter quarterly insights', error);
     throw error;
   }
 }
@@ -324,15 +322,11 @@ export async function getQuarterlyInsights(
 ### Salvar Insight Anual
 
 ```typescript
-export async function saveAnnualInsight(
-  userId: string | number,
-  insight: string,
-  year?: number
-) {
+export async function saveAnnualInsight(userId: string | number, insight: string, year?: number) {
   try {
     const db = getDb();
     const y = year ?? new Date().getFullYear();
-    
+
     const rows = (await db`
       INSERT INTO annual_insights (user_id, year, insight)
       VALUES (${userId}, ${y}, ${insight})
@@ -343,7 +337,7 @@ export async function saveAnnualInsight(
 
     return rows[0];
   } catch (error) {
-    console.error("Erro ao salvar annual insight", error);
+    console.error('Erro ao salvar annual insight', error);
     throw error;
   }
 }
@@ -352,14 +346,11 @@ export async function saveAnnualInsight(
 ### Obter Insight Anual
 
 ```typescript
-export async function getAnnualInsight(
-  userId: string | number,
-  year?: number
-) {
+export async function getAnnualInsight(userId: string | number, year?: number) {
   try {
     const db = getDb();
     const y = year ?? new Date().getFullYear();
-    
+
     const rows = (await db`
       SELECT id, user_id, year, insight, created_at, updated_at
       FROM annual_insights
@@ -368,7 +359,7 @@ export async function getAnnualInsight(
 
     return rows[0];
   } catch (error) {
-    console.error("Erro ao obter annual insight", error);
+    console.error('Erro ao obter annual insight', error);
     throw error;
   }
 }
@@ -390,9 +381,9 @@ const handleSaveInsight = async (insight: string) => {
     const userId = session?.user?.id;
     const result = await saveMonthlyInsight(
       userId,
-      'luaNova',           // fase
-      1,                   // mês (janeiro)
-      insight              // texto
+      'luaNova', // fase
+      1, // mês (janeiro)
+      insight // texto
     );
     console.log('Insight salvo:', result);
   } catch (error) {
@@ -421,12 +412,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await saveMonthlyInsight(
-      session.user.id,
-      moonPhase,
-      monthNumber,
-      insight
-    );
+    const result = await saveMonthlyInsight(session.user.id, moonPhase, monthNumber, insight);
     return Response.json(result);
   } catch (error) {
     console.error('Error saving insight:', error);

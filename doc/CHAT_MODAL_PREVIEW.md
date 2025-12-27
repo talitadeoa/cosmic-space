@@ -107,24 +107,28 @@
 ## Cores Dinâmicas por Fase
 
 ### 🌑 Lua Nova (Indigo)
+
 ```
 Cabeçalho com tom azul-roxo
 Transmite: Começo, intenção, mystério
 ```
 
 ### 🌓 Lua Crescente (Blue)
+
 ```
 Cabeçalho com tom azul
 Transmite: Crescimento, movimento, ação
 ```
 
 ### 🌕 Lua Cheia (Amber/Dourado)
+
 ```
 Cabeçalho com tom dourado/amber
 Transmite: Abundância, plenitude, celebração
 ```
 
 ### 🌗 Lua Minguante (Slate/Cinza)
+
 ```
 Cabeçalho com tom cinza
 Transmite: Conclusão, libertação, sabedoria
@@ -135,6 +139,7 @@ Transmite: Conclusão, libertação, sabedoria
 ## Fluxo de Interação
 
 ### Clicar na Lua
+
 ```
 Clique na lua no LuaListScreen
     ↓
@@ -142,6 +147,7 @@ Modal abre com saudação bonita
 ```
 
 ### Primeira Resposta
+
 ```
 Sistema: "Bem-vindo à Lua Cheia!"
 Sistema: "O que você colheu?"
@@ -150,6 +156,7 @@ Usuário digita sua resposta
 ```
 
 ### Conversa
+
 ```
 Usuário envia: "Realizei X"
     ↓
@@ -161,6 +168,7 @@ Botão de salvar aparece automaticamente
 ```
 
 ### Salvamento
+
 ```
 Usuário clica: "✨ Concluir e Salvar"
     ↓
@@ -179,19 +187,22 @@ Modal fecha
 ✅ **Feedback positivo** - Sistema responde incentivando  
 ✅ **Visual melhor** - Cores dinâmicas (versão avançada)  
 ✅ **Natural** - Fluxo como um app de chat  
-✅ **Compatible** - Salva igual no banco  
+✅ **Compatible** - Salva igual no banco
 
 ---
 
 ## Qual Versão Usar?
 
 ### Se quer algo simples:
+
 👉 Use `MonthlyInsightChatModal.tsx`
 
 ### Se quer algo completo:
+
 👉 Use `MonthlyInsightAdvancedChatModal.tsx` ⭐
 
 ### Se quer manter como estava:
+
 👉 Use `MonthlyInsightModal.tsx` (original)
 
 ---

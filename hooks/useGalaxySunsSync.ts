@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export interface YearMoonData {
   year: number;
   totalLunations: number;
-  dominantPhase: "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante" | null;
+  dominantPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' | null;
   dominantSign: string | null;
-  moonPhases: Record<"luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante", number>;
+  moonPhases: Record<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante', number>;
   signs: Record<string, number>;
   syncedAt?: string;
 }
@@ -22,9 +22,7 @@ interface UseGalaxySunsSyncReturn {
  * Busca fases lunares do ano anterior via API /api/moons
  * (Backend entende que referencia 1 ano atrás, UI não mostra isso)
  */
-export function useGalaxySunsSync(
-  years: number[] = []
-): UseGalaxySunsSyncReturn {
+export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn {
   const [data, setData] = useState<Record<number, YearMoonData>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,9 +32,7 @@ export function useGalaxySunsSync(
       const startDate = `${year}-01-01`;
       const endDate = `${year}-12-31`;
 
-      const response = await fetch(
-        `/api/moons?start=${startDate}&end=${endDate}&tz=UTC`
-      );
+      const response = await fetch(`/api/moons?start=${startDate}&end=${endDate}&tz=UTC`);
 
       if (!response.ok) {
         throw new Error(`Erro ao carregar dados lunares para ${year}`);
@@ -45,7 +41,7 @@ export function useGalaxySunsSync(
       const { days } = await response.json();
 
       // Processar estatísticas
-      const phaseCount: Record<"luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante", number> = {
+      const phaseCount: Record<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante', number> = {
         luaNova: 0,
         luaCrescente: 0,
         luaCheia: 0,
@@ -65,23 +61,18 @@ export function useGalaxySunsSync(
       });
 
       // Encontrar fase dominante (mais dias durante o ano)
-      let dominantPhaseKey: "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante" =
-        "luaNova";
+      let dominantPhaseKey: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' = 'luaNova';
       let maxPhaseCount = 0;
 
       Object.entries(phaseCount).forEach(([phase, count]) => {
         if (count > maxPhaseCount) {
           maxPhaseCount = count;
-          dominantPhaseKey = phase as
-            | "luaNova"
-            | "luaCrescente"
-            | "luaCheia"
-            | "luaMinguante";
+          dominantPhaseKey = phase as 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
         }
       });
 
       // Encontrar signo dominante
-      let dominantSign = "";
+      let dominantSign = '';
       let maxSignCount = 0;
 
       Object.entries(signCount).forEach(([sign, count]) => {
@@ -106,19 +97,22 @@ export function useGalaxySunsSync(
         [year]: yearData,
       }));
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
+      const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(message);
       console.error(`❌ Erro ao sincronizar GalaxySuns ${year}:`, message);
     }
   };
 
   useEffect(() => {
-    const yearsToFetch = years.length > 0 ? years : [
-      new Date().getFullYear() - 1,
-      new Date().getFullYear(),
-      new Date().getFullYear() + 1,
-      new Date().getFullYear() + 2,
-    ];
+    const yearsToFetch =
+      years.length > 0
+        ? years
+        : [
+            new Date().getFullYear() - 1,
+            new Date().getFullYear(),
+            new Date().getFullYear() + 1,
+            new Date().getFullYear() + 2,
+          ];
 
     async function sync() {
       setIsLoading(true);
@@ -127,7 +121,7 @@ export function useGalaxySunsSync(
       try {
         await Promise.all(yearsToFetch.map(fetchYearData));
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Erro desconhecido";
+        const message = err instanceof Error ? err.message : 'Erro desconhecido';
         setError(message);
       } finally {
         setIsLoading(false);

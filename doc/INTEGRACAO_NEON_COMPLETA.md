@@ -3,6 +3,7 @@
 ## 📊 Situação Atual
 
 Seu projeto **atualmente salva tudo no Google Sheets**, mas você tem:
+
 - ✅ Banco Neon configurado (`lib/db.ts`)
 - ✅ Schema básico em `infra/db/schema.sql`
 - ✅ Biblioteca `@neondatabase/serverless` instalada
@@ -11,6 +12,7 @@ Seu projeto **atualmente salva tudo no Google Sheets**, mas você tem:
 ## 🎯 Estratégia de Integração
 
 ### Opção 1: **Dupla Persistência** (Recomendado para Transição)
+
 Salva nos **dois** (Neon + Sheets) até você migrar completamente:
 
 ```
@@ -24,11 +26,13 @@ Backend (route.ts)
 ```
 
 **Vantagens:**
+
 - Zero downtime
 - Pode testar Neon em paralelo
 - Rollback fácil se algo quebrar
 
 ### Opção 2: **Migração Direta**
+
 Substitui Sheets por Neon completamente:
 
 ```
@@ -43,6 +47,7 @@ Backend
 ## 📋 Tipos de Inputs para Integrar
 
 ### 1. **Insights Mensais** (`/api/form/monthly-insight`)
+
 ```json
 {
   "moonPhase": "Crescente",
@@ -52,6 +57,7 @@ Backend
 ```
 
 **Tabela Neon:**
+
 ```sql
 CREATE TABLE IF NOT EXISTS monthly_insights (
   id BIGSERIAL PRIMARY KEY,
@@ -64,6 +70,7 @@ CREATE TABLE IF NOT EXISTS monthly_insights (
 ```
 
 ### 2. **Insights Trimestrais** (`/api/form/quarterly-insight`)
+
 ```json
 {
   "moonPhase": "Nova",
@@ -72,6 +79,7 @@ CREATE TABLE IF NOT EXISTS monthly_insights (
 ```
 
 **Tabela Neon:**
+
 ```sql
 CREATE TABLE IF NOT EXISTS quarterly_insights (
   id BIGSERIAL PRIMARY KEY,
@@ -83,6 +91,7 @@ CREATE TABLE IF NOT EXISTS quarterly_insights (
 ```
 
 ### 3. **Insights Anuais** (`/api/form/annual-insight`)
+
 ```json
 {
   "insight": "Texto do usuário..."
@@ -90,6 +99,7 @@ CREATE TABLE IF NOT EXISTS quarterly_insights (
 ```
 
 **Tabela Neon:**
+
 ```sql
 CREATE TABLE IF NOT EXISTS annual_insights (
   id BIGSERIAL PRIMARY KEY,
@@ -101,6 +111,7 @@ CREATE TABLE IF NOT EXISTS annual_insights (
 ```
 
 ### 4. **Fase Lunar** (`/api/form/lunar-phase`)
+
 ```json
 {
   "data": "2024-12-13",
@@ -117,6 +128,7 @@ CREATE TABLE IF NOT EXISTS annual_insights (
 ```
 
 **Tabela Neon:**
+
 ```sql
 CREATE TABLE IF NOT EXISTS lunar_phases (
   id BIGSERIAL PRIMARY KEY,
@@ -136,6 +148,7 @@ CREATE TABLE IF NOT EXISTS lunar_phases (
 ```
 
 ### 5. **Ilhas** (página `/ilha`)
+
 ```json
 {
   "ilhaSelecionada": "ilha1",
@@ -150,6 +163,7 @@ CREATE TABLE IF NOT EXISTS lunar_phases (
 ```
 
 **Tabela Neon:**
+
 ```sql
 CREATE TABLE IF NOT EXISTS islands (
   id BIGSERIAL PRIMARY KEY,
@@ -166,6 +180,7 @@ CREATE TABLE IF NOT EXISTS islands (
 ```
 
 ### 6. **Formulário de Contato** (`/api/form/submit`)
+
 ```json
 {
   "name": "João",
@@ -177,6 +192,7 @@ CREATE TABLE IF NOT EXISTS islands (
 **Tabela:** Já existe `form_entries` genérica
 
 ### 7. **Inscrições** (`/api/subscribe`)
+
 ```json
 {
   "email": "usuario@example.com"
@@ -212,7 +228,7 @@ CREATE TABLE IF NOT EXISTS monthly_insights (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_date 
+CREATE INDEX IF NOT EXISTS idx_monthly_insights_user_date
   ON monthly_insights (user_id, created_at DESC);
 
 -- Insights trimestrais
@@ -224,7 +240,7 @@ CREATE TABLE IF NOT EXISTS quarterly_insights (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_date 
+CREATE INDEX IF NOT EXISTS idx_quarterly_insights_user_date
   ON quarterly_insights (user_id, created_at DESC);
 
 -- Insights anuais
@@ -236,7 +252,7 @@ CREATE TABLE IF NOT EXISTS annual_insights (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_annual_insights_user_date 
+CREATE INDEX IF NOT EXISTS idx_annual_insights_user_date
   ON annual_insights (user_id, created_at DESC);
 
 -- Fases lunares
@@ -256,7 +272,7 @@ CREATE TABLE IF NOT EXISTS lunar_phases (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_lunar_phases_user_date 
+CREATE INDEX IF NOT EXISTS idx_lunar_phases_user_date
   ON lunar_phases (user_id, created_at DESC);
 
 -- Ilhas
@@ -273,7 +289,7 @@ CREATE TABLE IF NOT EXISTS islands (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_islands_user 
+CREATE INDEX IF NOT EXISTS idx_islands_user
   ON islands (user_id, island_key);
 ```
 
@@ -298,11 +314,7 @@ export async function saveMonthlyInsight(
 }
 
 // Insights trimestrais
-export async function saveQuarterlyInsight(
-  userId: string,
-  moonPhase: string,
-  insight: string
-) {
+export async function saveQuarterlyInsight(userId: string, moonPhase: string, insight: string) {
   const db = getDb();
   return db`
     INSERT INTO quarterly_insights (user_id, moon_phase, insight)
@@ -312,10 +324,7 @@ export async function saveQuarterlyInsight(
 }
 
 // Insights anuais
-export async function saveAnnualInsight(
-  userId: string,
-  insight: string
-) {
+export async function saveAnnualInsight(userId: string, insight: string) {
   const db = getDb();
   return db`
     INSERT INTO annual_insights (user_id, year, insight)
@@ -403,7 +412,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
-    
+
     if (!token || !validateToken(token)) {
       return NextResponse.json(
         { error: 'Não autenticado' },
@@ -433,7 +442,7 @@ export async function POST(request: NextRequest) {
     // 2. Manter compatibilidade com Sheets (temporário)
     const monthNames = ['Janeiro', 'Fevereiro', ...];
     const monthName = monthNames[(monthNumber - 1) % 12];
-    
+
     await appendToSheet({
       timestamp: new Date().toISOString(),
       mes: `${monthName} (Mês #${monthNumber})`,
@@ -442,15 +451,15 @@ export async function POST(request: NextRequest) {
       tipo: 'insight_mensal',
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Insight salvo com sucesso' 
+    return NextResponse.json({
+      success: true,
+      message: 'Insight salvo com sucesso'
     }, { status: 200 });
 
   } catch (error) {
     console.error('Erro ao salvar insight mensal:', error);
     return NextResponse.json(
-      { error: 'Erro interno' }, 
+      { error: 'Erro interno' },
       { status: 500 }
     );
   }
@@ -491,8 +500,8 @@ export function getUserIdFromToken(token: string): string | null {
 
 ```sql
 -- Ver todos os insights de um usuário
-SELECT * FROM monthly_insights 
-WHERE user_id = 'seu-user-id' 
+SELECT * FROM monthly_insights
+WHERE user_id = 'seu-user-id'
 ORDER BY created_at DESC;
 
 -- Contar insights por tipo

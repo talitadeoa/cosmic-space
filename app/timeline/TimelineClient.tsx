@@ -1,16 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import TimelineFilters from "@/components/timeline/TimelineFilters";
-import TimelineItemCard from "@/components/timeline/TimelineItemCard";
-import TimelinePagination from "@/components/timeline/TimelinePagination";
-import type {
-  TimelineFiltersState,
-  TimelineItemType,
-  TimelineResponse,
-} from "@/types/timeline";
+import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
+import TimelineFilters from '@/components/timeline/TimelineFilters';
+import TimelineItemCard from '@/components/timeline/TimelineItemCard';
+import TimelinePagination from '@/components/timeline/TimelinePagination';
+import type { TimelineFiltersState, TimelineItemType, TimelineResponse } from '@/types/timeline';
 
 type TimelineClientProps = {
   filters: TimelineFiltersState;
@@ -22,7 +18,7 @@ type TimelineClientProps = {
 };
 
 type QueryUpdates = {
-  period?: TimelineFiltersState["period"];
+  period?: TimelineFiltersState['period'];
   types?: TimelineItemType[];
   moonPhase?: string | null;
   page?: number;
@@ -52,42 +48,42 @@ export default function TimelineClient({
     const params = new URLSearchParams(searchParams.toString());
 
     if (updates.period) {
-      params.set("period", updates.period);
+      params.set('period', updates.period);
     }
 
-    if ("moonPhase" in updates) {
+    if ('moonPhase' in updates) {
       const value = updates.moonPhase?.trim();
       if (value) {
-        params.set("moonPhase", value);
+        params.set('moonPhase', value);
       } else {
-        params.delete("moonPhase");
+        params.delete('moonPhase');
       }
     }
 
-    if ("types" in updates) {
+    if ('types' in updates) {
       const nextTypes = updates.types ?? [];
       if (nextTypes.length) {
-        params.set("types", nextTypes.join(","));
+        params.set('types', nextTypes.join(','));
       } else {
-        params.delete("types");
+        params.delete('types');
       }
     }
 
-    if ("page" in updates) {
+    if ('page' in updates) {
       const nextPage = updates.page ?? 1;
       if (nextPage <= 1) {
-        params.delete("page");
+        params.delete('page');
       } else {
-        params.set("page", String(nextPage));
+        params.set('page', String(nextPage));
       }
     }
 
-    if ("pageSize" in updates) {
+    if ('pageSize' in updates) {
       const nextSize = updates.pageSize ?? pageSize;
       if (nextSize === DEFAULT_PAGE_SIZE) {
-        params.delete("pageSize");
+        params.delete('pageSize');
       } else {
-        params.set("pageSize", String(nextSize));
+        params.set('pageSize', String(nextSize));
       }
     }
 
@@ -95,7 +91,7 @@ export default function TimelineClient({
     router.push(query ? `${pathname}?${query}` : pathname);
   };
 
-  const handlePeriodChange = (period: TimelineFiltersState["period"]) => {
+  const handlePeriodChange = (period: TimelineFiltersState['period']) => {
     updateQuery({ period, page: 1 });
   };
 
@@ -110,7 +106,7 @@ export default function TimelineClient({
       : [...filters.types, value];
 
     if (nextTypes.length === 0) {
-      setLocalTypeError("Selecione ao menos um tipo.");
+      setLocalTypeError('Selecione ao menos um tipo.');
       return;
     }
 
@@ -127,12 +123,12 @@ export default function TimelineClient({
       return `${meta.totalItems} registros encontrados no periodo selecionado`;
     }
     if (error) {
-      return "Nao foi possivel carregar os registros.";
+      return 'Nao foi possivel carregar os registros.';
     }
     if (localTypeError) {
-      return "Ajuste os filtros para carregar os registros.";
+      return 'Ajuste os filtros para carregar os registros.';
     }
-    return "Carregando registros...";
+    return 'Carregando registros...';
   }, [meta, error, localTypeError]);
 
   return (
@@ -143,15 +139,13 @@ export default function TimelineClient({
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-16 pt-12 sm:px-6">
         <header className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.4em] text-indigo-300/80">
-            Linha do Tempo
-          </p>
+          <p className="text-xs uppercase tracking-[0.4em] text-indigo-300/80">Linha do Tempo</p>
           <h1 className="text-3xl font-semibold text-slate-100 sm:text-4xl">
             Rastro cronologico do cosmos
           </h1>
           <p className="max-w-2xl text-sm text-slate-300 sm:text-base">
-            Consolide insights e energia lunar em uma unica visao cronologica,
-            pronta para ser consumida pelo chatmodal ou por consultas rapidas.
+            Consolide insights e energia lunar em uma unica visao cronologica, pronta para ser
+            consumida pelo chatmodal ou por consultas rapidas.
           </p>
         </header>
 

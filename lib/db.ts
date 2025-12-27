@@ -1,5 +1,5 @@
-import "server-only";
-import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import 'server-only';
+import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 
 type DbClient = NeonQueryFunction<any, any>;
 
@@ -9,7 +9,7 @@ export function getDb(): DbClient {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    throw new Error("DATABASE_URL não configurada. Defina a URL do Neon no .env.local");
+    throw new Error('DATABASE_URL não configurada. Defina a URL do Neon no .env.local');
   }
 
   if (!cachedClient) {

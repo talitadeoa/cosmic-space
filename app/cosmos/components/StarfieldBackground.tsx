@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from 'react';
 
 export const StarfieldBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -9,7 +9,7 @@ export const StarfieldBackground: React.FC = () => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const STAR_COUNT = 250;
@@ -22,9 +22,20 @@ export const StarfieldBackground: React.FC = () => {
       twinklePhase: number;
     }> = [];
 
+    const getCanvasSize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) {
+        return { width: window.innerWidth, height: window.innerHeight };
+      }
+      const width = parent.clientWidth || window.innerWidth;
+      const height = Math.max(parent.clientHeight, parent.scrollHeight, window.innerHeight);
+      return { width, height };
+    };
+
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const { width, height } = getCanvasSize();
+      canvas.width = Math.max(1, Math.round(width));
+      canvas.height = Math.max(1, Math.round(height));
     }
 
     function normToPixelX(nx: number) {
@@ -55,7 +66,7 @@ export const StarfieldBackground: React.FC = () => {
 
     function drawBackground() {
       if (!ctx) return;
-      ctx.fillStyle = "#02030a";
+      ctx.fillStyle = '#02030a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -66,8 +77,7 @@ export const StarfieldBackground: React.FC = () => {
         const y = normToPixelY(s.y);
         const r = normRadiusToPixels(s.radius);
 
-        const twinkle =
-          Math.sin(time * s.twinkleSpeed + s.twinklePhase) * 0.3 + 0.7;
+        const twinkle = Math.sin(time * s.twinkleSpeed + s.twinklePhase) * 0.3 + 0.7;
         const alpha = s.baseAlpha * twinkle;
 
         ctx.beginPath();
@@ -89,24 +99,27 @@ export const StarfieldBackground: React.FC = () => {
     function start() {
       resizeCanvas();
       createStars();
-      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener('resize', resizeCanvas);
+      const parent = canvas.parentElement;
+      const observer = parent ? new ResizeObserver(() => resizeCanvas()) : null;
+      if (observer && parent) {
+        observer.observe(parent);
+      }
       frameId = requestAnimationFrame(render);
+
+      return () => observer?.disconnect();
     }
 
-    function stop() {
+    function stop(cleanup?: () => void) {
       if (frameId != null) cancelAnimationFrame(frameId);
-      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener('resize', resizeCanvas);
+      cleanup?.();
     }
 
-    start();
+    const cleanup = start();
 
-    return () => stop();
+    return () => stop(cleanup);
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none absolute inset-0"
-    />
-  );
+  return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" />;
 };

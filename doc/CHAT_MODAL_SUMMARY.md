@@ -27,9 +27,9 @@
 
 ```tsx
 // Escolha UM destes:
-import MonthlyInsightModal from "@/components/MonthlyInsightModal";                    // Original
-import MonthlyInsightChatModal from "@/components/MonthlyInsightChatModal";           // Chat simples
-import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvancedChatModal"; // Chat com cores
+import MonthlyInsightModal from '@/components/MonthlyInsightModal'; // Original
+import MonthlyInsightChatModal from '@/components/MonthlyInsightChatModal'; // Chat simples
+import MonthlyInsightAdvancedChatModal from '@/components/MonthlyInsightAdvancedChatModal'; // Chat com cores
 ```
 
 ### Passo 2: Use no LuaListScreen
@@ -51,6 +51,7 @@ import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvanced
 ### Passo 3: Customize (opcional)
 
 Edite o componente para mudar:
+
 - Emojis das fases
 - Respostas do sistema
 - Cores (versão avançada)
@@ -81,6 +82,7 @@ Original:          Chat Simples:          Chat Avançado:
 **Use a versão avançada!** `MonthlyInsightAdvancedChatModal.tsx`
 
 Tem tudo que você precisa:
+
 - ✨ Visual mais polido
 - 🎨 Cores que combinam com a fase
 - 💬 Conversa natural
@@ -91,6 +93,7 @@ Tem tudo que você precisa:
 ## 📖 Documentação Completa
 
 Veja [MONTHLY_INSIGHT_CHAT_MODAL.md](MONTHLY_INSIGHT_CHAT_MODAL.md) para:
+
 - Explicação detalhada
 - Exemplos avançados
 - Customizações

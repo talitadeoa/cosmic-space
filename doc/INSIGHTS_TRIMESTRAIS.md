@@ -21,7 +21,9 @@ Implementação de um sistema de captura de insights trimestrais ao clicar em ca
 ## 🔧 Componentes Criados
 
 ### 1. **QuarterlyInsightModal** (`components/QuarterlyInsightModal.tsx`)
+
 Modal animado que captura o insight do usuário:
+
 - Exibe a lua e trimestre selecionados
 - Textarea para digitar o insight
 - Validação de campo obrigatório
@@ -29,21 +31,27 @@ Modal animado que captura o insight do usuário:
 - Design responsivo e temático
 
 ### 2. **useQuarterlyInsights** (`hooks/useQuarterlyInsights.ts`)
+
 Hook React que gerencia o estado e lógica:
+
 - Mantém lista de insights salvos
 - Faz chamada para a API
 - Gerencia estados de loading e erro
 - Retorna função `saveInsight` para submissão
 
 ### 3. **API Route** (`app/api/form/quarterly-insight/route.ts`)
+
 Endpoint POST que:
+
 - Valida autenticação do usuário
 - Valida dados de entrada
 - Mapeia fases para strings legíveis
 - Salva no Google Sheets via `appendToSheet`
 
 ### 4. **SolOrbitScreen** (atualizado)
+
 Atualizações:
+
 - Estado `isModalOpen` e `selectedMoonPhase`
 - Função `handleMoonClick` para abrir modal
 - Função `handleInsightSubmit` para salvar insights
@@ -52,6 +60,7 @@ Atualizações:
 ## 📊 Estrutura de Dados
 
 Os insights são salvos no Google Sheets com a estrutura:
+
 ```
 {
   timestamp: "2024-12-07T10:30:00.000Z",
@@ -64,6 +73,7 @@ Os insights são salvos no Google Sheets com a estrutura:
 ## 🔐 Autenticação
 
 O sistema valida o token de autenticação:
+
 - Token lido do cookie `auth_token`
 - Validado com `validateToken()` da lib/auth
 - Retorna erro 401 se não autenticado
@@ -79,6 +89,7 @@ O sistema valida o token de autenticação:
 ## 🚀 Como Usar
 
 ### Integração Já Feita
+
 Tudo está pronto para funcionar! Basta:
 
 1. Acessar o `SolOrbitScreen`

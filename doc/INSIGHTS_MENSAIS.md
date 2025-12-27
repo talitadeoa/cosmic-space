@@ -132,22 +132,25 @@ appendToSheet()
 ## 🔧 Customizações Possíveis
 
 ### Alterar nomes dos meses
+
 Em `MonthlyInsightModal.tsx`, função `getMonthName()`:
 
 ```tsx
 const months = [
-  'Janeiro',  // customize
+  'Janeiro', // customize
   'Fevereiro',
   // ...
 ];
 ```
 
 ### Adicionar mais campos
+
 1. Edite o formulário em `MonthlyInsightModal.tsx`
 2. Adicione campos na API `monthly-insight/route.ts`
 3. Atualize o hook `useMonthlyInsights.ts`
 
 ### Mudar cores
+
 Procure por `className="..."` em `MonthlyInsightModal.tsx` e customize as cores Tailwind.
 
 ## 📦 Dependências
@@ -168,6 +171,7 @@ Todas já existem no projeto!
 ---
 
 **Agora você tem dois sistemas de insights:**
+
 1. **Insights Trimestrais** - 4 luas no SolOrbitScreen (Jan-Mar, Abr-Jun, Jul-Set, Out-Dez)
 2. **Insights Mensais** - 8 luas no LuaListScreen (cada mês do ano)
 

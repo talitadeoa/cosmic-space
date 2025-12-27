@@ -3,6 +3,7 @@
 ## Estado Ativo vs Inativo
 
 ### Tabs
+
 ```
 ┌─────────────────┬──────────────┐
 │ Inbox (ATIVO)   │ Lua Atual    │
@@ -14,6 +15,7 @@
 ```
 
 ### Ilhas
+
 ```
 ┌──────────────────────┐
 │ ✓ Ilha 1 (ATIVO)     │  ← border-indigo-300/80
@@ -29,6 +31,7 @@
 ```
 
 ### Fases Lunares
+
 ```
 ┌─────────────────┐  ┌─────────────────┐
 │   🌑 Lua Nova   │  │  🌓 Lua Cresc.  │  ← Inativa: border-slate-700, bg-slate-900/50
@@ -73,6 +76,7 @@
 ## Layout Responsivo
 
 ### Mobile (< 640px)
+
 ```
 ┌─────────────────┐
 │ 🌕 🌑 🌓 🌗      │  ← MoonCluster vertical
@@ -94,6 +98,7 @@
 ```
 
 ### Desktop (≥ 1024px)
+
 ```
 ┌──────────────┬──────────────────────┬──────────────┐
 │              │                      │              │
@@ -146,13 +151,13 @@
 
 ### Contraste de Cores
 
-| Elemento | Foreground | Background | Ratio |
-|----------|-----------|-----------|-------|
-| Tab Ativo | text-indigo-100 | bg-indigo-500/20 | > 4.5:1 ✓ |
-| Tab Inativo | text-slate-300 | bg-slate-900/70 | > 7:1 ✓ |
+| Elemento     | Foreground      | Background       | Ratio     |
+| ------------ | --------------- | ---------------- | --------- |
+| Tab Ativo    | text-indigo-100 | bg-indigo-500/20 | > 4.5:1 ✓ |
+| Tab Inativo  | text-slate-300  | bg-slate-900/70  | > 7:1 ✓   |
 | Island Ativo | text-indigo-100 | bg-indigo-500/20 | > 4.5:1 ✓ |
-| Moon Ativo | text-indigo-100 | bg-indigo-500/30 | > 4.5:1 ✓ |
-| Empty State | text-slate-500 | opacity-60 | > 3:1 ⚠️ |
+| Moon Ativo   | text-indigo-100 | bg-indigo-500/30 | > 4.5:1 ✓ |
+| Empty State  | text-slate-500  | opacity-60       | > 3:1 ⚠️  |
 
 ### Indicadores Visuais
 
@@ -161,13 +166,14 @@
 ✓ **Background**: Mudança de `bg-slate-900` → `bg-indigo-500/20`  
 ✓ **Sombra**: Adição de `shadow-md shadow-indigo-500/20`  
 ✓ **Escala**: Aumento de `scale-105` em fases  
-✓ **Opacidade**: Redução em empty states `opacity-60`  
+✓ **Opacidade**: Redução em empty states `opacity-60`
 
 ---
 
 ## Componentes por Responsividade
 
 ### EmptyState
+
 ```tailwind
 /* Base */
 flex flex-col items-center justify-center gap-2
@@ -181,6 +187,7 @@ text-xs sm:text-sm    (para descrição)
 ```
 
 ### AccessibleTabs
+
 ```tailwind
 /* Container */
 flex flex-wrap items-center gap-2
@@ -196,6 +203,7 @@ focus-visible:ring-2 focus-visible:ring-indigo-500
 ```
 
 ### IslandsList
+
 ```tailwind
 /* Container */
 flex flex-col gap-2
@@ -209,6 +217,7 @@ transition focus-visible:ring-2
 ```
 
 ### MoonPhasesRail
+
 ```tailwind
 /* Container */
 flex flex-col gap-2
@@ -235,6 +244,7 @@ text-[0.6rem] font-bold text-white
 ## Estados Especiais
 
 ### Tarefa Completada
+
 ```
 [✓] Texto tachado
     └─ border-emerald-400
@@ -244,6 +254,7 @@ text-[0.6rem] font-bold text-white
 ```
 
 ### Tarefa Pendente
+
 ```
 [ ] Texto normal
     └─ border-slate-500
@@ -253,6 +264,7 @@ text-[0.6rem] font-bold text-white
 ```
 
 ### Badge de Contagem
+
 ```
 [2]  ← bg-indigo-600, text-white, rounded-full, font-bold
 ```
@@ -263,13 +275,13 @@ text-[0.6rem] font-bold text-white
 
 ### Quando Usar Qual Componente
 
-| Caso | Componente | Notas |
-|------|-----------|-------|
-| Sem tarefas | EmptyState | Não interativo, opacidade reduzida |
-| Navegação entre seções | AccessibleTabs | WAI-ARIA completo, navega por teclado |
-| Selecionar ilha | IslandsList | Botões com aria-pressed |
-| Selecionar fase | MoonPhasesRail | Emoji + badge + contadores |
-| Listar tarefas | SavedTodosPanel | Usa EmptyState internamente |
+| Caso                   | Componente      | Notas                                 |
+| ---------------------- | --------------- | ------------------------------------- |
+| Sem tarefas            | EmptyState      | Não interativo, opacidade reduzida    |
+| Navegação entre seções | AccessibleTabs  | WAI-ARIA completo, navega por teclado |
+| Selecionar ilha        | IslandsList     | Botões com aria-pressed               |
+| Selecionar fase        | MoonPhasesRail  | Emoji + badge + contadores            |
+| Listar tarefas         | SavedTodosPanel | Usa EmptyState internamente           |
 
 ### Classes Mais Importantes
 

@@ -5,6 +5,7 @@
 ### 1. **Schema SQL Expandido** (`infra/db/schema.sql`)
 
 Adicionadas 5 novas tabelas:
+
 - `monthly_insights` - Insights mensais por lua
 - `quarterly_insights` - Insights trimestrais
 - `annual_insights` - Insights anuais
@@ -12,6 +13,7 @@ Adicionadas 5 novas tabelas:
 - `islands` - Dados das ilhas interativas
 
 Cada tabela possui:
+
 - ✅ Índices para otimização
 - ✅ Referência com `users` table (foreign key)
 - ✅ Timestamps automáticos
@@ -20,6 +22,7 @@ Cada tabela possui:
 ### 2. **Helpers em `lib/forms.ts`**
 
 Funções criadas:
+
 ```typescript
 saveMonthlyInsight(userId, moonPhase, monthNumber, insight)
 saveQuarterlyInsight(userId, moonPhase, insight)
@@ -29,6 +32,7 @@ saveIsland(userId, islandKey, {titulo, tag, descricao, energia, prioridade})
 ```
 
 Todas as funções:
+
 - ✅ Salva no Neon
 - ✅ Retorna dados salvos com ID
 - ✅ Trata erros adequadamente
@@ -36,6 +40,7 @@ Todas as funções:
 ### 3. **Endpoints Atualizados**
 
 #### `/api/form/monthly-insight` ✅
+
 ```typescript
 POST {
   "moonPhase": "luaCrescente",
@@ -43,26 +48,32 @@ POST {
   "insight": "Meu insight de dezembro..."
 }
 ```
+
 **Fluxo:** Neon → Google Sheets (dupla persistência)
 
 #### `/api/form/quarterly-insight` ✅
+
 ```typescript
 POST {
   "moonPhase": "luaNova",
   "insight": "Insight trimestral..."
 }
 ```
+
 **Fluxo:** Neon → Google Sheets
 
 #### `/api/form/annual-insight` ✅
+
 ```typescript
 POST {
   "insight": "Meu insight do ano..."
 }
 ```
+
 **Fluxo:** Neon → Google Sheets
 
 #### `/api/form/lunar-phase` ✅
+
 ```typescript
 POST {
   "data": "2024-12-13",
@@ -77,9 +88,11 @@ POST {
   "intencoesAno": "..."
 }
 ```
+
 **Fluxo:** Neon → Google Sheets
 
 #### `/api/form/islands` ✅ (NOVO)
+
 ```typescript
 POST {
   "islandKey": "ilha1",
@@ -92,15 +105,16 @@ POST {
   }
 }
 ```
+
 **Fluxo:** Neon → Google Sheets
 
 ## 🔄 Estratégia: Dupla Persistência
 
 Todos os endpoints agora:
+
 1. **Tentam salvar no Neon** (novo)
    - Se falhar, continua para Sheets
    - Extrai `userId` do token
-   
 2. **Salvam no Google Sheets** (mantém compatibilidade)
    - Garante que dados não se perdem
    - Permite teste paralelo
@@ -108,6 +122,7 @@ Todos os endpoints agora:
 ## 📊 Como Extrair UserID
 
 O endpoint usa `getTokenPayload(token)` para extrair:
+
 ```typescript
 const tokenPayload = getTokenPayload(token);
 const userId = tokenPayload?.userId || tokenPayload?.id || Math.random().toString();
@@ -118,12 +133,15 @@ Se você tiver um sistema de auth diferente, atualize isso.
 ## 🚀 Próximas Etapas
 
 ### 1. Executar SQL no Neon
+
 Conecte ao seu banco Neon e execute:
+
 ```bash
 psql $DATABASE_URL < infra/db/schema.sql
 ```
 
 Ou pelo Neon Console (SQL Editor):
+
 ```sql
 -- Cole o conteúdo de infra/db/schema.sql
 ```
@@ -137,7 +155,7 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
   event.preventDefault();
 
   if (!ilhaSelecionada) {
-    alert("Escolha uma ilha antes de salvar 🏝️");
+    alert('Escolha uma ilha antes de salvar 🏝️');
     return;
   }
 
@@ -145,14 +163,14 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     titulo: formState.titulo.trim(),
     tag: formState.tag.trim(),
     descricao: formState.descricao.trim(),
-    energia: formState.energia !== "" ? Number(formState.energia) : null,
-    prioridade: formState.prioridade !== "" ? Number(formState.prioridade) : null
+    energia: formState.energia !== '' ? Number(formState.energia) : null,
+    prioridade: formState.prioridade !== '' ? Number(formState.prioridade) : null,
   };
 
   // Salvar localmente
   setIlhas((prev) => ({
     ...prev,
-    [ilhaSelecionada]: dados
+    [ilhaSelecionada]: dados,
   }));
 
   // NOVO: Salvar no servidor (Neon + Sheets)
@@ -162,7 +180,7 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         islandKey: ilhaSelecionada,
-        data: dados
+        data: dados,
       }),
       credentials: 'include',
     });
@@ -182,6 +200,7 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 ### 3. Testar Cada Endpoint
 
 **Com autenticação:**
+
 ```bash
 # 1. Fazer login para obter token
 curl -X POST http://localhost:3000/api/auth/login \
@@ -227,10 +246,8 @@ SELECT 'annual', COUNT(*) FROM annual_insights;
 
 - ⚠️ O `userId` padrão é `Math.random().toString()` se não conseguir extrair do token
   - Isso precisa ser ajustado com seu sistema real de autenticação
-  
 - 🔄 Dupla persistência está ativa por padrão
   - Remova `appendToSheet()` quando quiser usar só Neon
-  
 - 💾 Use UPSERT nas ilhas
   - Mesma ilha é sobrescrita (não duplica dados)
 

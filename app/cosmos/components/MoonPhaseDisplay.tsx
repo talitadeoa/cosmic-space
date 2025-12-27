@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { getLunarPhaseAndSign } from "@/lib/astro";
+import React, { useState, useEffect } from 'react';
+import { getLunarPhaseAndSign } from '@/lib/astro';
 
 type MoonPhaseData = {
   faseLua: string;
@@ -23,44 +23,44 @@ const MoonPhaseDisplay: React.FC = () => {
 
   const getPhaseEmoji = (phase: string): string => {
     switch (phase) {
-      case "Nova":
-        return "🌑";
-      case "Crescente":
-        return "🌓";
-      case "Primeiro Quarto":
-        return "🌓";
-      case "Cheia":
-        return "🌕";
-      case "Minguante":
-        return "🌗";
+      case 'Nova':
+        return '🌑';
+      case 'Crescente':
+        return '🌓';
+      case 'Primeiro Quarto':
+        return '🌓';
+      case 'Cheia':
+        return '🌕';
+      case 'Minguante':
+        return '🌗';
       default:
-        return "🌙";
+        return '🌙';
     }
   };
 
   const getPhaseColor = (phase: string): string => {
     switch (phase) {
-      case "Nova":
-        return "from-slate-900 to-slate-800";
-      case "Crescente":
-        return "from-amber-900 to-amber-800";
-      case "Primeiro Quarto":
-        return "from-yellow-900 to-yellow-800";
-      case "Cheia":
-        return "from-yellow-400 to-amber-300";
-      case "Minguante":
-        return "from-blue-900 to-slate-800";
+      case 'Nova':
+        return 'from-slate-900 to-slate-800';
+      case 'Crescente':
+        return 'from-amber-900 to-amber-800';
+      case 'Primeiro Quarto':
+        return 'from-yellow-900 to-yellow-800';
+      case 'Cheia':
+        return 'from-yellow-400 to-amber-300';
+      case 'Minguante':
+        return 'from-blue-900 to-slate-800';
       default:
-        return "from-slate-800 to-slate-700";
+        return 'from-slate-800 to-slate-700';
     }
   };
 
   const phaseNameMap: Record<string, string> = {
-    Nova: "Lua Nova",
-    Crescente: "Lua Crescente",
-    "Primeiro Quarto": "Primeiro Quarto",
-    Cheia: "Lua Cheia",
-    Minguante: "Lua Minguante",
+    Nova: 'Lua Nova',
+    Crescente: 'Lua Crescente',
+    'Primeiro Quarto': 'Primeiro Quarto',
+    Cheia: 'Lua Cheia',
+    Minguante: 'Lua Minguante',
   };
 
   return (

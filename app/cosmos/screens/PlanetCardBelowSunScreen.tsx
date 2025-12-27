@@ -1,15 +1,12 @@
-"use client";
+'use client';
 
-import React from "react";
-import { motion } from "framer-motion";
-import { CelestialObject } from "../components/CelestialObject";
-import { Card } from "../components/Card";
-import type { ScreenProps } from "../types";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { CelestialObject } from '../components/CelestialObject';
+import { Card } from '../components/Card';
+import type { ScreenProps } from '../types';
 
-const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({
-  navigateTo,
-  navigateWithFocus,
-}) => {
+const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-between py-10">
       <CelestialObject
@@ -17,10 +14,10 @@ const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({
         size="lg"
         interactive
         onClick={(e) =>
-          navigateWithFocus("solOrbit", {
+          navigateWithFocus('solOrbit', {
             event: e,
-            type: "sol",
-            size: "lg",
+            type: 'sol',
+            size: 'lg',
           })
         }
         floatOffset={-3}
@@ -28,7 +25,7 @@ const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({
 
       <Card
         interactive
-        onClick={() => navigateTo("sidePlanetCard")}
+        onClick={() => navigateTo('sidePlanetCard')}
         className="mt-4 flex aspect-[4/3] w-80 items-center justify-center"
       >
         <CelestialObject type="planeta" size="lg" />
@@ -38,7 +35,7 @@ const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({
         <motion.div
           className="absolute h-px w-80 bg-gradient-to-r from-sky-300/40 via-sky-500/80 to-sky-300/40"
           animate={{ x: [0, 12, -12, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
         />
         <div className="relative flex gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -48,10 +45,10 @@ const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({
               size="sm"
               interactive
               onClick={(e) =>
-                navigateWithFocus("planetCardStandalone", {
+                navigateWithFocus('planetCardStandalone', {
                   event: e,
-                  type: "lua",
-                  size: "sm",
+                  type: 'lua',
+                  size: 'sm',
                 })
               }
               floatOffset={i - 2}

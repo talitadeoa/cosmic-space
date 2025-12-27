@@ -97,16 +97,16 @@ infra/db/
 
 ## 📈 Quantidade de Conteúdo
 
-| Tipo | Quantidade | Status |
-|------|-----------|--------|
-| Tabelas de banco | 3 | ✅ |
-| Funções TypeScript | 9 | ✅ |
-| APIs REST | 3 | ✅ |
-| Arquivos de documentação | 11 | ✅ |
-| Scripts SQL | 2 | ✅ |
-| Índices de banco | 8 | ✅ |
-| Exemplos de teste | 20+ | ✅ |
-| Linhas de documentação | 3000+ | ✅ |
+| Tipo                     | Quantidade | Status |
+| ------------------------ | ---------- | ------ |
+| Tabelas de banco         | 3          | ✅     |
+| Funções TypeScript       | 9          | ✅     |
+| APIs REST                | 3          | ✅     |
+| Arquivos de documentação | 11         | ✅     |
+| Scripts SQL              | 2          | ✅     |
+| Índices de banco         | 8          | ✅     |
+| Exemplos de teste        | 20+        | ✅     |
+| Linhas de documentação   | 3000+      | ✅     |
 
 ---
 
@@ -156,6 +156,7 @@ infra/db/
 ## 🚀 Cada Documentação Inclui
 
 ### ✅ INSIGHTS_BANCO_DADOS.md
+
 - [x] Estrutura de cada tabela
 - [x] Campos e tipos
 - [x] Índices explicados
@@ -167,6 +168,7 @@ infra/db/
 - [x] Checklist de implementação
 
 ### ✅ INSIGHTS_API.md
+
 - [x] 3 APIs documentadas
 - [x] Request/Response ejemplos
 - [x] Parâmetros explicados
@@ -177,6 +179,7 @@ infra/db/
 - [x] Tratamento de erros
 
 ### ✅ CHECKLIST_INSIGHTS.md
+
 - [x] 9 etapas de implementação
 - [x] Cada etapa verificável
 - [x] Comando SQL para cada etapa
@@ -185,6 +188,7 @@ infra/db/
 - [x] Checklist visual
 
 ### ✅ TESTES_INSIGHTS.md
+
 - [x] Testes SQL
 - [x] Testes de API (curl)
 - [x] Testes de função TypeScript
@@ -193,6 +197,7 @@ infra/db/
 - [x] Checklist de testes
 
 ### ✅ INSIGHTS_OTIMIZACAO.md
+
 - [x] Índices explicados
 - [x] Performance antes/depois
 - [x] Tips de performance
@@ -201,6 +206,7 @@ infra/db/
 - [x] Escalabilidade futura
 
 ### ✅ FASES_LUNARES.md
+
 - [x] 4 fases explicadas
 - [x] Significado de cada fase
 - [x] Exemplos de insights
@@ -213,6 +219,7 @@ infra/db/
 ## 💾 Arquivo por Arquivo
 
 ### 1. doc/README_INSIGHTS.md
+
 ```
 - Início rápido (5 minutos)
 - Links para tudo
@@ -221,6 +228,7 @@ infra/db/
 ```
 
 ### 2. doc/INSIGHTS_RESUMO.md
+
 ```
 - O que foi criado
 - 3 tipos de insights
@@ -230,6 +238,7 @@ infra/db/
 ```
 
 ### 3. doc/INSIGHTS_INDICE.md
+
 ```
 - Índice completo
 - Mapa mental
@@ -239,6 +248,7 @@ infra/db/
 ```
 
 ### 4. doc/INSIGHTS_BANCO_DADOS.md
+
 ```
 - Estrutura completa (1000+ linhas)
 - Cada tabela em detalhes
@@ -248,6 +258,7 @@ infra/db/
 ```
 
 ### 5. doc/INSIGHTS_TABELAS_VISUAL.md
+
 ```
 - Estruturas visuais
 - Exemplos de dados
@@ -257,6 +268,7 @@ infra/db/
 ```
 
 ### 6. doc/INSIGHTS_API.md
+
 ```
 - 3 APIs completamente documentadas
 - Request/Response
@@ -266,6 +278,7 @@ infra/db/
 ```
 
 ### 7. doc/CHECKLIST_INSIGHTS.md
+
 ```
 - 9 etapas com checkboxes
 - Cada etapa verificável
@@ -275,6 +288,7 @@ infra/db/
 ```
 
 ### 8. doc/TESTES_INSIGHTS.md
+
 ```
 - Testes SQL
 - Testes de API
@@ -284,6 +298,7 @@ infra/db/
 ```
 
 ### 9. doc/INSIGHTS_OTIMIZACAO.md
+
 ```
 - Índices explicados
 - Performance detalhada
@@ -293,6 +308,7 @@ infra/db/
 ```
 
 ### 10. doc/FASES_LUNARES.md
+
 ```
 - 4 fases explicadas
 - Significado
@@ -302,6 +318,7 @@ infra/db/
 ```
 
 ### 11. doc/INSIGHTS_IMPLEMENTACAO_FINAL.md
+
 ```
 - Sumário executivo
 - Tudo que foi entregue
@@ -315,6 +332,7 @@ infra/db/
 ## 🔧 Modificações no Código
 
 ### lib/forms.ts (ATUALIZADO)
+
 ```
 ✅ saveMonthlyInsight() - MELHORADO (agora com UPSERT)
 ✅ saveQuarterlyInsight() - MELHORADO (agora com UPSERT)
@@ -330,6 +348,7 @@ infra/db/
 ```
 
 ### infra/db/schema.sql (ATUALIZADO)
+
 ```
 ✅ monthly_insights - MELHORADO (CHECK constraints, updated_at)
 ✅ quarterly_insights - MELHORADO (CHECK constraints, quarter_number, updated_at)
@@ -342,17 +361,17 @@ infra/db/
 
 ## 📊 Cobertura de Tópicos
 
-| Tópico | Coberto em | Status |
-|--------|-----------|--------|
-| Estrutura de tabelas | INSIGHTS_BANCO_DADOS.md | ✅ |
-| APIs | INSIGHTS_API.md | ✅ |
-| Implementação | CHECKLIST_INSIGHTS.md | ✅ |
-| Testes | TESTES_INSIGHTS.md | ✅ |
-| Performance | INSIGHTS_OTIMIZACAO.md | ✅ |
-| Fases Lunares | FASES_LUNARES.md | ✅ |
-| Quick Start | README_INSIGHTS.md | ✅ |
-| Índice | INSIGHTS_INDICE.md | ✅ |
-| Resumo | INSIGHTS_RESUMO.md | ✅ |
+| Tópico               | Coberto em              | Status |
+| -------------------- | ----------------------- | ------ |
+| Estrutura de tabelas | INSIGHTS_BANCO_DADOS.md | ✅     |
+| APIs                 | INSIGHTS_API.md         | ✅     |
+| Implementação        | CHECKLIST_INSIGHTS.md   | ✅     |
+| Testes               | TESTES_INSIGHTS.md      | ✅     |
+| Performance          | INSIGHTS_OTIMIZACAO.md  | ✅     |
+| Fases Lunares        | FASES_LUNARES.md        | ✅     |
+| Quick Start          | README_INSIGHTS.md      | ✅     |
+| Índice               | INSIGHTS_INDICE.md      | ✅     |
+| Resumo               | INSIGHTS_RESUMO.md      | ✅     |
 
 ---
 
