@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
+import EmotionalInput, { Emotion } from '@/components/EmotionalInput';
 import {
   RING_ENERGY_PROMPTS,
   RING_ENERGY_RESPONSES,
@@ -24,6 +25,8 @@ const EnergyModalLayer: React.FC<EnergyModalLayerProps> = ({
   onSubmit,
   onNavigateToLuaInsights,
 }) => {
+  const [selectedEmotion, setSelectedEmotion] = useState<Emotion | null>(null);
+
   if (!selectedMoon) {
     return null;
   }
@@ -46,16 +49,39 @@ const EnergyModalLayer: React.FC<EnergyModalLayerProps> = ({
       submitStrategy="last"
       systemResponses={RING_ENERGY_RESPONSES}
       headerExtra={
-        onNavigateToLuaInsights ? (
-          <div className="mt-3 text-xs text-violet-200/70">
-            <button
-              className="underline underline-offset-2 transition hover:text-white"
-              onClick={() => onNavigateToLuaInsights(selectedMoon)}
-            >
-              Ir para insights da Lua
-            </button>
+        <div className="mt-6 space-y-4">
+          {/* Emotional Input */}
+          <div>
+            <label className="block text-xs font-semibold text-violet-300 mb-3">
+              Qual é sua emoção?
+            </label>
+            <div className="rounded-lg bg-violet-950/30 p-3 border border-violet-500/20">
+              <EmotionalInput
+                onEmotionSelect={setSelectedEmotion}
+                selectedEmotion={selectedEmotion}
+                size="sm"
+                disabled={false}
+              />
+            </div>
+            {selectedEmotion && (
+              <p className="text-xs text-violet-300/70 mt-2">
+                Emoção selecionada: <span className="font-semibold">{selectedEmotion.label}</span>
+              </p>
+            )}
           </div>
-        ) : undefined
+
+          {/* Navigation Link */}
+          {onNavigateToLuaInsights && (
+            <div className="pt-2 text-xs text-violet-200/70 border-t border-violet-500/20">
+              <button
+                className="underline underline-offset-2 transition hover:text-white"
+                onClick={() => onNavigateToLuaInsights(selectedMoon)}
+              >
+                Ir para insights da Lua
+              </button>
+            </div>
+          )}
+        </div>
       }
       onClose={onClose}
       onSubmit={async (value) => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { SpacePageLayout } from '@/components/SpacePageLayout';
+import MenstrualTracker from '@/components/MenstrualTracker';
 import Link from 'next/link';
 import { type FormEvent, useEffect, useState } from 'react';
 
@@ -9,6 +10,7 @@ type CommunityProfile = {
   avatarUrl: string;
   bio: string;
   email: string;
+  isWomen?: boolean;
 };
 
 const PerfilPage = () => {
@@ -17,6 +19,7 @@ const PerfilPage = () => {
     avatarUrl: '',
     bio: '',
     email: '',
+    isWomen: false,
   });
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -36,6 +39,7 @@ const PerfilPage = () => {
             avatarUrl: data.profile.avatarUrl ?? '',
             bio: data.profile.bio ?? '',
             email: data.profile.email ?? '',
+            isWomen: data.profile.isWomen ?? false,
           });
         }
       } catch (error) {
@@ -172,6 +176,18 @@ const PerfilPage = () => {
                 rows={4}
                 className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
               />
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-black/40 p-4">
+                <input
+                  type="checkbox"
+                  id="isWomen"
+                  checked={profile.isWomen || false}
+                  onChange={(event) => handleChange('isWomen' as any, event.target.checked ? 'true' : 'false')}
+                  className="w-5 h-5 accent-pink-500 cursor-pointer"
+                />
+                <label htmlFor="isWomen" className="text-sm text-slate-200 cursor-pointer flex-1">
+                  👩 Ativar rastreador de menstruação
+                </label>
+              </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
                 <span>{errorMessage}</span>
                 <button
@@ -190,6 +206,22 @@ const PerfilPage = () => {
             </form>
           </div>
         </section>
+
+        {/* Menstrual Tracker Section */}
+        {profile.isWomen && (
+          <section className="rounded-3xl border border-pink-800/70 bg-black/40 p-6 shadow-2xl shadow-pink-950/30 backdrop-blur-md">
+            <p className="text-sm uppercase tracking-[0.3em] text-pink-400">Saúde Menstrual</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Rastreador de Menstruação</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Registre sua menstruação e acompanhe como ela se relaciona com as fases lunares e seu signo zodiacal.
+            </p>
+            <div className="mt-6">
+              <MenstrualTracker 
+                isEnabled={profile.isWomen || false}
+              />
+            </div>
+          </section>
+        )}
       </div>
     </SpacePageLayout>
   );
