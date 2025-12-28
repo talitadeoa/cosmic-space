@@ -82,6 +82,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const [editingDueDate, setEditingDueDate] = React.useState('');
   const [swipeDeleteId, setSwipeDeleteId] = React.useState<string | null>(null);
   const [currentPage, setCurrentPage] = React.useState(0);
+  const [activeViewDrop, setActiveViewDrop] = React.useState<string | null>(null);
   const ITEMS_PER_PAGE = 10;
 
   // Refs para rastrear gestos (sem chamar hooks dentro do map)
@@ -107,8 +108,71 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   };
 
   /**
-   * Obtém a próxima fase lunar na sequência
-   * luaNova → luaCrescente → luaCheia → luaMinguante → luaNova
+   * Calcula a data apropriada baseado na visão/cronologia
+   */
+  const getDateForView = (viewType: string): string | undefined => {
+    const today = new Date();
+    
+    if (viewType === 'lua-atual') {
+      // Prazo até próxima fase (7 dias)
+      const date = new Date(today);
+      date.setDate(today.getDate() + 4);
+      return date.toISOString().split('T')[0];
+    } else if (viewType === 'proxima-fase') {
+      // Prazo para próxima fase (12 dias)
+      const date = new Date(today);
+      date.setDate(today.getDate() + 12);
+      return date.toISOString().split('T')[0];
+    } else if (viewType === 'proximo-ciclo') {
+      // Primeiro dia do próximo mês
+      const date = new Date(today);
+      date.setMonth(today.getMonth() + 1);
+      date.setDate(1);
+      return date.toISOString().split('T')[0];
+    }
+    
+    return undefined;
+  };
+
+  /**
+   * Handler para quando input é solto em uma visão
+   */
+  const handleDropOnView = (viewType: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => (
+    event: React.DragEvent
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const todoId = event.dataTransfer.getData('text/todo-id');
+    if (!todoId) return;
+    
+    // Mudar a visão
+    handleViewChange(viewType);
+    
+    // Se não for inbox, atualizar a data do input
+    if (viewType !== 'inbox' && onUpdateTodo) {
+      const dueDate = getDateForView(viewType);
+      if (dueDate) {
+        const todo = savedTodos.find(t => t.id === todoId);
+        if (todo) {
+          onUpdateTodo(todoId, { dueDate });
+        }
+      }
+    }
+    
+    setActiveViewDrop(null);
+  };
+
+  /**
+   * Handler para drag over em visão
+   */
+  const handleDragOverView = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  };
+
+  /**
+   * Calcula a próxima fase lunar
    */
   const getNextPhase = (phase: MoonPhase): MoonPhase => {
     const phases: MoonPhase[] = ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'];
@@ -362,58 +426,95 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           </div>
           <p className="text-[0.75rem] text-slate-400">{headerDescription}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => handleViewChange('inbox')}
-              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-                view === 'inbox'
-                  ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
-                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
+            <div
+              onDragOver={handleDragOverView}
+              onDrop={handleDropOnView('inbox')}
+              onDragLeave={() => setActiveViewDrop(null)}
+              onDragEnter={() => setActiveViewDrop('inbox')}
+              className={`rounded-lg transition ${
+                activeViewDrop === 'inbox' ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950' : ''
               }`}
             >
-              Inbox
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange('lua-atual')}
-              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-                view === 'lua-atual'
-                  ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
-                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
+              <button
+                type="button"
+                onClick={() => handleViewChange('inbox')}
+                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+                  view === 'inbox'
+                    ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
+                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
+                }`}
+              >
+                Inbox
+              </button>
+            </div>
+            <div
+              onDragOver={handleDragOverView}
+              onDrop={handleDropOnView('lua-atual')}
+              onDragLeave={() => setActiveViewDrop(null)}
+              onDragEnter={() => setActiveViewDrop('lua-atual')}
+              className={`rounded-lg transition ${
+                activeViewDrop === 'lua-atual' ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950' : ''
               }`}
             >
-              Lua atual
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange('proxima-fase')}
-              disabled={!selectedPhase}
-              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 group ${
-                selectedPhase && view === 'proxima-fase'
-                  ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
-                  : selectedPhase
-                    ? 'border border-amber-400/40 bg-amber-500/15 text-amber-100 hover:border-amber-400/60 hover:bg-amber-500/25 cursor-pointer'
-                    : 'border border-slate-700 bg-slate-900/40 text-slate-500 cursor-not-allowed opacity-50'
-              }`}
-              title={selectedPhase ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}` : 'Selecione uma fase lunar'}
-            >
-              <span className={`text-sm transition ${selectedPhase ? 'group-hover:scale-110' : ''}`}>
-                {selectedPhase ? getMoonEmoji(getNextPhase(selectedPhase)) : '🌙'}
-              </span>
-              <span>Próxima fase</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange('proximo-ciclo')}
-              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
-                view === 'proximo-ciclo'
-                  ? 'border border-rose-300/80 bg-rose-500/20 text-rose-100'
-                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-rose-400/60'
+              <button
+                type="button"
+                onClick={() => handleViewChange('lua-atual')}
+                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+                  view === 'lua-atual'
+                    ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
+                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
+                }`}
+              >
+                Lua atual
+              </button>
+            </div>
+            <div
+              onDragOver={handleDragOverView}
+              onDrop={handleDropOnView('proxima-fase')}
+              onDragLeave={() => setActiveViewDrop(null)}
+              onDragEnter={() => setActiveViewDrop('proxima-fase')}
+              className={`rounded-lg transition ${
+                activeViewDrop === 'proxima-fase' ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950' : ''
               }`}
             >
-              <span>📅</span>
-              <span>Próximo ciclo</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => handleViewChange('proxima-fase')}
+                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
+                  view === 'proxima-fase'
+                    ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
+                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-400/60'
+                }`}
+                title={selectedPhase ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}` : 'Próxima fase lunar'}
+              >
+                <span className="text-sm">
+                  {selectedPhase ? getMoonEmoji(getNextPhase(selectedPhase)) : '🌙'}
+                </span>
+                <span>Próxima fase</span>
+              </button>
+            </div>
+            <div
+              onDragOver={handleDragOverView}
+              onDrop={handleDropOnView('proximo-ciclo')}
+              onDragLeave={() => setActiveViewDrop(null)}
+              onDragEnter={() => setActiveViewDrop('proximo-ciclo')}
+              className={`rounded-lg transition ${
+                activeViewDrop === 'proximo-ciclo' ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-slate-950' : ''
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => handleViewChange('proximo-ciclo')}
+                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
+                  view === 'proximo-ciclo'
+                    ? 'border border-rose-300/80 bg-rose-500/20 text-rose-100'
+                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-rose-400/60'
+                }`}
+              >
+                <span>📅</span>
+                <span>Próximo ciclo</span>
+              </button>
+            </div>
           </div>
           {selectedPhase && (
             <div className="mt-3 flex items-center gap-1.5 text-[0.65rem] text-slate-400">

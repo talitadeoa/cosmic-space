@@ -49,6 +49,19 @@ Execute estes scripts **na ordem** no Neon SQL Editor.
 
 ---
 
+### ✅ 6. Comunidade
+
+**Arquivo:** `06-community.sql`
+
+- `user_profiles` - Perfil público (nome, avatar, bio)
+- `community_posts` - Posts da comunidade
+- `community_post_images` - Imagens de posts
+- `community_comments` - Comentários em posts
+- `community_tags` - Tags
+- `community_post_tags` - Relação post-tag
+
+---
+
 ## 🚀 Como Executar no Neon Console
 
 1. **Acesse:** https://console.neon.tech/
@@ -69,12 +82,13 @@ Execute estes scripts **na ordem** no Neon SQL Editor.
 - [ ] `03-islands.sql`
 - [ ] `04-lunations.sql`
 - [ ] `05-phase-inputs.sql`
+- [ ] `06-community.sql`
 
 ---
 
 ## 📊 Resultado Final
 
-Você deve ter **8 tabelas** criadas:
+Você deve ter **14 tabelas** criadas:
 
 1. `auth_tokens` - Tokens de sessão
 2. `users` - Usuários
@@ -84,6 +98,12 @@ Você deve ter **8 tabelas** criadas:
 6. `islands` - Ilhas/projetos
 7. `lunations` - Calendário lunar global
 8. `phase_inputs` - Entradas por fase
+9. `user_profiles` - Perfil público
+10. `community_posts` - Posts da comunidade
+11. `community_post_images` - Imagens dos posts
+12. `community_comments` - Comentários
+13. `community_tags` - Tags
+14. `community_post_tags` - Post + tags
 
 ---
 
