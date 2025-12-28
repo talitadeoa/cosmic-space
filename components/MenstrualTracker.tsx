@@ -51,6 +51,19 @@ export default function MenstrualTracker({
   const [notes, setNotes] = useState('');
   const [currentMoonData, setCurrentMoonData] = useState<any>(null);
 
+  // Carregar registros salvos ao montar
+  useEffect(() => {
+    const saved = localStorage.getItem('menstrual_records');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setRecords(parsed);
+      } catch (e) {
+        console.error('Erro ao carregar registros:', e);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     // Obter dados lunares e zodiacais da data selecionada
     const selectedDateObj = new Date(selectedDate + 'T00:00:00');

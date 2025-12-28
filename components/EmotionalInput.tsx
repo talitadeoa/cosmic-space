@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface EmotionalInputProps {
   onEmotionSelect?: (emotion: Emotion) => void;
@@ -8,6 +8,8 @@ interface EmotionalInputProps {
   size?: 'sm' | 'md' | 'lg';
   showLabels?: boolean;
   disabled?: boolean;
+  storageKey?: string;
+  showHistory?: boolean;
 }
 
 export interface Emotion {
@@ -16,6 +18,12 @@ export interface Emotion {
   label: string;
   color: string;
   description: string;
+}
+
+export interface EmotionRecord {
+  emotion: Emotion;
+  timestamp: string;
+  date: string;
 }
 
 const EMOTIONS: Emotion[] = [
@@ -108,29 +116,75 @@ export default function EmotionalInput({
   selectedEmotion,
   size = 'md',
   showLabels = false,
-  disabled = false
+  disabled = false,
+  storageKey = 'current_emotion',
+  showHistory = true
 }: EmotionalInputProps) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [emotionHistory, setEmotionHistory] = useState<EmotionRecord[]>([]);
+  const [loadedEmotion, setLoadedEmotion] = useState<Emotion | null>(selectedEmotion || null);
+
+  // Carregar emoção salva ao montar
+  useEffect(() => {
+    const savedEmotion = localStorage.getItem(storageKey);
+    if (savedEmotion) {
+      try {
+        const emotion = JSON.parse(savedEmotion);
+        setLoadedEmotion(emotion);
+      } catch (e) {
+        console.error('Erro ao carregar emoção:', e);
+      }
+    }
+
+    // Carregar histórico
+    const history = localStorage.getItem(`${storageKey}_history`);
+    if (history) {
+      try {
+        setEmotionHistory(JSON.parse(history));
+      } catch (e) {
+        console.error('Erro ao carregar histórico:', e);
+      }
+    }
+  }, [storageKey]);
 
   const handleSelect = (emotion: Emotion) => {
     if (!disabled) {
+      // Salvar emoção atual
+      localStorage.setItem(storageKey, JSON.stringify(emotion));
+
+      // Adicionar ao histórico
+      const today = new Date().toISOString().split('T')[0];
+      const newRecord: EmotionRecord = {
+        emotion,
+        timestamp: new Date().toISOString(),
+        date: today,
+      };
+
+      const updatedHistory = [newRecord, ...emotionHistory].slice(0, 30); // Guardar últimos 30
+      localStorage.setItem(`${storageKey}_history`, JSON.stringify(updatedHistory));
+      setEmotionHistory(updatedHistory);
+
+      // Atualizar emoção local
+      setLoadedEmotion(emotion);
+
+      // Callback
       onEmotionSelect?.(emotion);
     }
   };
 
   return (
     <div className="w-full">
-      {selectedEmotion && (
-        <div className={`mb-4 p-4 rounded-lg bg-gradient-to-r ${selectedEmotion.color} bg-opacity-20 border border-current border-opacity-20`}>
+      {(selectedEmotion || loadedEmotion) && (
+        <div className={`mb-4 p-4 rounded-lg bg-gradient-to-r ${(selectedEmotion || loadedEmotion)!.color} bg-opacity-20 border border-current border-opacity-20`}>
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Emoção selecionada
           </p>
           <div className="flex items-center gap-3">
-            <span className="text-4xl">{selectedEmotion.emoji}</span>
+            <span className="text-4xl">{(selectedEmotion || loadedEmotion)!.emoji}</span>
             <div>
-              <p className="font-semibold text-lg">{selectedEmotion.label}</p>
+              <p className="font-semibold text-lg">{(selectedEmotion || loadedEmotion)!.label}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {selectedEmotion.description}
+                {(selectedEmotion || loadedEmotion)!.description}
               </p>
             </div>
           </div>
@@ -156,7 +210,7 @@ export default function EmotionalInput({
               relative flex items-center justify-center rounded-xl
               transition-all duration-300 ease-out
               ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110'}
-              ${selectedEmotion?.id === emotion.id
+              ${(selectedEmotion?.id || loadedEmotion?.id) === emotion.id
                 ? `ring-4 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-800 shadow-lg bg-gradient-to-br ${emotion.color}`
                 : 'hover:shadow-lg hover:bg-white dark:hover:bg-gray-700'
               }
@@ -188,6 +242,39 @@ export default function EmotionalInput({
               <p className="truncate">{emotion.label}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Histórico de emoções */}
+      {showHistory && emotionHistory.length > 0 && (
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            📊 Histórico de Emoções
+          </p>
+          <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+            {emotionHistory.map((record, idx) => (
+              <div
+                key={idx}
+                className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-indigo-400 transition-colors duration-300"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">{record.emotion.emoji}</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                      {record.emotion.label}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(record.timestamp).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-500">{record.date}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
