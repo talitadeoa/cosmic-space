@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
-const MOON_RING_RADIUS_PERCENT = 42;
+const MOON_RING_RADIUS_PERCENT = 28;
 const RING_HIT_BAND_PERCENT = 10;
 const INNER_SAFE_RADIUS_PERCENT = 22;
 
@@ -303,9 +303,9 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   }, []);
 
   return (
-    <div className="flex h-full w-full items-center justify-center overflow-hidden px-4">
+    <div className="flex h-screen w-screen items-center justify-center overflow-hidden">
       <div
-        className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]"
+        className="relative w-full h-full sm:aspect-square sm:w-[min(90vh,90vw)] sm:max-w-[720px]"
         onClick={handleSpaceClick}
       >
         <canvas
@@ -354,13 +354,13 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
               />
               
               {isHovered && (
-                <div className="absolute top-full mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-3 py-2 text-xs font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm">
-                  <div className="mb-1 text-base">{moonInfo.emoji}</div>
-                  <div className="text-white">{moonInfo.name}</div>
-                  <div className="mt-1 text-indigo-300">{moonInfo.event}</div>
-                  <div className="mt-1 text-yellow-300">{moonInfo.season}</div>
-                  <div className="mt-1 text-sky-300">{moonInfo.dates}</div>
-                  <div className="mt-2 max-w-xs whitespace-normal text-indigo-200/80">{moonInfo.description}</div>
+                <div className="absolute top-full mt-2 sm:mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm">
+                  <div className="mb-1 text-sm sm:text-base">{moonInfo.emoji}</div>
+                  <div className="text-white text-xs sm:text-sm">{moonInfo.name}</div>
+                  <div className="mt-1 text-indigo-300 text-xs">{moonInfo.event}</div>
+                  <div className="mt-1 text-yellow-300 text-xs">{moonInfo.season}</div>
+                  <div className="mt-1 text-sky-300 text-xs">{moonInfo.dates}</div>
+                  <div className="mt-2 max-w-xs sm:max-w-sm whitespace-normal text-indigo-200/80 text-xs">{moonInfo.description}</div>
                 </div>
               )}
             </div>
