@@ -68,13 +68,15 @@ const DIAGONAL_MOONS: Array<{
 type SolOrbitStageProps = {
   onSolClick: () => void;
   onMoonClick: (phase: MoonPhase) => void;
-  onSpaceClick?: () => void;
+  onOrbitClick?: () => void;
+  onOutsideClick?: () => void;
 };
 
 const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   onSolClick,
   onMoonClick,
-  onSpaceClick,
+  onOrbitClick,
+  onOutsideClick,
 }) => {
   const [hoveredMoon, setHoveredMoon] = useState<MoonPhase | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -95,17 +97,26 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       const outerRadius = ringRadius + band;
       const innerSafeRadius = (INNER_SAFE_RADIUS_PERCENT / 100) * size;
 
+      // Clique na órbita (anel entre as luas)
       if (distance >= innerRadius && distance <= outerRadius) {
         event.stopPropagation();
-        onSpaceClick?.();
+        onOrbitClick?.();
         return;
       }
 
+      // Clique fora da órbita
+      if (distance > outerRadius) {
+        event.stopPropagation();
+        onOutsideClick?.();
+        return;
+      }
+
+      // Clique dentro da zona segura interna
       if (distance <= innerSafeRadius) {
         event.stopPropagation();
       }
     },
-    [onSpaceClick]
+    [onOrbitClick, onOutsideClick]
   );
 
   React.useEffect(() => {
@@ -225,26 +236,12 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       ctx.arc(earthPos.x, earthPos.y, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#e5e7eb';
-      ctx.font = '13px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText('Earth', earthPos.x, earthPos.y - 14);
-
       ctx.shadowBlur = 12;
       ctx.shadowColor = '#bae6fd';
       ctx.fillStyle = '#e0f2fe';
       ctx.beginPath();
       ctx.arc(moonPos.x, moonPos.y, 6, 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#e5e7eb';
-      ctx.font = '13px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText('Moon', moonPos.x, moonPos.y - 16);
 
       ctx.restore();
     };
@@ -305,19 +302,22 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   return (
     <div className="flex h-screen w-screen items-center justify-center overflow-hidden">
       <div
-        className="relative w-full h-full sm:aspect-square sm:w-[min(90vh,90vw)] sm:max-w-[720px]"
+        className="relative aspect-square w-[min(90vh,90vw)] h-[min(90vh,90vw)] max-w-[720px] max-h-[720px]"
         onClick={handleSpaceClick}
       >
+        {/* Canvas da órbita */}
         <canvas
           ref={canvasRef}
           className="pointer-events-none absolute inset-0 bg-transparent"
           aria-hidden
         />
 
+        {/* Sol centralizado */}
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
           <CelestialObject type="sol" size="lg" interactive onClick={onSolClick} />
         </div>
 
+        {/* Luas posicionadas na órbita */}
         {DIAGONAL_MOONS.map(({ phase, angleDeg, floatOffset }) => {
           const rad = (angleDeg * Math.PI) / 180;
           const x = 50 + MOON_RING_RADIUS_PERCENT * Math.cos(rad);
@@ -338,7 +338,7 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
           return (
             <div
               key={phase}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
+              className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
               style={{ left: `${x}%`, top: `${y}%` }}
               onMouseEnter={() => setHoveredMoon(phase)}
               onMouseLeave={() => setHoveredMoon(null)}

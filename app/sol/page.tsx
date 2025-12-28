@@ -11,9 +11,10 @@ type SolScreen = 'solorbit' | 'galaxysuns';
 
 const SolRouteContent: React.FC<{
   screen: SolScreen;
-  onSpaceClick: () => void;
+  onOrbitClick: () => void;
+  onOutsideClick: () => void;
   onSunSelect: () => void;
-}> = ({ screen, onSpaceClick, onSunSelect }) => {
+}> = ({ screen, onOrbitClick, onOutsideClick, onSunSelect }) => {
   const { setSelectedYear } = useYear();
   const handleSunSelect = (year: number) => {
     setSelectedYear(year);
@@ -24,7 +25,7 @@ const SolRouteContent: React.FC<{
     <div className="flex min-h-screen w-full items-center justify-center py-10">
       {screen === 'solorbit' ? (
         <section className="mx-auto w-full max-w-5xl">
-          <SolOrbitExperience onSpaceClick={onSpaceClick} />
+          <SolOrbitExperience onOrbitClick={onOrbitClick} onOutsideClick={onOutsideClick} />
         </section>
       ) : (
         <section
@@ -51,7 +52,8 @@ const SolPage = () => {
       <SpacePageLayout onBackgroundClick={handleBackgroundClick}>
         <SolRouteContent
           screen={screen}
-          onSpaceClick={() => setScreen('galaxysuns')}
+          onOrbitClick={() => setScreen('galaxysuns')}
+          onOutsideClick={() => router.push('/home')}
           onSunSelect={() => setScreen('solorbit')}
         />
       </SpacePageLayout>
