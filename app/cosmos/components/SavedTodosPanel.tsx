@@ -8,8 +8,8 @@ import { getIslandLabel, type IslandNames } from '../utils/islandNames';
 
 interface SavedTodosPanelProps {
   savedTodos: SavedTodo[];
-  view?: 'inbox' | 'lua-atual';
-  onViewChange?: (view: 'inbox' | 'lua-atual') => void;
+  view?: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
+  onViewChange?: (view: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => void;
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
   onTouchStart?: (todoId: string) => (event: React.TouchEvent) => void;
@@ -102,8 +102,76 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     const nextStatus = todoStatusFilter === status ? 'all' : status;
     onTodoStatusFilterChange?.(nextStatus);
   };
-  const handleViewChange = (nextView: 'inbox' | 'lua-atual') => {
+  const handleViewChange = (nextView: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => {
     onViewChange?.(nextView);
+  };
+
+  /**
+   * Obtém a próxima fase lunar na sequência
+   * luaNova → luaCrescente → luaCheia → luaMinguante → luaNova
+   */
+  const getNextPhase = (phase: MoonPhase): MoonPhase => {
+    const phases: MoonPhase[] = ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'];
+    const currentIndex = phases.indexOf(phase);
+    const nextIndex = (currentIndex + 1) % phases.length;
+    return phases[nextIndex];
+  };
+
+  /**
+   * Filtra inputs por data de vencimento baseado na fase lunar atual
+   * - 'lua-atual': mostra inputs com prazo até a próxima fase lunar
+   * - 'proxima-fase': mostra inputs com prazo até o final da próxima fase lunar
+   * - 'proximo-ciclo': mostra inputs com prazo para o mês seguinte
+   */
+  const getFilteredTodosByChronology = (
+    todos: SavedTodo[],
+    view: string | undefined,
+    currentPhase: MoonPhase | null | undefined
+  ): SavedTodo[] => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    if (view === 'lua-atual' && currentPhase) {
+      // Até próxima fase (aprox. 7-8 dias)
+      const nextPhaseDate = new Date(today);
+      nextPhaseDate.setDate(today.getDate() + 8);
+      const nextPhaseDateStr = nextPhaseDate.toISOString().split('T')[0];
+      
+      return todos.filter(
+        (todo) => !todo.dueDate || (todo.dueDate >= todayStr && todo.dueDate <= nextPhaseDateStr)
+      );
+    } else if (view === 'proxima-fase' && currentPhase) {
+      // Próxima fase + fim dela (aprox. 8-16 dias)
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() + 8);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 8);
+      
+      const startStr = startDate.toISOString().split('T')[0];
+      const endStr = endDate.toISOString().split('T')[0];
+      
+      return todos.filter(
+        (todo) => !todo.dueDate || (todo.dueDate >= startStr && todo.dueDate <= endStr)
+      );
+    } else if (view === 'proximo-ciclo') {
+      // Mês seguinte
+      const nextMonthStart = new Date(today);
+      nextMonthStart.setMonth(today.getMonth() + 1);
+      nextMonthStart.setDate(1);
+      
+      const nextMonthEnd = new Date(nextMonthStart);
+      nextMonthEnd.setMonth(nextMonthStart.getMonth() + 1);
+      nextMonthEnd.setDate(0);
+      
+      const startStr = nextMonthStart.toISOString().split('T')[0];
+      const endStr = nextMonthEnd.toISOString().split('T')[0];
+      
+      return todos.filter(
+        (todo) => todo.dueDate && todo.dueDate >= startStr && todo.dueDate <= endStr
+      );
+    }
+
+    return todos;
   };
 
   const resetEditingState = () => {
@@ -211,9 +279,12 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   };
 
   // Filtrar tarefas por fase e ilha se estiverem selecionadas
-  const filteredTodos = savedTodos
+  let filteredTodos = savedTodos
     .filter((todo) => (selectedPhase ? todo.phase === selectedPhase : true))
     .filter((todo) => (selectedIsland ? todo.islandId === selectedIsland : true));
+
+  // Aplicar filtro de cronologia (datas de vencimento)
+  filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase);
 
   // Aplicar paginação
   const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
@@ -290,7 +361,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
             )}
           </div>
           <p className="text-[0.75rem] text-slate-400">{headerDescription}</p>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => handleViewChange('inbox')}
@@ -313,7 +384,59 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
             >
               Lua atual
             </button>
+            <button
+              type="button"
+              onClick={() => handleViewChange('proxima-fase')}
+              disabled={!selectedPhase}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 group ${
+                selectedPhase && view === 'proxima-fase'
+                  ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
+                  : selectedPhase
+                    ? 'border border-amber-400/40 bg-amber-500/15 text-amber-100 hover:border-amber-400/60 hover:bg-amber-500/25 cursor-pointer'
+                    : 'border border-slate-700 bg-slate-900/40 text-slate-500 cursor-not-allowed opacity-50'
+              }`}
+              title={selectedPhase ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}` : 'Selecione uma fase lunar'}
+            >
+              <span className={`text-sm transition ${selectedPhase ? 'group-hover:scale-110' : ''}`}>
+                {selectedPhase ? getMoonEmoji(getNextPhase(selectedPhase)) : '🌙'}
+              </span>
+              <span>Próxima fase</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewChange('proximo-ciclo')}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
+                view === 'proximo-ciclo'
+                  ? 'border border-rose-300/80 bg-rose-500/20 text-rose-100'
+                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-rose-400/60'
+              }`}
+            >
+              <span>📅</span>
+              <span>Próximo ciclo</span>
+            </button>
           </div>
+          {selectedPhase && (
+            <div className="mt-3 flex items-center gap-1.5 text-[0.65rem] text-slate-400">
+              <span>Ciclo:</span>
+              <div className="flex gap-1">
+                {['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'].map((phase) => (
+                  <span
+                    key={phase}
+                    className={`transition ${
+                      phase === selectedPhase
+                        ? 'text-indigo-300 font-semibold'
+                        : phase === getNextPhase(selectedPhase)
+                          ? 'text-amber-300 font-semibold'
+                          : 'text-slate-500'
+                    }`}
+                    title={phaseLabels[phase as MoonPhase]}
+                  >
+                    {getMoonEmoji(phase as MoonPhase)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           {(filterLabel || statusLabel) && (
             <div className="mt-2 flex flex-wrap gap-2 text-[0.6rem] text-slate-300">
               {filterLabel && (

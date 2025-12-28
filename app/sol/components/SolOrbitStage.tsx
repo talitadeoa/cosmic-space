@@ -77,7 +77,6 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   onSpaceClick,
 }) => {
   const [hoveredMoon, setHoveredMoon] = useState<MoonPhase | null>(null);
-  const [showEarthMoon, setShowEarthMoon] = useState(false);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const handleSpaceClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -209,12 +208,10 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
 
     const drawEarthAndMoon = (
       earthPos: { x: number; y: number },
-      moonPos: { x: number; y: number },
-      shouldDrawLabels: boolean
+      moonPos: { x: number; y: number }
     ) => {
       ctx.save();
 
-      ctx.globalAlpha = 1;
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = 'rgba(125,211,252,0.35)';
       ctx.beginPath();
@@ -228,6 +225,13 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       ctx.arc(earthPos.x, earthPos.y, 10, 0, Math.PI * 2);
       ctx.fill();
 
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#e5e7eb';
+      ctx.font = '13px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('Earth', earthPos.x, earthPos.y - 14);
+
       ctx.shadowBlur = 12;
       ctx.shadowColor = '#bae6fd';
       ctx.fillStyle = '#e0f2fe';
@@ -235,21 +239,12 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       ctx.arc(moonPos.x, moonPos.y, 6, 0, Math.PI * 2);
       ctx.fill();
 
-      if (shouldDrawLabels) {
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#e5e7eb';
-        ctx.font = '13px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText('Earth', earthPos.x, earthPos.y - 14);
-
-        ctx.fillStyle = '#e5e7eb';
-        ctx.font = '13px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText('Moon', moonPos.x, moonPos.y - 16);
-      }
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#e5e7eb';
+      ctx.font = '13px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('Moon', moonPos.x, moonPos.y - 16);
 
       ctx.restore();
     };
@@ -292,7 +287,7 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       const moonPos = getMoonPosition(time, earthPos);
       updateMoonTrail(moonPos);
       drawMoonTrail();
-      drawEarthAndMoon(earthPos, moonPos, showEarthMoon);
+      drawEarthAndMoon(earthPos, moonPos);
 
       animationId = window.requestAnimationFrame(animate);
     };
@@ -312,8 +307,6 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       <div
         className="relative aspect-square w-[min(76vh,76vw)] max-w-[720px]"
         onClick={handleSpaceClick}
-        onMouseEnter={() => setShowEarthMoon(true)}
-        onMouseLeave={() => setShowEarthMoon(false)}
       >
         <canvas
           ref={canvasRef}

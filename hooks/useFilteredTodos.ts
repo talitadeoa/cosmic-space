@@ -6,7 +6,7 @@ export type InputTypeFilter = 'all' | SavedTodo['inputType'];
 export type TodoStatusFilter = 'all' | 'completed' | 'open';
 
 export type FilterState = {
-  view: 'inbox' | 'lua-atual';
+  view: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
   inputType: InputTypeFilter;
   todoStatus: TodoStatusFilter;
   phase: MoonPhase | null;
