@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
-import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
 import type { ScreenProps } from '@/app/cosmos/types';
 import {
   MONTHLY_INSIGHT_LABELS,
@@ -31,6 +30,7 @@ import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
 import HighlightBanner from '../components/HighlightBanner';
 import MoonCarousel from '../components/MoonCarousel';
 import CalendarStatus from '../components/CalendarStatus';
+import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
 
 type LuaScreenProps = {
   navigateWithFocus?: ScreenProps['navigateWithFocus'];
@@ -62,8 +62,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const pendingControllerRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const hasInitializedYearRef = useRef(false);
-  const pendingCenterTargetRef = useRef<HighlightTarget | null>(null);
-  const [visibleYearIndex, setVisibleYearIndex] = useState(0);
+  const [visiblePeriod, setVisiblePeriod] = useState({ yearIndex: 0, quarterIndex: 0 });
   const [layout, setLayout] = useState(() =>
     getResponsiveLayout(typeof window !== 'undefined' ? window.innerWidth : undefined)
   );
@@ -71,9 +70,9 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const isCompactLayout = layout.tileWidth <= 90;
 
   const scrollerMaxWidth = useMemo(() => {
-    const visibleWindowWidthPx = layout.visibleColumns * tileSpan - layout.gap;
+    const visibleWindowWidthPx = 3 * tileSpan - layout.gap;
     return Math.max(320, visibleWindowWidthPx + layout.padding * 2);
-  }, [layout.gap, layout.padding, layout.visibleColumns, tileSpan]);
+  }, [layout.gap, layout.padding, tileSpan]);
 
   const todayIso = useMemo(() => formatDateInTimezone(new Date(), timezone), [timezone]);
 
@@ -125,19 +124,32 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     );
     return years;
   }, [monthEntries]);
-  const visibleYear = yearList.length > 0 ? yearList[Math.min(visibleYearIndex, yearList.length - 1)] : null;
+  const visibleYear =
+    yearList.length > 0
+      ? yearList[Math.min(visiblePeriod.yearIndex, yearList.length - 1)]
+      : null;
   const visibleMonths = useMemo(
     () => (visibleYear === null ? [] : monthEntries.filter((month) => month.year === visibleYear)),
     [monthEntries, visibleYear]
   );
 
+  const getQuarterIndex = useCallback((monthNumber: number) => Math.floor((monthNumber - 1) / 3), []);
+
+  const quarterBuckets = useMemo(() => {
+    if (visibleYear === null) return [] as MonthEntry[][];
+    const monthsForYear = visibleMonths;
+    return Array.from({ length: 4 }, (_, idx) => monthsForYear.slice(idx * 3, idx * 3 + 3));
+  }, [visibleMonths, visibleYear]);
+
+  const visibleQuarterMonths = quarterBuckets[visiblePeriod.quarterIndex] ?? [];
+
   const phaseSequence = useMemo<PhaseItem[]>(
     () =>
-      visibleMonths.flatMap((month) => [
+      visibleQuarterMonths.flatMap((month) => [
         { month, phase: 'luaNova' as MoonPhase },
         { month, phase: 'luaCheia' as MoonPhase },
       ]),
-    [visibleMonths]
+    [visibleQuarterMonths]
   );
 
   useEffect(() => {
@@ -164,15 +176,25 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     if (!hasInitializedYearRef.current) {
       const targetYear = highlightTarget?.year ?? yearList[yearList.length - 1];
       const targetIndex = yearList.indexOf(targetYear);
-      setVisibleYearIndex(targetIndex >= 0 ? targetIndex : yearList.length - 1);
+      const fallbackYearIndex = targetIndex >= 0 ? targetIndex : yearList.length - 1;
+      const quarterIndex = highlightTarget
+        ? getQuarterIndex(highlightTarget.monthNumber)
+        : 0;
+      setVisiblePeriod({
+        yearIndex: fallbackYearIndex,
+        quarterIndex,
+      });
       hasInitializedYearRef.current = true;
       return;
     }
 
-    if (visibleYearIndex > yearList.length - 1) {
-      setVisibleYearIndex(yearList.length - 1);
+    if (visiblePeriod.yearIndex > yearList.length - 1) {
+      setVisiblePeriod((prev) => ({
+        ...prev,
+        yearIndex: yearList.length - 1,
+      }));
     }
-  }, [highlightTarget, visibleYearIndex, yearList]);
+  }, [getQuarterIndex, highlightTarget, visiblePeriod.yearIndex, yearList]);
 
   useEffect(() => {
     if (!selectedMonth && monthEntries.length > 0) {
@@ -264,77 +286,55 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
       : undefined;
   const chatPlaceholder = isLoadingInsight ? 'Carregando insight salvo...' : prompt.placeholder;
 
-  const getColumnIndex = useCallback(
-    (target: typeof highlightTarget) => {
-      if (!target) return null;
-      const idx = visibleMonths.findIndex(
-        (month) => month.year === target.year && month.monthNumber === target.monthNumber
-      );
-      return idx >= 0 ? idx : null;
-    },
-    [visibleMonths]
-  );
-
-  const centerOnColumn = useCallback(
-    (columnIndex: number | null) => {
-      if (columnIndex === null) return;
-      const scroller = scrollerRef.current;
-      if (!scroller) return;
-      const columnCenter = layout.padding + columnIndex * tileSpan + layout.tileWidth / 2;
-      const target = columnCenter - scroller.clientWidth / 2;
-      scroller.scrollTo({
-        left: Math.max(0, target),
-        behavior: 'smooth',
-      });
-    },
-    [layout.padding, layout.tileWidth, tileSpan]
-  );
-
   const focusOnTarget = useCallback(
     (target: HighlightTarget | null) => {
       if (!target) return;
-      const column = getColumnIndex(target);
-      if (column === null) {
-        pendingCenterTargetRef.current = target;
-        const targetIndex = yearList.indexOf(target.year);
-        if (targetIndex >= 0 && targetIndex !== visibleYearIndex) {
-          setVisibleYearIndex(targetIndex);
-        }
-        return;
-      }
-      centerOnColumn(column);
+      const targetIndex = yearList.indexOf(target.year);
+      if (targetIndex < 0) return;
+      setVisiblePeriod({
+        yearIndex: targetIndex,
+        quarterIndex: getQuarterIndex(target.monthNumber),
+      });
     },
-    [centerOnColumn, getColumnIndex, visibleYearIndex, yearList]
+    [getQuarterIndex, yearList]
   );
-
-  useEffect(() => {
-    focusOnTarget(highlightTarget);
-  }, [focusOnTarget, highlightTarget]);
-
-  useEffect(() => {
-    const pendingTarget = pendingCenterTargetRef.current;
-    if (!pendingTarget) return;
-    if (pendingTarget.year !== visibleYear) return;
-    const column = getColumnIndex(pendingTarget);
-    if (column === null) return;
-    centerOnColumn(column);
-    pendingCenterTargetRef.current = null;
-  }, [centerOnColumn, getColumnIndex, visibleYear, visibleMonths]);
 
   const handleCycleReveal = useCallback((monthKey: string | null) => {
     setRevealedCycleKey(monthKey);
   }, []);
 
-  const handleYearStep = useCallback(
+  const canScrollLeft =
+    yearList.length > 0 && (visiblePeriod.yearIndex > 0 || visiblePeriod.quarterIndex > 0);
+  const canScrollRight =
+    yearList.length > 0 &&
+    (visiblePeriod.yearIndex < yearList.length - 1 || visiblePeriod.quarterIndex < 3);
+
+  const handleQuarterStep = useCallback(
     (direction: 'left' | 'right') => {
-      setVisibleYearIndex((prev) => {
+      setVisiblePeriod((prev) => {
         const delta = direction === 'left' ? -1 : 1;
-        const next = prev + delta;
-        if (next < 0 || next >= yearList.length) return prev;
-        return next;
-      });
-      requestAnimationFrame(() => {
-        scrollerRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+        let nextQuarter = prev.quarterIndex + delta;
+        let nextYearIndex = prev.yearIndex;
+
+        if (nextQuarter < 0) {
+          if (prev.yearIndex > 0) {
+            nextYearIndex = prev.yearIndex - 1;
+            nextQuarter = 3;
+          } else {
+            nextQuarter = 0;
+          }
+        }
+
+        if (nextQuarter > 3) {
+          if (prev.yearIndex < yearList.length - 1) {
+            nextYearIndex = prev.yearIndex + 1;
+            nextQuarter = 0;
+          } else {
+            nextQuarter = 3;
+          }
+        }
+
+        return { yearIndex: nextYearIndex, quarterIndex: nextQuarter };
       });
     },
     [yearList.length]
@@ -344,36 +344,30 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        if (visibleYearIndex > 0) handleYearStep('left');
+        if (canScrollLeft) handleQuarterStep('left');
       }
       if (event.key === 'ArrowRight') {
         event.preventDefault();
-        if (visibleYearIndex < yearList.length - 1) handleYearStep('right');
-      }
-      if (event.key === 'Home') {
-        event.preventDefault();
-        scrollerRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
-      }
-      if (event.key === 'End') {
-        event.preventDefault();
-        const scroller = scrollerRef.current;
-        if (!scroller) return;
-        const max = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
-        scroller.scrollTo({ left: max, behavior: 'smooth' });
+        if (canScrollRight) handleQuarterStep('right');
       }
     },
-    [handleYearStep, visibleYearIndex, yearList.length]
+    [canScrollLeft, canScrollRight, handleQuarterStep]
   );
 
-  const canScrollLeft = visibleYearIndex > 0;
-  const canScrollRight = yearList.length > 0 && visibleYearIndex < yearList.length - 1;
+  const isInvertedLayout = visiblePeriod.quarterIndex >= 2;
 
   const virtualizedPhases = phaseSequence;
   const isInitialLoading = isCalendarLoading && visibleMonths.length === 0;
-  const skeletonCount = useMemo(
-    () => Math.max(Math.ceil(layout.visibleColumns * 2) + 4, 12),
-    [layout.visibleColumns]
-  );
+  const skeletonCount = 6;
+  const quarterLabel = useMemo(() => {
+    const quarterNumber = visiblePeriod.quarterIndex + 1;
+    if (!visibleQuarterMonths.length) return `T${quarterNumber}`;
+    const firstMonth = visibleQuarterMonths[0]?.monthName?.slice(0, 3) ?? '';
+    const lastMonth =
+      visibleQuarterMonths[visibleQuarterMonths.length - 1]?.monthName?.slice(0, 3) ?? '';
+    const yearLabel = visibleYear ? ` • ${visibleYear}` : '';
+    return `T${quarterNumber} • ${firstMonth}–${lastMonth}${yearLabel}`;
+  }, [visiblePeriod.quarterIndex, visibleQuarterMonths, visibleYear]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -401,75 +395,131 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   return (
     <>
       <div className="relative flex min-h-screen w-full flex-col items-center py-10 sm:py-12 lg:py-14">
-      <LuminousTrail />
-      <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
+        <LuminousTrail quadrant={visiblePeriod.quarterIndex as 0 | 1 | 2 | 3} />
+        <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
 
-      <div className="flex w-full flex-1 flex-col items-center justify-center">
-        <CelestialObject
-          type="sol"
-          size={isCompactLayout ? 'md' : 'lg'}
-          interactive
-          onClick={(e) =>
-            navigateWithFocus?.('planetCardBelowSun', {
-              event: e,
-              type: 'sol',
-              size: 'lg',
-            })
-          }
-          className="mb-4 sm:mb-5 lg:mb-4"
-          floatOffset={-3}
-        />
-
-        <div className="relative w-full max-w-5xl px-3 sm:px-4">
-          {highlightTarget && highlightedMoonInfo && (
-            <HighlightBanner
-              info={highlightedMoonInfo}
-              onClick={() => focusOnTarget(highlightTarget)}
+        <div className="flex w-full flex-1 flex-col items-center justify-center">
+          {!isInvertedLayout && (
+            <CelestialObject
+              type="sol"
+              size={isCompactLayout ? 'md' : 'lg'}
+              interactive
+              onClick={(e) =>
+                navigateWithFocus?.('planetCardBelowSun', {
+                  event: e,
+                  type: 'sol',
+                  size: 'lg',
+                })
+              }
+              className="mb-4 sm:mb-5 lg:mb-4"
+              floatOffset={-3}
             />
           )}
 
-          <MoonCarousel
-            scrollerRef={scrollerRef}
-            scrollerMaxWidth={scrollerMaxWidth}
-            onKeyDown={handleScrollerKeyDown}
-            layoutPadding={layout.padding}
-            tileWidth={layout.tileWidth}
-            gap={layout.gap}
-            canScrollLeft={canScrollLeft}
-            canScrollRight={canScrollRight}
-            onScrollLeft={() => handleYearStep('left')}
-            onScrollRight={() => handleYearStep('right')}
-          onRetry={handleRetry}
-          isInitialLoading={isInitialLoading}
-          monthEntries={visibleMonths}
-          calendarError={calendarError}
-          skeletonCount={skeletonCount}
-          virtualizedPhases={virtualizedPhases}
-          highlightTarget={highlightTarget}
-          onMoonClick={handleMoonClick}
-          revealedCycleKey={revealedCycleKey}
-          onCycleReveal={handleCycleReveal}
-        />
+          {isInvertedLayout && (
+            <CelestialObject
+              type="planeta"
+              size={isCompactLayout ? 'md' : 'lg'}
+              interactive
+              onClick={(e) =>
+                navigateWithFocus?.('planetCardStandalone', {
+                  event: e,
+                  type: 'planeta',
+                  size: 'lg',
+                })
+              }
+              className="mb-4 sm:mb-5 lg:mb-4"
+              floatOffset={-3}
+            />
+          )}
+
+          <div className="relative w-full max-w-5xl px-3 sm:px-4">
+            {highlightTarget && highlightedMoonInfo && (
+              <HighlightBanner
+                info={highlightedMoonInfo}
+                onClick={() => focusOnTarget(highlightTarget)}
+              />
+            )}
+
+            <div className="relative">
+              <MoonCarousel
+                scrollerRef={scrollerRef}
+                scrollerMaxWidth={scrollerMaxWidth}
+                onKeyDown={handleScrollerKeyDown}
+                layoutPadding={layout.padding}
+                tileWidth={layout.tileWidth}
+              gap={layout.gap}
+              canScrollLeft={canScrollLeft}
+              canScrollRight={canScrollRight}
+              onScrollLeft={() => handleQuarterStep('left')}
+              onScrollRight={() => handleQuarterStep('right')}
+              onRetry={handleRetry}
+              isInitialLoading={isInitialLoading}
+              monthEntries={visibleQuarterMonths}
+              calendarError={calendarError}
+                skeletonCount={skeletonCount}
+                virtualizedPhases={virtualizedPhases}
+                highlightTarget={highlightTarget}
+                onMoonClick={handleMoonClick}
+                revealedCycleKey={revealedCycleKey}
+                onCycleReveal={handleCycleReveal}
+              />
+            </div>
+
+            <div className="mt-4 flex w-full flex-col items-center gap-2 sm:mt-5">
+              <div className="rounded-full border border-white/10 bg-slate-900/70 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-sky-200/80 shadow-[0_12px_30px_rgba(8,47,73,0.45)]">
+                {quarterLabel}
+              </div>
+              <div className="flex items-center gap-2">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <span
+                    key={`quarter-dot-${idx}`}
+                    className={`h-2 w-2 rounded-full transition ${
+                      idx === visiblePeriod.quarterIndex
+                        ? 'bg-sky-300 shadow-[0_0_10px_rgba(56,189,248,0.8)]'
+                        : 'bg-white/25'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-auto flex w-full justify-center pt-4 pb-3 sm:pt-5 sm:pb-4 lg:pt-3 lg:pb-3">
+          {isInvertedLayout ? (
+            <CelestialObject
+              type="sol"
+              size={isCompactLayout ? 'md' : 'lg'}
+              interactive
+              onClick={(e) =>
+                navigateWithFocus?.('planetCardBelowSun', {
+                  event: e,
+                  type: 'sol',
+                  size: 'lg',
+                })
+              }
+              className="mb-2"
+              floatOffset={2}
+            />
+          ) : (
+            <CelestialObject
+              type="planeta"
+              size={isCompactLayout ? 'md' : 'lg'}
+              interactive
+              onClick={(e) =>
+                navigateWithFocus?.('planetCardStandalone', {
+                  event: e,
+                  type: 'planeta',
+                  size: 'lg',
+                })
+              }
+              className="mb-2"
+              floatOffset={2}
+            />
+          )}
         </div>
       </div>
-
-      <div className="mt-auto flex w-full justify-center pt-4 pb-3 sm:pt-5 sm:pb-4 lg:pt-3 lg:pb-3">
-        <CelestialObject
-          type="planeta"
-          size={isCompactLayout ? 'md' : 'lg'}
-          interactive
-          onClick={(e) =>
-            navigateWithFocus?.('planetCardStandalone', {
-              event: e,
-              type: 'planeta',
-              size: 'lg',
-            })
-          }
-          className="mb-2"
-          floatOffset={2}
-        />
-      </div>
-    </div>
 
       <CosmosChatModal
         isOpen={isModalOpen}

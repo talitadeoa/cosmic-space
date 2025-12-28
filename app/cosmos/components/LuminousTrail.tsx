@@ -2,7 +2,11 @@
 
 import React, { useEffect, useRef } from 'react';
 
-export const LuminousTrail: React.FC = () => {
+type LuminousTrailProps = {
+  quadrant?: 0 | 1 | 2 | 3;
+};
+
+export const LuminousTrail: React.FC<LuminousTrailProps> = ({ quadrant }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -41,10 +45,27 @@ export const LuminousTrail: React.FC = () => {
       // Onda senoidal única para manter movimento uniforme e consistente
       const wave = config.amplitude * Math.sin(config.frequency * t * Math.PI * 2 + phase);
 
-      const baseX = 1 - t;
-      const baseY = t;
+      if (quadrant === undefined) {
+        const baseX = 1 - t;
+        const baseY = t;
 
-      return { x: baseX, y: baseY + wave };
+        return { x: baseX, y: baseY + wave };
+      }
+
+      const quadrantAngles: Array<{ start: number; end: number }> = [
+        { start: Math.PI * 1.5, end: Math.PI * 2 },
+        { start: 0, end: Math.PI * 0.5 },
+        { start: Math.PI * 0.5, end: Math.PI },
+        { start: Math.PI, end: Math.PI * 1.5 },
+      ];
+      const arc = quadrantAngles[quadrant] ?? quadrantAngles[0];
+      const angle = arc.start + (arc.end - arc.start) * t;
+      const radius = 0.45 + wave * 0.35;
+
+      return {
+        x: 0.5 + Math.cos(angle) * radius,
+        y: 0.5 + Math.sin(angle) * radius,
+      };
     }
 
     function updateLuminousTrail(time: number) {
@@ -59,7 +80,14 @@ export const LuminousTrail: React.FC = () => {
       ctx.shadowBlur = 40;
       ctx.shadowColor = 'rgba(180, 230, 255, 0.9)';
 
-      const grad = ctx.createLinearGradient(0, canvas.height, canvas.width, 0);
+      const start = trailPoint(0, time);
+      const end = trailPoint(1, time);
+      const grad = ctx.createLinearGradient(
+        start.x * canvas.width,
+        start.y * canvas.height,
+        end.x * canvas.width,
+        end.y * canvas.height
+      );
       grad.addColorStop(0, 'rgba(100,160,255,0)');
       grad.addColorStop(0.2, 'rgba(160,210,255,0.8)');
       grad.addColorStop(0.5, '#fff');
@@ -119,7 +147,7 @@ export const LuminousTrail: React.FC = () => {
     const cleanup = start();
 
     return () => stop(cleanup);
-  }, []);
+  }, [quadrant]);
 
   return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" />;
 };

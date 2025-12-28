@@ -190,9 +190,7 @@ const MoonRow: React.FC<MoonRowProps> = ({
   };
 
   return (
-    <div
-      className="flex w-full flex-col gap-12"
-    >
+    <div className="flex w-full flex-col items-center gap-14 py-4 sm:gap-16 sm:py-5 lg:gap-20">
       {/* Linha de Luas Novas */}
       <div
         className="flex min-w-max items-center"

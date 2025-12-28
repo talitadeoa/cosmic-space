@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 import { buildMonthKey, type HighlightTarget, type MonthEntry } from '@/app/cosmos/utils/luaList';
 import ArrowButton from './ArrowButton';
@@ -59,6 +59,7 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
 }) => {
   const tileSpan = tileWidth + gap;
   const orbitRadius = Math.max(48, Math.round(tileWidth * 0.55));
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
   const cycleAnchors = useMemo(
     () => {
       const seen = new Set<string>();
@@ -87,8 +88,24 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
   return (
     <div
       ref={scrollerRef}
-      className="group relative w-full min-h-[20rem] overflow-x-auto overflow-y-visible rounded-3xl py-8 sm:min-h-[24rem] sm:py-12 lg:min-h-[30rem] lg:py-16 transition-[max-width] duration-200"
+      className="group relative w-full min-h-[20rem] overflow-hidden rounded-3xl py-8 sm:min-h-[24rem] sm:py-12 lg:min-h-[30rem] lg:py-16 transition-[max-width] duration-200"
       onKeyDown={onKeyDown}
+      onPointerDown={(event) => {
+        swipeStartRef.current = { x: event.clientX, y: event.clientY };
+      }}
+      onPointerUp={(event) => {
+        if (!swipeStartRef.current) return;
+        const deltaX = event.clientX - swipeStartRef.current.x;
+        const deltaY = event.clientY - swipeStartRef.current.y;
+        swipeStartRef.current = null;
+
+        if (Math.abs(deltaX) < 40 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return;
+        if (deltaX > 0 && canScrollLeft) onScrollLeft();
+        if (deltaX < 0 && canScrollRight) onScrollRight();
+      }}
+      onPointerCancel={() => {
+        swipeStartRef.current = null;
+      }}
       tabIndex={0}
       aria-label="Carrossel de luas"
       style={{
@@ -143,16 +160,18 @@ const MoonCarousel: React.FC<MoonCarouselProps> = ({
               orbitRadius={orbitRadius}
             />
 
-            <MoonRow
-              items={virtualizedPhases}
-              highlightTarget={highlightTarget}
-              onMoonClick={onMoonClick}
-              tileWidth={tileWidth}
-              gap={gap}
-              orbitRadius={orbitRadius}
-              revealedCycleKey={revealedCycleKey}
-              onCycleReveal={onCycleReveal}
-            />
+            <div className="relative z-10">
+              <MoonRow
+                items={virtualizedPhases}
+                highlightTarget={highlightTarget}
+                onMoonClick={onMoonClick}
+                tileWidth={tileWidth}
+                gap={gap}
+                orbitRadius={orbitRadius}
+                revealedCycleKey={revealedCycleKey}
+                onCycleReveal={onCycleReveal}
+              />
+            </div>
           </div>
           <ArrowButton
             direction="right"
