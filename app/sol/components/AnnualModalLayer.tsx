@@ -25,6 +25,7 @@ const AnnualModalLayer: React.FC<AnnualModalLayerProps> = ({
   return (
     <CosmosChatModal
       isOpen={isOpen}
+      requiresAuthOnSave
       storageKey={storageKey}
       title={title}
       eyebrow="Insight Anual"

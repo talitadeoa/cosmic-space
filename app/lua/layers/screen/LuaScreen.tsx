@@ -473,6 +473,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
 
       <CosmosChatModal
         isOpen={isModalOpen}
+        requiresAuthOnSave
         storageKey={chatStorageKey}
         title={selectedMonthName}
         eyebrow={MONTHLY_INSIGHT_LABELS[selectedMoonPhase]}

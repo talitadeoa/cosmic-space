@@ -35,6 +35,7 @@ const QuarterlyModalLayer: React.FC<QuarterlyModalLayerProps> = ({
   return (
     <CosmosChatModal
       isOpen={isOpen}
+      requiresAuthOnSave
       storageKey={storageKey}
       title={title}
       eyebrow={eyebrow}

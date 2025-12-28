@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AuthGate from '@/components/AuthGate';
 import { SpacePageLayout } from '@/components/SpacePageLayout';
 import { YearProvider, useYear } from '@/app/cosmos/context/YearContext';
 import SolOrbitExperience from './visuals/SolOrbitExperience';
@@ -48,17 +47,15 @@ const SolPage = () => {
   };
 
   return (
-    <AuthGate>
-      <YearProvider>
-        <SpacePageLayout onBackgroundClick={handleBackgroundClick}>
-          <SolRouteContent
-            screen={screen}
-            onSpaceClick={() => setScreen('galaxysuns')}
-            onSunSelect={() => setScreen('solorbit')}
-          />
-        </SpacePageLayout>
-      </YearProvider>
-    </AuthGate>
+    <YearProvider>
+      <SpacePageLayout onBackgroundClick={handleBackgroundClick}>
+        <SolRouteContent
+          screen={screen}
+          onSpaceClick={() => setScreen('galaxysuns')}
+          onSunSelect={() => setScreen('solorbit')}
+        />
+      </SpacePageLayout>
+    </YearProvider>
   );
 };
 

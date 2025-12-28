@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputWindow from './InputWindow';
 import { ChatMessage, ChatMessageMeta, loadChatHistory, saveChatHistory } from '@/lib/chatHistory';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 type SubmitStrategy = 'concat' | 'last';
 
@@ -14,6 +16,8 @@ type ChatStyles = (typeof toneStyles)['indigo'];
 interface CosmosChatModalProps {
   isOpen: boolean;
   inline?: boolean;
+  requiresAuthOnSave?: boolean;
+  authRedirectPath?: string;
   storageKey: string;
   title: string;
   eyebrow?: string;
@@ -232,6 +236,12 @@ interface ChatComposerProps {
   isSaving: boolean;
   hasUserMessage: boolean;
   submitError: string | null;
+  authPrompt?: {
+    title: string;
+    description: string;
+  } | null;
+  onAuthConfirm: () => void;
+  onAuthCancel: () => void;
   suggestions?: CosmosChatModalProps['suggestions'];
   metaDraft: ChatMessageMeta;
   onSuggestionClick: (suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]) => void;
@@ -251,6 +261,9 @@ function ChatComposer({
   isSaving,
   hasUserMessage,
   submitError,
+  authPrompt,
+  onAuthConfirm,
+  onAuthCancel,
   suggestions,
   metaDraft,
   onSuggestionClick,
@@ -258,6 +271,32 @@ function ChatComposer({
 }: ChatComposerProps) {
   return (
     <div className="space-y-3 border-t border-white/10 pt-4">
+      {authPrompt && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 shadow-inner shadow-black/20"
+        >
+          <p className="font-semibold">{authPrompt.title}</p>
+          <p className="mt-1 text-xs text-slate-200/80">{authPrompt.description}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={onAuthConfirm}
+              className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:border-white/40 hover:bg-white/20"
+            >
+              Autenticar
+            </button>
+            <button
+              type="button"
+              onClick={onAuthCancel}
+              className="rounded-full border border-white/10 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:text-white"
+            >
+              Agora não
+            </button>
+          </div>
+        </motion.div>
+      )}
       {(metaDraft.category || metaDraft.date || metaDraft.tags?.length) && (
         <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-slate-200/80">
           {metaDraft.category && (
@@ -376,6 +415,8 @@ export default function CosmosChatModal({
   tone = 'indigo',
   systemResponses = [],
   submitStrategy = 'concat',
+  requiresAuthOnSave = false,
+  authRedirectPath = '/cosmos/auth',
   onClose,
   onSubmit,
   headerExtra,
@@ -383,10 +424,13 @@ export default function CosmosChatModal({
   contextEntries = [],
   suggestions = [],
 }: CosmosChatModalProps) {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [metaDraft, setMetaDraft] = useState<ChatMessageMeta>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -454,6 +498,7 @@ export default function CosmosChatModal({
       setInputValue('');
       setSubmitError(null);
       setIsSaving(false);
+      setShowAuthPrompt(false);
       setMetaDraft({});
       return;
     }
@@ -483,6 +528,12 @@ export default function CosmosChatModal({
     persistMessages(seed);
     setMetaDraft({});
   }, [initialValue, initialValueLabel, isOpen, storageKey, systemGreeting, systemQuestion]);
+
+  useEffect(() => {
+    if (showAuthPrompt && isAuthenticated && !authLoading) {
+      setShowAuthPrompt(false);
+    }
+  }, [authLoading, isAuthenticated, showAuthPrompt]);
 
   const handleSendMessage = () => {
     const trimmed = inputValue.trim();
@@ -542,6 +593,11 @@ export default function CosmosChatModal({
     const value = buildSubmitValue();
     if (value.trim().length < 3) {
       setSubmitError('Escreva pelo menos 3 caracteres para salvar.');
+      return;
+    }
+
+    if (requiresAuthOnSave && !isAuthenticated) {
+      setShowAuthPrompt(true);
       return;
     }
 
@@ -685,6 +741,20 @@ export default function CosmosChatModal({
         isSaving={isSaving}
         hasUserMessage={hasUserMessage}
         submitError={submitError}
+        authPrompt={
+          showAuthPrompt
+            ? {
+                title: 'Quer autenticar para salvar?',
+                description: 'Se preferir, faça login agora para gravar seu registro.',
+              }
+            : null
+        }
+        onAuthConfirm={() => {
+          setShowAuthPrompt(false);
+          onClose();
+          router.push(authRedirectPath);
+        }}
+        onAuthCancel={() => setShowAuthPrompt(false)}
         suggestions={suggestions}
         metaDraft={metaDraft}
         onSuggestionClick={handleSuggestionClick}

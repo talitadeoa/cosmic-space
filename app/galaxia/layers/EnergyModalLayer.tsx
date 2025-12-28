@@ -36,6 +36,7 @@ const EnergyModalLayer: React.FC<EnergyModalLayerProps> = ({
   return (
     <CosmosChatModal
       isOpen={Boolean(selectedMoon)}
+      requiresAuthOnSave
       storageKey={buildRingEnergyStorageKey(selectedMoon)}
       title={prompt.title}
       eyebrow="Energia da fase"
