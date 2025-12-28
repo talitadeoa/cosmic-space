@@ -61,6 +61,12 @@ export default function NavMenu() {
             >
               Comunidade
             </Link>
+            <Link
+              href="/perfil"
+              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
+            >
+              Perfil
+            </Link>
           </nav>
 
           <div className="mt-3 border-t border-slate-800 pt-3">
