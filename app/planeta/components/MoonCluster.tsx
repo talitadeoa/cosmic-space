@@ -44,7 +44,7 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
               key={`moon-${index}`}
               data-drop-target="moon"
               data-phase={moonType}
-              className="relative flex items-center justify-center"
+              className="relative flex items-center justify-center cursor-pointer group transition-transform duration-300 hover:scale-110"
             >
               {badgeCount > 0 && (
                 <span className="absolute -right-3 top-1/2 flex h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-full bg-indigo-600 px-2 text-[0.65rem] font-semibold text-white shadow-md">
@@ -67,9 +67,9 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
                 onDrop={onDrop(moonType)}
                 onDragOver={onDragOver(moonType)}
                 onDragLeave={onDragLeave}
-                className={`transition-transform duration-300 ${
+                className={`transition-all duration-300 ${
                   isActiveDrop ? 'scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]' : ''
-                } ${isSelectedPhase ? 'drop-shadow-[0_0_20px_rgba(129,140,248,0.9)]' : ''}`}
+                } ${isSelectedPhase ? 'drop-shadow-[0_0_20px_rgba(129,140,248,0.9)]' : ''} group-hover:drop-shadow-[0_0_25px_rgba(129,140,248,0.8)]`}
               />
             </div>
           );

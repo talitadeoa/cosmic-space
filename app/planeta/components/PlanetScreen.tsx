@@ -31,7 +31,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
   const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const dropHandledRef = useRef(false);
   const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
@@ -105,6 +105,17 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     );
   };
 
+  const handleDeleteTodo = (todoId: string) => {
+    setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
+    setShowDeleteConfirm(false);
+    setDeletingTodoId(null);
+  };
+
+  const handleRequestDelete = (todoId: string) => {
+    setDeletingTodoId(todoId);
+    setShowDeleteConfirm(true);
+  };
+
   const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
     const target = savedTodos.find((todo) => todo.id === todoId);
     if (!target) return;
@@ -152,18 +163,8 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
-    if (!dropHandledRef.current && draggingTodoId) {
-      setShowDeleteConfirm(true);
-    } else {
-      setDraggingTodoId(null);
-    }
-    dropHandledRef.current = false;
-  };
-
-  const handleDeleteTodo = (todoId: string) => {
-    setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
-    setShowDeleteConfirm(false);
     setDraggingTodoId(null);
+    dropHandledRef.current = false;
   };
 
   const handleDropOnPhase = (phase: MoonPhase) => (e: React.DragEvent) => {
@@ -208,7 +209,6 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   // Funções para suporte a touch (mobile drag and drop)
   const handleTouchStart = (todoId: string) => (e: React.TouchEvent) => {
-    setTouchStartPos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
     touchIdRef.current = todoId;
     setIsDraggingTodo(true);
     setDraggingTodoId(todoId);
@@ -227,12 +227,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       }
     }
 
-    if (!dropHandledRef.current && touchIdRef.current) {
-      setShowDeleteConfirm(true);
-    } else {
-      setDraggingTodoId(null);
-    }
-    setTouchStartPos(null);
+    setDraggingTodoId(null);
     touchIdRef.current = null;
     setIsDraggingTodo(false);
     setActiveDrop(null);
@@ -241,7 +236,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDraggingTodo || !touchStartPos) return;
+    if (!isDraggingTodo) return;
     
     const touch = e.touches[0];
     const element = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -340,13 +335,6 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               </div>
 
               <div className="flex flex-col gap-4 flex-shrink-0">
-                <FiltersPanel
-                  isOpen={isFiltersPanelOpen}
-                  filters={filters}
-                  onClearFilters={resetFilters}
-                  islandNames={islandNames}
-                />
-
                 <SavedTodosPanel
                   savedTodos={displayedTodos}
                   view={filters.view}
@@ -366,6 +354,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onDropInside={() => {
                     dropHandledRef.current = true;
                   }}
+                  onDeleteTodo={handleRequestDelete}
                   onUpdateTodo={handleUpdateTodo}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}
@@ -384,6 +373,13 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                       todoStatus,
                     }))
                   }
+                />
+
+                <FiltersPanel
+                  isOpen={isFiltersPanelOpen}
+                  filters={filters}
+                  onClearFilters={resetFilters}
+                  islandNames={islandNames}
                 />
 
                 <TodoInput
@@ -435,7 +431,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       </div>
 
       {/* Modal de confirmação de exclusão */}
-      {showDeleteConfirm && draggingTodoId && (
+      {showDeleteConfirm && deletingTodoId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="rounded-2xl border border-indigo-500/30 bg-slate-950/95 shadow-2xl shadow-indigo-900/40 p-6 max-w-sm w-full mx-4">
             <h2 className="text-xl font-semibold text-white mb-2">Deletar tarefa?</h2>
@@ -447,7 +443,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 type="button"
                 onClick={() => {
                   setShowDeleteConfirm(false);
-                  setDraggingTodoId(null);
+                  setDeletingTodoId(null);
                 }}
                 className="rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-900 hover:border-slate-600"
               >
@@ -455,7 +451,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               </button>
               <button
                 type="button"
-                onClick={() => draggingTodoId && handleDeleteTodo(draggingTodoId)}
+                onClick={() => deletingTodoId && handleDeleteTodo(deletingTodoId)}
                 className="rounded-lg bg-red-600/80 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 shadow-lg"
               >
                 Deletar

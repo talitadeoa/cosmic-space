@@ -18,6 +18,7 @@ interface SavedTodosPanelProps {
   onToggleComplete: (todoId: string) => void;
   onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
   onDropInside?: () => void;
+  onDeleteTodo?: (todoId: string) => void;
   selectedPhase?: MoonPhase | null;
   selectedIsland?: IslandId | null;
   islandNames?: IslandNames;
@@ -49,6 +50,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onToggleComplete,
   onAssignPhase,
   onDropInside,
+  onDeleteTodo,
   selectedPhase,
   selectedIsland,
   islandNames,
@@ -78,6 +80,14 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const [editingText, setEditingText] = React.useState('');
   const [editingCategory, setEditingCategory] = React.useState('');
   const [editingDueDate, setEditingDueDate] = React.useState('');
+  const [swipeDeleteId, setSwipeDeleteId] = React.useState<string | null>(null);
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const ITEMS_PER_PAGE = 10;
+
+  // Refs para rastrear gestos (sem chamar hooks dentro do map)
+  const touchStartRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
+  const lastTapRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
+  const doubleTapTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleTextFilter = () => {
     const nextFilter = inputTypeFilter === 'text' ? 'all' : 'text';
@@ -138,10 +148,83 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     resetEditingState();
   };
 
+  // Detectar gestos (swipes e double-tap) sem chamar hooks dentro do map
+  const handleItemTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+    };
+  };
+
+  const handleItemTouchEnd = (todoId: string) => (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+
+    const touch = e.changedTouches[0];
+    const duration = Date.now() - touchStartRef.current.time;
+    const distX = touch.clientX - touchStartRef.current.x;
+    const distY = touch.clientY - touchStartRef.current.y;
+    const distance = Math.sqrt(distX * distX + distY * distY);
+
+    // Detectar swipes: movement significativo e rápido (< 400ms)
+    if (distance >= 40 && duration <= 400) {
+      // Swipe horizontal
+      if (Math.abs(distX) > Math.abs(distY)) {
+        if (distX > 0) {
+          // Swipe para direita: marcar como completo
+          onToggleComplete(todoId);
+        } else {
+          // Swipe para esquerda: mostrar botão de deletar
+          setSwipeDeleteId(todoId);
+        }
+      }
+    }
+    // Detectar double-tap: dois toques rápidos e próximos
+    else if (distance < 30 && duration < 300) {
+      const now = Date.now();
+      if (lastTapRef.current) {
+        const timeSinceLastTap = now - lastTapRef.current.time;
+        const distFromLastTap = Math.sqrt(
+          Math.pow(touch.clientX - lastTapRef.current.x, 2) +
+            Math.pow(touch.clientY - lastTapRef.current.y, 2)
+        );
+
+        if (timeSinceLastTap < 300 && distFromLastTap < 50) {
+          // Double-tap detectado: ativar modo edição
+          if (doubleTapTimeoutRef.current) clearTimeout(doubleTapTimeoutRef.current);
+          handleStartEditing(savedTodos.find((t) => t.id === todoId)!);
+          lastTapRef.current = null;
+        } else {
+          lastTapRef.current = { x: touch.clientX, y: touch.clientY, time: now };
+        }
+      } else {
+        lastTapRef.current = { x: touch.clientX, y: touch.clientY, time: now };
+        if (doubleTapTimeoutRef.current) clearTimeout(doubleTapTimeoutRef.current);
+        doubleTapTimeoutRef.current = setTimeout(() => {
+          lastTapRef.current = null;
+        }, 500);
+      }
+    }
+
+    touchStartRef.current = null;
+  };
+
   // Filtrar tarefas por fase e ilha se estiverem selecionadas
-  const displayedTodos = savedTodos
+  const filteredTodos = savedTodos
     .filter((todo) => (selectedPhase ? todo.phase === selectedPhase : true))
     .filter((todo) => (selectedIsland ? todo.islandId === selectedIsland : true));
+
+  // Aplicar paginação
+  const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
+  const startIndex = currentPage * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const displayedTodos = filteredTodos.slice(startIndex, endIndex);
+
+  // Reset página se mudar filtro
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedPhase, selectedIsland]);
 
   const headerLabel = (() => {
     if (selectedPhase && islandLabel) {
@@ -169,6 +252,21 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     return 'Adicione inputs e arraste para a fase lunar desejada.';
   })();
 
+  const getMoonEmoji = (phase: MoonPhase | null): string => {
+    switch (phase) {
+      case 'luaNova':
+        return '🌑';
+      case 'luaCrescente':
+        return '🌓';
+      case 'luaCheia':
+        return '🌕';
+      case 'luaMinguante':
+        return '🌗';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div
       ref={panelRef}
@@ -180,10 +278,17 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       }}
     >
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
-            {headerLabel}
-          </p>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
+              {headerLabel}
+            </p>
+            {selectedPhase && (
+              <span className="text-lg" title={phaseLabels[selectedPhase]}>
+                {getMoonEmoji(selectedPhase)}
+              </span>
+            )}
+          </div>
           <p className="text-[0.75rem] text-slate-400">{headerDescription}</p>
           <div className="mt-2 flex gap-2">
             <button
@@ -333,10 +438,16 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                 draggable={canDrag}
                 onDragStart={canDrag ? onDragStart(todo.id) : undefined}
                 onDragEnd={canDrag ? onDragEnd : undefined}
-                onTouchStart={canDrag && onTouchStart ? onTouchStart(todo.id) : undefined}
-                onTouchEnd={canDrag && onTouchEnd ? onTouchEnd : undefined}
+                onTouchStart={(e) => {
+                  handleItemTouchStart(e);
+                  canDrag && onTouchStart ? onTouchStart(todo.id)(e) : undefined;
+                }}
+                onTouchEnd={(e) => {
+                  handleItemTouchEnd(todo.id)(e);
+                  canDrag && onTouchEnd ? onTouchEnd() : undefined;
+                }}
                 onTouchMove={canDrag && onTouchMove ? onTouchMove : undefined}
-                className="group flex items-start justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
+                className="group relative flex items-start justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
               >
                 <div className="flex items-start gap-3">
                   {isCheckbox ? (
@@ -481,11 +592,71 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                     {todo.phase ? phaseLabels[todo.phase] : 'Sem fase'}
                   </span>
                 </div>
+                {swipeDeleteId === todo.id && (
+                  <div
+                    className="absolute inset-y-0 right-0 flex items-center justify-center gap-2 rounded-r-xl bg-red-500/20 border-l border-red-500/50 px-3 pl-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDeleteTodo?.(todo.id);
+                        setSwipeDeleteId(null);
+                      }}
+                      className="flex h-6 w-6 items-center justify-center rounded-full border border-red-400 bg-red-500/30 text-[0.7rem] text-red-200 transition hover:bg-red-500/50"
+                      title="Deletar input"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })
         )}
       </div>
+
+      {/* Controles de Paginação */}
+      {filteredTodos.length > ITEMS_PER_PAGE && (
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+            disabled={currentPage === 0}
+            className={`rounded-lg px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+              currentPage === 0
+                ? 'border border-slate-700 bg-slate-900/60 text-slate-500 cursor-not-allowed'
+                : 'border border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
+            }`}
+            title="Página anterior"
+          >
+            ← Anterior
+          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[0.65rem] font-semibold text-slate-300">
+              {currentPage + 1} / {totalPages}
+            </span>
+            <span className="text-[0.6rem] text-slate-400">
+              ({startIndex + 1}-{Math.min(endIndex, filteredTodos.length)} de {filteredTodos.length})
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
+            disabled={currentPage >= totalPages - 1}
+            className={`rounded-lg px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+              currentPage >= totalPages - 1
+                ? 'border border-slate-700 bg-slate-900/60 text-slate-500 cursor-not-allowed'
+                : 'border border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
+            }`}
+            title="Próxima página"
+          >
+            Próxima →
+          </button>
+        </div>
+      )}
     </div>
   );
 };

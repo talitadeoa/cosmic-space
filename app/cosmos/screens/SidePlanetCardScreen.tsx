@@ -182,7 +182,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
   const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dropHandledRef = useRef(false);
   const { saveInput } = usePhaseInputs();
   const { islandNames, renameIsland } = useIslandNames();
@@ -302,18 +301,12 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
-    if (!dropHandledRef.current && draggingTodoId) {
-      setShowDeleteConfirm(true);
-    } else {
-      setDraggingTodoId(null);
-    }
+    setDraggingTodoId(null);
     dropHandledRef.current = false;
   };
 
   const handleDeleteTodo = (todoId: string) => {
     setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
-    setShowDeleteConfirm(false);
-    setDraggingTodoId(null);
   };
 
   const handleDropOnPhase = (phase: MoonPhase) => (e: React.DragEvent) => {
@@ -445,6 +438,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onDropInside={() => {
                     dropHandledRef.current = true;
                   }}
+                  onDeleteTodo={handleDeleteTodo}
                   onUpdateTodo={handleUpdateTodo}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}
@@ -508,37 +502,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           />
         </div>
       </div>
-
-      {/* Modal de confirmação de exclusão */}
-      {showDeleteConfirm && draggingTodoId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="rounded-2xl border border-indigo-500/30 bg-slate-950/95 shadow-2xl shadow-indigo-900/40 p-6 max-w-sm w-full mx-4">
-            <h2 className="text-xl font-semibold text-white mb-2">Deletar tarefa?</h2>
-            <p className="text-slate-300 mb-6">
-              Você realmente deseja deletar essa tarefa? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setDraggingTodoId(null);
-                }}
-                className="rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-900 hover:border-slate-600"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => draggingTodoId && handleDeleteTodo(draggingTodoId)}
-                className="rounded-lg bg-red-600/80 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 shadow-lg"
-              >
-                Deletar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
