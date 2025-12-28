@@ -1,4 +1,4 @@
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { SpacePageLayout } from '@/components/layouts';
 import RingGalaxyExperience from './RingGalaxyExperience';
 
 const GalaxiaPage = () => {

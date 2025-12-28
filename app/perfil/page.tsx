@@ -1,6 +1,6 @@
 'use client';
 
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { SpacePageLayout } from '@/components/layouts';
 import MenstrualTracker from '@/components/MenstrualTracker';
 import Link from 'next/link';
 import { type FormEvent, useEffect, useState } from 'react';

@@ -3,7 +3,7 @@
 import { useCallback, useRef, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { SpacePageLayout } from '@/components/layouts';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import HomeScreen from '@/app/cosmos/screens/HomeScreen';
 import type { ScreenId, ScreenProps, FocusState } from '@/app/cosmos/types';

@@ -1,6 +1,6 @@
 'use client';
 
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { SpacePageLayout } from '@/components/layouts';
 import LuaScreen from './screen/LuaScreen';
 
 const LuaPage = () => {

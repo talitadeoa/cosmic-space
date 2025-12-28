@@ -1,6 +1,6 @@
 'use client';
 
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { SpacePageLayout } from '@/components/layouts';
 import type { CommunityPost } from '@/types/community';
 import Link from 'next/link';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';

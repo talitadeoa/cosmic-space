@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { SpacePageLayout } from '@/components/layouts';
 import EmotionalInput, { Emotion } from '@/components/EmotionalInput';
 import { useEmotionalInput } from '@/hooks/useEmotionalInput';
 import { useState } from 'react';

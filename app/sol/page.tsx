@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { SpacePageLayout } from '@/components/layouts';
 import { YearProvider, useYear } from '@/app/cosmos/context/YearContext';
 import SolOrbitExperience from './visuals/SolOrbitExperience';
 import GalaxySunsExperience from './visuals/GalaxySunsExperience';

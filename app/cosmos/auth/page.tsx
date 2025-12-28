@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import AuthGate from '@/components/AuthGate';
+import { AuthGate } from '@/components/auth';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function CosmosAuthPage() {

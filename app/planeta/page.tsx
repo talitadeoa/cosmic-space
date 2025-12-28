@@ -5,7 +5,7 @@ import { PlanetaProviders } from './state/PlanetaProviders';
 import { PlanetaScene } from './visuals/PlanetaScene';
 import PlanetScreen from './components/PlanetScreen';
 import { usePlanetaNavigation } from './hooks/usePlanetaNavigation';
-import { LunationSync } from '@/components/LunationSync';
+import { LunationSync } from '@/components/sync';
 
 /**
  * Página Planeta - Tela principal de organização de tarefas por fases lunares

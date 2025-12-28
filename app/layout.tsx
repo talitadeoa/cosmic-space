@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import RadioPlayer from '@/components/RadioPlayer';
-import NavMenu from '@/components/NavMenu';
-import SfxProvider from '@/components/SfxProvider';
-import AutoSyncLunar from '@/components/AutoSyncLunar';
-import { GalaxySunsSync } from '@/components/GalaxySunsSync';
+import { RadioPlayer } from '@/components/audio';
+import { NavMenu } from '@/components/navigation';
+import { SfxProvider } from '@/components/providers';
+import { AutoSyncLunar } from '@/components/sync';
+import { GalaxySunsSync } from '@/components/sync';
 
 export const metadata: Metadata = {
   title: 'Em breve',
