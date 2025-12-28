@@ -121,14 +121,14 @@ export function useAuth() {
    * Reduz duplicação de lógica entre login e signup
    */
   const _handleAuthRequest = useCallback(
-    async (endpoint: string, email: string, password: string, errorMessage: string) => {
+    async (endpoint: string, payload: Record<string, any>, errorMessage: string) => {
       try {
         setState((prev) => ({ ...prev, loading: true, error: null }));
 
         const response = await fetch(`/api/auth/${endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify(payload),
         });
 
         const data = await response.json();
@@ -174,13 +174,19 @@ export function useAuth() {
 
   const login = useCallback(
     (email: string, password: string) =>
-      _handleAuthRequest('login', email, password, 'Erro ao fazer login'),
+      _handleAuthRequest('login', { email, password }, 'Erro ao fazer login'),
     [_handleAuthRequest]
   );
 
   const signup = useCallback(
-    (email: string, password: string) =>
-      _handleAuthRequest('signup', email, password, 'Erro ao criar conta'),
+    (payload: {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+      birthDate: string;
+      gender: string;
+    }) => _handleAuthRequest('signup', payload, 'Erro ao criar conta'),
     [_handleAuthRequest]
   );
 

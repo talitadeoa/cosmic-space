@@ -12,6 +12,10 @@ export default function AuthGate({ children }: AuthGateProps) {
   const { isAuthenticated, loading, error, login, signup } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [gender, setGender] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -47,7 +51,36 @@ export default function AuthGate({ children }: AuthGateProps) {
       return;
     }
 
-    const success = mode === 'login' ? await login(email, password) : await signup(email, password);
+    if (mode === 'signup') {
+      if (!firstName) {
+        setLocalError('Insira seu nome');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!lastName) {
+        setLocalError('Insira seu sobrenome');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!birthDate) {
+        setLocalError('Insira sua data de nascimento');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!gender) {
+        setLocalError('Selecione seu sexo');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    const success =
+      mode === 'login'
+        ? await login(email, password)
+        : await signup({ email, password, firstName, lastName, birthDate, gender });
     setIsSubmitting(false);
 
     if (!success) {
@@ -56,6 +89,12 @@ export default function AuthGate({ children }: AuthGateProps) {
       );
       setEmail('');
       setPassword('');
+      if (mode === 'signup') {
+        setFirstName('');
+        setLastName('');
+        setBirthDate('');
+        setGender('');
+      }
     }
   };
 
@@ -77,6 +116,62 @@ export default function AuthGate({ children }: AuthGateProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === 'signup' && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block text-sm font-medium text-slate-200">
+                Nome
+                <input
+                  type="text"
+                  name="firstName"
+                  autoComplete="given-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-2.5 text-sm text-slate-50 shadow-inner shadow-black/40 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                  placeholder="Seu nome"
+                />
+              </label>
+              <label className="block text-sm font-medium text-slate-200">
+                Sobrenome
+                <input
+                  type="text"
+                  name="lastName"
+                  autoComplete="family-name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-2.5 text-sm text-slate-50 shadow-inner shadow-black/40 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                  placeholder="Seu sobrenome"
+                />
+              </label>
+              <label className="block text-sm font-medium text-slate-200">
+                Data de nascimento
+                <input
+                  type="date"
+                  name="birthDate"
+                  autoComplete="bday"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-2.5 text-sm text-slate-50 shadow-inner shadow-black/40 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                />
+              </label>
+              <label className="block text-sm font-medium text-slate-200">
+                Sexo
+                <select
+                  name="gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-2.5 text-sm text-slate-50 shadow-inner shadow-black/40 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                >
+                  <option value="" disabled>
+                    Selecione
+                  </option>
+                  <option value="feminino">Feminino</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="outro">Outro</option>
+                  <option value="prefiro_nao_informar">Prefiro não informar</option>
+                </select>
+              </label>
+            </div>
+          )}
           <label className="block text-sm font-medium text-slate-200">
             Email
             <input
