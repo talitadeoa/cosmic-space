@@ -193,6 +193,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     todoStatus: 'all',
     phase: null,
     island: null,
+    month: null,
+    year: null,
   });
 
   const resetFilters = () => {
@@ -202,6 +204,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       todoStatus: 'all',
       phase: null,
       island: null,
+      month: null,
+      year: null,
     });
   };
 

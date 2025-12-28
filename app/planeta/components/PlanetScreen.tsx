@@ -15,6 +15,9 @@ import type { ScreenProps } from '@/app/cosmos/types';
 import type { IslandId } from '@/app/cosmos/types/screen';
 import { usePhaseInputs } from '@/hooks/usePhaseInputs';
 import { useFilteredTodos, type FilterState } from '@/hooks/useFilteredTodos';
+import { useGalaxySunsSync } from '@/hooks/useGalaxySunsSync';
+import { useLunations } from '@/hooks/useLunations';
+import { useTemporal } from '@/app/planeta/state/TemporalContext';
 import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/components/IslandsList';
 import { useIslandNames } from '@/hooks/useIslandNames';
@@ -22,6 +25,12 @@ import { FiltersPanel } from './FiltersPanel';
 import { MoonCluster } from './MoonCluster';
 
 const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+  // Contextos temporais
+  const temporal = useTemporal();
+  
+  // Sincronização de lunações
+  const galaxySunsSync = useGalaxySunsSync([new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1]);
+  const lunations = useLunations();
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [hasLoadedTodos, setHasLoadedTodos] = useState(false);
   const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
@@ -44,6 +53,8 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     todoStatus: 'all',
     phase: null,
     island: null,
+    month: null,
+    year: null,
   });
 
   const resetFilters = () => {
@@ -53,8 +64,41 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       todoStatus: 'all',
       phase: null,
       island: null,
+      month: null,
+      year: null,
     });
   };
+
+  // Sincronizar lunações do banco de dados
+  useEffect(() => {
+    const syncLunations = async () => {
+      try {
+        const startDate = `${temporal.year}-01-01`;
+        const endDate = `${temporal.year}-12-31`;
+        
+        // Buscar lunações do banco (ou gerar localmente se vazio)
+        await lunations.fetch(startDate, endDate, 'auto');
+      } catch (error) {
+        console.warn('Erro ao sincronizar lunações:', error);
+      }
+    };
+
+    syncLunations();
+  }, [temporal.year]);
+
+  // Sincronizar contagem de tarefas com fases lunares
+  useEffect(() => {
+    const syncGalaxySuns = async () => {
+      try {
+        // Atualizar dados de estatísticas de fases lunares
+        await galaxySunsSync.refresh(temporal.year);
+      } catch (error) {
+        console.warn('Erro ao sincronizar GalaxySuns:', error);
+      }
+    };
+
+    syncGalaxySuns();
+  }, [temporal.year]);
 
   useEffect(() => {
     setSavedTodos(loadSavedTodos());
@@ -379,6 +423,18 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   isOpen={isFiltersPanelOpen}
                   filters={filters}
                   onClearFilters={resetFilters}
+                  onMonthChange={(month) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      month,
+                    }))
+                  }
+                  onYearChange={(year) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      year,
+                    }))
+                  }
                   islandNames={islandNames}
                 />
 

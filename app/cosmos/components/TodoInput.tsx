@@ -16,6 +16,7 @@ export interface TodoItem {
   category?: string;
   dueDate?: string;
   islandId?: IslandId;
+  createdAt?: string;
 }
 
 interface TodoInputProps {
@@ -52,6 +53,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
       category: isCheckbox ? meta?.category : undefined,
       dueDate: isCheckbox ? meta?.date : undefined,
       islandId: selectedIsland ?? undefined,
+      createdAt: new Date().toISOString(),
     });
   };
 
