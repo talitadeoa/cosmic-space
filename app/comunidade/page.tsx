@@ -100,6 +100,11 @@ const ComunidadePage = () => {
     tags: '',
     images: '',
   });
+  const [activeTag, setActiveTag] = useState('Todos');
+  const [savedPosts, setSavedPosts] = useState<Record<string, boolean>>({});
+  const [reactions, setReactions] = useState<Record<string, { energia: number; apoio: number }>>(
+    {}
+  );
   const [commentStatus, setCommentStatus] = useState<Record<string, 'idle' | 'saving' | 'error'>>(
     {}
   );
@@ -199,6 +204,17 @@ const ComunidadePage = () => {
     return `${text.slice(0, length).trim()}…`;
   };
 
+  const classifyPost = (post: CommunityPost) => {
+    const normalizedTags = post.tags.map((tag) => tag.toLowerCase());
+    if (normalizedTags.some((tag) => ['evento', 'eventos', 'lua'].includes(tag))) {
+      return 'Evento';
+    }
+    if (post.body.length > 220 || normalizedTags.includes('cartas')) {
+      return 'Carta';
+    }
+    return 'Pulso';
+  };
+
   const initialsFor = (name: string) => {
     const parts = name.trim().split(' ').filter(Boolean);
     const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase());
@@ -280,6 +296,21 @@ const ComunidadePage = () => {
       setProfileError('Nao foi possivel salvar o perfil.');
     }
   };
+
+  const tagFilters = useMemo(() => {
+    const tagSet = new Set<string>();
+    posts.forEach((post) => {
+      post.tags.forEach((tag) => tagSet.add(tag));
+    });
+    return ['Todos', ...Array.from(tagSet)];
+  }, [posts]);
+
+  const visiblePosts = useMemo(() => {
+    if (activeTag === 'Todos') return posts;
+    return posts.filter((post) => post.tags.includes(activeTag));
+  }, [activeTag, posts]);
+
+  const featuredPost = visiblePosts[0];
 
   const handlePostChange = (field: keyof typeof postForm, value: string) => {
     setPostForm((prev) => ({ ...prev, [field]: value }));
@@ -387,6 +418,21 @@ const ComunidadePage = () => {
     }
   };
 
+  const toggleSave = (postId: string) => {
+    setSavedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const addReaction = (postId: string, type: 'energia' | 'apoio') => {
+    setReactions((prev) => ({
+      ...prev,
+      [postId]: {
+        energia: prev[postId]?.energia ?? 0,
+        apoio: prev[postId]?.apoio ?? 0,
+        [type]: (prev[postId]?.[type] ?? 0) + 1,
+      },
+    }));
+  };
+
   return (
     <SpacePageLayout className="px-6 py-12 sm:px-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
@@ -472,10 +518,57 @@ const ComunidadePage = () => {
               </span>
             ) : null}
           </form>
+          <div className="flex flex-wrap gap-2">
+            {tagFilters.map((tag) => {
+              const isActive = tag === activeTag;
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setActiveTag(tag)}
+                  className={`rounded-full border px-4 py-2 text-xs uppercase tracking-[0.3em] transition ${
+                    isActive
+                      ? 'border-indigo-400 bg-indigo-500/20 text-white'
+                      : 'border-slate-800/70 bg-black/30 text-slate-300 hover:border-indigo-400 hover:text-white'
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
+            {featuredPost ? (
+              <div className="mb-6 rounded-3xl border border-indigo-400/50 bg-gradient-to-br from-indigo-900/30 via-slate-950/70 to-black/80 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+                  <span className="rounded-full border border-indigo-400/70 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-indigo-200">
+                    Destaque da semana
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    {formatRelativeTime(featuredPost.createdAt)}
+                  </span>
+                </div>
+                <h3 className="mt-3 text-xl font-semibold text-white">
+                  {featuredPost.title || 'Pulso em destaque'}
+                </h3>
+                <p className="mt-2 text-sm text-slate-300">
+                  {truncate(featuredPost.body, 220)}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+                  <span>Curado para inspirar sua orbita pessoal.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleSave(featuredPost.id)}
+                    className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
+                  >
+                    {savedPosts[featuredPost.id] ? 'Salvo' : 'Salvar'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
@@ -497,7 +590,15 @@ const ComunidadePage = () => {
             </div>
 
             <div className="mt-6 space-y-4">
-              {posts.map((post) => (
+              {visiblePosts.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6 text-sm text-slate-300">
+                  <p className="text-white">Nenhum pulso encontrado.</p>
+                  <p className="mt-2 text-slate-400">
+                    Tente outra tag ou volte para "Todos" para ver o fluxo completo.
+                  </p>
+                </div>
+              ) : null}
+              {visiblePosts.map((post) => (
                 <article
                   key={post.id}
                   className="rounded-2xl border border-slate-800/80 bg-slate-950/50 p-4 transition hover:border-indigo-400/60"
@@ -526,9 +627,14 @@ const ComunidadePage = () => {
                         </div>
                       </div>
                     </div>
-                    <span className="text-[11px] text-slate-500">
-                      {post.commentsCount} comentário{post.commentsCount === 1 ? '' : 's'}
-                    </span>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                      <span className="rounded-full border border-slate-700/70 px-2 py-1">
+                        {classifyPost(post)}
+                      </span>
+                      <span>
+                        {post.commentsCount} comentário{post.commentsCount === 1 ? '' : 's'}
+                      </span>
+                    </div>
                   </div>
                   <h3 className="mt-3 text-lg font-semibold text-white">
                     {post.title || 'Pulso da comunidade'}
@@ -545,6 +651,31 @@ const ComunidadePage = () => {
                         #{tag}
                       </span>
                     ))}
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => addReaction(post.id, 'energia')}
+                        className="rounded-full border border-slate-700/70 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
+                      >
+                        Energia {reactions[post.id]?.energia ?? 0}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addReaction(post.id, 'apoio')}
+                        className="rounded-full border border-slate-700/70 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
+                      >
+                        Apoio {reactions[post.id]?.apoio ?? 0}
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleSave(post.id)}
+                      className="rounded-full border border-slate-700/70 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
+                    >
+                      {savedPosts[post.id] ? 'Salvo' : 'Salvar'}
+                    </button>
                   </div>
                   <form
                     className="mt-4 space-y-2"
