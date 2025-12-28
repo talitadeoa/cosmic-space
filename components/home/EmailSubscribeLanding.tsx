@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import EmailSignupForm from '@/components/home/EmailSignupForm';
 
 export default function EmailSubscribeLanding() {
@@ -20,6 +21,18 @@ export default function EmailSubscribeLanding() {
           </p>
         </div>
         <EmailSignupForm />
+        <div className="mt-4 text-center">
+          <Link
+            href="/home"
+            className="text-sm text-slate-300/90 transition hover:text-slate-100"
+          >
+            Toque aqui se quiser explorar o{' '}
+            <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-rose-300 bg-clip-text text-transparent">
+              cosmos
+            </span>{' '}
+            antes do lançamento
+          </Link>
+        </div>
       </div>
       <p className="mt-4 text-[11px] text-slate-400/80 text-center">© {year} Construido no hiperespaço</p>
     </main>
