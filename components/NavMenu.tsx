@@ -55,6 +55,12 @@ export default function NavMenu() {
             >
               Ilha
             </Link>
+            <Link
+              href="/comunidade"
+              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
+            >
+              Comunidade
+            </Link>
           </nav>
 
           <div className="mt-3 border-t border-slate-800 pt-3">
