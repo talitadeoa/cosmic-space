@@ -1,5 +1,24 @@
 // utilitário simples para calcular fase lunar e signo (aproximação)
 
+export const SIGN_EMOJIS: Record<string, string> = {
+  'Capricórnio': '♑',
+  'Aquário': '♒',
+  'Peixes': '♓',
+  'Áries': '♈',
+  'Touro': '♉',
+  'Gêmeos': '♊',
+  'Câncer': '♋',
+  'Leão': '♌',
+  'Virgem': '♍',
+  'Libra': '♎',
+  'Escorpião': '♏',
+  'Sagitário': '♐',
+};
+
+export function getSignEmoji(sign: string): string {
+  return SIGN_EMOJIS[sign] || '✨';
+}
+
 export function getLunarPhaseAndSign(date = new Date()) {
   // Cálculo simples da idade da lua em dias (algoritmo aproximado)
   const year = date.getUTCFullYear();
@@ -11,18 +30,25 @@ export function getLunarPhaseAndSign(date = new Date()) {
   if (r > 9) r -= 19;
   const k = Math.floor((year - 1900) * 12.3685);
 
-  // simplified moon age
+  // simplified moon age - usando 19 de dezembro de 2025 como Lua Nova (referência do seu CSV)
   const jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day - 1524.5;
-  const daysSinceNew = jd - 2451549.5;
-  const newMoons = daysSinceNew / 29.53058867;
-  const frac = newMoons - Math.floor(newMoons);
+  const newMoonRef = new Date('2025-12-19');
+  const refJd = Math.floor(365.25 * (newMoonRef.getUTCFullYear() + 4716)) + 
+                Math.floor(30.6001 * (newMoonRef.getUTCMonth() + 2)) + 
+                newMoonRef.getUTCDate() - 1524.5;
+  const daysSinceRef = jd - refJd;
+  const cycles = daysSinceRef / 29.53058867;
+  const frac = cycles - Math.floor(cycles);
   const age = Math.round(frac * 29.53);
 
+  // Classificação correta das fases lunares
+  // Usa o mesmo algoritmo que app/api/moons/route.ts
+  const SYNODIC_MONTH = 29.53058867;
   let fase = 'Nova';
-  if (age < 7) fase = 'Crescente';
-  if (age >= 7 && age < 15) fase = 'Primeiro Quarto';
-  if (age >= 15 && age < 22) fase = 'Minguante';
-  if (age >= 22) fase = 'Cheia';
+  if (age < 1.5 || age > SYNODIC_MONTH - 1.5) fase = 'Nova';
+  else if (age < SYNODIC_MONTH / 2 - 1.2) fase = 'Crescente';
+  else if (age < SYNODIC_MONTH / 2 + 1.2) fase = 'Cheia';
+  else fase = 'Minguante';
 
   // Signo pelo sol (apenas aproximação por data)
   const m = date.getUTCMonth() + 1;

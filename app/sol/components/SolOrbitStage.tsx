@@ -1,12 +1,59 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
 const MOON_RING_RADIUS_PERCENT = 42;
 const RING_HIT_BAND_PERCENT = 10;
 const INNER_SAFE_RADIUS_PERCENT = 22;
+
+// Mapeamento de fases lunares para eventos astronômicos
+const MOON_EVENTS: Record<
+  MoonPhase,
+  {
+    name: string;
+    event: string;
+    season: string;
+    dates: string;
+    emoji: string;
+    description: string;
+  }
+> = {
+  luaNova: {
+    name: 'Lua Nova',
+    event: 'Equinócio de Outono (Hemisfério Norte)',
+    season: '🍂 Outono',
+    dates: '~22-23 de Setembro',
+    emoji: '🌑',
+    description: 'Início do outono - equilíbrio entre dia e noite',
+  },
+  luaCrescente: {
+    name: 'Lua Crescente',
+    event: 'Solstício de Verão (Hemisfério Norte)',
+    season: '☀️ Verão',
+    dates: '~20-21 de Junho',
+    emoji: '🌒',
+    description: 'Início do verão - dia mais longo do ano',
+  },
+  luaCheia: {
+    name: 'Lua Cheia',
+    event: 'Solstício de Inverno (Hemisfério Norte)',
+    season: '❄️ Inverno',
+    dates: '~21-22 de Dezembro',
+    emoji: '🌕',
+    description: 'Início do inverno - noite mais longa do ano',
+  },
+  luaMinguante: {
+    name: 'Lua Minguante',
+    event: 'Equinócio de Primavera (Hemisfério Norte)',
+    season: '🌸 Primavera',
+    dates: '~19-20 de Março',
+    emoji: '🌗',
+    description: 'Início da primavera - equilíbrio entre dia e noite',
+  },
+};
+
 const DIAGONAL_MOONS: Array<{
   phase: MoonPhase;
   angleDeg: number;
@@ -29,6 +76,7 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   onMoonClick,
   onSpaceClick,
 }) => {
+  const [hoveredMoon, setHoveredMoon] = useState<MoonPhase | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const handleSpaceClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -274,12 +322,28 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
           const rad = (angleDeg * Math.PI) / 180;
           const x = 50 + MOON_RING_RADIUS_PERCENT * Math.cos(rad);
           const y = 50 + MOON_RING_RADIUS_PERCENT * Math.sin(rad);
+          const moonInfo = MOON_EVENTS[phase];
+          const isHovered = hoveredMoon === phase;
+
+          const handleTouchStart = (e: React.TouchEvent) => {
+            e.preventDefault();
+            setHoveredMoon(phase);
+          };
+
+          const handleTouchEnd = (e: React.TouchEvent) => {
+            e.preventDefault();
+            setHoveredMoon(null);
+          };
 
           return (
             <div
               key={phase}
               className="absolute -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${x}%`, top: `${y}%` }}
+              onMouseEnter={() => setHoveredMoon(phase)}
+              onMouseLeave={() => setHoveredMoon(null)}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
             >
               <CelestialObject
                 type={phase}
@@ -288,6 +352,17 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
                 onClick={() => onMoonClick(phase)}
                 floatOffset={floatOffset}
               />
+              
+              {isHovered && (
+                <div className="absolute top-full mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-3 py-2 text-xs font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm">
+                  <div className="mb-1 text-base">{moonInfo.emoji}</div>
+                  <div className="text-white">{moonInfo.name}</div>
+                  <div className="mt-1 text-indigo-300">{moonInfo.event}</div>
+                  <div className="mt-1 text-yellow-300">{moonInfo.season}</div>
+                  <div className="mt-1 text-sky-300">{moonInfo.dates}</div>
+                  <div className="mt-2 max-w-xs whitespace-normal text-indigo-200/80">{moonInfo.description}</div>
+                </div>
+              )}
             </div>
           );
         })}
