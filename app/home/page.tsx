@@ -3,7 +3,6 @@
 import { useCallback, useRef, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import AuthGate from '@/components/AuthGate';
 import { SpacePageLayout } from '@/components/SpacePageLayout';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import HomeScreen from '@/app/cosmos/screens/HomeScreen';
@@ -99,60 +98,58 @@ const StandaloneHomePage = () => {
   );
 
   return (
-    <AuthGate>
-      <SpacePageLayout>
-        <div className="flex min-h-[100dvh] items-center justify-center px-4 py-10">
-          <div className="h-[70vh] w-full max-w-5xl">
-            <HomeScreen navigateTo={navigateToRoute} navigateWithFocus={navigateWithFocus} />
-          </div>
+    <SpacePageLayout>
+      <div className="flex min-h-[100dvh] items-center justify-center px-4 py-10">
+        <div className="h-[70vh] w-full max-w-5xl">
+          <HomeScreen navigateTo={navigateToRoute} navigateWithFocus={navigateWithFocus} />
         </div>
+      </div>
 
-        <AnimatePresence>
-          {focus && (
+      <AnimatePresence>
+        {focus && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          >
             <motion.div
-              className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+              className="relative"
               initial={{
-                opacity: 0,
+                x: focus.x - focus.centerX,
+                y: focus.y - focus.centerY,
+                scale: 0.4,
+                opacity: 1,
               }}
               animate={{
-                opacity: 1,
+                x: 0,
+                y: 0,
+                scale: 3,
               }}
               exit={{
                 opacity: 0,
+                scale: 0.8,
               }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
             >
-              <motion.div
-                className="relative"
-                initial={{
-                  x: focus.x - focus.centerX,
-                  y: focus.y - focus.centerY,
-                  scale: 0.4,
-                  opacity: 1,
-                }}
-                animate={{
-                  x: 0,
-                  y: 0,
-                  scale: 3,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.8,
-                }}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
-              >
-                <CelestialObject
-                  type={focus.type}
-                  size={focus.size}
-                  interactive={false}
-                  pulseOnMount={false}
-                />
-              </motion.div>
+              <CelestialObject
+                type={focus.type}
+                size={focus.size}
+                interactive={false}
+                pulseOnMount={false}
+              />
             </motion.div>
-          )}
-        </AnimatePresence>
-      </SpacePageLayout>
-    </AuthGate>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </SpacePageLayout>
   );
 };
 

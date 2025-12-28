@@ -425,7 +425,7 @@ export default function CosmosChatModal({
   suggestions = [],
 }: CosmosChatModalProps) {
   const router = useRouter();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -529,12 +529,6 @@ export default function CosmosChatModal({
     setMetaDraft({});
   }, [initialValue, initialValueLabel, isOpen, storageKey, systemGreeting, systemQuestion]);
 
-  useEffect(() => {
-    if (showAuthPrompt && isAuthenticated && !authLoading) {
-      setShowAuthPrompt(false);
-    }
-  }, [authLoading, isAuthenticated, showAuthPrompt]);
-
   const handleSendMessage = () => {
     const trimmed = inputValue.trim();
     if (trimmed.length < 3) {
@@ -608,7 +602,20 @@ export default function CosmosChatModal({
       await onSubmit(value, messages, getLastUserMeta());
       onClose();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar.');
+      const message = err instanceof Error ? err.message : 'Erro ao salvar.';
+      const normalized = message.toLowerCase();
+      if (
+        normalized.includes('não autenticado') ||
+        normalized.includes('nao autenticado') ||
+        normalized.includes('não autorizado') ||
+        normalized.includes('nao autorizado') ||
+        normalized.includes('unauthorized')
+      ) {
+        setShowAuthPrompt(true);
+        setSubmitError(null);
+        return;
+      }
+      setSubmitError(message);
     } finally {
       setIsSaving(false);
     }
