@@ -1,0 +1,158 @@
+/**
+ * Estilos do componente Hero Lunar
+ */
+
+.lunarHero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: rgba(20, 30, 45, 0.4);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+  min-width: 280px;
+}
+
+.header {
+  width: 100%;
+  text-align: center;
+}
+
+.dateText {
+  margin: 0;
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 300;
+  letter-spacing: 0.3px;
+  color: #cbd5e1;
+  text-transform: capitalize;
+}
+
+.moonContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.moonCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(232, 232, 255, 0.1), rgba(10, 15, 20, 0.5));
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  box-shadow:
+    0 0 40px rgba(100, 116, 139, 0.2),
+    inset 0 0 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: moonGlow 6s ease-in-out infinite;
+}
+
+@keyframes moonGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 40px rgba(100, 116, 139, 0.2),
+      inset 0 0 40px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 60px rgba(100, 116, 139, 0.3),
+      inset 0 0 40px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.moonPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #64748b;
+  font-size: 0.875rem;
+  opacity: 0.6;
+}
+
+.moonPlaceholder p {
+  margin: 0;
+}
+
+.phaseInfo {
+  width: 100%;
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(100, 116, 139, 0.1);
+}
+
+.phaseName {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #e8e8ff;
+  letter-spacing: 0.2px;
+}
+
+.illumination {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #cbd5e1;
+}
+
+.daysInPhase {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.starDecoration {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  color: #64748b;
+  opacity: 0.4;
+  font-size: 0.875rem;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) opacity(0.4);
+  }
+  50% {
+    transform: translateY(-10px) opacity(0.6);
+  }
+}
+
+@media (max-width: 768px) {
+  .lunarHero {
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .moonCircle {
+    width: 150px;
+    height: 150px;
+  }
+
+  .phaseName {
+    font-size: 1rem;
+  }
+
+  .dateText {
+    font-size: 0.95rem;
+  }
+}
