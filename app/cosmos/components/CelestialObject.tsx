@@ -26,13 +26,13 @@ const ringOutline = 'pointer-events-none absolute inset-0 rounded-full ring-1 ri
 const sizeToClass: Record<CelestialSize, string> = {
   sm: 'w-10 h-10',
   md: 'w-14 h-14',
-  lg: 'w-24 h-24',
+  lg: 'w-14 h-14',
 };
 
 const sizeToPixels: Record<CelestialSize, number> = {
   sm: 40,
   md: 56,
-  lg: 96,
+  lg: 56,
 };
 
 const mergeClasses = (...classes: Array<string | false | undefined>) =>

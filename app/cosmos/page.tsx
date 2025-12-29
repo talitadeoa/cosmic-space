@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import AuthGate from '@/components/AuthGate';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { SpaceBackground } from './components/SpaceBackground';
@@ -197,11 +196,9 @@ const CosmosPageContent: React.FC = () => {
 
 const CosmosPage: React.FC = () => {
   return (
-    <AuthGate>
-      <YearProvider>
-        <CosmosPageContent />
-      </YearProvider>
-    </AuthGate>
+    <YearProvider>
+      <CosmosPageContent />
+    </YearProvider>
   );
 };
 

@@ -100,6 +100,25 @@ export const describePhase = (norm: MoonPhase): string => {
   }
 };
 
+export type MoonTimeData = {
+  illumination: number; // 0-1
+  phaseFraction: number; // 0-1
+  isWaxing: boolean;
+  phaseName: string;
+};
+
+/**
+ * Dados contínuos da Lua para um instante de tempo.
+ */
+export const getMoonData = (dateTime: Date): MoonTimeData => {
+  const ageDays = calcMoonAge(dateTime);
+  const illumination = illuminationFromAge(ageDays);
+  const phaseFraction = ageDays / SYNODIC_MONTH;
+  const isWaxing = ageDays <= SYNODIC_MONTH / 2;
+  const phaseName = describePhase(labelPhase(ageDays));
+  return { illumination, phaseFraction, isWaxing, phaseName };
+};
+
 /**
  * Aproxima signo zodiacal pela data (não é astrologia precisa)
  */

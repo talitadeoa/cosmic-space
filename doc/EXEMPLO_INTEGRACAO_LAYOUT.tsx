@@ -1,11 +1,11 @@
 // Exemplo de como integrar LunationSync em app/layout.tsx
 
 import type { Metadata } from 'next';
-import { LunationSync } from '@/components/LunationSync';
+import { LunationSync } from '@/components/sync';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Cosmic Space',
+  title: 'Flua',
   description: 'Universo de lunações e insights pessoais',
 };
 

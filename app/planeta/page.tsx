@@ -1,35 +1,32 @@
 'use client';
 
 import React from 'react';
-import { PlanetaProviders } from './layers/providers/PlanetaProviders';
-import { PlanetaScene } from './layers/background/PlanetaScene';
-import PlanetScreen from './layers/screen/PlanetScreen';
-import type { ScreenProps } from '@/app/cosmos/types';
+import { PlanetaProviders } from './state/PlanetaProviders';
+import { PlanetaScene } from './visuals/PlanetaScene';
+import PlanetScreen from './components/PlanetScreen';
+import { usePlanetaNavigation } from './hooks/usePlanetaNavigation';
+import { LunationSync } from '@/components/sync';
 
 /**
  * Página Planeta - Tela principal de organização de tarefas por fases lunares
  * Estrutura de camadas:
  * 1. Layout (página)
- * 2. Contexto (YearProvider)
- * 3. Background (SpaceBackground)
- * 4. Componente principal (PlanetScreen)
+ * 2. Contexto (TemporalProvider + YearProvider)
+ * 3. Sincronização (LunationSync)
+ * 4. Background (SpaceBackground)
+ * 5. Componente principal (PlanetScreen)
  */
 
 const PlanetaPage: React.FC = () => {
-  const handleNavigateWithFocus: ScreenProps['navigateWithFocus'] = (screenId, options) => {
-    // Implementar navegação conforme necessário
-    console.log('Navigation request:', screenId, options);
-  };
-
-  const handleNavigateTo: ScreenProps['navigateTo'] = (screenId) => {
-    // Placeholder até integrar a navegação real
-    console.log('Navigation request:', screenId);
-  };
+  const { navigateTo, navigateWithFocus } = usePlanetaNavigation();
 
   return (
     <PlanetaProviders>
+      {/* Sincronizar lunações do banco automaticamente */}
+      <LunationSync autoSync={true} verbose={false} />
+
       <PlanetaScene>
-        <PlanetScreen navigateTo={handleNavigateTo} navigateWithFocus={handleNavigateWithFocus} />
+        <PlanetScreen navigateTo={navigateTo} navigateWithFocus={navigateWithFocus} />
       </PlanetaScene>
     </PlanetaProviders>
   );

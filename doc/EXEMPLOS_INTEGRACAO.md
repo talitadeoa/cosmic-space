@@ -15,7 +15,7 @@ export const MOCK_TODOS: SavedTodo[] = [
     depth: 0,
     phase: 'luaNova',
     islandId: 'ilha1',
-    project: 'Cosmic Space',
+    project: 'Flua',
     category: 'Design',
     dueDate: '2025-12-24',
   },
@@ -26,7 +26,7 @@ export const MOCK_TODOS: SavedTodo[] = [
     depth: 0,
     phase: 'luaCrescente',
     islandId: 'ilha2',
-    project: 'Cosmic Space',
+    project: 'Flua',
     category: 'Development',
     dueDate: '2025-12-23',
   },
@@ -45,7 +45,7 @@ export const MOCK_TODOS: SavedTodo[] = [
 
 export const MOCK_STATE = {
   savedTodos: MOCK_TODOS,
-  selectedProject: 'Cosmic Space',
+  selectedProject: 'Flua',
   selectedIsland: 'ilha1' as IslandId,
   selectedPhase: 'luaNova' as MoonPhase,
 };
@@ -316,7 +316,7 @@ const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
 
 ```tsx
 export function AdvancedFilteringExample() {
-  const [project, setProject] = React.useState('Cosmic Space');
+  const [project, setProject] = React.useState('Flua');
   const [phase, setPhase] = React.useState<MoonPhase | null>('luaNova');
 
   // Filtro composto
@@ -332,7 +332,7 @@ export function AdvancedFilteringExample() {
         <label>Projeto:</label>
         <select value={project} onChange={(e) => setProject(e.target.value)}>
           <option value="">Todos</option>
-          <option value="Cosmic Space">Cosmic Space</option>
+          <option value="Flua">Flua</option>
           <option value="QA">QA</option>
         </select>
       </div>

@@ -1,8 +1,8 @@
-# 📱 Melhorias de Responsividade - Cosmic Space
+# 📱 Melhorias de Responsividade - Flua
 
 ## Resumo das Otimizações Realizadas
 
-Foi implementado um conjunto completo de melhorias para garantir que o projeto **Cosmic Space** funcione perfeitamente em todos os tamanhos de tela, especialmente em dispositivos móveis.
+Foi implementado um conjunto completo de melhorias para garantir que o projeto **Flua** funcione perfeitamente em todos os tamanhos de tela, especialmente em dispositivos móveis.
 
 ---
 

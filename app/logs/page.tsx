@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import AuthGate from '@/components/AuthGate';
+import { AuthGate } from '@/components/auth';
 import { validateToken } from '@/lib/auth';
 import { getSheetData } from '@/lib/sheets';
 

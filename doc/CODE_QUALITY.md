@@ -1,4 +1,4 @@
-# 🛠️ Guia de Code Quality - Cosmic Space
+# 🛠️ Guia de Code Quality - Flua
 
 ## ✅ O que foi instalado
 

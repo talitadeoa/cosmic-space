@@ -1,0 +1,28 @@
+/**
+ * Estilos para ícone de fase lunar
+ */
+
+.moonIcon {
+  display: block;
+  filter: drop-shadow(0 0 4px rgba(100, 116, 139, 0.3));
+  transition: filter 0.3s ease;
+}
+
+.moonIcon:hover {
+  filter: drop-shadow(0 0 8px rgba(100, 116, 139, 0.5));
+}
+
+.size-small {
+  width: 16px;
+  height: 16px;
+}
+
+.size-medium {
+  width: 24px;
+  height: 24px;
+}
+
+.size-large {
+  width: 48px;
+  height: 48px;
+}

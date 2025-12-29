@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import AuthGate from '@/components/AuthGate';
+import { AuthGate } from '@/components/auth';
 import type { TimelineFiltersState, TimelineResponse } from '@/types/timeline';
 import { getTimelineEntries } from '@/lib/timeline';
 import { getTokenPayload, validateToken } from '@/lib/auth';

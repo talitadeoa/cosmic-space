@@ -1,4 +1,4 @@
-# 📖 Guia de Funções do Projeto Cosmic Space
+# 📖 Guia de Funções do Projeto Flua
 
 Resumo rápido das principais funções, rotas e módulos — onde ficam e o que fazem.
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import AuthGate from '@/components/AuthGate';
-import { SpacePageLayout } from '@/components/SpacePageLayout';
+import { AuthGate } from '@/components/auth';
+import { SpacePageLayout } from '@/components/layouts';
 import EclipseProductivityView from './EclipseProductivityView';
 
 const EclipsePage = () => {

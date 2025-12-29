@@ -14,7 +14,7 @@ export const DEFAULT_ISLAND_NAMES: IslandNames = {
   ilha4: 'Ilha 4',
 };
 
-export const ISLAND_NAMES_STORAGE_KEY = 'cosmic_space_island_names';
+export const ISLAND_NAMES_STORAGE_KEY = 'flua_island_names';
 
 const sanitizeIslandName = (value: unknown, fallback: string): string => {
   if (typeof value !== 'string') return fallback;

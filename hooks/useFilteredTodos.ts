@@ -6,16 +6,18 @@ export type InputTypeFilter = 'all' | SavedTodo['inputType'];
 export type TodoStatusFilter = 'all' | 'completed' | 'open';
 
 export type FilterState = {
-  view: 'inbox' | 'lua-atual';
+  view: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
   inputType: InputTypeFilter;
   todoStatus: TodoStatusFilter;
   phase: MoonPhase | null;
   island: IslandId | null;
+  month: number | null; // 1-12 ou null para todos
+  year: number | null;  // YYYY ou null para todos
 };
 
 /**
  * Hook que aplica filtros em cascata aos todos
- * Ordem: view → inputType → todoStatus → phase → island
+ * Ordem: view → inputType → todoStatus → phase → island → month → year
  */
 export const useFilteredTodos = (todos: SavedTodo[], filters: FilterState) => {
   return useMemo(() => {
@@ -54,6 +56,20 @@ export const useFilteredTodos = (todos: SavedTodo[], filters: FilterState) => {
         .filter((todo) => {
           if (!filters.island) return true;
           return todo.islandId === filters.island;
+        })
+        // 6. Filtrar por ano (se selecionado)
+        .filter((todo) => {
+          if (!filters.year) return true;
+          if (!todo.createdAt) return false;
+          const todoYear = new Date(todo.createdAt).getFullYear();
+          return todoYear === filters.year;
+        })
+        // 7. Filtrar por mês (se selecionado)
+        .filter((todo) => {
+          if (!filters.month) return true;
+          if (!todo.createdAt) return false;
+          const todoMonth = new Date(todo.createdAt).getMonth() + 1;
+          return todoMonth === filters.month;
         })
     );
   }, [todos, filters]);

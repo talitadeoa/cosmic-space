@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import GalaxySunsExperience from '@/app/sol/GalaxySunsExperience';
+import GalaxySunsExperience from '@/app/sol/visuals/GalaxySunsExperience';
 import type { ScreenProps } from '../types';
 
 const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {

@@ -185,7 +185,7 @@ const mockState = {
       depth: 0,
       phase: 'luaNova',
       islandId: 'ilha1',
-      project: 'Cosmic Space',
+      project: 'Flua',
       category: 'Docs',
       dueDate: '2025-12-25',
     },
@@ -196,7 +196,7 @@ const mockState = {
       depth: 0,
       phase: 'luaCrescente',
       islandId: 'ilha2',
-      project: 'Cosmic Space',
+      project: 'Flua',
       category: 'Dev',
       dueDate: '2025-12-24',
     },
@@ -224,7 +224,7 @@ const mockState = {
     },
   ],
 
-  selectedProject: 'Cosmic Space',
+  selectedProject: 'Flua',
   selectedIsland: 'ilha1',
   selectedPhase: 'luaNova',
 
