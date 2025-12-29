@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import RingGalaxyExperience from '@/app/galaxia/RingGalaxyExperience';
+import RingGalaxyExperience from '@/app/universo/galaxia/RingGalaxyExperience';
 import type { ScreenProps } from '../types';
 
 const RingGalaxyScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {

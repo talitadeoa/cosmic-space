@@ -7,7 +7,7 @@ const HOTSPOTS = [
   {
     id: 'galaxia',
     label: 'Galáxia',
-    href: '/galaxia',
+    href: '/universo/galaxia',
     top: '28%',
     left: '38%',
     size: '14%',
@@ -15,7 +15,7 @@ const HOTSPOTS = [
   {
     id: 'eclipse',
     label: 'Eclipse',
-    href: '/eclipse',
+    href: '/universo/eclipse',
     top: '16%',
     left: '50%',
     size: '6%',
@@ -23,7 +23,7 @@ const HOTSPOTS = [
   {
     id: 'sol',
     label: 'Sol',
-    href: '/sol',
+    href: '/universo/sol',
     top: '50%',
     left: '62%',
     size: '10%',
@@ -31,7 +31,7 @@ const HOTSPOTS = [
   {
     id: 'luas',
     label: 'Luas',
-    href: '/lua',
+    href: '/universo/lua',
     top: '24%',
     left: '16%',
     size: '12%',
@@ -39,7 +39,7 @@ const HOTSPOTS = [
   {
     id: 'planeta',
     label: 'Planeta',
-    href: '/planeta',
+    href: '/universo/planeta',
     top: '86%',
     left: '82%',
     size: '18%',

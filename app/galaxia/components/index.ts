@@ -1,1 +1,1 @@
-export { GalaxyInnerView } from './GalaxyInnerView';
+export { GalaxyInnerView } from '@/app/cosmos/components/GalaxyInnerView';

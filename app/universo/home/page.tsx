@@ -9,16 +9,16 @@ import HomeScreen from '@/app/cosmos/screens/HomeScreen';
 import type { ScreenId, ScreenProps, FocusState } from '@/app/cosmos/types';
 
 const SCREEN_ROUTE_MAP: Partial<Record<ScreenId, string>> = {
-  home: '/home',
-  solOrbit: '/sol',
-  galaxySuns: '/sol',
-  luaList: '/lua',
-  ringGalaxy: '/galaxia',
-  sidePlanetCard: '/planeta',
-  planetCardBelowSun: '/planeta',
-  planetCardStandalone: '/planeta',
-  columnSolLuaPlaneta: '/planeta',
-  eclipseProductivity: '/eclipse',
+  home: '/universo/home',
+  solOrbit: '/universo/sol',
+  galaxySuns: '/universo/sol',
+  luaList: '/universo/lua',
+  ringGalaxy: '/universo/galaxia',
+  sidePlanetCard: '/universo/planeta',
+  planetCardBelowSun: '/universo/planeta',
+  planetCardStandalone: '/universo/planeta',
+  columnSolLuaPlaneta: '/universo/planeta',
+  eclipseProductivity: '/universo/eclipse',
 };
 
 const getRouteForScreen = (screen: ScreenId) => SCREEN_ROUTE_MAP[screen] ?? '/cosmos';
