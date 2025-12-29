@@ -1,210 +1,156 @@
-# 📚 Documentação do Flua
+# 📚 Documentação Cosmic Space
 
-Bem-vindo à documentação do projeto Flua! Este diretório contém toda a informação necessária para entender e contribuir ao projeto.
+> Documentação consolidada e organizada do projeto Flua - Sistema lunar/astral integrado
 
----
-
-## 🎯 Consolidação de Componentes Globais (NOVO!)
-
-### Começar Aqui 👇
-
-Se você está aqui pela primeira vez, leia o **[INDICE_DOCUMENTACAO.md](./INDICE_DOCUMENTACAO.md)** para entender toda a documentação disponível.
-
-### Documentos Principais
-
-| Documento | Tempo | Propósito |
-|-----------|-------|----------|
-| **[EXEC_SUMMARY.md](./EXEC_SUMMARY.md)** | 5 min | Resumo executivo da consolidação |
-| **[GUIA_RAPIDO_COMPONENTES.md](./GUIA_RAPIDO_COMPONENTES.md)** | 5 min | Referência rápida de componentes |
-| **[DIAGRAMA_COMPONENTES_GLOBAIS.md](./DIAGRAMA_COMPONENTES_GLOBAIS.md)** | 10 min | Arquitetura visual |
-| **[COMPONENTES_GLOBAIS_CONSOLIDADOS.md](./COMPONENTES_GLOBAIS_CONSOLIDADOS.md)** | 15 min | Guia completo de uso |
-| **[MAPA_COMPONENTES_GLOBAIS.md](./MAPA_COMPONENTES_GLOBAIS.md)** | 20 min | Análise profunda |
+**🎉 DOCUMENTAÇÃO REORGANIZADA!** A documentação foi completamente reestruturada para facilitar a navegação. Documentação antiga está em [archive/](archive/).
 
 ---
 
-## 🚀 Primeiros Passos
+## 🚀 Início Rápido
 
-### 1. Entenda a Estrutura
+### Para Desenvolvedores
+1. **[Getting Started](guides/getting-started.md)** - Setup inicial e instalação (10 min)
+2. **[Autenticação](guides/authentication.md)** - Neon Auth setup (15 min)
+3. **[Componentes](guides/components.md)** - Guia de componentes (20 min)
+
+### Para Arquitetos
+- **[Visão Geral](architecture/overview.md)** - Arquitetura técnica completa
+
+---
+
+## 📖 Guias Disponíveis
+
+| Guia | Descrição | Tempo |
+|------|-----------|-------|
+| **[Getting Started](guides/getting-started.md)** | Setup do projeto e primeiros passos | 10 min |
+| **[Autenticação](guides/authentication.md)** | Setup Neon Auth e proteção de rotas | 15 min |
+| **[Componentes](guides/components.md)** | Componentes globais e layouts | 20 min |
+
+### Em Breve
+- [ ] Calendário Lunar - Sistema de calendário e lunações
+- [ ] Insights - Sistema de insights mensais/trimestrais
+- [ ] Responsividade - Guia de responsividade mobile
+- [ ] Database - Schema e queries
+
+---
+
+## 🏗️ Arquitetura Rápida
+
 ```
-Comece por: EXEC_SUMMARY.md ou GUIA_RAPIDO_COMPONENTES.md
+cosmic-space/
+├── app/              # Next.js App Router
+│   ├── (root)/      # Rotas protegidas (AuthGate)
+│   └── api/         # API routes
+├── components/       # Componentes reutilizáveis
+│   ├── auth/        # AuthGate, proteção
+│   ├── layouts/     # SpacePageLayout
+│   ├── providers/   # Contextos globais
+│   └── sync/        # AutoSync, LunationSync
+├── lib/             # Utilitários e helpers
+└── infra/db/        # Schemas Drizzle ORM
 ```
 
-### 2. Veja a Arquitetura
-```
-Veja: DIAGRAMA_COMPONENTES_GLOBAIS.md
-```
+**Arquitetura completa**: [architecture/overview.md](architecture/overview.md)
 
-### 3. Aprenda a Usar
-```
-Leia: COMPONENTES_GLOBAIS_CONSOLIDADOS.md
-```
+---
 
-### 4. Use no Código
+## 🔑 Conceitos Principais
+
+### Autenticação (Neon Auth)
+Sistema gerenciado baseado em Better Auth com OAuth Google/GitHub e proteção automática de rotas via `AuthGate`.
+
+### Componentes Globais
 ```tsx
-import { AuthGate } from '@/components/auth';
-import { SpacePageLayout } from '@/components/layouts';
-import { RadioPlayer } from '@/components/audio';
+// Layout padrão com menu e player
+<SpacePageLayout>
+  <YourContent />
+</SpacePageLayout>
+
+// Proteção de rota
+<AuthGate>
+  <ProtectedRoute />
+</AuthGate>
+```
+
+### Sistema Lunar
+- **AutoSyncLunar**: Sincronização automática de lunações
+- **LunationSync**: Sincronização manual via Google Calendar
+- **GalaxySunsSync**: Eventos especiais (eclipses)
+
+---
+
+## 📚 Referência Rápida
+
+| Componente | Localização | Uso |
+|-----------|-------------|-----|
+| `AuthGate` | `components/auth` | Proteção de rotas |
+| `SpacePageLayout` | `components/layouts` | Layout padrão |
+| `RadioPlayer` | `components/audio` | Player de rádio |
+| `AutoSyncLunar` | `components/sync` | Auto-sync lunações |
+| `NavMenu` | `components/navigation` | Menu principal |
+
+---
+
+## 🔧 Comandos Úteis
+
+```bash
+npm run dev          # Desenvolvimento
+npm run build        # Build produção
+npm run db:push      # Atualizar schema
+npm run db:studio    # Drizzle Studio
 ```
 
 ---
 
-## 📁 Estrutura de Componentes
+## 🗂️ Estrutura da Documentação
 
 ```
-components/
-├── auth/          🔐 Autenticação
-├── providers/     🎨 Contextos Globais
-├── layouts/       🎭 Layouts Padrão
-├── sync/          🔄 Sincronizações
-├── navigation/    🧭 Navegação
-├── audio/         🎵 Áudio/Mídia
-├── home/          🏡 Componentes Home
-├── timeline/      📅 Componentes Timeline
-└── shared/        ⭐ (Futuro) UI Primitivos
-```
-
-**Novo em cada pasta:** Arquivo `index.ts` com exports centralizados
-
----
-
-## 💡 Exemplos de Uso
-
-### Proteger Rota com Autenticação
-```tsx
-import { AuthGate } from '@/components/auth';
-
-export default function MyPage() {
-  return (
-    <AuthGate>
-      <h1>Conteúdo Protegido</h1>
-    </AuthGate>
-  );
-}
-```
-
-### Criar Página com Layout Padrão
-```tsx
-import { SpacePageLayout } from '@/components/layouts';
-
-export default function MyPage() {
-  return (
-    <SpacePageLayout allowBackNavigation>
-      <h1>Minha Página</h1>
-    </SpacePageLayout>
-  );
-}
-```
-
-### Sincronizar Lunações
-```tsx
-import { useSyncLunations } from '@/components/sync';
-
-export function SyncButton() {
-  const { sync, isSyncing } = useSyncLunations();
-  
-  return (
-    <button onClick={() => sync(2024)} disabled={isSyncing}>
-      {isSyncing ? 'Sincronizando...' : 'Sincronizar 2024'}
-    </button>
-  );
-}
+doc/
+├── README.md              # Índice principal (você está aqui)
+├── guides/                # Guias passo a passo
+│   ├── getting-started.md
+│   ├── authentication.md
+│   └── components.md
+├── architecture/          # Arquitetura técnica
+│   └── overview.md
+├── reference/             # Referências de API
+└── archive/               # Documentação legada
 ```
 
 ---
 
-## 📚 Documentação Completa
+## 🆘 Troubleshooting
 
-### Consolidação de Componentes
-- [INDICE_DOCUMENTACAO.md](./INDICE_DOCUMENTACAO.md) - Índice de toda a documentação
-- [EXEC_SUMMARY.md](./EXEC_SUMMARY.md) - Resumo executivo
-- [GUIA_RAPIDO_COMPONENTES.md](./GUIA_RAPIDO_COMPONENTES.md) - Referência rápida
-- [DIAGRAMA_COMPONENTES_GLOBAIS.md](./DIAGRAMA_COMPONENTES_GLOBAIS.md) - Arquitetura visual
-- [COMPONENTES_GLOBAIS_CONSOLIDADOS.md](./COMPONENTES_GLOBAIS_CONSOLIDADOS.md) - Guia completo
-- [MAPA_COMPONENTES_GLOBAIS.md](./MAPA_COMPONENTES_GLOBAIS.md) - Análise detalhada
-- [RESUMO_CONSOLIDACAO.md](./RESUMO_CONSOLIDACAO.md) - Visão geral
-- [CONSOLIDACAO_COMPLETA.md](./CONSOLIDACAO_COMPLETA.md) - Status final
-
-### Sistema Geral
-- [ARQUITETURA.md](./ARQUITETURA.md) - Arquitetura geral do sistema
-- [AUTH_SETUP.md](./AUTH_SETUP.md) - Configuração de autenticação
-- [SETUP_AUTENTICACAO.md](./SETUP_AUTENTICACAO.md) - Guia de autenticação
-
-### Recursos Específicos
-- [LUALIST_QUICKSTART.md](./LUALIST_QUICKSTART.md) - Guia rápido de Lualist
-- [INSIGHTS_INDICE.md](./INSIGHTS_INDICE.md) - Documentação de Insights
-- [PLANETA_ROTA_ESTRUTURA.md](./PLANETA_ROTA_ESTRUTURA.md) - Estrutura da rota Planeta
+| Problema | Solução |
+|----------|---------|
+| **Erro de auth** | Veja [guides/authentication.md](guides/authentication.md#troubleshooting) |
+| **Database error** | Verifique `DATABASE_URL` no `.env.local` |
+| **Lunações não aparecem** | Execute sync manual ou aguarde `AutoSyncLunar` |
+| **Build falha** | Limpe cache: `rm -rf .next && npm run build` |
 
 ---
 
-## 🔍 Encontrar o que Procura
+## 📦 Migração da Documentação
 
-### Por Responsabilidade
-- **Autenticação?** → [GUIA_RAPIDO_COMPONENTES.md](./GUIA_RAPIDO_COMPONENTES.md#-autenticação)
-- **Layouts?** → [GUIA_RAPIDO_COMPONENTES.md](./GUIA_RAPIDO_COMPONENTES.md#-layouts)
-- **Sincronizações?** → [COMPONENTES_GLOBAIS_CONSOLIDADOS.md](./COMPONENTES_GLOBAIS_CONSOLIDADOS.md#-sincronizações-globais)
-- **Navegação?** → [DIAGRAMA_COMPONENTES_GLOBAIS.md](./DIAGRAMA_COMPONENTES_GLOBAIS.md)
+A documentação foi **reorganizada em Dezembro/2024**:
 
-### Por Tipo de Leitor
-- **Desenvolvedor?** → Comece por [GUIA_RAPIDO_COMPONENTES.md](./GUIA_RAPIDO_COMPONENTES.md)
-- **Arquiteto?** → Comece por [DIAGRAMA_COMPONENTES_GLOBAIS.md](./DIAGRAMA_COMPONENTES_GLOBAIS.md)
-- **Gerente?** → Comece por [EXEC_SUMMARY.md](./EXEC_SUMMARY.md)
-- **Técnico Lead?** → Comece por [MAPA_COMPONENTES_GLOBAIS.md](./MAPA_COMPONENTES_GLOBAIS.md)
+- ✅ **Antes**: 108 arquivos fragmentados
+- ✅ **Agora**: ~10 guias consolidados
+- ✅ **Resultado**: Navegação clara e sem duplicação
+
+Documentação antiga preservada em [archive/](archive/).
 
 ---
 
-## ✨ Status da Consolidação
+## 🤝 Contribuindo
 
-| Aspecto | Status |
-|---------|--------|
-| **Mapeamento** | ✅ Completo |
-| **Estrutura** | ✅ Implementada |
-| **Documentação** | ✅ Completa |
-| **Testes** | ✅ Passando |
-| **Build** | ✅ Sucesso |
+1. Crie uma branch: `git checkout -b feature/nova-feature`
+2. Commits semânticos: `feat:`, `fix:`, `docs:`
+3. Abra um Pull Request
+4. Aguarde code review
 
 ---
 
-## 🎯 Próximos Passos
+**Última atualização**: Dezembro 2024
 
-### Curto Prazo
-- [ ] Implementar `GalaxySunsSync`
-- [ ] Criar `components/shared/` com UI primitivos
-- [ ] Adicionar testes unitários
-
-### Médio Prazo
-- [ ] Criar wrapper `RootProviders`
-- [ ] Documentar padrões para novos componentes
-- [ ] Migrar componentes de domínio para `features/`
-
-### Longo Prazo
-- [ ] Code splitting e lazy loading
-- [ ] Testes e2e para sincronizações
-- [ ] Monitoramento e observabilidade
-
----
-
-## 📞 Suporte
-
-Não encontrou o que procurava?
-
-1. Consulte o [INDICE_DOCUMENTACAO.md](./INDICE_DOCUMENTACAO.md)
-2. Procure por palavra-chave na documentação
-3. Verifique exemplos em [COMPONENTES_GLOBAIS_CONSOLIDADOS.md](./COMPONENTES_GLOBAIS_CONSOLIDADOS.md)
-
----
-
-## 🎊 Bem-vindo ao Flua!
-
-Agora você tem toda a documentação necessária para:
-- ✅ Entender a arquitetura
-- ✅ Usar os componentes corretamente
-- ✅ Contribuir ao projeto
-- ✅ Escalar com confiança
-
-**Comece pelo [GUIA_RAPIDO_COMPONENTES.md](./GUIA_RAPIDO_COMPONENTES.md) agora!**
-
----
-
-**Última Atualização:** 28 de dezembro de 2025  
-**Status:** ✅ Pronto para Produção  
-**Qualidade:** ⭐⭐⭐⭐⭐
+**📌 Comece por**: [guides/getting-started.md](guides/getting-started.md)
