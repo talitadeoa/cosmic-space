@@ -196,11 +196,11 @@ const mockState = {
       depth: 0,
       phase: 'luaNova',
       islandId: 'ilha1',
-      project: 'Cosmic Space',
+      project: 'Flua',
     },
     // ... mais tarefas
   ],
-  selectedProject: 'Cosmic Space',
+  selectedProject: 'Flua',
   selectedIsland: 'ilha1',
   selectedPhase: 'luaNova',
   moonCounts: {

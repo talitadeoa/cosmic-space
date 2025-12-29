@@ -1,7 +1,7 @@
 /**
  * 🏝️ Consolidação de Ilhas
  *
- * Single source of truth para todas as ilhas do Cosmic Space
+ * Single source of truth para todas as ilhas do Flua
  * Evita duplicação de ID e metadata em múltiplos arquivos
  */
 

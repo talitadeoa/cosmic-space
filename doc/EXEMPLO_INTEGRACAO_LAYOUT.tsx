@@ -5,7 +5,7 @@ import { LunationSync } from '@/components/LunationSync';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Cosmic Space',
+  title: 'Flua',
   description: 'Universo de lunações e insights pessoais',
 };
 

@@ -6,7 +6,7 @@
 ║          ✅ AUTENTICAÇÃO & COLETA DE DADOS                ║
 ║              IMPLEMENTAÇÃO COMPLETA                        ║
 ║                                                            ║
-║             Cosmic Space - Dezembro 2025                  ║
+║             Flua - Dezembro 2025                  ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
 ```

@@ -1,6 +1,6 @@
-# 📚 Documentação do Cosmic Space
+# 📚 Documentação do Flua
 
-Bem-vindo à documentação do projeto Cosmic Space! Este diretório contém toda a informação necessária para entender e contribuir ao projeto.
+Bem-vindo à documentação do projeto Flua! Este diretório contém toda a informação necessária para entender e contribuir ao projeto.
 
 ---
 
@@ -193,7 +193,7 @@ Não encontrou o que procurava?
 
 ---
 
-## 🎊 Bem-vindo ao Cosmic Space!
+## 🎊 Bem-vindo ao Flua!
 
 Agora você tem toda a documentação necessária para:
 - ✅ Entender a arquitetura

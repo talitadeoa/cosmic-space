@@ -165,7 +165,7 @@ import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
     /* ... */
   }}
   selectedPhase={selectedPhase}
-  filterLabel="Cosmic Space"
+  filterLabel="Flua"
 />;
 ```
 

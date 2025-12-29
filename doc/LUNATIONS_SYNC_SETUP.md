@@ -132,7 +132,7 @@ export function LunationList() {
 3. Habilite "Google Sheets API"
 4. Crie Service Account:
    - Service Accounts → Create Service Account
-   - Nome: `cosmic-lunations-sync`
+   - Nome: `flua-lunations-sync`
    - Grant Basic Editor role
    - Create JSON key
 5. Copie `GOOGLE_SA_EMAIL` e `GOOGLE_SA_KEY` para `.env.local`

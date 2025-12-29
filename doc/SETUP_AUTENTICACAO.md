@@ -1,8 +1,8 @@
-# 🌌 Sistema de Autenticação e Coleta de Dados - Cosmic Space
+# 🌌 Sistema de Autenticação e Coleta de Dados - Flua
 
 ## 📋 O que foi criado
 
-Este guia detalha a implementação de um sistema de autenticação por senha e coleta de dados que alimenta uma planilha Google Sheets na aplicação Cosmic Space.
+Este guia detalha a implementação de um sistema de autenticação por senha e coleta de dados que alimenta uma planilha Google Sheets na aplicação Flua.
 
 ### Componentes Criados
 

@@ -1,4 +1,4 @@
-# 🌌 ÍNDICE DE DOCUMENTAÇÃO - Cosmic Space Auth
+# 🌌 ÍNDICE DE DOCUMENTAÇÃO - Flua Auth
 
 > Guia de Navegação para Sistema de Autenticação & Coleta de Dados
 

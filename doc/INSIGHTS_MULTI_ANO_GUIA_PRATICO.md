@@ -153,13 +153,13 @@ O `buildAnnualStorageKey` agora inclui o ano:
 ```typescript
 // Antes (❌):
 buildAnnualStorageKey(2025);
-// → "cosmic_insight_annual_2025"
+// → "flua_insight_annual_2025"
 
 // Depois (✅):
 buildAnnualStorageKey(selectedYear);
-// → "cosmic_insight_annual_2023"  (se clicou em 2023)
-// → "cosmic_insight_annual_2024"  (se clicou em 2024)
-// → "cosmic_insight_annual_2025"  (se clicou em 2025)
+// → "flua_insight_annual_2023"  (se clicou em 2023)
+// → "flua_insight_annual_2024"  (se clicou em 2024)
+// → "flua_insight_annual_2025"  (se clicou em 2025)
 
 // Cada ano tem sua própria chave de storage local!
 ```

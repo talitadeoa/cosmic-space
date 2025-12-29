@@ -2,7 +2,7 @@
 
 ## 🎯 Objetivo Alcançado
 
-Mapear, organizar e consolidar os **11 componentes globais** do projeto Cosmic Space de forma clara, escalável e mantível.
+Mapear, organizar e consolidar os **11 componentes globais** do projeto Flua de forma clara, escalável e mantível.
 
 ---
 

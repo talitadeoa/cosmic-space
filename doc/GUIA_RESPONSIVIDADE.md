@@ -1,4 +1,4 @@
-# ⚡ Guia Rápido - Responsividade do Cosmic Space
+# ⚡ Guia Rápido - Responsividade do Flua
 
 ## 🚀 Quick Start
 

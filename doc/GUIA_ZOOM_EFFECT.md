@@ -1,4 +1,4 @@
-# Guia de Efeito de Zoom Interativo - Cosmic Space
+# Guia de Efeito de Zoom Interativo - Flua
 
 Este documento explica em detalhes os dois efeitos de zoom implementados no projeto e como utilizá-los em outros repositórios.
 

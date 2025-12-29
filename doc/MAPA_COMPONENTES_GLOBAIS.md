@@ -1,4 +1,4 @@
-# 📦 Mapa de Componentes Globais - Cosmic Space
+# 📦 Mapa de Componentes Globais - Flua
 
 ## 🗂️ Estrutura Atual
 

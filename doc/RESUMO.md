@@ -2,7 +2,7 @@
 
 ## ✨ O que foi implementado
 
-Você agora tem um **sistema completo de autenticação + coleta de dados** no seu Cosmic Space:
+Você agora tem um **sistema completo de autenticação + coleta de dados** no seu Flua:
 
 ### 🔐 Autenticação
 

@@ -22,7 +22,7 @@ const INITIAL_STATE: AuthState = {
   user: null,
 };
 
-const AUTH_CACHE_KEY = 'cosmic-space-auth-state';
+const AUTH_CACHE_KEY = 'flua-auth-state';
 
 type CachedAuthPayload = Pick<AuthState, 'isAuthenticated' | 'user' | 'error'>;
 

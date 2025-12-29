@@ -397,7 +397,7 @@ R: Sim! Basta modificar o script de sync.
 
 ## 🎊 Conclusão
 
-Você tem uma **solução robusta, escalável e bem documentada** para gerenciar todas as informações de lunações em sua aplicação Cosmic Space!
+Você tem uma **solução robusta, escalável e bem documentada** para gerenciar todas as informações de lunações em sua aplicação Flua!
 
 **Próximo passo:** Execute `node scripts/sync-lunations.js` e comece a usar! 🌙
 

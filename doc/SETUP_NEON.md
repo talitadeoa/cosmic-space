@@ -1,4 +1,4 @@
-# 🚀 Configurando Neon (PostgreSQL) no Cosmic Space
+# 🚀 Configurando Neon (PostgreSQL) no Flua
 
 Persistência das sessões e formulários usando PostgreSQL no Neon, substituindo o Google Sheets.
 

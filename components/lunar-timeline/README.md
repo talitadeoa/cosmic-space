@@ -392,7 +392,7 @@ function EventCalendar() {
 
 ## 📄 Licença
 
-Parte do projeto Cosmic Space.
+Parte do projeto Flua.
 
 ## 🙏 Créditos
 

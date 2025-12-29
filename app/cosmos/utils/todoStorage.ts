@@ -14,7 +14,7 @@ export type SavedTodo = ParsedTodoItem & {
   createdAt?: string;
 };
 
-export const TODO_STORAGE_KEY = 'cosmic_space_todos_salvos';
+export const TODO_STORAGE_KEY = 'flua_todos_salvos';
 
 export const phaseLabels: Record<MoonPhase, string> = MOON_PHASE_LABELS;
 export const phaseOrder: MoonPhase[] = [...MOON_PHASES];
