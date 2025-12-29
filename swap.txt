@@ -62,3 +62,4 @@ A rota lua está mais “genérica” (AuthGate + SpacePageLayout + LuaScreen).
 Sugestão: alinhar a nomenclatura para refletir o universo de forma consistente (Scene, Orbit, Screen, etc). Isso melhora clareza e identidade arquitetural.
 (Ref: app/planeta/page.tsx, app/lua/page.tsx)
 
+---
