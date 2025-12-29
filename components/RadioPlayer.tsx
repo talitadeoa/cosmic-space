@@ -8,34 +8,28 @@ type Station = (RadioStation & { type?: 'radio' }) | (YouTubeStation & { type: '
 
 const STATIONS: Station[] = [
   {
-    id: 'ambient',
-    name: '🌌 Cosmic Ambient',
-    url: 'https://stream.zeno.fm/qewbq9kvnqruv',
+    id: 'space-station',
+    name: '🌌 SomaFM Space Station',
+    url: 'https://ice1.somafm.com/space-station-128-mp3',
     type: 'radio',
   },
   {
-    id: 'lo-fi',
-    name: '🎵 Lo-Fi Beats',
-    url: 'https://stream.zeno.fm/7npc13b3h5quv',
+    id: 'drone-zone',
+    name: '🛰️ SomaFM Drone Zone',
+    url: 'https://ice1.somafm.com/dronezone-128-mp3',
     type: 'radio',
   },
   {
-    id: 'space-sounds',
-    name: '🚀 Space Sounds',
-    url: 'https://stream.zeno.fm/1n0xa7yft6zuv',
+    id: 'deepspace-one',
+    name: '🚀 SomaFM Deep Space One',
+    url: 'https://ice1.somafm.com/deepspaceone-128-mp3',
     type: 'radio',
   },
   {
-    id: 'chillwave',
-    name: '🌊 Chillwave',
-    url: 'https://stream.zeno.fm/kpv77c4tnfruv',
+    id: 'beatblender',
+    name: '🌊 SomaFM Beat Blender',
+    url: 'https://ice1.somafm.com/beatblender-128-mp3',
     type: 'radio',
-  },
-  {
-    id: 'cyberpunk',
-    name: '🎬 Cyberpunk',
-    videoId: 'KyfvIw48V6g',
-    type: 'youtube',
   },
 ];
 
@@ -45,7 +39,7 @@ export default function RadioPlayer() {
     currentStation: currentAudioStation,
     volume: audioVolume,
     setVolume: setAudioVolume,
-    toggle: toggleAudio,
+    play: playAudio,
     pause: pauseAudio,
     isLoading: isAudioLoading,
   } = useAudioPlayer();
@@ -55,7 +49,7 @@ export default function RadioPlayer() {
     currentStation: currentYouTubeStation,
     volume: youtubeVolume,
     setVolume: setYoutubeVolume,
-    toggle: toggleYouTube,
+    play: playYouTube,
     pause: pauseYouTube,
     isLoading: isYouTubeLoading,
     containerRef: youtubeContainerRef,
@@ -77,11 +71,11 @@ export default function RadioPlayer() {
   const handleSelect = (station: Station) => {
     if (station.type === 'youtube') {
       pauseAudio();
-      toggleYouTube(station);
+      playYouTube(station);
       setCurrentType('youtube');
     } else {
       pauseYouTube();
-      toggleAudio(station);
+      playAudio(station);
       setCurrentType('radio');
     }
   };

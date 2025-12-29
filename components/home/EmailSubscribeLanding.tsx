@@ -1,11 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 import EmailSignupForm from '@/components/home/EmailSignupForm';
+import { SpaceBackground } from '@/app/cosmos/components/SpaceBackground';
 
 export default function EmailSubscribeLanding() {
   const year = new Date().getFullYear();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-6 sm:px-6">
+    <div className="relative min-h-screen overflow-hidden">
+      <SpaceBackground />
+      {/* Gradientes originais da página */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-indigo-500/10 via-sky-500/5 to-rose-500/10" />
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-6 sm:px-6">
       <div className="w-full max-w-xl rounded-2xl sm:rounded-3xl border border-slate-800 bg-black/40 px-4 py-6 sm:px-6 sm:py-8 shadow-2xl backdrop-blur-md">
         <div className="mb-8 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-indigo-300/80">Em breve</p>
@@ -36,5 +43,6 @@ export default function EmailSubscribeLanding() {
       </div>
       <p className="mt-4 text-[11px] text-slate-400/80 text-center">© {year} Construido no hiperespaço</p>
     </main>
+    </div>
   );
 }

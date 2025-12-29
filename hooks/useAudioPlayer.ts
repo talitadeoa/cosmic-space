@@ -41,11 +41,18 @@ export const useAudioPlayer = () => {
       const audio = new Audio();
       audioRef.current = audio;
       _setupAudioListeners(audio);
+      if (typeof document !== 'undefined') {
+        audio.setAttribute('data-radio-player', 'true');
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+      }
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+      if (!audioRef.current) return;
+      audioRef.current.pause();
+      if (audioRef.current.parentNode) {
+        audioRef.current.parentNode.removeChild(audioRef.current);
       }
     };
   }, []);
@@ -61,8 +68,13 @@ export const useAudioPlayer = () => {
     if (!audioRef.current) return;
 
     setCurrentStation(station);
-    audioRef.current.src = station.url;
-    audioRef.current.play().catch(_handlePlayError);
+    const audio = audioRef.current;
+    if (audio.src !== station.url) {
+      audio.pause();
+      audio.src = station.url;
+      audio.load();
+    }
+    audio.play().catch(_handlePlayError);
   };
 
   const pause = () => {
