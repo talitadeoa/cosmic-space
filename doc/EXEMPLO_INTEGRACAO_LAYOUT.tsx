@@ -1,19 +1,15 @@
 // Exemplo de como integrar LunationSync em app/layout.tsx
 
-import type { Metadata } from "next";
-import { LunationSync } from "@/components/LunationSync";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { LunationSync } from '@/components/sync';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Cosmic Space",
-  description: "Universo de lunações e insights pessoais",
+  title: 'Flua',
+  description: 'Universo de lunações e insights pessoais',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <body>
@@ -37,7 +33,7 @@ export default function RootLayout({
 
 /**
  * 💡 Como funciona:
- * 
+ *
  * 1. Componente monta e inicia sincronização em background
  * 2. Para cada ano:
  *    - Verifica se já existe no banco com source=db
@@ -45,11 +41,11 @@ export default function RootLayout({
  *    - Salva no banco com POST /api/moons/lunations
  * 3. Tudo acontece sem bloquear a renderização
  * 4. LuaListScreen automaticamente usa dados do banco quando disponível
- * 
+ *
  * 📊 Performance:
  * - Primeira carga: ~1-2 segundos (gera + salva)
  * - Cargas posteriores: ~0ms (já no banco)
- * 
+ *
  * 🎯 Resultado:
  * - Usuário não vê delays
  * - Dados estão sempre sincronizados

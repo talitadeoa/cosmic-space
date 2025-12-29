@@ -9,12 +9,9 @@ export async function POST(request: NextRequest) {
   try {
     // Verificar autenticação
     const token = request.cookies.get('auth_token')?.value;
-    
+
     if (!token || !validateToken(token)) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
     const data = await request.json();
@@ -48,7 +45,11 @@ export async function POST(request: NextRequest) {
     // Calcular porcentagem de progresso
     const progressPercentage = totalCount > 0 ? Math.round((checkCount / totalCount) * 100) : 0;
     const progressBar = Math.ceil(progressPercentage / 12.5); // 8 barras (100 / 12.5)
-    const progressMoons = Array(progressBar).fill('🌕').join('') + Array(8 - progressBar).fill('🌑').join('');
+    const progressMoons =
+      Array(progressBar).fill('🌕').join('') +
+      Array(8 - progressBar)
+        .fill('🌑')
+        .join('');
 
     // Extrair user_id do token
     const tokenPayload = getTokenPayload(token);
@@ -100,25 +101,19 @@ export async function POST(request: NextRequest) {
     const success = await appendToSheet(sheetData);
 
     if (!success) {
-      return NextResponse.json(
-        { error: 'Erro ao salvar dados' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Erro ao salvar dados' }, { status: 500 });
     }
 
     return NextResponse.json(
-      { 
-        success: true, 
+      {
+        success: true,
         message: 'Fase lunar registrada com sucesso',
-        data: sheetData 
+        data: sheetData,
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('Erro ao processar formulário de fase lunar:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

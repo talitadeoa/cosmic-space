@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState } from 'react';
 
 const isValidEmail = (email: string): boolean => /.+@.+\..+/.test(email);
 
 export default function EmailSignupForm() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,17 +16,17 @@ export default function EmailSignupForm() {
     setSuccess(false);
 
     if (!isValidEmail(email)) {
-      setError("Hmm, isso não parece um e-mail válido.");
+      setError('Hmm, isso não parece um e-mail válido.');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/subscribe", {
-        method: "POST",
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email }),
       });
@@ -34,15 +34,15 @@ export default function EmailSignupForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Erro ao registrar email");
+        setError(data.error || 'Erro ao registrar email');
         return;
       }
 
       setSuccess(true);
-      setEmail("");
+      setEmail('');
     } catch (err) {
-      setError("Erro ao conectar com o servidor");
-      console.error("Erro:", err);
+      setError('Erro ao conectar com o servidor');
+      console.error('Erro:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -85,9 +85,7 @@ export default function EmailSignupForm() {
         className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-500 via-sky-500 to-rose-500 px-4 py-3 sm:py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/40 transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
         <span className="absolute inset-0 bg-white/15 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        <span className="relative">
-          {isSubmitting ? "Enviando..." : "Quero ser avisado(a)"}
-        </span>
+        <span className="relative">{isSubmitting ? 'Enviando...' : 'Quero ser avisado(a)'}</span>
       </button>
     </form>
   );

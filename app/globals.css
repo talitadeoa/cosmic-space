@@ -14,7 +14,7 @@ html {
   overflow-y: scroll;
 }
 
-html[style*="overflow: hidden"] {
+html[style*='overflow: hidden'] {
   overflow-y: scroll !important;
 }
 
@@ -25,4 +25,3 @@ input:focus-visible {
   outline: none;
   @apply ring-2 ring-indigo-400 ring-offset-2 ring-offset-space-dark;
 }
-

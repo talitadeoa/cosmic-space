@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
     const { insight, year } = body;
 
     if (!insight) {
-      return NextResponse.json(
-        { error: 'Insight é obrigatório' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Insight é obrigatório' }, { status: 400 });
     }
 
     const selectedYear = year ?? new Date().getFullYear();
@@ -63,4 +60,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
-

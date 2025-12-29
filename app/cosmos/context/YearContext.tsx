@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface YearContextType {
   selectedYear: number;
@@ -22,7 +22,7 @@ export function YearProvider({ children }: { children: ReactNode }) {
 export function useYear() {
   const context = useContext(YearContext);
   if (!context) {
-    throw new Error("useYear deve ser usado dentro de um YearProvider");
+    throw new Error('useYear deve ser usado dentro de um YearProvider');
   }
   return context;
 }

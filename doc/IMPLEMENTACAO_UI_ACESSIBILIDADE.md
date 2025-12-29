@@ -3,6 +3,7 @@
 ## ✅ O que foi mudado
 
 ### 1. **Empty State Real**
+
 - ✨ Substituído o item "Nenhum to-do salvo" por um componente `EmptyState` dedicado
 - 📍 Renderiza APENAS quando `tasks.length === 0`
 - 🎨 Estilo visual distinto (opacidade 60%, borda tracejada, ícone sutil)
@@ -10,6 +11,7 @@
 - 📄 Arquivo: [`app/cosmos/components/EmptyState.tsx`](./EmptyState.tsx)
 
 **Classes Tailwind usadas:**
+
 ```tailwind
 border-dashed border-slate-700/40 bg-slate-900/30 opacity-60
 ```
@@ -17,6 +19,7 @@ border-dashed border-slate-700/40 bg-slate-900/30 opacity-60
 ---
 
 ### 2. **Tabs Acessíveis (Preparado para futuro)**
+
 - ♿ Implementado padrão WAI-ARIA completo
 - 🎯 `role="tablist"` + `role="tab"` + `aria-selected` + `aria-controls`
 - ⌨️ Navegação por teclado: Setas (←→↓↑), Home, End
@@ -24,6 +27,7 @@ border-dashed border-slate-700/40 bg-slate-900/30 opacity-60
 - 📄 Arquivo: [`app/cosmos/components/AccessibleTabs.tsx`](./AccessibleTabs.tsx)
 
 **Estados visuais:**
+
 ```tailwind
 Ativo:    border-indigo-400 bg-indigo-500/20 text-indigo-100
 Inativo:  border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60
@@ -33,6 +37,7 @@ Focus:    focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-
 ---
 
 ### 3. **Ilhas com Estados Ativos e Navegação**
+
 - ✅ Componente `IslandsList` com 4 ilhas (Ilha 1..4)
 - 👁️ Seleção visual: borda + glow + escala ao selecionar
 - ⌨️ Navegação: Tab/Enter/Space
@@ -41,6 +46,7 @@ Focus:    focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-
 - 📄 Arquivo: [`app/cosmos/components/IslandsList.tsx`](./IslandsList.tsx)
 
 **Estado ativo:**
+
 ```tailwind
 border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-500/20
 ```
@@ -48,6 +54,7 @@ border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-50
 ---
 
 ### 4. **Fases Lunares Selecionáveis**
+
 - 🌙 Componente `MoonPhasesRail` com as 4 fases lunares
 - ✨ Emoji + Label + Badge de contagem
 - 👁️ Fase selecionada: borda destacada + scale-105 + glow
@@ -56,11 +63,13 @@ border-indigo-300/80 bg-indigo-500/20 text-indigo-100 shadow-md shadow-indigo-50
 - 📄 Arquivo: [`app/cosmos/components/MoonPhasesRail.tsx`](./MoonPhasesRail.tsx)
 
 **Estado selecionado:**
+
 ```tailwind
 border-indigo-400 bg-indigo-500/30 text-indigo-100 shadow-lg shadow-indigo-500/30 scale-105
 ```
 
 **Contadores (badges):**
+
 ```tailwind
 rounded-full bg-indigo-600 px-2 py-1 text-[0.6rem] font-bold text-white
 ```
@@ -68,12 +77,14 @@ rounded-full bg-indigo-600 px-2 py-1 text-[0.6rem] font-bold text-white
 ---
 
 ### 5. **Filtragem por Fase Lunar**
+
 - 🎯 Ao selecionar uma fase em `MoonPhasesRail`, a lista de tarefas filtra por essa fase
 - 🔄 Estado `selectedPhase` controlado no `SidePlanetCardScreen`
 - 📊 Badge de contagem mostra quantas tarefas existem por fase
 - 🎨 EmptyState customizado para fase específica
 
 **Lógica:**
+
 ```tsx
 const displayedTodos = selectedPhase
   ? savedTodos.filter((todo) => todo.phase === selectedPhase)
@@ -83,12 +94,14 @@ const displayedTodos = selectedPhase
 ---
 
 ### 6. **Preparação para Drag-and-Drop (base lógica)**
+
 - 🎯 Handler `onAssignPhase(todoId, phase)` já implementado
 - 💾 Integrado com `usePhaseInputs` para logging
 - 🔌 Plugado na UI (SavedTodosPanel recebe `onAssignPhase`)
 - 📦 Base pronta para completar DnD visual no futuro
 
 **Handler:**
+
 ```tsx
 const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
   // Atualiza tarefa com nova fase
@@ -100,6 +113,7 @@ const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
 ---
 
 ### 7. **SavedTodosPanel Refatorado**
+
 - ✨ Usa novo componente `EmptyState`
 - 🔍 Filtra por fase lunar se `selectedPhase` definida
 - 🎨 Título dinâmico: muda quando fase selecionada
@@ -108,6 +122,7 @@ const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
 ---
 
 ### 8. **Layout Responsivo**
+
 - 📱 Mobile: coluna central com abas, ilhas + fases abaixo
 - 🖥️ Tablet: layout em 2 colunas
 - 💻 Desktop: layout 3 colunas (esquerda: lua + ilhas, centro: tarefas, direita: fases)
@@ -118,11 +133,13 @@ const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
 ## 🎨 Classes Tailwind por Estado
 
 ### Empty State
+
 ```tailwind
 border-dashed border-slate-700/40 bg-slate-900/30 opacity-60 transition-opacity
 ```
 
 ### Item Ativo (Tabs, Ilhas, Fases)
+
 ```tailwind
 border-indigo-400 (ou indigo-300/80)
 bg-indigo-500/20 (ou indigo-500/30)
@@ -131,12 +148,14 @@ shadow-md shadow-indigo-500/20
 ```
 
 ### Item Hover
+
 ```tailwind
 hover:border-indigo-400/60
 hover:bg-slate-900
 ```
 
 ### Focus Ring (Teclado)
+
 ```tailwind
 focus:outline-none
 focus-visible:ring-2
@@ -146,6 +165,7 @@ focus-visible:ring-offset-slate-950
 ```
 
 ### Badges e Contadores
+
 ```tailwind
 rounded-full bg-indigo-600 px-2 py-1 text-[0.6rem] font-bold text-white
 ```
@@ -159,55 +179,55 @@ rounded-full bg-indigo-600 px-2 py-1 text-[0.6rem] font-bold text-white
 const mockState = {
   savedTodos: [
     {
-      id: "todo-1",
-      text: "Revisar documentação",
+      id: 'todo-1',
+      text: 'Revisar documentação',
       completed: false,
       depth: 0,
-      phase: "luaNova",
-      islandId: "ilha1",
-      project: "Cosmic Space",
-      category: "Docs",
-      dueDate: "2025-12-25",
+      phase: 'luaNova',
+      islandId: 'ilha1',
+      project: 'Flua',
+      category: 'Docs',
+      dueDate: '2025-12-25',
     },
     {
-      id: "todo-2",
-      text: "Implementar componentes",
+      id: 'todo-2',
+      text: 'Implementar componentes',
       completed: true,
       depth: 0,
-      phase: "luaCrescente",
-      islandId: "ilha2",
-      project: "Cosmic Space",
-      category: "Dev",
-      dueDate: "2025-12-24",
+      phase: 'luaCrescente',
+      islandId: 'ilha2',
+      project: 'Flua',
+      category: 'Dev',
+      dueDate: '2025-12-24',
     },
     {
-      id: "todo-3",
-      text: "Testar acessibilidade",
+      id: 'todo-3',
+      text: 'Testar acessibilidade',
       completed: false,
       depth: 1,
-      phase: "luaCheia",
+      phase: 'luaCheia',
       islandId: null,
-      project: "QA",
-      category: "Testing",
-      dueDate: "2025-12-26",
+      project: 'QA',
+      category: 'Testing',
+      dueDate: '2025-12-26',
     },
     {
-      id: "todo-4",
-      text: "Deploy para produção",
+      id: 'todo-4',
+      text: 'Deploy para produção',
       completed: false,
       depth: 0,
-      phase: "luaMinguante",
-      islandId: "ilha3",
-      project: "DevOps",
+      phase: 'luaMinguante',
+      islandId: 'ilha3',
+      project: 'DevOps',
       category: null,
       dueDate: null,
     },
   ],
-  
-  selectedProject: "Cosmic Space",
-  selectedIsland: "ilha1",
-  selectedPhase: "luaNova",
-  
+
+  selectedProject: 'Flua',
+  selectedIsland: 'ilha1',
+  selectedPhase: 'luaNova',
+
   moonCounts: {
     luaNova: 1,
     luaCrescente: 1,
@@ -218,6 +238,7 @@ const mockState = {
 ```
 
 ### Como usar no componente:
+
 ```tsx
 // No SidePlanetCardScreen, substitua as inicializações:
 const [savedTodos, setSavedTodos] = useState<SavedTodo[]>(mockState.savedTodos);
@@ -229,15 +250,15 @@ const [selectedIsland, setSelectedIsland] = useState<IslandId | null>(mockState.
 
 ## 🔗 Arquivos Criados
 
-| Arquivo | Responsabilidade |
-|---------|------------------|
-| `app/cosmos/types/screen.ts` | Tipos estendidos (TaskWithState, IslandId, ScreenSelectionState) |
-| `app/cosmos/components/EmptyState.tsx` | Empty State visual |
-| `app/cosmos/components/AccessibleTabs.tsx` | Tabs com padrão WAI-ARIA |
-| `app/cosmos/components/IslandsList.tsx` | Seleção de ilhas com estados |
-| `app/cosmos/components/MoonPhasesRail.tsx` | Fases lunares selecionáveis |
-| `app/cosmos/components/SavedTodosPanel.tsx` | Refatorado com EmptyState e filtros |
-| `app/cosmos/screens/SidePlanetCardScreen.tsx` | Screen principal atualizada |
+| Arquivo                                       | Responsabilidade                                                 |
+| --------------------------------------------- | ---------------------------------------------------------------- |
+| `app/cosmos/types/screen.ts`                  | Tipos estendidos (TaskWithState, IslandId, ScreenSelectionState) |
+| `app/cosmos/components/EmptyState.tsx`        | Empty State visual                                               |
+| `app/cosmos/components/AccessibleTabs.tsx`    | Tabs com padrão WAI-ARIA                                         |
+| `app/cosmos/components/IslandsList.tsx`       | Seleção de ilhas com estados                                     |
+| `app/cosmos/components/MoonPhasesRail.tsx`    | Fases lunares selecionáveis                                      |
+| `app/cosmos/components/SavedTodosPanel.tsx`   | Refatorado com EmptyState e filtros                              |
+| `app/cosmos/screens/SidePlanetCardScreen.tsx` | Screen principal atualizada                                      |
 
 ---
 

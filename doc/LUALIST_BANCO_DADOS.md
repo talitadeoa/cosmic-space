@@ -58,13 +58,13 @@ CREATE INDEX IF NOT EXISTS idx_lunations_sign ON lunations (zodiac_sign);
 
 ```typescript
 // Salvar múltiplas lunações com replace automático
-async function saveLunations(lunations: LunationData[]): Promise<any[]>
+async function saveLunations(lunations: LunationData[]): Promise<any[]>;
 
 // Buscar lunações por range de datas
-async function getLunations(startDate: string, endDate: string): Promise<LunationData[]>
+async function getLunations(startDate: string, endDate: string): Promise<LunationData[]>;
 
 // Deletar lunações de um range específico
-async function deleteLunations(startDate: string, endDate: string): Promise<number>
+async function deleteLunations(startDate: string, endDate: string): Promise<number>;
 ```
 
 ### 3. **API de Lunações** (`app/api/moons/lunations/route.ts`)
@@ -72,11 +72,13 @@ async function deleteLunations(startDate: string, endDate: string): Promise<numb
 #### GET `/api/moons/lunations`
 
 **Query Parameters:**
+
 - `start`: Data inicial (ISO YYYY-MM-DD) ✅ Obrigatório
 - `end`: Data final (ISO YYYY-MM-DD) ✅ Obrigatório
 - `source`: `'auto'` | `'db'` | `'generated'` (padrão: `'auto'`)
 
 **Resposta:**
+
 ```json
 {
   "days": [
@@ -99,6 +101,7 @@ async function deleteLunations(startDate: string, endDate: string): Promise<numb
 #### POST `/api/moons/lunations`
 
 **Body:**
+
 ```json
 {
   "days": [
@@ -116,6 +119,7 @@ async function deleteLunations(startDate: string, endDate: string): Promise<numb
 ```
 
 **Resposta:**
+
 ```json
 {
   "success": true,
@@ -132,11 +136,7 @@ const lunations = useLunations();
 await lunations.fetch('2024-01-01', '2024-12-31', 'auto');
 
 // Ou usar com hook automático
-const { data, isLoading, error, source } = useLunationsForRange(
-  '2024-01-01',
-  '2024-12-31',
-  true
-);
+const { data, isLoading, error, source } = useLunationsForRange('2024-01-01', '2024-12-31', true);
 ```
 
 ### 5. **Script de Sincronização** (`scripts/sync-lunations.js`)
@@ -288,13 +288,13 @@ useEffect(() => {
 
 ```typescript
 interface LunationData {
-  lunation_date: string;      // "2024-12-13"
-  moon_phase: string;         // "Lua Nova", "Lua Crescente", etc
-  zodiac_sign: string;        // "Áries", "Touro", etc
-  illumination?: number;      // 0-100 (percentual)
-  age_days?: number;          // 0-29.53 (idade em dias)
-  description?: string;       // Optional description
-  source?: string;            // 'generated' | 'synced' | 'manual'
+  lunation_date: string; // "2024-12-13"
+  moon_phase: string; // "Lua Nova", "Lua Crescente", etc
+  zodiac_sign: string; // "Áries", "Touro", etc
+  illumination?: number; // 0-100 (percentual)
+  age_days?: number; // 0-29.53 (idade em dias)
+  description?: string; // Optional description
+  source?: string; // 'generated' | 'synced' | 'manual'
 }
 ```
 
@@ -327,6 +327,7 @@ interface LunationData {
 ### 1. **Visualização em LuaListScreen**
 
 LuaListScreen mostra um calendário lunar completo com:
+
 - Datas das lunações
 - Fases da lua (Nova, Crescente, Cheia, Minguante)
 - Signos zodiacais
@@ -354,17 +355,17 @@ Cada vez que o usuário acessa a aplicação:
 useEffect(() => {
   async function syncYearToDb() {
     const year = new Date().getFullYear();
-    
+
     // Buscar do banco (retorna vazio se não existir)
     const dbData = await getLunations(`${year}-01-01`, `${year}-12-31`);
-    
+
     if (dbData.length === 0) {
       // Gerar e sincronizar
       const generated = await fetch(
         `/api/moons/lunations?start=${year}-01-01&end=${year}-12-31&source=generated`
       );
       const { days } = await generated.json();
-      
+
       await fetch('/api/moons/lunations', {
         method: 'POST',
         body: JSON.stringify({ days, action: 'append' }),
@@ -383,16 +384,19 @@ useEffect(() => {
 ### Otimizações Implementadas
 
 ✅ **Índices no Banco**
+
 - `idx_lunations_date` - Busca por range de datas (rápido)
 - `idx_lunations_phase` - Filtro por fase lunar
 - `idx_lunations_sign` - Filtro por signo
 
 ✅ **Fallback Inteligente**
+
 - Tenta banco primeiro (rápido se populado)
 - Gera localmente se vazio (sem latência de rede)
 - Cache no cliente possível via localStorage
 
 ✅ **Limite de Dias**
+
 - Máximo 550 dias por requisição (3-4KB de dados)
 - Múltiplos anos? Fazer requisições separadas
 
@@ -403,11 +407,13 @@ useEffect(() => {
 ### "Erro ao buscar lunações"
 
 **Solução 1:** Verificar se tabela existe
+
 ```sql
 SELECT * FROM lunations LIMIT 1;
 ```
 
 **Solução 2:** Forçar geração local
+
 ```bash
 curl "http://localhost:3000/api/moons/lunations?source=generated&start=2024-01-01&end=2024-12-31"
 ```
@@ -416,6 +422,7 @@ curl "http://localhost:3000/api/moons/lunations?source=generated&start=2024-01-0
 
 **Causa:** Banco vazio e geração falhando
 **Solução:** Executar script de sincronização
+
 ```bash
 node scripts/sync-lunations.js --replace
 ```
@@ -423,6 +430,7 @@ node scripts/sync-lunations.js --replace
 ### "Discrepâncias entre anos"
 
 **Solução:** Limpar e resincronizar
+
 ```bash
 node scripts/sync-lunations.js --years=2023,2024,2025 --replace
 ```
@@ -431,14 +439,14 @@ node scripts/sync-lunations.js --years=2023,2024,2025 --replace
 
 ## 📚 Referências Rápidas
 
-| Função | Arquivo | Descrição |
-|--------|---------|-----------|
-| `getLunations()` | `lib/forms.ts` | Busca do banco |
-| `saveLunations()` | `lib/forms.ts` | Salva no banco |
-| `useLunations()` | `hooks/useLunations.ts` | Hook React |
-| GET `/api/moons/lunations` | `app/api/moons/lunations/route.ts` | API de leitura |
-| POST `/api/moons/lunations` | `app/api/moons/lunations/route.ts` | API de escrita |
-| Sync script | `scripts/sync-lunations.js` | Sincronização manual |
+| Função                      | Arquivo                            | Descrição            |
+| --------------------------- | ---------------------------------- | -------------------- |
+| `getLunations()`            | `lib/forms.ts`                     | Busca do banco       |
+| `saveLunations()`           | `lib/forms.ts`                     | Salva no banco       |
+| `useLunations()`            | `hooks/useLunations.ts`            | Hook React           |
+| GET `/api/moons/lunations`  | `app/api/moons/lunations/route.ts` | API de leitura       |
+| POST `/api/moons/lunations` | `app/api/moons/lunations/route.ts` | API de escrita       |
+| Sync script                 | `scripts/sync-lunations.js`        | Sincronização manual |
 
 ---
 

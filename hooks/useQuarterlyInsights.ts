@@ -46,7 +46,7 @@ export function useQuarterlyInsights() {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   return { insights, isLoading, error, saveInsight };

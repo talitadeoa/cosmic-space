@@ -1,26 +1,21 @@
-"use client";
+'use client';
 
-import type { TimelineFiltersState, TimelineItemType, TimelinePeriod } from "@/types/timeline";
+import type { TimelineFiltersState, TimelineItemType, TimelinePeriod } from '@/types/timeline';
 
 const typeOptions: { value: TimelineItemType; label: string }[] = [
-  { value: "mensal", label: "Mensal" },
-  { value: "trimestral", label: "Trimestral" },
-  { value: "anual", label: "Anual" },
-  { value: "energia", label: "Energia" },
+  { value: 'mensal', label: 'Mensal' },
+  { value: 'trimestral', label: 'Trimestral' },
+  { value: 'anual', label: 'Anual' },
+  { value: 'energia', label: 'Energia' },
 ];
 
 const periodOptions: { value: TimelinePeriod; label: string }[] = [
-  { value: "30d", label: "Últimos 30 dias" },
-  { value: "90d", label: "Últimos 90 dias" },
-  { value: "1y", label: "Último ano" },
+  { value: '30d', label: 'Últimos 30 dias' },
+  { value: '90d', label: 'Últimos 90 dias' },
+  { value: '1y', label: 'Último ano' },
 ];
 
-const moonPhaseSuggestions = [
-  "Lua Nova",
-  "Lua Crescente",
-  "Lua Cheia",
-  "Lua Minguante",
-];
+const moonPhaseSuggestions = ['Lua Nova', 'Lua Crescente', 'Lua Cheia', 'Lua Minguante'];
 
 type TimelineFiltersProps = {
   filters: TimelineFiltersState;
@@ -59,10 +54,8 @@ export default function TimelineFilters({
           Fase lunar
           <input
             list="timeline-moon-phases"
-            value={filters.moonPhase ?? ""}
-            onChange={(event) =>
-              onMoonPhaseChange(event.target.value ? event.target.value : null)
-            }
+            value={filters.moonPhase ?? ''}
+            onChange={(event) => onMoonPhaseChange(event.target.value ? event.target.value : null)}
             placeholder="Todas as fases"
             className="w-full rounded-2xl border border-slate-700 bg-black/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
           />
@@ -91,9 +84,7 @@ export default function TimelineFilters({
               </label>
             ))}
           </div>
-          {typeError ? (
-            <span className="text-xs text-rose-400">{typeError}</span>
-          ) : null}
+          {typeError ? <span className="text-xs text-rose-400">{typeError}</span> : null}
         </div>
       </div>
     </div>
