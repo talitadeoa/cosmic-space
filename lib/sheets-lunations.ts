@@ -152,7 +152,7 @@ export async function getLunationsFromSheets(
       })
       .filter((l): l is LunationData => l !== null);
 
-    console.log(`✅ ${lunations.length} lunações lidas do Google Sheets`);
+    console.warn(`✅ ${lunations.length} lunações lidas do Google Sheets`);
     return lunations;
   } catch (error) {
     console.error('Erro ao ler lunações do Sheets:', error);

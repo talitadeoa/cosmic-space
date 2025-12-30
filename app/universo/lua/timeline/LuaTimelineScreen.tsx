@@ -16,9 +16,9 @@ const LuaTimelineScreen: React.FC = () => {
     setCurrentDate(date);
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('📅 Data selecionada:', date);
-      console.log('🌙 Fase lunar:', moonData.phaseName);
-      console.log('💡 Iluminação:', `${(moonData.illumination * 100).toFixed(1)}%`);
+      console.warn('📅 Data selecionada:', date);
+      console.warn('🌙 Fase lunar:', moonData.phaseName);
+      console.warn('💡 Iluminação:', `${(moonData.illumination * 100).toFixed(1)}%`);
     }
   }, []);
 

@@ -119,7 +119,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     const trimmed = newIslandName.trim();
     if (!trimmed) return;
     // Aqui você pode adicionar lógica para criar a nova ilha
-    console.log('Criar nova ilha:', trimmed);
+    console.warn('Criar nova ilha:', trimmed);
     setNewIslandName('');
     setIsCreating(false);
   };

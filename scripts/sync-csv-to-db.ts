@@ -90,13 +90,13 @@ async function syncCSVToDatabase() {
       process.exit(1);
     }
 
-    console.log(`📖 Lendo CSV: ${csvPath}`);
+    console.warn(`📖 Lendo CSV: ${csvPath}`);
     const fileContent = fs.readFileSync(csvPath, 'utf-8');
 
     // Parse do CSV
     const rows = parseCSV(fileContent);
 
-    console.log(`✅ ${rows.length} lunações encontradas no CSV`);
+    console.warn(`✅ ${rows.length} lunações encontradas no CSV`);
 
     // Converter para LunationData
     const lunations: LunationData[] = rows.map((row) => ({
@@ -108,19 +108,19 @@ async function syncCSVToDatabase() {
       source: 'csv-sync',
     }));
 
-    console.log(`\n📝 Primeiras 3 lunações a sincronizar:`);
+    console.warn(`\n📝 Primeiras 3 lunações a sincronizar:`);
     lunations.slice(0, 3).forEach((l) => {
-      console.log(
+      console.warn(
         `  • ${l.lunation_date} - ${l.moon_phase} ${l.moon_emoji} (${l.zodiac_sign} ${l.zodiac_emoji})`
       );
     });
 
     // Salvar no banco
-    console.log(`\n💾 Salvando no banco de dados...`);
+    console.warn(`\n💾 Salvando no banco de dados...`);
     const result = await saveLunations(lunations);
 
-    console.log(`\n✅ Sincronização concluída com sucesso!`);
-    console.log(`   ${result.length} lunações foram salvas/atualizadas`);
+    console.warn(`\n✅ Sincronização concluída com sucesso!`);
+    console.warn(`   ${result.length} lunações foram salvas/atualizadas`);
   } catch (error) {
     console.error('❌ Erro ao sincronizar:', error);
     process.exit(1);

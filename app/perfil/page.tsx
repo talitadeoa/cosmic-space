@@ -130,7 +130,6 @@ const PerfilPage = () => {
             <div className="mt-6 flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-slate-700/70 bg-slate-900 text-base font-semibold text-slate-200">
                 {profile.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={profile.avatarUrl}
                     alt={profile.displayName || 'Perfil'}

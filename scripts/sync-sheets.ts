@@ -19,7 +19,7 @@ if (fs.existsSync(envPath)) {
       }
     }
   });
-  console.log('✅ Variáveis de ambiente carregadas do .env.local\n');
+  console.warn('✅ Variáveis de ambiente carregadas do .env.local\n');
 }
 
 import { getLunationsFromSheets } from '@/lib/sheets-lunations';
@@ -27,10 +27,10 @@ import { saveLunations } from '@/lib/forms';
 
 async function syncSheetsToDatabase() {
   try {
-    console.log('🌙 Iniciando sincronização de lunações do Google Sheets...\n');
+    console.warn('🌙 Iniciando sincronização de lunações do Google Sheets...\n');
 
     // 1. Ler lunações do Sheets
-    console.log('📖 Lendo lunações do Google Sheets...');
+    console.warn('📖 Lendo lunações do Google Sheets...');
     const lunations = await getLunationsFromSheets();
 
     if (lunations.length === 0) {
@@ -38,24 +38,24 @@ async function syncSheetsToDatabase() {
       process.exit(1);
     }
 
-    console.log(`✅ ${lunations.length} lunações carregadas do Sheets\n`);
+    console.warn(`✅ ${lunations.length} lunações carregadas do Sheets\n`);
 
     // 2. Exibir amostra
-    console.log('📝 Primeiras 3 lunações:');
+    console.warn('📝 Primeiras 3 lunações:');
     lunations.slice(0, 3).forEach((l) => {
-      console.log(
+      console.warn(
         `  • ${l.lunation_date} - ${l.moon_phase} ${l.moon_emoji} (${l.zodiac_sign} ${l.zodiac_emoji})`
       );
     });
-    console.log();
+    console.warn();
 
     // 3. Salvar no banco
-    console.log('💾 Salvando no banco de dados...');
+    console.warn('💾 Salvando no banco de dados...');
     const result = await saveLunations(lunations);
 
-    console.log(`\n✅ Sincronização concluída com sucesso!`);
-    console.log(`   ${result.length} lunações foram salvas/atualizadas`);
-    console.log(`\n🎉 Próxima atualização: daqui a um ano! 🌙`);
+    console.warn(`\n✅ Sincronização concluída com sucesso!`);
+    console.warn(`   ${result.length} lunações foram salvas/atualizadas`);
+    console.warn(`\n🎉 Próxima atualização: daqui a um ano! 🌙`);
   } catch (error) {
     console.error('❌ Erro ao sincronizar:', error);
     process.exit(1);

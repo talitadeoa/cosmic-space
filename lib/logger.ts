@@ -44,14 +44,14 @@ export const logger = {
    * Log de sucesso
    */
   success: (message: string): void => {
-    console.log(`${COLORS.success}${ICONS.success} ${message}${COLORS.reset}`);
+    console.warn(`${COLORS.success}${ICONS.success} ${message}${COLORS.reset}`);
   },
 
   /**
    * Log informativo
    */
   info: (message: string): void => {
-    console.log(`${COLORS.info}${ICONS.info} ${message}${COLORS.reset}`);
+    console.warn(`${COLORS.info}${ICONS.info} ${message}${COLORS.reset}`);
   },
 
   /**
@@ -66,21 +66,21 @@ export const logger = {
    */
   header: (emoji: string, title: string): void => {
     const separator = '─'.repeat(title.length + emoji.length + 1);
-    console.log(`\n${emoji} ${title}\n${separator}`);
+    console.warn(`\n${emoji} ${title}\n${separator}`);
   },
 
   /**
    * Log de resultado com contador
    */
   result: (count: number, total: number, label = 'registros'): void => {
-    console.log(`${COLORS.success}✓ ${count}/${total} ${label}${COLORS.reset}`);
+    console.warn(`${COLORS.success}✓ ${count}/${total} ${label}${COLORS.reset}`);
   },
 
   /**
    * Log para indicar progresso (skip)
    */
   skip: (message: string): void => {
-    console.log(`⏭️  ${message}`);
+    console.warn(`⏭️  ${message}`);
   },
 } as const;
 

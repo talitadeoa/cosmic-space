@@ -111,7 +111,7 @@ export const StarfieldBackground: React.FC = () => {
     }
 
     function stop(cleanup?: () => void) {
-      if (frameId != null) cancelAnimationFrame(frameId);
+      if (frameId !== null) cancelAnimationFrame(frameId);
       window.removeEventListener('resize', resizeCanvas);
       cleanup?.();
     }

@@ -11,14 +11,14 @@ export const usePlanetaNavigation = () => {
   const handleNavigateWithFocus: ScreenProps['navigateWithFocus'] = useCallback(
     (screenId, options) => {
       // Implementar navegação conforme necessário
-      console.log('Navigation request:', screenId, options);
+      console.warn('Navigation request:', screenId, options);
     },
     []
   );
 
   const handleNavigateTo: ScreenProps['navigateTo'] = useCallback((screenId) => {
     // Placeholder até integrar a navegação real
-    console.log('Navigation request:', screenId);
+    console.warn('Navigation request:', screenId);
   }, []);
 
   return {

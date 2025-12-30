@@ -129,10 +129,10 @@ export function generateMoonCycleCalendar(year: number, month: number) {
   const monthEnd = new Date(year, month, 0);
 
   // Encontra a Lua Nova anterior ou no mês
-  let cycleStart = findNearestNewMoon(monthStart, 'before');
+  const cycleStart = findNearestNewMoon(monthStart, 'before');
 
   const calendar: CycleEvent[] = [];
-  let currentDay = new Date(cycleStart);
+  const currentDay = new Date(cycleStart);
 
   // Gera até 2 ciclos para cobrir o mês inteiro
   for (let i = 0; i < SYNODIC_MONTH * 2; i++) {
@@ -176,16 +176,16 @@ export function getCycleSummary(newMoonDate: Date) {
  * 
  * // Dia específico do ciclo
  * const day8 = findCycleDay(newMoon, 8); // 8º dia = Crescente
- * console.log(day8.description); // "Lua Crescente em Áries"
+ * console.warn(day8.description); // "Lua Crescente em Áries"
  * 
  * // 3º dia da Minguante
  * const day3Minguante = findPhaseDay(newMoon, 'luaMinguante', 3);
  * 
  * // Todos os marcos
  * const keyDates = getCycleKeyDates(newMoon);
- * console.log(keyDates.fullMoon.description);
+ * console.warn(keyDates.fullMoon.description);
  * 
  * // Calendário completo do mês
  * const calendar = generateMoonCycleCalendar(2025, 12);
- * calendar.forEach(event => console.log(formatCycleEvent(event)));
+ * calendar.forEach(event => console.warn(formatCycleEvent(event)));
  */

@@ -39,7 +39,7 @@ export function LunationSync({
     async function sync() {
       for (const year of yearsToSync) {
         if (syncedYears.has(year)) {
-          if (verbose) console.log(`⏭️  Pulando ${year} (já sincronizado)`);
+          if (verbose) console.warn(`⏭️  Pulando ${year} (já sincronizado)`);
           continue;
         }
 
@@ -49,7 +49,7 @@ export function LunationSync({
           const startDate = `${year}-01-01`;
           const endDate = `${year}-12-31`;
 
-          if (verbose) console.log(`🌙 Sincronizando lunações para ${year}...`);
+          if (verbose) console.warn(`🌙 Sincronizando lunações para ${year}...`);
 
           // 1. Verificar se já existem dados no banco
           const checkResponse = await fetch(
@@ -60,14 +60,14 @@ export function LunationSync({
 
           if (existingData?.days?.length > 0) {
             if (verbose)
-              console.log(`✅ ${year} já sincronizado (${existingData.days.length} dias)`);
+              console.warn(`✅ ${year} já sincronizado (${existingData.days.length} dias)`);
             setSyncedYears((prev) => new Set([...prev, year]));
             if (onSuccess) onSuccess(existingData.days.length);
             continue;
           }
 
           // 2. Gerar dados localmente
-          if (verbose) console.log(`📊 Gerando dados para ${year}...`);
+          if (verbose) console.warn(`📊 Gerando dados para ${year}...`);
           const generateResponse = await fetch(
             `/api/moons/lunations?start=${startDate}&end=${endDate}&source=generated`
           );
@@ -77,10 +77,10 @@ export function LunationSync({
           }
 
           const { days } = await generateResponse.json();
-          if (verbose) console.log(`✨ ${days.length} dias gerados`);
+          if (verbose) console.warn(`✨ ${days.length} dias gerados`);
 
           // 3. Salvar no banco
-          if (verbose) console.log(`📤 Salvando no banco...`);
+          if (verbose) console.warn(`📤 Salvando no banco...`);
           const saveResponse = await fetch('/api/moons/lunations', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -98,7 +98,7 @@ export function LunationSync({
           }
 
           const saveResult = await saveResponse.json();
-          if (verbose) console.log(`✅ ${saveResult.message}`);
+          if (verbose) console.warn(`✅ ${saveResult.message}`);
 
           setSyncedYears((prev) => new Set([...prev, year]));
           if (onSuccess) onSuccess(days.length);
@@ -134,7 +134,7 @@ export function useSyncLunations() {
       const startDate = `${year}-01-01`;
       const endDate = `${year}-12-31`;
 
-      if (verbose) console.log(`🌙 Sincronizando ${year}...`);
+      if (verbose) console.warn(`🌙 Sincronizando ${year}...`);
 
       // Gerar dados
       const generateResponse = await fetch(
@@ -146,7 +146,7 @@ export function useSyncLunations() {
       }
 
       const { days } = await generateResponse.json();
-      if (verbose) console.log(`✨ ${days.length} dias gerados`);
+      if (verbose) console.warn(`✨ ${days.length} dias gerados`);
 
       // Salvar
       const saveResponse = await fetch('/api/moons/lunations', {
@@ -163,7 +163,7 @@ export function useSyncLunations() {
       }
 
       const result = await saveResponse.json();
-      if (verbose) console.log(`✅ ${result.message}`);
+      if (verbose) console.warn(`✅ ${result.message}`);
 
       return result;
     } catch (error) {

@@ -128,7 +128,7 @@ const payload = generateYear(year);
 fs.mkdirSync(path.dirname(outputArg), { recursive: true });
 fs.writeFileSync(outputArg, JSON.stringify(payload, null, 2), 'utf8');
 
-console.log(`Calendário lunar gerado para ${year}: ${outputArg}`);
-console.log(`Dias: ${payload.days.length}, gerado em ${payload.generatedAt}`);
+console.warn(`Calendário lunar gerado para ${year}: ${outputArg}`);
+console.warn(`Dias: ${payload.days.length}, gerado em ${payload.generatedAt}`);
 
 module.exports = { generateYear };

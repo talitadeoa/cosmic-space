@@ -43,16 +43,16 @@ const lunationsData: LunationData[] = [
 
 async function seed() {
   try {
-    console.log('🌙 Iniciando seed de lunações...');
-    console.log(`📊 Total de registros: ${lunationsData.length}`);
+    console.warn('🌙 Iniciando seed de lunações...');
+    console.warn(`📊 Total de registros: ${lunationsData.length}`);
 
     const results = await saveLunations(lunationsData);
 
-    console.log('✅ Lunações salvas com sucesso!');
-    console.log(`✨ Registros processados: ${results.length}`);
+    console.warn('✅ Lunações salvas com sucesso!');
+    console.warn(`✨ Registros processados: ${results.length}`);
 
     results.forEach((r: any) => {
-      console.log(
+      console.warn(
         `  → ${r.lunation_date}: ${r.moon_emoji} ${r.moon_phase} em ${r.zodiac_emoji} ${r.zodiac_sign}`
       );
     });

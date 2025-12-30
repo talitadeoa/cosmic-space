@@ -354,8 +354,8 @@ ORDER BY date;
 fetch('/api/lunar-data?month=11&year=2025')
   .then(res => res.json())
   .then(data => {
-    console.log('Dados de dezembro/2025:', data);
-    console.log('Fase em 28/12:', data.byDate['2025-12-28']);
+    console.warn('Dados de dezembro/2025:', data);
+    console.warn('Fase em 28/12:', data.byDate['2025-12-28']);
   });
 
 // Com async/await

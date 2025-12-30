@@ -139,7 +139,7 @@ export const LuminousTrail: React.FC<LuminousTrailProps> = ({ quadrant }) => {
     }
 
     function stop(cleanup?: () => void) {
-      if (frameId != null) cancelAnimationFrame(frameId);
+      if (frameId !== null) cancelAnimationFrame(frameId);
       window.removeEventListener('resize', resize);
       cleanup?.();
     }

@@ -440,7 +440,6 @@ const ComunidadePage = () => {
           <div className="absolute right-0 top-0 flex items-center gap-3 rounded-full border border-slate-800/70 bg-black/40 px-4 py-2 text-xs text-slate-200 shadow-2xl shadow-indigo-950/30">
             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-slate-700/70 bg-slate-900 text-[11px] font-semibold text-slate-200">
               {profile.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.avatarUrl}
                   alt={profile.displayName || 'Perfil'}
@@ -607,7 +606,6 @@ const ComunidadePage = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-slate-700/70 bg-slate-900 text-xs font-semibold text-slate-200">
                         {post.authorAvatarUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={post.authorAvatarUrl}
                             alt={post.authorName}

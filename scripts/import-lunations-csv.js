@@ -195,7 +195,7 @@ const run = async () => {
     inserted += 1;
   }
 
-  console.log(`Importadas ${inserted} lunações de ${entries.length} linhas.`);
+  console.warn(`Importadas ${inserted} lunações de ${entries.length} linhas.`);
 };
 
 run().catch((error) => {
