@@ -27,15 +27,18 @@ lunar-calendar/
 ## 📱 Layout
 
 ### Desktop (>1024px)
+
 - **Grid 2 colunas**: 1fr 1.2fr (hero maior na esquerda)
 - Hero: 200x200px círculo lunar com dados
 - Grid: 7 colunas (dias semana) × N linhas
 
 ### Tablet (768-1024px)
+
 - **Grid 1 coluna**: hero e calendário empilhados
 - Hero reduzido para 150x150px
 
 ### Mobile (<768px)
+
 - Altura dos dias: min-height 44px (acessibilidade)
 - Fontes responsivas com `clamp()`
 
@@ -67,6 +70,7 @@ Lua:
 ## 🎯 Tokens de Design
 
 ### Spacing
+
 ```css
 rem base-line: 16px
 sm:  0.5rem  (8px)
@@ -76,6 +80,7 @@ xl:  2rem    (32px)
 ```
 
 ### Border Radius
+
 ```css
 sm:  0.5rem   (8px)  - botões pequenos
 md:  0.75rem  (12px) - cards, inputs
@@ -84,6 +89,7 @@ xl:  2rem     (32px) - luna circle
 ```
 
 ### Typography
+
 ```css
 h1/title: clamp(1.5rem, 4vw, 2rem) weight: 400
 h2/month: clamp(1rem, 3vw, 1.25rem) weight: 300
@@ -92,6 +98,7 @@ label:    0.75-0.8rem weight: 500
 ```
 
 ### Shadows
+
 ```css
 sm:    0 4px 6px rgba(0, 0, 0, 0.1)
 md:    0 8px 16px rgba(0, 0, 0, 0.15)
@@ -102,11 +109,12 @@ glow:  0 0 40px rgba(100, 116, 139, 0.2)
 ## 📦 Props e Interfaces
 
 ### LunarCalendarProps
+
 ```typescript
 interface LunarCalendarProps {
-  month: number;                    // 0-11
+  month: number; // 0-11
   year: number;
-  selectedDate?: Date;              // padrão: hoje
+  selectedDate?: Date; // padrão: hoje
   onSelectDate?: (date: Date) => void;
   lunarDataByDate: LunarDataByDate; // dados lunares por data
   onMonthChange?: (month: number, year: number) => void;
@@ -116,17 +124,19 @@ interface LunarCalendarProps {
 ```
 
 ### LunarData
+
 ```typescript
 interface LunarData {
-  phase: MoonPhase;        // enum com 8 fases
-  illumination: number;    // 0-100%
-  phaseName: string;       // "Lua Cheia", "Crescente", etc
+  phase: MoonPhase; // enum com 8 fases
+  illumination: number; // 0-100%
+  phaseName: string; // "Lua Cheia", "Crescente", etc
   daysInPhase?: number;
   nextPhaseDate?: Date;
 }
 ```
 
 ### LunarDataByDate
+
 ```typescript
 // Chave: "YYYY-MM-DD"
 {
@@ -143,40 +153,45 @@ interface LunarData {
 ## 🌙 Fases Lunares (MoonPhase enum)
 
 ```typescript
-NEW = 'new'                      // 0% iluminação
-WAXING_CRESCENT = 'waxing_crescent'    // 1-49%
-FIRST_QUARTER = 'first_quarter'        // ~50%
-WAXING_GIBBOUS = 'waxing_gibbous'      // 51-99%
-FULL = 'full'                   // 100%
-WANING_GIBBOUS = 'waning_gibbous'      // 99-51%
-LAST_QUARTER = 'last_quarter'          // ~50%
-WANING_CRESCENT = 'waning_crescent'    // 49-1%
+NEW = 'new'; // 0% iluminação
+WAXING_CRESCENT = 'waxing_crescent'; // 1-49%
+FIRST_QUARTER = 'first_quarter'; // ~50%
+WAXING_GIBBOUS = 'waxing_gibbous'; // 51-99%
+FULL = 'full'; // 100%
+WANING_GIBBOUS = 'waning_gibbous'; // 99-51%
+LAST_QUARTER = 'last_quarter'; // ~50%
+WANING_CRESCENT = 'waning_crescent'; // 49-1%
 ```
 
 ## 🎬 Animações
 
 ### moonGlow (hero circle)
+
 - Duração: 6s
 - Tipo: ease-in-out infinito
 - Efeito: variação sutil de sombra (glow)
 
 ### twinkle (background stars)
+
 - Duração: 8s
 - Tipo: ease-in-out infinito
 - Efeito: piscada muito sutil (0.05 → 0.08)
 
 ### float (decorative stars)
+
 - Duração: 6s
 - Tipo: ease-in-out infinito
 - Efeito: flutuação vertical (-10px)
 
 ### Transições gerais
+
 - All: 0.2s ease (botões, hover states)
 - Scale: 0.98 ao clicar (feedback)
 
 ## ♿ Acessibilidade
 
 ### Aria Labels
+
 ```tsx
 // Cada dia tem label descritivo
 aria-label="segunda, 28 de dezembro de 2025, Lua Cheia, 95%, selecionado"
@@ -188,11 +203,13 @@ aria-label="segunda, 28 de dezembro de 2025, Lua Cheia, 95%, selecionado"
 ```
 
 ### Teclado
+
 - Tab: navegação entre dias
 - Enter/Space: selecionar dia
 - Selected day: tabIndex 0, outros: -1
 
 ### Semântica HTML
+
 ```tsx
 <main> (widget principal)
 <h1>, <h2>, <h3> (hierarquia de títulos)
@@ -203,6 +220,7 @@ role="img" (ícones SVG)
 ```
 
 ### Contraste
+
 - Texto primário: #e8e8ff em #0a0e14 → ratio ~12:1 ✅
 - Dia selecionado: destacado com pill + borda
 - Foco visível: outline 2px #64b5f6
@@ -266,8 +284,8 @@ export default function Calendar() {
   useEffect(() => {
     // Fetch de /api/lunar-data?month=12&year=2025
     fetch(`/api/lunar-data?month=${month}&year=${year}`)
-      .then(res => res.json())
-      .then(data => setLunarData(data.byDate));
+      .then((res) => res.json())
+      .then((data) => setLunarData(data.byDate));
   }, [month, year]);
 
   return (
@@ -342,24 +360,29 @@ export default function Calendar() {
 O componente `MoonPhaseIcon` renderiza a lua em **SVG nativo** com:
 
 ### Lua Nova (0%)
+
 - Círculo muito escuro com borda sutil
 - Opacidade 0.5
 
 ### Lua Cheia (100%)
+
 - Círculo creme (#f5f5dc) com borda dourada
 - Sombra brilhante
 
 ### Fases Intermediárias
+
 - **Crescente**: área iluminada no lado direito cresce
 - **Minguante**: área iluminada no lado esquerdo diminui
 - Usa `<clipPath>` SVG para recorte suave
 
 ### Tamanhos
+
 - **small**: 16x16px (calendário grid)
 - **medium**: 24x24px (tooltips)
 - **large**: 48x48px (hero section)
 
 ### Variantes
+
 - **icon**: renderização completa com detalhes
 - **circle**: versão simplificada (opacidade)
 
@@ -383,14 +406,14 @@ CalendarGrid marca novo dia como selected (pill)
 
 ## 🎯 Estados Visuais dos Dias
 
-| Estado | Visual | Notas |
-|--------|--------|-------|
-| Normal | Texto branco | Dias do mês |
-| Today | Fundo cinza + borda | Apenas o dia de hoje |
-| Selected | Pill cinza + destaque | Dia clicado |
-| Hover | Fundo cinza claro | Desktop |
-| Disabled | Opacidade 30% | Dias de outros meses |
-| Weekend | Cor cinza (CBD5E1) | Sábado e domingo |
+| Estado   | Visual                | Notas                |
+| -------- | --------------------- | -------------------- |
+| Normal   | Texto branco          | Dias do mês          |
+| Today    | Fundo cinza + borda   | Apenas o dia de hoje |
+| Selected | Pill cinza + destaque | Dia clicado          |
+| Hover    | Fundo cinza claro     | Desktop              |
+| Disabled | Opacidade 30%         | Dias de outros meses |
+| Weekend  | Cor cinza (CBD5E1)    | Sábado e domingo     |
 
 ## 🚀 Performance
 
@@ -427,7 +450,9 @@ generateMockLunarData(year, month) → LunarDataByDate
 ## 🔧 Customização
 
 ### Trocar Cor de Fundo
+
 Edite `LunarCalendarWidget.module.css`:
+
 ```css
 .lunarCalendarWidget {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -435,18 +460,22 @@ Edite `LunarCalendarWidget.module.css`:
 ```
 
 ### Mudar Tamanho da Lua
+
 Em `LunarHero.module.css`:
+
 ```css
 .moonCircle {
-  width: 250px;  /* era 200px */
+  width: 250px; /* era 200px */
   height: 250px;
 }
 ```
 
 ### Adicionar Mais Informações Lunares
+
 Expanda `LunarData` interface em `types.ts` e renderize em `LunarHero.tsx`.
 
 ### Integração com Banco de Dados
+
 Substitua `generateMockLunarData` por uma chamada a `/api/lunar-data`.
 
 ## 📚 Estrutura de Pastas Recomendada

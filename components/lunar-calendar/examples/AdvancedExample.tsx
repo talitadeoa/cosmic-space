@@ -1,6 +1,6 @@
 /**
  * Exemplo Avançado: Integração com Database e Estados Complexos
- * 
+ *
  * Este arquivo mostra como usar o LunarCalendarWidget com:
  * - API real de dados lunares
  * - Estados compartilhados (eventos, anotações)
@@ -36,7 +36,7 @@ interface AdvancedCalendarState {
 
 /**
  * Exemplo: Componente com integração real
- * 
+ *
  * Uso:
  * ```tsx
  * export default function AdvancedCalendar() {
@@ -62,9 +62,7 @@ export function AdvancedLunarCalendar() {
 
     try {
       // Endpoint esperado: GET /api/lunar-data?month=12&year=2025
-      const response = await fetch(
-        `/api/lunar-data?month=${month}&year=${year}`
-      );
+      const response = await fetch(`/api/lunar-data?month=${month}&year=${year}`);
 
       if (!response.ok) {
         throw new Error('Falha ao buscar dados lunares');
@@ -89,9 +87,7 @@ export function AdvancedLunarCalendar() {
   // Busca anotações do usuário para o mês
   const fetchUserNotes = useCallback(async (month: number, year: number) => {
     try {
-      const response = await fetch(
-        `/api/user-notes?month=${month}&year=${year}`
-      );
+      const response = await fetch(`/api/user-notes?month=${month}&year=${year}`);
 
       if (!response.ok) return;
 
@@ -152,7 +148,9 @@ export function AdvancedLunarCalendar() {
   const selectedNote = state.userNotes.get(formatDateKey(state.selectedDate));
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', padding: '2rem' }}>
+    <div
+      style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', padding: '2rem' }}
+    >
       {/* Calendário */}
       <div>
         {state.isLoading && (
@@ -162,7 +160,15 @@ export function AdvancedLunarCalendar() {
         )}
 
         {state.error && (
-          <div style={{ color: '#ff6b6b', padding: '1rem', background: 'rgba(255,107,107,0.1)', borderRadius: '8px', marginBottom: '1rem' }}>
+          <div
+            style={{
+              color: '#ff6b6b',
+              padding: '1rem',
+              background: 'rgba(255,107,107,0.1)',
+              borderRadius: '8px',
+              marginBottom: '1rem',
+            }}
+          >
             ⚠️ {state.error}
           </div>
         )}
@@ -179,28 +185,30 @@ export function AdvancedLunarCalendar() {
       </div>
 
       {/* Painel lateral: Anotações */}
-      <aside style={{
-        background: 'rgba(20, 30, 45, 0.4)',
-        border: '1px solid rgba(100, 116, 139, 0.2)',
-        borderRadius: '1rem',
-        padding: '1.5rem',
-        backdropFilter: 'blur(10px)',
-        color: '#e8e8ff',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-      }}>
-        <h3 style={{ margin: '0 0 1rem', fontSize: '1.125rem', fontWeight: 400 }}>
-          Anotações
-        </h3>
+      <aside
+        style={{
+          background: 'rgba(20, 30, 45, 0.4)',
+          border: '1px solid rgba(100, 116, 139, 0.2)',
+          borderRadius: '1rem',
+          padding: '1.5rem',
+          backdropFilter: 'blur(10px)',
+          color: '#e8e8ff',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+        }}
+      >
+        <h3 style={{ margin: '0 0 1rem', fontSize: '1.125rem', fontWeight: 400 }}>Anotações</h3>
 
         {selectedNote ? (
-          <div style={{
-            background: `rgba(${getColorRGB(selectedNote.color)}, 0.1)`,
-            border: `1px solid rgba(${getColorRGB(selectedNote.color)}, 0.3)`,
-            padding: '1rem',
-            borderRadius: '0.5rem',
-          }}>
+          <div
+            style={{
+              background: `rgba(${getColorRGB(selectedNote.color)}, 0.1)`,
+              border: `1px solid rgba(${getColorRGB(selectedNote.color)}, 0.3)`,
+              padding: '1rem',
+              borderRadius: '0.5rem',
+            }}
+          >
             <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5 }}>
               {selectedNote.content}
             </p>
@@ -284,10 +292,10 @@ export function AdvancedLunarCalendar() {
  */
 function getColorRGB(color?: string): string {
   const colors: Record<string, string> = {
-    blue: '100, 149, 237',      // cornflowerblue
-    purple: '186, 85, 211',      // mediumorchid
-    pink: '255, 105, 180',       // hotpink
-    green: '72, 209, 204',       // mediumturquoise
+    blue: '100, 149, 237', // cornflowerblue
+    purple: '186, 85, 211', // mediumorchid
+    pink: '255, 105, 180', // hotpink
+    green: '72, 209, 204', // mediumturquoise
   };
   return colors[color || 'blue'];
 }

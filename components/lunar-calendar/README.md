@@ -60,14 +60,14 @@ export default function MyCalendarPage() {
 
 ```typescript
 interface LunarCalendarProps {
-  month: number;                          // 0-11 (janeiro-dezembro)
-  year: number;                           // 2024, 2025, etc
-  selectedDate?: Date;                    // data selecionada (padrão: hoje)
-  onSelectDate?: (date: Date) => void;    // callback ao selecionar dia
-  lunarDataByDate: LunarDataByDate;       // dados por data "YYYY-MM-DD"
+  month: number; // 0-11 (janeiro-dezembro)
+  year: number; // 2024, 2025, etc
+  selectedDate?: Date; // data selecionada (padrão: hoje)
+  onSelectDate?: (date: Date) => void; // callback ao selecionar dia
+  lunarDataByDate: LunarDataByDate; // dados por data "YYYY-MM-DD"
   onMonthChange?: (month: number, year: number) => void;
-  locale?: 'pt-BR' | 'en-US';             // padrão: 'pt-BR'
-  ariaLabel?: string;                     // label acessível
+  locale?: 'pt-BR' | 'en-US'; // padrão: 'pt-BR'
+  ariaLabel?: string; // label acessível
 }
 ```
 
@@ -103,20 +103,19 @@ interface LunarData {
 ## 🎯 Componentes Internos
 
 ### LunarCalendarWidget
+
 Componente principal que orquestra tudo.
 
 ### LunarHero
+
 Seção esquerda com círculo lunar e informações de fase.
 
 ```tsx
-<LunarHero
-  date={selectedDate}
-  lunarData={lunarData}
-  locale="pt-BR"
-/>
+<LunarHero date={selectedDate} lunarData={lunarData} locale="pt-BR" />
 ```
 
 ### CalendarGrid
+
 Grid mensal com 7 colunas × N linhas.
 
 ```tsx
@@ -129,9 +128,11 @@ Grid mensal com 7 colunas × N linhas.
 ```
 
 ### NavigationControls
+
 Botões: ← mês anterior | Hoje | mês próximo →
 
 ### MoonPhaseIcon
+
 Ícone SVG da fase lunar em 3 tamanhos.
 
 ```tsx
@@ -158,6 +159,7 @@ Lua Nova: #0a0e13 (praticamente invisível)
 ## 🛠️ Customização
 
 ### Mudar cor de fundo
+
 ```css
 /* components/lunar-calendar/styles/LunarCalendarWidget.module.css */
 .lunarCalendarWidget {
@@ -166,15 +168,17 @@ Lua Nova: #0a0e13 (praticamente invisível)
 ```
 
 ### Tamanho da lua
+
 ```css
 /* components/lunar-calendar/styles/LunarHero.module.css */
 .moonCircle {
-  width: 250px;  /* era 200px */
+  width: 250px; /* era 200px */
   height: 250px;
 }
 ```
 
 ### Fonte customizada
+
 ```tsx
 /* Adicione a fonte no layout.tsx ou globals.css */
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500&display=swap');
@@ -195,20 +199,20 @@ Lua Nova: #0a0e13 (praticamente invisível)
 
 ## 📱 Responsividade
 
-| Breakpoint | Layout | Mudanças |
-|------------|--------|----------|
-| >1024px | 2 colunas | hero à esquerda |
-| 768-1024px | 1 coluna | hero reduzido (150px) |
-| <768px | 1 coluna | botões 44px, fontes com clamp() |
+| Breakpoint | Layout    | Mudanças                        |
+| ---------- | --------- | ------------------------------- |
+| >1024px    | 2 colunas | hero à esquerda                 |
+| 768-1024px | 1 coluna  | hero reduzido (150px)           |
+| <768px     | 1 coluna  | botões 44px, fontes com clamp() |
 
 ## 🎬 Animações
 
-| Nome | Duração | Efeito |
-|------|---------|--------|
-| `moonGlow` | 6s | sombra pulsante na lua |
-| `twinkle` | 8s | estrelas piscam levemente |
-| `float` | 6s | estrelas flutuam suavemente |
-| Transição | 0.2s | hover states, focus |
+| Nome       | Duração | Efeito                      |
+| ---------- | ------- | --------------------------- |
+| `moonGlow` | 6s      | sombra pulsante na lua      |
+| `twinkle`  | 8s      | estrelas piscam levemente   |
+| `float`    | 6s      | estrelas flutuam suavemente |
+| Transição  | 0.2s    | hover states, focus         |
 
 ## 🧪 Dados de Teste
 
@@ -224,9 +228,9 @@ const mockData = generateMockLunarData(2025, 11); // dez/2025
 ```tsx
 useEffect(() => {
   fetch(`/api/lunar-data?month=${month}&year=${year}`)
-    .then(res => res.json())
-    .then(data => setLunarData(data.byDate))
-    .catch(err => console.error(err));
+    .then((res) => res.json())
+    .then((data) => setLunarData(data.byDate))
+    .catch((err) => console.error(err));
 }, [month, year]);
 ```
 
@@ -234,15 +238,15 @@ useEffect(() => {
 
 ```typescript
 import {
-  generateCalendarGrid,      // criar grid 7xN
+  generateCalendarGrid, // criar grid 7xN
   enrichCalendarWithLunarData, // adicionar dados lunares
-  formatDateKey,             // "2025-12-28"
-  formatDate,                // "domingo, dez. 28, 2025"
-  getMonthName,              // "dezembro"
-  getWeekDayInitials,        // ['D', 'S', 'T', ...]
-  isToday,                   // verifica se é hoje
-  isSameDay,                 // compara duas datas
-  generateMockLunarData,     // cria dados simulados
+  formatDateKey, // "2025-12-28"
+  formatDate, // "domingo, dez. 28, 2025"
+  getMonthName, // "dezembro"
+  getWeekDayInitials, // ['D', 'S', 'T', ...]
+  isToday, // verifica se é hoje
+  isSameDay, // compara duas datas
+  generateMockLunarData, // cria dados simulados
 } from '@/components/lunar-calendar';
 ```
 
@@ -256,6 +260,7 @@ import {
 ## 📚 Documentação Completa
 
 Veja [LUNAR_CALENDAR_DOCS.md](../doc/LUNAR_CALENDAR_DOCS.md) para:
+
 - Arquitetura detalhada
 - Todas as props e tipos
 - Guia de customização
@@ -265,6 +270,7 @@ Veja [LUNAR_CALENDAR_DOCS.md](../doc/LUNAR_CALENDAR_DOCS.md) para:
 ## 🤝 Contribuições
 
 Melhorias sugeridas:
+
 1. Adicionar eventos/badges em dias específicos
 2. Modo light theme
 3. Histórico de iluminação em gráfico
@@ -274,6 +280,7 @@ Melhorias sugeridas:
 ## 📞 Suporte
 
 Dúvidas sobre tipos ou props? Verifique:
+
 - `components/lunar-calendar/types.ts` (interfaces)
 - `components/lunar-calendar/utils.ts` (lógica)
 - `app/calendarioc/page.tsx` (exemplo)

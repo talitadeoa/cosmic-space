@@ -3,24 +3,28 @@
 ## 🎯 LOCALIZAÇÃO RÁPIDA
 
 ### 🔐 Autenticação
+
 ```tsx
 import { AuthGate } from '@/components/auth';
 // Arquivo: components/auth/AuthGate.tsx
 ```
 
 ### 🎨 Providers Globais
+
 ```tsx
 import { SfxProvider, useSfxContext } from '@/components/providers';
 // Arquivo: components/providers/SfxProvider.tsx
 ```
 
 ### 🎭 Layouts
+
 ```tsx
 import { SpacePageLayout } from '@/components/layouts';
 // Arquivo: components/layouts/SpacePageLayout.tsx
 ```
 
 ### 🔄 Sincronizações
+
 ```tsx
 // AutoSyncLunar
 import { AutoSyncLunar } from '@/components/sync';
@@ -33,12 +37,14 @@ import { GalaxySunsSync } from '@/components/sync';
 ```
 
 ### 🧭 Navegação
+
 ```tsx
 import { NavMenu } from '@/components/navigation';
 // Arquivo: components/navigation/NavMenu.tsx
 ```
 
 ### 🎵 Áudio
+
 ```tsx
 import { RadioPlayer } from '@/components/audio';
 // Arquivo: components/audio/RadioPlayer.tsx
@@ -49,6 +55,7 @@ import { RadioPlayer } from '@/components/audio';
 ## 💡 CASOS DE USO COMUNS
 
 ### Proteger uma rota
+
 ```tsx
 import { AuthGate } from '@/components/auth';
 
@@ -62,6 +69,7 @@ export default function MyPage() {
 ```
 
 ### Layout com fundo espacial
+
 ```tsx
 import { SpacePageLayout } from '@/components/layouts';
 
@@ -75,12 +83,13 @@ export default function MyPage() {
 ```
 
 ### Sincronizar lunações
+
 ```tsx
 import { useSyncLunations } from '@/components/sync';
 
 export function SyncButton() {
   const { sync, isSyncing } = useSyncLunations();
-  
+
   return (
     <button onClick={() => sync(2024)} disabled={isSyncing}>
       {isSyncing ? 'Sincronizando...' : 'Sincronizar 2024'}
@@ -90,6 +99,7 @@ export function SyncButton() {
 ```
 
 ### Usar sincronizações centralizadas
+
 ```tsx
 import { useGlobalSync } from '@/hooks/useGlobalSync';
 
@@ -100,17 +110,14 @@ export function MyComponent() {
 ```
 
 ### Controlar áudio
+
 ```tsx
 import { useSfxContext } from '@/components/providers';
 
 export function SfxToggle() {
   const sfx = useSfxContext();
-  
-  return (
-    <button onClick={() => sfx.toggle()}>
-      SFX: {sfx.enabled ? 'ON' : 'OFF'}
-    </button>
-  );
+
+  return <button onClick={() => sfx.toggle()}>SFX: {sfx.enabled ? 'ON' : 'OFF'}</button>;
 }
 ```
 
@@ -142,11 +149,11 @@ SfxProvider (Contexto de sons)
 
 ## ❌ ERROS COMUNS
 
-| Erro | Solução |
-|------|---------|
-| Cannot find module `@/components/SfxProvider` | Use `@/components/providers` |
-| Default export from `@/components/auth` | Use `import { AuthGate }` não `import AuthGate` |
-| Sincronizações não funcionam | Verificar se `<LunationSync />` está em `app/layout.tsx` |
+| Erro                                          | Solução                                                  |
+| --------------------------------------------- | -------------------------------------------------------- |
+| Cannot find module `@/components/SfxProvider` | Use `@/components/providers`                             |
+| Default export from `@/components/auth`       | Use `import { AuthGate }` não `import AuthGate`          |
+| Sincronizações não funcionam                  | Verificar se `<LunationSync />` está em `app/layout.tsx` |
 
 ---
 

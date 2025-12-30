@@ -3,15 +3,8 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import {
-  LunarCalendarProps,
-  LunarData,
-} from './types';
-import {
-  generateCalendarGrid,
-  enrichCalendarWithLunarData,
-  getMonthName,
-} from './utils';
+import { LunarCalendarProps, LunarData } from './types';
+import { generateCalendarGrid, enrichCalendarWithLunarData, getMonthName } from './utils';
 import { LunarHero } from './LunarHero';
 import { CalendarGrid } from './CalendarGrid';
 import { NavigationControls } from './NavigationControls';
@@ -139,11 +132,7 @@ export const LunarCalendarWidget: React.FC<LunarCalendarProps> = ({
       <div className={`${styles.mainContainer} ${isAnimating ? styles.animating : ''}`}>
         {/* Coluna esquerda: Hero lunar */}
         <div className={styles.heroSection}>
-          <LunarHero
-            date={effectiveSelectedDate}
-            lunarData={selectedLunarData}
-            locale={locale}
-          />
+          <LunarHero date={effectiveSelectedDate} lunarData={selectedLunarData} locale={locale} />
         </div>
 
         {/* Coluna direita: Grid calendário */}

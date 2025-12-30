@@ -34,7 +34,7 @@ export const MoonCycleExample: React.FC<MoonCycleExampleProps> = ({
       {/* Marcos Principais */}
       <section className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
         <h2 className="mb-4 text-xl font-semibold text-white">🌙 Marcos do Ciclo Lunar</h2>
-        
+
         <div className="space-y-3">
           <div className="rounded bg-slate-800/50 p-3">
             <p className="text-sm text-slate-300">
@@ -81,7 +81,7 @@ export const MoonCycleExample: React.FC<MoonCycleExampleProps> = ({
       {/* Exemplos de Dias Específicos */}
       <section className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
         <h2 className="mb-4 text-xl font-semibold text-white">📍 Dias Específicos</h2>
-        
+
         <div className="space-y-3">
           <div className="rounded bg-slate-800/50 p-3">
             <p className="text-sm text-slate-300">
@@ -107,7 +107,7 @@ export const MoonCycleExample: React.FC<MoonCycleExampleProps> = ({
           <h2 className="mb-4 text-xl font-semibold text-white">
             📅 Calendário Lunar - {month}/{year}
           </h2>
-          
+
           <div className="grid gap-2">
             {calendar.slice(0, 15).map((event) => (
               <div

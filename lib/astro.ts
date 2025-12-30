@@ -1,18 +1,18 @@
 // utilitário simples para calcular fase lunar e signo (aproximação)
 
 export const SIGN_EMOJIS: Record<string, string> = {
-  'Capricórnio': '♑',
-  'Aquário': '♒',
-  'Peixes': '♓',
-  'Áries': '♈',
-  'Touro': '♉',
-  'Gêmeos': '♊',
-  'Câncer': '♋',
-  'Leão': '♌',
-  'Virgem': '♍',
-  'Libra': '♎',
-  'Escorpião': '♏',
-  'Sagitário': '♐',
+  Capricórnio: '♑',
+  Aquário: '♒',
+  Peixes: '♓',
+  Áries: '♈',
+  Touro: '♉',
+  Gêmeos: '♊',
+  Câncer: '♋',
+  Leão: '♌',
+  Virgem: '♍',
+  Libra: '♎',
+  Escorpião: '♏',
+  Sagitário: '♐',
 };
 
 export function getSignEmoji(sign: string): string {
@@ -33,9 +33,11 @@ export function getLunarPhaseAndSign(date = new Date()) {
   // simplified moon age - usando 19 de dezembro de 2025 como Lua Nova (referência do seu CSV)
   const jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day - 1524.5;
   const newMoonRef = new Date('2025-12-19');
-  const refJd = Math.floor(365.25 * (newMoonRef.getUTCFullYear() + 4716)) + 
-                Math.floor(30.6001 * (newMoonRef.getUTCMonth() + 2)) + 
-                newMoonRef.getUTCDate() - 1524.5;
+  const refJd =
+    Math.floor(365.25 * (newMoonRef.getUTCFullYear() + 4716)) +
+    Math.floor(30.6001 * (newMoonRef.getUTCMonth() + 2)) +
+    newMoonRef.getUTCDate() -
+    1524.5;
   const daysSinceRef = jd - refJd;
   const cycles = daysSinceRef / 29.53058867;
   const frac = cycles - Math.floor(cycles);

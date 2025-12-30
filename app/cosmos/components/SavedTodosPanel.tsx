@@ -112,7 +112,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
    */
   const getDateForView = (viewType: string): string | undefined => {
     const today = new Date();
-    
+
     if (viewType === 'lua-atual') {
       // Prazo até próxima fase (7 dias)
       const date = new Date(today);
@@ -130,38 +130,38 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       date.setDate(1);
       return date.toISOString().split('T')[0];
     }
-    
+
     return undefined;
   };
 
   /**
    * Handler para quando input é solto em uma visão
    */
-  const handleDropOnView = (viewType: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => (
-    event: React.DragEvent
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const todoId = event.dataTransfer.getData('text/todo-id');
-    if (!todoId) return;
-    
-    // Mudar a visão
-    handleViewChange(viewType);
-    
-    // Se não for inbox, atualizar a data do input
-    if (viewType !== 'inbox' && onUpdateTodo) {
-      const dueDate = getDateForView(viewType);
-      if (dueDate) {
-        const todo = savedTodos.find(t => t.id === todoId);
-        if (todo) {
-          onUpdateTodo(todoId, { dueDate });
+  const handleDropOnView =
+    (viewType: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') =>
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const todoId = event.dataTransfer.getData('text/todo-id');
+      if (!todoId) return;
+
+      // Mudar a visão
+      handleViewChange(viewType);
+
+      // Se não for inbox, atualizar a data do input
+      if (viewType !== 'inbox' && onUpdateTodo) {
+        const dueDate = getDateForView(viewType);
+        if (dueDate) {
+          const todo = savedTodos.find((t) => t.id === todoId);
+          if (todo) {
+            onUpdateTodo(todoId, { dueDate });
+          }
         }
       }
-    }
-    
-    setActiveViewDrop(null);
-  };
+
+      setActiveViewDrop(null);
+    };
 
   /**
    * Handler para drag over em visão
@@ -200,7 +200,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       const nextPhaseDate = new Date(today);
       nextPhaseDate.setDate(today.getDate() + 8);
       const nextPhaseDateStr = nextPhaseDate.toISOString().split('T')[0];
-      
+
       return todos.filter(
         (todo) => !todo.dueDate || (todo.dueDate >= todayStr && todo.dueDate <= nextPhaseDateStr)
       );
@@ -210,10 +210,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       startDate.setDate(today.getDate() + 8);
       const endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 8);
-      
+
       const startStr = startDate.toISOString().split('T')[0];
       const endStr = endDate.toISOString().split('T')[0];
-      
+
       return todos.filter(
         (todo) => !todo.dueDate || (todo.dueDate >= startStr && todo.dueDate <= endStr)
       );
@@ -222,14 +222,14 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       const nextMonthStart = new Date(today);
       nextMonthStart.setMonth(today.getMonth() + 1);
       nextMonthStart.setDate(1);
-      
+
       const nextMonthEnd = new Date(nextMonthStart);
       nextMonthEnd.setMonth(nextMonthStart.getMonth() + 1);
       nextMonthEnd.setDate(0);
-      
+
       const startStr = nextMonthStart.toISOString().split('T')[0];
       const endStr = nextMonthEnd.toISOString().split('T')[0];
-      
+
       return todos.filter(
         (todo) => todo.dueDate && todo.dueDate >= startStr && todo.dueDate <= endStr
       );
@@ -432,7 +432,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               onDragLeave={() => setActiveViewDrop(null)}
               onDragEnter={() => setActiveViewDrop('inbox')}
               className={`rounded-lg transition ${
-                activeViewDrop === 'inbox' ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950' : ''
+                activeViewDrop === 'inbox'
+                  ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950'
+                  : ''
               }`}
             >
               <button
@@ -453,7 +455,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               onDragLeave={() => setActiveViewDrop(null)}
               onDragEnter={() => setActiveViewDrop('lua-atual')}
               className={`rounded-lg transition ${
-                activeViewDrop === 'lua-atual' ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950' : ''
+                activeViewDrop === 'lua-atual'
+                  ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950'
+                  : ''
               }`}
             >
               <button
@@ -474,7 +478,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               onDragLeave={() => setActiveViewDrop(null)}
               onDragEnter={() => setActiveViewDrop('proxima-fase')}
               className={`rounded-lg transition ${
-                activeViewDrop === 'proxima-fase' ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950' : ''
+                activeViewDrop === 'proxima-fase'
+                  ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950'
+                  : ''
               }`}
             >
               <button
@@ -485,7 +491,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                     ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
                     : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-400/60'
                 }`}
-                title={selectedPhase ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}` : 'Próxima fase lunar'}
+                title={
+                  selectedPhase
+                    ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}`
+                    : 'Próxima fase lunar'
+                }
               >
                 <span className="text-sm">
                   {selectedPhase ? getMoonEmoji(getNextPhase(selectedPhase)) : '🌙'}
@@ -499,7 +509,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               onDragLeave={() => setActiveViewDrop(null)}
               onDragEnter={() => setActiveViewDrop('proximo-ciclo')}
               className={`rounded-lg transition ${
-                activeViewDrop === 'proximo-ciclo' ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-slate-950' : ''
+                activeViewDrop === 'proximo-ciclo'
+                  ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-slate-950'
+                  : ''
               }`}
             >
               <button
@@ -862,7 +874,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               {currentPage + 1} / {totalPages}
             </span>
             <span className="text-[0.6rem] text-slate-400">
-              ({startIndex + 1}-{Math.min(endIndex, filteredTodos.length)} de {filteredTodos.length})
+              ({startIndex + 1}-{Math.min(endIndex, filteredTodos.length)} de {filteredTodos.length}
+              )
             </span>
           </div>
 

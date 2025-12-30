@@ -35,6 +35,7 @@ components/
 ## 📥 Como Usar os Novos Imports
 
 ### ❌ Antes (Caminhos Antigos)
+
 ```tsx
 import AuthGate from '@/components/AuthGate';
 import SfxProvider from '@/components/SfxProvider';
@@ -45,6 +46,7 @@ import RadioPlayer from '@/components/RadioPlayer';
 ```
 
 ### ✅ Depois (Novos Caminhos)
+
 ```tsx
 import { AuthGate } from '@/components/auth';
 import { SfxProvider } from '@/components/providers';
@@ -63,11 +65,11 @@ import { AuthGate, SfxProvider, SpacePageLayout, NavMenu, RadioPlayer } from '@/
 
 ### Componentes de Sincronização
 
-| Componente | Propósito | Localização | Status |
-|-----------|----------|-----------|--------|
-| **AutoSyncLunar** | Sincroniza fase lunar ao autenticar | `@/components/sync` | ✅ Funcional |
-| **LunationSync** | Sincroniza lunações do banco | `@/components/sync` | ✅ Funcional |
-| **GalaxySunsSync** | Sincroniza Galáxia/Sol | `@/components/sync` | ⚠️ Stub |
+| Componente         | Propósito                           | Localização         | Status       |
+| ------------------ | ----------------------------------- | ------------------- | ------------ |
+| **AutoSyncLunar**  | Sincroniza fase lunar ao autenticar | `@/components/sync` | ✅ Funcional |
+| **LunationSync**   | Sincroniza lunações do banco        | `@/components/sync` | ✅ Funcional |
+| **GalaxySunsSync** | Sincroniza Galáxia/Sol              | `@/components/sync` | ⚠️ Stub      |
 
 ### Uso no Layout Raiz
 
@@ -139,13 +141,16 @@ export function MyComponent() {
 ## 🚀 Próximos Passos
 
 ### 1. **Implementar GalaxySunsSync**
+
 ```tsx
 // components/sync/GalaxySunsSync.tsx
 // TODO: Adicionar lógica real de sincronização
 ```
 
 ### 2. **Criar `components/shared/`**
+
 Para componentes UI primitivos reutilizáveis:
+
 - Botões
 - Cards
 - Modais
@@ -153,6 +158,7 @@ Para componentes UI primitivos reutilizáveis:
 - etc.
 
 ### 3. **Consolidar Providers em um Único Wrapper**
+
 ```tsx
 // components/RootProviders.tsx
 export function RootProviders({ children }) {
@@ -168,6 +174,7 @@ export function RootProviders({ children }) {
 ```
 
 ### 4. **Adicionar Testes**
+
 - Testes unitários para componentes críticos
 - Testes de integração para sincronizações
 
@@ -176,24 +183,23 @@ export function RootProviders({ children }) {
 ## 📚 Referência Rápida
 
 ### Autenticação
+
 ```tsx
 import { AuthGate } from '@/components/auth';
 
-<AuthGate>
-  {/* Conteúdo protegido */}
-</AuthGate>
+<AuthGate>{/* Conteúdo protegido */}</AuthGate>;
 ```
 
 ### Layouts
+
 ```tsx
 import { SpacePageLayout } from '@/components/layouts';
 
-<SpacePageLayout allowBackNavigation>
-  {/* Conteúdo */}
-</SpacePageLayout>
+<SpacePageLayout allowBackNavigation>{/* Conteúdo */}</SpacePageLayout>;
 ```
 
 ### Hooks de Sincronização
+
 ```tsx
 import { useSyncLunations } from '@/components/sync';
 

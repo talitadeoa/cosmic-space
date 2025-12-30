@@ -44,8 +44,8 @@ const MoonRow: React.FC<MoonRowProps> = ({
   useEffect(() => () => clearTouchRevealTimeout(), []);
 
   // Separar items em luas novas e cheias
-  const newMoons = items.filter(item => item.phase === 'luaNova');
-  const fullMoons = items.filter(item => item.phase === 'luaCheia');
+  const newMoons = items.filter((item) => item.phase === 'luaNova');
+  const fullMoons = items.filter((item) => item.phase === 'luaCheia');
 
   const renderMoonItems = (moonItems: MoonRowItem[]) => {
     return moonItems.map(({ month, phase }, idx) => {
@@ -75,7 +75,13 @@ const MoonRow: React.FC<MoonRowProps> = ({
       const targetOffset = orbitOffsets[phase] ?? { x: 0, y: 0 };
       const translatedX = isCycleActive ? targetOffset.x : 0;
       const translatedY = isCycleActive ? targetOffset.y : 0;
-      const tooltipDirection = isCycleActive ? (isNewPhase ? 'up' : isFullPhase ? 'down' : floatDirection) : floatDirection;
+      const tooltipDirection = isCycleActive
+        ? isNewPhase
+          ? 'up'
+          : isFullPhase
+            ? 'down'
+            : floatDirection
+        : floatDirection;
 
       const monthPhaseLabel = phase === 'luaNova' ? month.newMoonSign : month.fullMoonSign;
       const monthPhaseDate = phase === 'luaNova' ? month.newMoonDate : month.fullMoonDate;

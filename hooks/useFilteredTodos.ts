@@ -12,7 +12,7 @@ export type FilterState = {
   phase: MoonPhase | null;
   island: IslandId | null;
   month: number | null; // 1-12 ou null para todos
-  year: number | null;  // YYYY ou null para todos
+  year: number | null; // YYYY ou null para todos
 };
 
 /**

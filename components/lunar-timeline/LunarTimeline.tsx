@@ -18,12 +18,10 @@ export function LunarTimeline({
   timezone,
   location,
   showDetails = true,
-  className = ''
+  className = '',
 }: LunarTimelineProps) {
   // Estado: data selecionada atual
-  const [selectedDate, setSelectedDate] = useState<Date>(
-    initialDate || new Date()
-  );
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
 
   // Estado: dados lunares calculados
   const [moonData, setMoonData] = useState<MoonData>(() =>
@@ -49,30 +47,36 @@ export function LunarTimeline({
    * Handler de mudança de data da timeline
    * Otimizado com useCallback para evitar re-renders
    */
-  const handleDateChange = useCallback((newDate: Date) => {
-    setSelectedDate(newDate);
-    
-    // Chamar callback externo se fornecido
-    if (onDateChange) {
-      const newMoonData = getMoonData(newDate, location, timezone);
-      onDateChange(newDate, newMoonData);
-    }
-  }, [onDateChange, location, timezone]);
+  const handleDateChange = useCallback(
+    (newDate: Date) => {
+      setSelectedDate(newDate);
+
+      // Chamar callback externo se fornecido
+      if (onDateChange) {
+        const newMoonData = getMoonData(newDate, location, timezone);
+        onDateChange(newDate, newMoonData);
+      }
+    },
+    [onDateChange, location, timezone]
+  );
 
   /**
    * Formatar data para exibição
    */
-  const formatDateTime = useCallback((date: Date): string => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: timezone
-    }).format(date);
-  }, [timezone]);
+  const formatDateTime = useCallback(
+    (date: Date): string => {
+      return new Intl.DateTimeFormat('pt-BR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: timezone,
+      }).format(date);
+    },
+    [timezone]
+  );
 
   /**
    * Formatar iluminação como percentual
@@ -92,7 +96,7 @@ export function LunarTimeline({
               showCraters: true,
               showGlow: true,
               terminatorSoftness: 0.3,
-              earthshineIntensity: 0.15
+              earthshineIntensity: 0.15,
             }}
           />
         </div>
@@ -100,30 +104,22 @@ export function LunarTimeline({
         {/* Informações textuais */}
         <div className={styles.moonInfo}>
           {/* Nome da fase */}
-          <div className={styles.phaseName}>
-            {moonData.phaseName}
-          </div>
+          <div className={styles.phaseName}>{moonData.phaseName}</div>
 
           {/* Data e hora */}
-          <div className={styles.dateTime}>
-            {formatDateTime(selectedDate)}
-          </div>
+          <div className={styles.dateTime}>{formatDateTime(selectedDate)}</div>
 
           {/* Detalhes adicionais */}
           {showDetails && (
             <div className={styles.details}>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Iluminação</span>
-                <span className={styles.detailValue}>
-                  {illuminationPercentage}%
-                </span>
+                <span className={styles.detailValue}>{illuminationPercentage}%</span>
               </div>
 
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Idade</span>
-                <span className={styles.detailValue}>
-                  {moonData.lunarAge.toFixed(1)} dias
-                </span>
+                <span className={styles.detailValue}>{moonData.lunarAge.toFixed(1)} dias</span>
               </div>
 
               <div className={styles.detailItem}>
@@ -148,9 +144,7 @@ export function LunarTimeline({
       </div>
 
       {/* Texto de instrução (opcional) */}
-      <div className={styles.instruction}>
-        Deslize a timeline para viajar no tempo
-      </div>
+      <div className={styles.instruction}>Deslize a timeline para viajar no tempo</div>
     </div>
   );
 }

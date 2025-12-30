@@ -4,10 +4,7 @@ import { getTokenPayload, validateToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const token = request.cookies.get('auth_token')?.value;
 

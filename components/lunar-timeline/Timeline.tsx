@@ -12,13 +12,13 @@ import styles from './styles/Timeline.module.css';
 interface TimelineProps {
   /** Data atualmente selecionada (no cursor central) */
   currentDate: Date;
-  
+
   /** Callback quando a data mudar durante scrubbing */
   onDateChange: (date: Date) => void;
-  
+
   /** Número de dias visíveis antes/depois do centro */
   visibleDays?: number;
-  
+
   /** Pixels por hora */
   pixelsPerHour?: number;
 }
@@ -55,7 +55,7 @@ export function Timeline({
   currentDate,
   onDateChange,
   visibleDays = 7,
-  pixelsPerHour = 12
+  pixelsPerHour = 12,
 }: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -64,9 +64,9 @@ export function Timeline({
     startX: 0,
     offsetX: 0,
     velocity: 0,
-    lastTime: 0
+    lastTime: 0,
   });
-  
+
   const [containerWidth, setContainerWidth] = useState(0);
 
   /**
@@ -98,7 +98,7 @@ export function Timeline({
       date.setDate(date.getDate() + i);
       date.setHours(0, 0, 0, 0);
 
-      const x = centerX + (i * dayWidth) + scrubState.offsetX;
+      const x = centerX + i * dayWidth + scrubState.offsetX;
 
       days.push({
         date,
@@ -106,7 +106,7 @@ export function Timeline({
         dayOfMonth: date.getDate(),
         isToday: isToday(date),
         isWeekend: isWeekend(date),
-        x
+        x,
       });
     }
 
@@ -130,7 +130,7 @@ export function Timeline({
       const time = new Date(currentDate);
       time.setHours(time.getHours() + hourOffset);
 
-      const x = centerX + (hourOffset * hourWidth) + scrubState.offsetX;
+      const x = centerX + hourOffset * hourWidth + scrubState.offsetX;
 
       // Determinar tipo de tick
       let type: 'hour' | 'day' | 'major';
@@ -166,51 +166,54 @@ export function Timeline({
    * Handler de início de drag (mouse/touch unificado)
    */
   const handleDragStart = useCallback((clientX: number) => {
-    setScrubState(prev => ({
+    setScrubState((prev) => ({
       ...prev,
       isDragging: true,
       startX: clientX,
-      lastTime: Date.now()
+      lastTime: Date.now(),
     }));
   }, []);
 
   /**
    * Handler de movimento durante drag
    */
-  const handleDragMove = useCallback((clientX: number) => {
-    if (!scrubState.isDragging) return;
+  const handleDragMove = useCallback(
+    (clientX: number) => {
+      if (!scrubState.isDragging) return;
 
-    const now = Date.now();
-    const deltaX = scrubState.startX - clientX;
-    const deltaTime = now - scrubState.lastTime;
-    const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
+      const now = Date.now();
+      const deltaX = scrubState.startX - clientX;
+      const deltaTime = now - scrubState.lastTime;
+      const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
 
-    // Calcular nova data baseada no movimento
-    const hoursShift = deltaX / pixelsPerHour;
-    const newDate = new Date(currentDate);
-    newDate.setTime(newDate.getTime() + hoursShift * 60 * 60 * 1000);
+      // Calcular nova data baseada no movimento
+      const hoursShift = deltaX / pixelsPerHour;
+      const newDate = new Date(currentDate);
+      newDate.setTime(newDate.getTime() + hoursShift * 60 * 60 * 1000);
 
-    // Atualizar data (isso resetará offsetX, mantendo cursor no centro)
-    onDateChange(newDate);
+      // Atualizar data (isso resetará offsetX, mantendo cursor no centro)
+      onDateChange(newDate);
 
-    // Atualizar estado
-    setScrubState(prev => ({
-      ...prev,
-      startX: clientX,
-      velocity,
-      lastTime: now
-    }));
-  }, [scrubState, pixelsPerHour, currentDate, onDateChange]);
+      // Atualizar estado
+      setScrubState((prev) => ({
+        ...prev,
+        startX: clientX,
+        velocity,
+        lastTime: now,
+      }));
+    },
+    [scrubState, pixelsPerHour, currentDate, onDateChange]
+  );
 
   /**
    * Handler de fim de drag
    */
   const handleDragEnd = useCallback(() => {
-    setScrubState(prev => ({
+    setScrubState((prev) => ({
       ...prev,
       isDragging: false,
       offsetX: 0,
-      velocity: 0
+      velocity: 0,
     }));
   }, []);
 
@@ -297,7 +300,7 @@ export function Timeline({
       </div>
 
       {/* Timeline scrollável */}
-      <div 
+      <div
         ref={timelineRef}
         className={`${styles.timeline} ${scrubState.isDragging ? styles.dragging : ''}`}
       >
@@ -309,9 +312,7 @@ export function Timeline({
               className={`${styles.tick} ${styles[tick.type]}`}
               style={{ left: `${tick.x}px` }}
             >
-              {tick.label && (
-                <span className={styles.tickLabel}>{tick.label}</span>
-              )}
+              {tick.label && <span className={styles.tickLabel}>{tick.label}</span>}
             </div>
           ))}
         </div>

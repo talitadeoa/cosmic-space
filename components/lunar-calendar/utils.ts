@@ -7,10 +7,7 @@ import { MoonPhase, LunarData, LunarDataByDate, CalendarDay } from './types';
 /**
  * Gera o grid completo do mês incluindo dias dos meses adjacentes
  */
-export function generateCalendarGrid(
-  year: number,
-  month: number
-): CalendarDay[][] {
+export function generateCalendarGrid(year: number, month: number): CalendarDay[][] {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startOfWeek = firstDay.getDay(); // 0 = domingo, 6 = sábado
@@ -133,10 +130,7 @@ export function isWeekend(date: Date): boolean {
 /**
  * Formata data para exibição legível
  */
-export function formatDate(
-  date: Date,
-  locale: 'pt-BR' | 'en-US' = 'pt-BR'
-): string {
+export function formatDate(date: Date, locale: 'pt-BR' | 'en-US' = 'pt-BR'): string {
   const options: Intl.DateTimeFormatOptions = {
     weekday: 'long',
     year: 'numeric',

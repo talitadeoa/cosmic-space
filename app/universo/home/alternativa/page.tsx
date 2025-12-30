@@ -51,15 +51,13 @@ export default function HomeAlternativaPage() {
     <main className="min-h-[100dvh] px-4 py-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <header className="text-center">
-          <p className="text-xs uppercase tracking-[0.45em] text-slate-300">
-            Home alternativa
-          </p>
+          <p className="text-xs uppercase tracking-[0.45em] text-slate-300">Home alternativa</p>
           <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
             Explore os elementos do cosmos
           </h1>
           <p className="mt-3 text-sm text-slate-200/80 md:text-base">
-            Clique nos planetas, luas, sol, galáxia e eclipse para navegar pelas rotas
-            já existentes.
+            Clique nos planetas, luas, sol, galáxia e eclipse para navegar pelas rotas já
+            existentes.
           </p>
         </header>
 

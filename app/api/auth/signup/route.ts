@@ -34,12 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Data de nascimento inválida' }, { status: 400 });
     }
 
-    const allowedGenders = new Set([
-      'feminino',
-      'masculino',
-      'outro',
-      'prefiro_nao_informar',
-    ]);
+    const allowedGenders = new Set(['feminino', 'masculino', 'outro', 'prefiro_nao_informar']);
 
     if (!gender || !allowedGenders.has(gender)) {
       return NextResponse.json({ error: 'Sexo inválido' }, { status: 400 });

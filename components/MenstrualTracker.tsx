@@ -41,7 +41,7 @@ const COMMON_SYMPTOMS = [
 export default function MenstrualTracker({
   isEnabled,
   onRecordAdd,
-  existingRecords = []
+  existingRecords = [],
 }: MenstrualTrackerProps) {
   const [records, setRecords] = useState<MenstrualRecord[]>(existingRecords);
   const [showForm, setShowForm] = useState(false);
@@ -211,9 +211,7 @@ export default function MenstrualTracker({
 
             {/* Observações */}
             <div>
-              <label className="block text-sm font-medium text-pink-200 mb-2">
-                📝 Observações
-              </label>
+              <label className="block text-sm font-medium text-pink-200 mb-2">📝 Observações</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}

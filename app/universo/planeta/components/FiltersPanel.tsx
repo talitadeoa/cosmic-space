@@ -30,8 +30,18 @@ const hasActiveFilters = (filters: FilterState): boolean => {
 };
 
 const monthNames = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
 ];
 
 export const FiltersPanel: React.FC<FiltersPanelProps> = ({
@@ -51,7 +61,9 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
   return (
     <div
       className={`overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-950/70 shadow-xl shadow-indigo-900/20 transition-[max-height,opacity,transform] duration-300 ${
-        isOpen ? 'max-h-96 opacity-100 translate-y-0 p-4 sm:p-5' : 'max-h-0 opacity-0 -translate-y-2 p-0'
+        isOpen
+          ? 'max-h-96 opacity-100 translate-y-0 p-4 sm:p-5'
+          : 'max-h-0 opacity-0 -translate-y-2 p-0'
       }`}
     >
       <div>
@@ -146,7 +158,9 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
           )}
         </div>
       ) : (
-        <p className="mt-4 border-t border-slate-700/50 pt-4 text-xs text-slate-500">Nenhum filtro extra ativo.</p>
+        <p className="mt-4 border-t border-slate-700/50 pt-4 text-xs text-slate-500">
+          Nenhum filtro extra ativo.
+        </p>
       )}
 
       {activeFilters && (

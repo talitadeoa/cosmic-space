@@ -88,9 +88,7 @@ const ComunidadePage = () => {
     avatarUrl: '',
     bio: '',
   });
-  const [profileStatus, setProfileStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
-    'idle'
-  );
+  const [profileStatus, setProfileStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [profileError, setProfileError] = useState('');
   const [postStatus, setPostStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [postError, setPostError] = useState('');
@@ -404,9 +402,7 @@ const ComunidadePage = () => {
       setCommentStatus((prev) => ({ ...prev, [postId]: 'idle' }));
       setPosts((prev) =>
         prev.map((post) =>
-          post.id === postId
-            ? { ...post, commentsCount: (post.commentsCount ?? 0) + 1 }
-            : post
+          post.id === postId ? { ...post, commentsCount: (post.commentsCount ?? 0) + 1 } : post
         )
       );
     } catch (error) {
@@ -451,9 +447,7 @@ const ComunidadePage = () => {
               )}
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
-                Perfil
-              </span>
+              <span className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Perfil</span>
               <span className="text-sm font-semibold text-slate-100">
                 {profile.displayName || 'Tripulacao'}
               </span>
@@ -553,9 +547,7 @@ const ComunidadePage = () => {
                 <h3 className="mt-3 text-xl font-semibold text-white">
                   {featuredPost.title || 'Pulso em destaque'}
                 </h3>
-                <p className="mt-2 text-sm text-slate-300">
-                  {truncate(featuredPost.body, 220)}
-                </p>
+                <p className="mt-2 text-sm text-slate-300">{truncate(featuredPost.body, 220)}</p>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
                   <span>Curado para inspirar sua orbita pessoal.</span>
                   <button
@@ -570,9 +562,7 @@ const ComunidadePage = () => {
             ) : null}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                  Fluxo orbital
-                </p>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Fluxo orbital</p>
                 <h2 className="mt-2 text-xl font-semibold text-white">Postagens em tempo real</h2>
                 {isLoading ? (
                   <p className="mt-2 text-xs uppercase tracking-[0.3em] text-slate-500">
@@ -637,9 +627,7 @@ const ComunidadePage = () => {
                   <h3 className="mt-3 text-lg font-semibold text-white">
                     {post.title || 'Pulso da comunidade'}
                   </h3>
-                  <p className="mt-2 text-sm text-slate-300">
-                    {truncate(post.body, 160)}
-                  </p>
+                  <p className="mt-2 text-sm text-slate-300">{truncate(post.body, 160)}</p>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
                     {post.tags.map((tag) => (
                       <span
@@ -704,9 +692,7 @@ const ComunidadePage = () => {
 
           <div className="flex flex-col gap-6">
             <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                Perfil publico
-              </p>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Perfil publico</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Ajuste sua identidade</h2>
               <p className="mt-3 text-sm text-slate-300">
                 Escolha como voce aparece nos posts e comentarios.
@@ -750,9 +736,7 @@ const ComunidadePage = () => {
             </div>
 
             <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                Novo pulso
-              </p>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Novo pulso</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Publicar na comunidade</h2>
               <p className="mt-3 text-sm text-slate-300">
                 Compartilhe insights curtos ou notas mais longas. Tags e imagens sao opcionais.
@@ -805,8 +789,8 @@ const ComunidadePage = () => {
               <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Cartas</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Publicações profundas</h2>
               <p className="mt-3 text-sm text-slate-300">
-                Escolha uma trilha editorial para acompanhar. Cada stream funciona como um
-                Substack cósmico, com histórias longas e arquivadas por ciclo.
+                Escolha uma trilha editorial para acompanhar. Cada stream funciona como um Substack
+                cósmico, com histórias longas e arquivadas por ciclo.
               </p>
 
               <div className="mt-5 space-y-4">

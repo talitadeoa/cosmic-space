@@ -352,7 +352,7 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
                 onClick={() => onMoonClick(phase)}
                 floatOffset={floatOffset}
               />
-              
+
               {isHovered && (
                 <div className="absolute top-full mt-2 sm:mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm">
                   <div className="mb-1 text-sm sm:text-base">{moonInfo.emoji}</div>
@@ -360,7 +360,9 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
                   <div className="mt-1 text-indigo-300 text-xs">{moonInfo.event}</div>
                   <div className="mt-1 text-yellow-300 text-xs">{moonInfo.season}</div>
                   <div className="mt-1 text-sky-300 text-xs">{moonInfo.dates}</div>
-                  <div className="mt-2 max-w-xs sm:max-w-sm whitespace-normal text-indigo-200/80 text-xs">{moonInfo.description}</div>
+                  <div className="mt-2 max-w-xs sm:max-w-sm whitespace-normal text-indigo-200/80 text-xs">
+                    {moonInfo.description}
+                  </div>
                 </div>
               )}
             </div>

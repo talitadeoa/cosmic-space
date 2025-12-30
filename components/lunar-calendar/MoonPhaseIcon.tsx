@@ -36,12 +36,11 @@ export const MoonPhaseIcon: React.FC<MoonPhaseIconProps> = ({
 
   // Renderiza o disco da lua com base na iluminação
   const renderMoonDisc = () => {
-    const isWaxing =
-      [
-        MoonPhase.WAXING_CRESCENT,
-        MoonPhase.WAXING_GIBBOUS,
-        MoonPhase.FIRST_QUARTER,
-      ].includes(phase);
+    const isWaxing = [
+      MoonPhase.WAXING_CRESCENT,
+      MoonPhase.WAXING_GIBBOUS,
+      MoonPhase.FIRST_QUARTER,
+    ].includes(phase);
 
     if (variant === 'circle') {
       // Versão simplificada: círculo com sombra representando iluminação
@@ -50,13 +49,7 @@ export const MoonPhaseIcon: React.FC<MoonPhaseIconProps> = ({
       return (
         <g>
           {/* Fundo da lua (cinza escuro) */}
-          <circle
-            cx={cx}
-            cy={cy}
-            r={radius}
-            fill="#2a3a4a"
-            opacity="0.6"
-          />
+          <circle cx={cx} cy={cy} r={radius} fill="#2a3a4a" opacity="0.6" />
 
           {/* Área iluminada */}
           <circle
@@ -104,14 +97,7 @@ export const MoonPhaseIcon: React.FC<MoonPhaseIconProps> = ({
       return (
         <g>
           <circle cx={cx} cy={cy} r={radius} fill="#f5f5dc" />
-          <circle
-            cx={cx}
-            cy={cy}
-            r={radius}
-            fill="none"
-            stroke="#d4af37"
-            strokeWidth="2"
-          />
+          <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#d4af37" strokeWidth="2" />
         </g>
       );
     }
@@ -137,13 +123,7 @@ export const MoonPhaseIcon: React.FC<MoonPhaseIconProps> = ({
         <circle cx={cx} cy={cy} r={radius} fill="#2a3a4a" opacity="0.7" />
 
         {/* Área iluminada (clipped) */}
-        <circle
-          cx={cx}
-          cy={cy}
-          r={radius}
-          fill="#e8e8ff"
-          clipPath={`url(#${clipId})`}
-        />
+        <circle cx={cx} cy={cy} r={radius} fill="#e8e8ff" clipPath={`url(#${clipId})`} />
 
         {/* Borda */}
         <circle

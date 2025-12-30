@@ -156,7 +156,9 @@ const LunarTimeScrubber: React.FC<LunarTimeScrubberProps> = ({
           isWaxing={selectedMoonData.isWaxing}
         />
         <div className={styles.moonText}>
-          <p className={styles.phaseLabel}>{phaseName} · {illuminationLabel}</p>
+          <p className={styles.phaseLabel}>
+            {phaseName} · {illuminationLabel}
+          </p>
           <p className={styles.dateLabel}>{formatDateTime(selectedDate, timezone)}</p>
         </div>
       </div>
@@ -239,12 +241,7 @@ const MoonRenderer: React.FC<{ illumination: number; isWaxing: boolean }> = ({
         mask={`url(#moon-mask-${id})`}
         filter={`url(#moon-noise-${id})`}
       />
-      <circle
-        cx={radius}
-        cy={radius}
-        r={radius}
-        fill="rgba(12, 16, 22, 0.35)"
-      />
+      <circle cx={radius} cy={radius} r={radius} fill="rgba(12, 16, 22, 0.35)" />
     </svg>
   );
 };

@@ -10,11 +10,11 @@ interface TemporalContextType {
   day: number;
   weekNumber: number;
   weekDay: number; // 0 = domingo, 6 = sábado
-  
+
   // Fase lunar atual (aproximada)
   currentMoonPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' | null;
   currentZodiacSign: string | null;
-  
+
   // Utilitários
   getDateRange: (type: 'month' | 'week' | 'year') => { start: Date; end: Date };
   isToday: (date: Date) => boolean;
@@ -30,10 +30,10 @@ function calculateMoonPhase(date: Date): 'luaNova' | 'luaCrescente' | 'luaCheia'
   // Data de referência: lua nova (01/01/2000)
   const known_new_moon = new Date(2000, 0, 6);
   const synodic_month = 29.53058867;
-  
+
   const diff = (date.getTime() - known_new_moon.getTime()) / (1000 * 60 * 60 * 24);
   const days_into_cycle = diff % synodic_month;
-  
+
   if (days_into_cycle < 1.5 || days_into_cycle > synodic_month - 1.5) {
     return 'luaNova';
   } else if (days_into_cycle < synodic_month / 2 - 1.2) {
@@ -51,7 +51,7 @@ function calculateMoonPhase(date: Date): 'luaNova' | 'luaCrescente' | 'luaCheia'
 function calculateZodiacSign(date: Date): string {
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  
+
   const zodiacSigns: { name: string; start: [number, number]; end: [number, number] }[] = [
     { name: 'Áries', start: [3, 21], end: [4, 19] },
     { name: 'Touro', start: [4, 20], end: [5, 20] },
@@ -66,11 +66,11 @@ function calculateZodiacSign(date: Date): string {
     { name: 'Aquário', start: [1, 20], end: [2, 18] },
     { name: 'Peixes', start: [2, 19], end: [3, 20] },
   ];
-  
+
   for (const sign of zodiacSigns) {
     const [startMonth, startDay] = sign.start;
     const [endMonth, endDay] = sign.end;
-    
+
     if (startMonth === endMonth) {
       if (month === startMonth && day >= startDay && day <= endDay) {
         return sign.name;
@@ -86,7 +86,7 @@ function calculateZodiacSign(date: Date): string {
       }
     }
   }
-  
+
   return 'Capricórnio';
 }
 
@@ -98,12 +98,14 @@ function getWeekNumber(date: Date): number {
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 export function TemporalProvider({ children }: { children: ReactNode }) {
   const [now, setNow] = useState<Date>(new Date());
-  const [currentMoonPhase, setCurrentMoonPhase] = useState<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' | null>(null);
+  const [currentMoonPhase, setCurrentMoonPhase] = useState<
+    'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' | null
+  >(null);
   const [currentZodiacSign, setCurrentZodiacSign] = useState<string | null>(null);
 
   // Atualizar data/hora a cada minuto
@@ -170,11 +172,7 @@ export function TemporalProvider({ children }: { children: ReactNode }) {
     isToday,
   };
 
-  return (
-    <TemporalContext.Provider value={value}>
-      {children}
-    </TemporalContext.Provider>
-  );
+  return <TemporalContext.Provider value={value}>{children}</TemporalContext.Provider>;
 }
 
 export function useTemporal() {

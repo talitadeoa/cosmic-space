@@ -207,7 +207,10 @@ export default function CiclosDashboardPage() {
                   </p>
                   <div className="grid md:grid-cols-3 gap-3">
                     {Object.entries(analysis.zodiacDistribution).map(([sign, count]) => (
-                      <div key={sign} className="flex items-center gap-3 bg-amber-900/20 p-3 rounded-lg">
+                      <div
+                        key={sign}
+                        className="flex items-center gap-3 bg-amber-900/20 p-3 rounded-lg"
+                      >
                         <div className="text-xl flex-shrink-0">
                           {sign === 'Capricórnio'
                             ? '♑'

@@ -60,7 +60,10 @@ const CalendarPage = () => {
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
 
-  const lunarDataByDate = useMemo(() => buildSampleLunarData(viewYear, viewMonth), [viewYear, viewMonth]);
+  const lunarDataByDate = useMemo(
+    () => buildSampleLunarData(viewYear, viewMonth),
+    [viewYear, viewMonth]
+  );
 
   const handleMonthChange = (nextYear: number, nextMonth: number) => {
     setViewYear(nextYear);

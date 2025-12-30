@@ -124,7 +124,8 @@ export function useMenstrualCycle(storageKey: string = 'menstrual_records') {
     recordList.forEach((record) => {
       flowCount.set(record.flowIntensity, (flowCount.get(record.flowIntensity) || 0) + 1);
     });
-    const mostCommonFlow = Array.from(flowCount.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'moderate';
+    const mostCommonFlow =
+      Array.from(flowCount.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'moderate';
 
     // Distribuição de fases lunares
     const moonPhases = new Map<string, number>();

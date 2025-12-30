@@ -92,9 +92,7 @@ export interface UseEmotionalInputReturn {
  * @param storageKey - Chave do localStorage (padrão: 'current_emotion')
  * @returns Objeto com estado e funções de emoção
  */
-export function useEmotionalInput(
-  storageKey: string = 'current_emotion'
-): UseEmotionalInputReturn {
+export function useEmotionalInput(storageKey: string = 'current_emotion'): UseEmotionalInputReturn {
   const [currentEmotion, setCurrentEmotion] = useState<Emotion | null>(null);
   const [emotionHistory, setEmotionHistory] = useState<EmotionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);

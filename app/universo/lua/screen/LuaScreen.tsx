@@ -41,7 +41,6 @@ type PhaseItem = {
   phase: MoonPhase;
 };
 
-
 const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
@@ -125,15 +124,16 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     return years;
   }, [monthEntries]);
   const visibleYear =
-    yearList.length > 0
-      ? yearList[Math.min(visiblePeriod.yearIndex, yearList.length - 1)]
-      : null;
+    yearList.length > 0 ? yearList[Math.min(visiblePeriod.yearIndex, yearList.length - 1)] : null;
   const visibleMonths = useMemo(
     () => (visibleYear === null ? [] : monthEntries.filter((month) => month.year === visibleYear)),
     [monthEntries, visibleYear]
   );
 
-  const getQuarterIndex = useCallback((monthNumber: number) => Math.floor((monthNumber - 1) / 3), []);
+  const getQuarterIndex = useCallback(
+    (monthNumber: number) => Math.floor((monthNumber - 1) / 3),
+    []
+  );
 
   const quarterBuckets = useMemo(() => {
     if (visibleYear === null) return [] as MonthEntry[][];
@@ -177,9 +177,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
       const targetYear = highlightTarget?.year ?? yearList[yearList.length - 1];
       const targetIndex = yearList.indexOf(targetYear);
       const fallbackYearIndex = targetIndex >= 0 ? targetIndex : yearList.length - 1;
-      const quarterIndex = highlightTarget
-        ? getQuarterIndex(highlightTarget.monthNumber)
-        : 0;
+      const quarterIndex = highlightTarget ? getQuarterIndex(highlightTarget.monthNumber) : 0;
       setVisiblePeriod({
         yearIndex: fallbackYearIndex,
         quarterIndex,
@@ -236,7 +234,11 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
       setExistingInsightUpdatedAt(null);
 
       try {
-        const item = await loadInsight(selectedMoonPhase, selectedMonth.year, selectedMonth.monthNumber);
+        const item = await loadInsight(
+          selectedMoonPhase,
+          selectedMonth.year,
+          selectedMonth.monthNumber
+        );
         if (!isActive) return;
         setExistingInsight(item?.insight ?? '');
         setExistingInsightUpdatedAt(item?.updatedAt ?? item?.createdAt ?? null);
@@ -448,15 +450,15 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
                 onKeyDown={handleScrollerKeyDown}
                 layoutPadding={layout.padding}
                 tileWidth={layout.tileWidth}
-              gap={layout.gap}
-              canScrollLeft={canScrollLeft}
-              canScrollRight={canScrollRight}
-              onScrollLeft={() => handleQuarterStep('left')}
-              onScrollRight={() => handleQuarterStep('right')}
-              onRetry={handleRetry}
-              isInitialLoading={isInitialLoading}
-              monthEntries={visibleQuarterMonths}
-              calendarError={calendarError}
+                gap={layout.gap}
+                canScrollLeft={canScrollLeft}
+                canScrollRight={canScrollRight}
+                onScrollLeft={() => handleQuarterStep('left')}
+                onScrollRight={() => handleQuarterStep('right')}
+                onRetry={handleRetry}
+                isInitialLoading={isInitialLoading}
+                monthEntries={visibleQuarterMonths}
+                calendarError={calendarError}
                 skeletonCount={skeletonCount}
                 virtualizedPhases={virtualizedPhases}
                 highlightTarget={highlightTarget}

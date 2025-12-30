@@ -5,10 +5,7 @@
   width: 100%;
   height: 120px;
   overflow: hidden;
-  background: linear-gradient(to bottom, 
-    rgba(10, 14, 20, 0.8) 0%,
-    rgba(10, 14, 20, 0.95) 100%
-  );
+  background: linear-gradient(to bottom, rgba(10, 14, 20, 0.8) 0%, rgba(10, 14, 20, 0.95) 100%);
   border-top: 1px solid rgba(232, 232, 255, 0.1);
   user-select: none;
   -webkit-user-select: none;
@@ -29,7 +26,8 @@
 .cursorLine {
   width: 2px;
   height: 100%;
-  background: linear-gradient(to bottom,
+  background: linear-gradient(
+    to bottom,
     rgba(232, 232, 255, 0) 0%,
     rgba(232, 232, 255, 0.8) 20%,
     rgba(232, 232, 255, 1) 50%,
@@ -37,7 +35,7 @@
     rgba(232, 232, 255, 0) 100%
   );
   margin: 0 auto;
-  box-shadow: 
+  box-shadow:
     0 0 8px rgba(232, 232, 255, 0.6),
     0 0 16px rgba(232, 232, 255, 0.3);
 }
@@ -54,7 +52,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.7;
     transform: translateX(-50%) translateY(0);
   }
@@ -188,18 +187,12 @@
 
 .fadeLeft {
   left: 0;
-  background: linear-gradient(to right,
-    rgba(10, 14, 20, 0.95) 0%,
-    rgba(10, 14, 20, 0) 100%
-  );
+  background: linear-gradient(to right, rgba(10, 14, 20, 0.95) 0%, rgba(10, 14, 20, 0) 100%);
 }
 
 .fadeRight {
   right: 0;
-  background: linear-gradient(to left,
-    rgba(10, 14, 20, 0.95) 0%,
-    rgba(10, 14, 20, 0) 100%
-  );
+  background: linear-gradient(to left, rgba(10, 14, 20, 0.95) 0%, rgba(10, 14, 20, 0) 100%);
 }
 
 /* Responsividade */

@@ -9,24 +9,27 @@
 ## 🚀 Início Rápido
 
 ### Para Desenvolvedores
+
 1. **[Getting Started](guides/getting-started.md)** - Setup inicial e instalação (10 min)
 2. **[Autenticação](guides/authentication.md)** - Neon Auth setup (15 min)
 3. **[Componentes](guides/components.md)** - Guia de componentes (20 min)
 
 ### Para Arquitetos
+
 - **[Visão Geral](architecture/overview.md)** - Arquitetura técnica completa
 
 ---
 
 ## 📖 Guias Disponíveis
 
-| Guia | Descrição | Tempo |
-|------|-----------|-------|
+| Guia                                             | Descrição                           | Tempo  |
+| ------------------------------------------------ | ----------------------------------- | ------ |
 | **[Getting Started](guides/getting-started.md)** | Setup do projeto e primeiros passos | 10 min |
-| **[Autenticação](guides/authentication.md)** | Setup Neon Auth e proteção de rotas | 15 min |
-| **[Componentes](guides/components.md)** | Componentes globais e layouts | 20 min |
+| **[Autenticação](guides/authentication.md)**     | Setup Neon Auth e proteção de rotas | 15 min |
+| **[Componentes](guides/components.md)**          | Componentes globais e layouts       | 20 min |
 
 ### Em Breve
+
 - [ ] Calendário Lunar - Sistema de calendário e lunações
 - [ ] Insights - Sistema de insights mensais/trimestrais
 - [ ] Responsividade - Guia de responsividade mobile
@@ -57,9 +60,11 @@ cosmic-space/
 ## 🔑 Conceitos Principais
 
 ### Autenticação (Neon Auth)
+
 Sistema gerenciado baseado em Better Auth com OAuth Google/GitHub e proteção automática de rotas via `AuthGate`.
 
 ### Componentes Globais
+
 ```tsx
 // Layout padrão com menu e player
 <SpacePageLayout>
@@ -73,6 +78,7 @@ Sistema gerenciado baseado em Better Auth com OAuth Google/GitHub e proteção a
 ```
 
 ### Sistema Lunar
+
 - **AutoSyncLunar**: Sincronização automática de lunações
 - **LunationSync**: Sincronização manual via Google Calendar
 - **GalaxySunsSync**: Eventos especiais (eclipses)
@@ -81,13 +87,13 @@ Sistema gerenciado baseado em Better Auth com OAuth Google/GitHub e proteção a
 
 ## 📚 Referência Rápida
 
-| Componente | Localização | Uso |
-|-----------|-------------|-----|
-| `AuthGate` | `components/auth` | Proteção de rotas |
-| `SpacePageLayout` | `components/layouts` | Layout padrão |
-| `RadioPlayer` | `components/audio` | Player de rádio |
-| `AutoSyncLunar` | `components/sync` | Auto-sync lunações |
-| `NavMenu` | `components/navigation` | Menu principal |
+| Componente        | Localização             | Uso                |
+| ----------------- | ----------------------- | ------------------ |
+| `AuthGate`        | `components/auth`       | Proteção de rotas  |
+| `SpacePageLayout` | `components/layouts`    | Layout padrão      |
+| `RadioPlayer`     | `components/audio`      | Player de rádio    |
+| `AutoSyncLunar`   | `components/sync`       | Auto-sync lunações |
+| `NavMenu`         | `components/navigation` | Menu principal     |
 
 ---
 
@@ -121,12 +127,12 @@ doc/
 
 ## 🆘 Troubleshooting
 
-| Problema | Solução |
-|----------|---------|
-| **Erro de auth** | Veja [guides/authentication.md](guides/authentication.md#troubleshooting) |
-| **Database error** | Verifique `DATABASE_URL` no `.env.local` |
-| **Lunações não aparecem** | Execute sync manual ou aguarde `AutoSyncLunar` |
-| **Build falha** | Limpe cache: `rm -rf .next && npm run build` |
+| Problema                  | Solução                                                                   |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Erro de auth**          | Veja [guides/authentication.md](guides/authentication.md#troubleshooting) |
+| **Database error**        | Verifique `DATABASE_URL` no `.env.local`                                  |
+| **Lunações não aparecem** | Execute sync manual ou aguarde `AutoSyncLunar`                            |
+| **Build falha**           | Limpe cache: `rm -rf .next && npm run build`                              |
 
 ---
 

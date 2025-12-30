@@ -34,10 +34,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     }
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    day: CalendarDay
-  ) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, day: CalendarDay) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleDayClick(day);
@@ -64,11 +61,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       {weeks.map((week, weekIndex) => (
         <div key={weekIndex} className={styles.week} role="row">
           {week.map((day, dayIndex) => (
-            <div
-              key={`${weekIndex}-${dayIndex}`}
-              className={styles.dayCell}
-              role="gridcell"
-            >
+            <div key={`${weekIndex}-${dayIndex}`} className={styles.dayCell} role="gridcell">
               <button
                 className={`
                   ${styles.dayButton}
@@ -111,10 +104,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   );
 };
 
-function getFullWeekDayName(
-  index: number,
-  locale: 'pt-BR' | 'en-US'
-): string {
+function getFullWeekDayName(index: number, locale: 'pt-BR' | 'en-US'): string {
   const ptBRDays = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
   const enUSdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 

@@ -30,7 +30,10 @@ export interface CycleEvent {
 /**
  * Encontra a Lua Nova mais próxima de uma data (para trás ou para frente)
  */
-export function findNearestNewMoon(date: Date, direction: 'before' | 'after' | 'nearest' = 'nearest'): Date {
+export function findNearestNewMoon(
+  date: Date,
+  direction: 'before' | 'after' | 'nearest' = 'nearest'
+): Date {
   const { age } = getLunarPhaseAndSign(date);
   let daysToNewMoon = 0;
 
@@ -65,7 +68,7 @@ export function findCycleDay(
   eventDate.setDate(eventDate.getDate() + dayInCycle);
 
   const { faseLua, signo, age } = getLunarPhaseAndSign(eventDate);
-  
+
   // Normalizar fase
   let phase: MoonPhaseType = 'luaNova';
   if (age < 1.5 || age > SYNODIC_MONTH - 1.5) phase = 'luaNova';
@@ -159,7 +162,7 @@ export function formatCycleEvent(event: CycleEvent): string {
  */
 export function getCycleSummary(newMoonDate: Date) {
   const keyDates = getCycleKeyDates(newMoonDate);
-  
+
   return {
     cicloInicia: formatCycleEvent(keyDates.firstDay),
     meioCrescente: formatCycleEvent(keyDates.quarterGrowth),
@@ -171,20 +174,20 @@ export function getCycleSummary(newMoonDate: Date) {
 
 /**
  * Exemplo de uso:
- * 
+ *
  * const newMoon = new Date('2025-12-19');
- * 
+ *
  * // Dia específico do ciclo
  * const day8 = findCycleDay(newMoon, 8); // 8º dia = Crescente
  * console.warn(day8.description); // "Lua Crescente em Áries"
- * 
+ *
  * // 3º dia da Minguante
  * const day3Minguante = findPhaseDay(newMoon, 'luaMinguante', 3);
- * 
+ *
  * // Todos os marcos
  * const keyDates = getCycleKeyDates(newMoon);
  * console.warn(keyDates.fullMoon.description);
- * 
+ *
  * // Calendário completo do mês
  * const calendar = generateMoonCycleCalendar(2025, 12);
  * calendar.forEach(event => console.warn(formatCycleEvent(event)));

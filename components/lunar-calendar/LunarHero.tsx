@@ -13,14 +13,8 @@ interface LunarHeroProps {
   locale?: 'pt-BR' | 'en-US';
 }
 
-export const LunarHero: React.FC<LunarHeroProps> = ({
-  date,
-  lunarData,
-  locale = 'pt-BR',
-}) => {
-  const dayOfWeek = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(
-    date
-  );
+export const LunarHero: React.FC<LunarHeroProps> = ({ date, lunarData, locale = 'pt-BR' }) => {
+  const dayOfWeek = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(date);
   const formattedDate = new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'short',
@@ -58,9 +52,7 @@ export const LunarHero: React.FC<LunarHeroProps> = ({
       {lunarData && (
         <div className={styles.phaseInfo}>
           <h3 className={styles.phaseName}>{lunarData.phaseName}</h3>
-          <p className={styles.illumination}>
-            {lunarData.illumination.toFixed(1)}% iluminada
-          </p>
+          <p className={styles.illumination}>{lunarData.illumination.toFixed(1)}% iluminada</p>
           {lunarData.daysInPhase && (
             <p className={styles.daysInPhase}>
               {lunarData.daysInPhase} dia{lunarData.daysInPhase !== 1 ? 's' : ''} nesta fase
@@ -71,9 +63,15 @@ export const LunarHero: React.FC<LunarHeroProps> = ({
 
       {/* Decoração de estrelas sutil */}
       <div className={styles.starDecoration} aria-hidden="true">
-        <span className={styles.star} style={{ left: '10%', top: '15%' }}>✦</span>
-        <span className={styles.star} style={{ right: '15%', top: '20%' }}>✦</span>
-        <span className={styles.star} style={{ left: '5%', bottom: '25%' }}>✦</span>
+        <span className={styles.star} style={{ left: '10%', top: '15%' }}>
+          ✦
+        </span>
+        <span className={styles.star} style={{ right: '15%', top: '20%' }}>
+          ✦
+        </span>
+        <span className={styles.star} style={{ left: '5%', bottom: '25%' }}>
+          ✦
+        </span>
       </div>
     </div>
   );

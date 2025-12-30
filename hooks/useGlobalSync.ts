@@ -5,7 +5,7 @@ import { useSyncLunations } from '@/components/sync';
 
 /**
  * Hook consolidado para gerenciar todas as sincronizações globais
- * 
+ *
  * Uso:
  * const sync = useGlobalSync();
  * await sync.lunations.sync(2024);

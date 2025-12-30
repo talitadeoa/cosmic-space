@@ -9,6 +9,7 @@ Uma experiência interativa onde o usuário **desliza o tempo com o dedo** e a L
 ## 🎯 Características Principais
 
 ### Interface
+
 - ✅ **Fundo preto estrelado** com textura procedural
 - ✅ **Lua grande e central** renderizada com Canvas
 - ✅ **Timeline horizontal** com dias da semana (SEG, TER, QUA, etc)
@@ -16,6 +17,7 @@ Uma experiência interativa onde o usuário **desliza o tempo com o dedo** e a L
 - ✅ **Scrubbing em tempo real** (60fps durante drag)
 
 ### Renderização da Lua
+
 - ✅ **Procedural** - sem sprites, cálculo contínuo
 - ✅ **Terminator realista** - linha dia/noite suavizada
 - ✅ **Sombreamento esférico** - gradiente 3D
@@ -24,6 +26,7 @@ Uma experiência interativa onde o usuário **desliza o tempo com o dedo** e a L
 - ✅ **Brilho (glow)** - halo luminoso em fases iluminadas
 
 ### Performance
+
 - ✅ **60fps garantidos** durante scrubbing
 - ✅ **Cache inteligente** - precisão de 5 minutos
 - ✅ **requestAnimationFrame** para renderização
@@ -59,12 +62,7 @@ app/lua/
 import { LunarTimeline } from '@/components/lunar-timeline';
 
 function MyPage() {
-  return (
-    <LunarTimeline
-      initialDate={new Date()}
-      showDetails={true}
-    />
-  );
+  return <LunarTimeline initialDate={new Date()} showDetails={true} />;
 }
 ```
 
@@ -81,11 +79,7 @@ function MyPage() {
   };
 
   return (
-    <LunarTimeline
-      initialDate={new Date()}
-      onDateChange={handleDateChange}
-      showDetails={true}
-    />
+    <LunarTimeline initialDate={new Date()} onDateChange={handleDateChange} showDetails={true} />
   );
 }
 ```
@@ -99,17 +93,17 @@ import { MoonRenderer } from '@/components/lunar-timeline';
 
 <MoonRenderer
   moonData={moonData}
-  size={400}  // Tamanho em pixels
+  size={400} // Tamanho em pixels
   config={{
-    moonColor: '#e8e8e0',          // Cor base
-    shadowColor: '#0a0a0a',        // Cor da sombra
-    earthshineColor: '#1a1a2e',    // Cor da luz da Terra
-    earthshineIntensity: 0.15,     // 0-1
-    terminatorSoftness: 0.3,       // Suavidade (0-1)
-    showCraters: true,             // Mostrar crateras
-    showGlow: true                 // Mostrar brilho
+    moonColor: '#e8e8e0', // Cor base
+    shadowColor: '#0a0a0a', // Cor da sombra
+    earthshineColor: '#1a1a2e', // Cor da luz da Terra
+    earthshineIntensity: 0.15, // 0-1
+    terminatorSoftness: 0.3, // Suavidade (0-1)
+    showCraters: true, // Mostrar crateras
+    showGlow: true, // Mostrar brilho
   }}
-/>
+/>;
 ```
 
 ### Configuração da Timeline
@@ -118,8 +112,8 @@ import { MoonRenderer } from '@/components/lunar-timeline';
 <Timeline
   currentDate={date}
   onDateChange={handleChange}
-  visibleDays={7}        // Dias antes/depois do centro
-  pixelsPerHour={12}     // Escala horizontal
+  visibleDays={7} // Dias antes/depois do centro
+  pixelsPerHour={12} // Escala horizontal
 />
 ```
 
@@ -129,14 +123,14 @@ A função `getMoonData()` retorna:
 
 ```typescript
 interface MoonData {
-  illumination: number;      // 0.0 - 1.0 (fração iluminada)
-  phaseFraction: number;     // 0.0 - 1.0 (posição no ciclo)
-  isWaxing: boolean;         // Crescente ou minguante
-  phaseName: string;         // "Nova", "Crescente", "Cheia", etc.
-  terminatorAngle: number;   // Ângulo do terminator (0-360°)
-  date: Date;                // Data do cálculo
-  daysSinceNew: number;      // Dias desde última lua nova
-  lunarAge: number;          // Idade da lua (0-29.53 dias)
+  illumination: number; // 0.0 - 1.0 (fração iluminada)
+  phaseFraction: number; // 0.0 - 1.0 (posição no ciclo)
+  isWaxing: boolean; // Crescente ou minguante
+  phaseName: string; // "Nova", "Crescente", "Cheia", etc.
+  terminatorAngle: number; // Ângulo do terminator (0-360°)
+  date: Date; // Data do cálculo
+  daysSinceNew: number; // Dias desde última lua nova
+  lunarAge: number; // Idade da lua (0-29.53 dias)
 }
 ```
 
@@ -146,26 +140,26 @@ interface MoonData {
 import { getMoonData } from '@/components/lunar-timeline/utils/moonPhase';
 
 const data = getMoonData(new Date());
-console.log(data.phaseName);      // "Cheia"
-console.log(data.illumination);   // 0.98
-console.log(data.lunarAge);       // 14.2 dias
+console.log(data.phaseName); // "Cheia"
+console.log(data.illumination); // 0.98
+console.log(data.lunarAge); // 14.2 dias
 ```
 
 ## 🎯 Fases Lunares
 
 A nomenclatura é contínua e precisa:
 
-| Fração | Nome |
-|--------|------|
-| 0.000 - 0.033 | Nova |
-| 0.033 - 0.216 | Crescente |
+| Fração        | Nome             |
+| ------------- | ---------------- |
+| 0.000 - 0.033 | Nova             |
+| 0.033 - 0.216 | Crescente        |
 | 0.216 - 0.283 | Quarto Crescente |
 | 0.283 - 0.466 | Gibosa Crescente |
-| 0.466 - 0.533 | Cheia |
+| 0.466 - 0.533 | Cheia            |
 | 0.533 - 0.716 | Gibosa Minguante |
 | 0.716 - 0.783 | Quarto Minguante |
-| 0.783 - 0.966 | Minguante |
-| 0.966 - 1.000 | Nova |
+| 0.783 - 0.966 | Minguante        |
+| 0.966 - 1.000 | Nova             |
 
 ## ⚡ Performance
 
@@ -193,34 +187,41 @@ clearMoonDataCache();
 ## 🎮 Interação
 
 ### Mouse
+
 - Arrastar para scrubbar
 - Cursor muda para `grab` / `grabbing`
 
 ### Touch
+
 - Deslizar horizontalmente
 - Suporta gestos nativos
 
 ### Teclado
+
 - **Planejado**: Setas esquerda/direita para navegação
 
 ## 📱 Responsividade
 
 ### Desktop (>1024px)
+
 - Lua: 320px
 - Timeline: altura 120px
 - Fonte: tamanho máximo
 
 ### Tablet (768-1024px)
+
 - Lua: 240px
 - Timeline: altura 100px
 - Fonte: média
 
 ### Mobile (<768px)
+
 - Lua: 200px
 - Timeline: altura 90px
 - Fonte: mínima
 
 ### Landscape Mobile
+
 - Layout: Lua + Info lado a lado
 - Timeline: altura reduzida
 
@@ -257,13 +258,13 @@ const dataArray = getMoonDataBatch(dates);
 ### Emojis e Descrições
 
 ```typescript
-import { 
-  getPhaseEmoji, 
-  getIlluminationDescription 
+import {
+  getPhaseEmoji,
+  getIlluminationDescription,
 } from '@/components/lunar-timeline/utils/moonPhase';
 
-console.log(getPhaseEmoji('Cheia'));              // "🌕"
-console.log(getIlluminationDescription(0.75));    // "Quase cheia"
+console.log(getPhaseEmoji('Cheia')); // "🌕"
+console.log(getIlluminationDescription(0.75)); // "Quase cheia"
 ```
 
 ## 🎨 Personalização CSS
@@ -317,6 +318,7 @@ const data2 = getMoonData(new Date('2025-12-28T15:32:00Z')); // Cache hit
 ## 🚀 Próximas Melhorias
 
 ### Planejadas
+
 - [ ] Navegação por teclado (setas)
 - [ ] Zoom na timeline (pinch-to-zoom)
 - [ ] Snapshots de fases principais
@@ -327,6 +329,7 @@ const data2 = getMoonData(new Date('2025-12-28T15:32:00Z')); // Cache hit
 - [ ] Export de imagem da lua atual
 
 ### Experimentais
+
 - [ ] WebGL para renderização 3D avançada
 - [ ] Física de inércia após soltar o drag
 - [ ] Mapa estelar de fundo sincronizado com data
@@ -335,11 +338,13 @@ const data2 = getMoonData(new Date('2025-12-28T15:32:00Z')); // Cache hit
 ## 📚 Referências
 
 ### Algoritmos Astronômicos
+
 - Período sinódico: **29.53058867 dias**
 - Referência de lua nova: **2000-01-06 18:14 UTC**
 - Fórmula de iluminação: `(1 - cos(phaseFraction * 2π)) / 2`
 
 ### Tecnologias
+
 - **Canvas API** para renderização
 - **React Hooks** para estado
 - **CSS Modules** para estilos
@@ -355,19 +360,14 @@ import { useAuth } from '@/hooks/useAuth';
 
 function MyPage() {
   const { user } = useAuth();
-  
+
   const handleSaveNote = (date: Date, moonData: MoonData) => {
     if (user) {
       // Salvar nota do usuário para esta data/fase
     }
   };
 
-  return (
-    <LunarTimeline
-      initialDate={new Date()}
-      onDateChange={handleSaveNote}
-    />
-  );
+  return <LunarTimeline initialDate={new Date()} onDateChange={handleSaveNote} />;
 }
 ```
 
@@ -377,9 +377,7 @@ function MyPage() {
 import { LunarTimeline, getMoonData } from '@/components/lunar-timeline';
 
 function EventCalendar() {
-  const events = [
-    { date: new Date('2025-12-31'), title: 'Ano Novo' }
-  ];
+  const events = [{ date: new Date('2025-12-31'), title: 'Ano Novo' }];
 
   return (
     <>

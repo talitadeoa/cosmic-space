@@ -27,9 +27,13 @@ import { MoonCluster } from './MoonCluster';
 const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   // Contextos temporais
   const temporal = useTemporal();
-  
+
   // Sincronização de lunações
-  const galaxySunsSync = useGalaxySunsSync([new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1]);
+  const galaxySunsSync = useGalaxySunsSync([
+    new Date().getFullYear() - 1,
+    new Date().getFullYear(),
+    new Date().getFullYear() + 1,
+  ]);
   const lunations = useLunations();
   const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
   const [hasLoadedTodos, setHasLoadedTodos] = useState(false);
@@ -75,7 +79,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       try {
         const startDate = `${temporal.year}-01-01`;
         const endDate = `${temporal.year}-12-31`;
-        
+
         // Buscar lunações do banco (ou gerar localmente se vazio)
         await lunations.fetch(startDate, endDate, 'auto');
       } catch (error) {
@@ -281,10 +285,10 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDraggingTodo) return;
-    
+
     const touch = e.touches[0];
     const element = document.elementFromPoint(touch.clientX, touch.clientY);
-    
+
     if (!element) return;
 
     // Detectar se é uma lua (MoonCluster)

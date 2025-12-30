@@ -29,8 +29,7 @@ export function useLunarCycle(date: Date = new Date()) {
       cycleStart: newMoon,
       keyDates,
       summary,
-      findPhaseDay: (phase: MoonPhaseType, day: number) =>
-        findPhaseDay(newMoon, phase, day),
+      findPhaseDay: (phase: MoonPhaseType, day: number) => findPhaseDay(newMoon, phase, day),
       findCycleDay: (day: number) => findCycleDay(newMoon, day),
     };
   }, [date]);
@@ -40,23 +39,14 @@ export function useLunarCycle(date: Date = new Date()) {
  * Hook para gerar calendário lunar de um mês
  */
 export function useMoonCalendarMonth(year: number, month: number) {
-  return useMemo(
-    () => generateMoonCycleCalendar(year, month),
-    [year, month]
-  );
+  return useMemo(() => generateMoonCycleCalendar(year, month), [year, month]);
 }
 
 /**
  * Hook para obter um dia específico do ciclo
  */
-export function useCycleDay(
-  newMoonDate: Date,
-  dayInCycle: number
-): CycleEvent {
-  return useMemo(
-    () => findCycleDay(newMoonDate, dayInCycle),
-    [newMoonDate, dayInCycle]
-  );
+export function useCycleDay(newMoonDate: Date, dayInCycle: number): CycleEvent {
+  return useMemo(() => findCycleDay(newMoonDate, dayInCycle), [newMoonDate, dayInCycle]);
 }
 
 /**

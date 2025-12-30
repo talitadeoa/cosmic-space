@@ -31,7 +31,20 @@ export interface LunarCalendarWidgetProps {
 
 const weekdayLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const weekdayNames = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-const monthShort = ['jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'];
+const monthShort = [
+  'jan.',
+  'fev.',
+  'mar.',
+  'abr.',
+  'mai.',
+  'jun.',
+  'jul.',
+  'ago.',
+  'set.',
+  'out.',
+  'nov.',
+  'dez.',
+];
 const monthLong = [
   'Janeiro',
   'Fevereiro',
@@ -122,7 +135,11 @@ const buildMonthGrid = (year: number, month: number): CalendarCell[] => {
 };
 
 const isSameDay = (a: Date, b: Date) => {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 };
 
 const formatSelectedLabel = (date: Date) => {
@@ -252,8 +269,14 @@ const LunarCalendarWidget: React.FC<LunarCalendarWidgetProps> = ({
     >
       <div className={styles.hero} aria-live="polite">
         <div className={styles.moonCard}>
-          <MoonPhaseIcon phase={heroPhase} illumination={heroIllumination} className={styles.moonHero} />
-          <p className={styles.moonLabel}>{heroLabel} {percentLabel}</p>
+          <MoonPhaseIcon
+            phase={heroPhase}
+            illumination={heroIllumination}
+            className={styles.moonHero}
+          />
+          <p className={styles.moonLabel}>
+            {heroLabel} {percentLabel}
+          </p>
         </div>
       </div>
 
@@ -265,7 +288,9 @@ const LunarCalendarWidget: React.FC<LunarCalendarWidgetProps> = ({
         <header className={styles.calendarHeader}>
           <div>
             <p className={styles.headerDay}>{formatSelectedLabel(selectedDate)}</p>
-            <p className={styles.headerMonth}>{monthLong[viewMonth - 1]} {viewYear}</p>
+            <p className={styles.headerMonth}>
+              {monthLong[viewMonth - 1]} {viewYear}
+            </p>
           </div>
           <div className={styles.navButtons}>
             <button

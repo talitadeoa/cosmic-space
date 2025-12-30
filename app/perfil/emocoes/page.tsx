@@ -92,7 +92,8 @@ export default function EmotionalCheckInPage() {
               <p>✅ Histórico de até 100 registros é mantido</p>
               <p>✅ Você pode acompanhar padrões emocionais ao longo do tempo</p>
               <p className="text-sm text-slate-400 mt-4">
-                📁 Armazenado em: <code className="text-indigo-300">localStorage['daily_emotion_checkin']</code>
+                📁 Armazenado em:{' '}
+                <code className="text-indigo-300">localStorage['daily_emotion_checkin']</code>
               </p>
             </div>
           </div>

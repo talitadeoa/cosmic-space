@@ -180,7 +180,9 @@ const PerfilPage = () => {
                   type="checkbox"
                   id="isWomen"
                   checked={profile.isWomen || false}
-                  onChange={(event) => handleChange('isWomen' as any, event.target.checked ? 'true' : 'false')}
+                  onChange={(event) =>
+                    handleChange('isWomen' as any, event.target.checked ? 'true' : 'false')
+                  }
                   className="w-5 h-5 accent-pink-500 cursor-pointer"
                 />
                 <label htmlFor="isWomen" className="text-sm text-slate-200 cursor-pointer flex-1">
@@ -212,12 +214,11 @@ const PerfilPage = () => {
             <p className="text-sm uppercase tracking-[0.3em] text-pink-400">Saúde Menstrual</p>
             <h2 className="mt-2 text-xl font-semibold text-white">Rastreador de Menstruação</h2>
             <p className="mt-2 text-sm text-slate-400">
-              Registre sua menstruação e acompanhe como ela se relaciona com as fases lunares e seu signo zodiacal.
+              Registre sua menstruação e acompanhe como ela se relaciona com as fases lunares e seu
+              signo zodiacal.
             </p>
             <div className="mt-6">
-              <MenstrualTracker 
-                isEnabled={profile.isWomen || false}
-              />
+              <MenstrualTracker isEnabled={profile.isWomen || false} />
             </div>
           </section>
         )}

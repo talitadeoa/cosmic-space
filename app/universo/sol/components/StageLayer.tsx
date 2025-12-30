@@ -11,7 +11,12 @@ type StageLayerProps = {
   onOutsideClick?: () => void;
 };
 
-const StageLayer: React.FC<StageLayerProps> = ({ onSolClick, onMoonClick, onOrbitClick, onOutsideClick }) => {
+const StageLayer: React.FC<StageLayerProps> = ({
+  onSolClick,
+  onMoonClick,
+  onOrbitClick,
+  onOutsideClick,
+}) => {
   return (
     <SolOrbitStage
       onSolClick={onSolClick}

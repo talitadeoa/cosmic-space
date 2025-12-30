@@ -20,12 +20,12 @@ const MoonPhaseDisplay: React.FC = () => {
   useEffect(() => {
     const data = getLunarPhaseAndSign();
     const newMoon = findNearestNewMoon(new Date(), 'before');
-    
+
     // Calcular qual é o dia dentro da fase específica
     const SYNODIC_MONTH = 29.53058867;
     let phaseDay = '';
     let phase = '';
-    
+
     const age = data.age;
     if (age < 1.5 || age > SYNODIC_MONTH - 1.5) {
       // Lua Nova
@@ -46,11 +46,11 @@ const MoonPhaseDisplay: React.FC = () => {
       const dayInPhase = Math.ceil(age - (SYNODIC_MONTH / 2 + 1.2));
       phaseDay = `Dia ${dayInPhase} da ${phase}`;
     }
-    
+
     // Determinar qual será o próximo evento importante
     let cycleInfo = '';
     let daysUntilEvent = '';
-    
+
     if (age < 14.765) {
       // Crescente - próximo é Cheia
       const daysLeft = Math.round(14.765 - age);
@@ -65,7 +65,7 @@ const MoonPhaseDisplay: React.FC = () => {
       cycleInfo = 'Próximo: Lua Nova';
       daysUntilEvent = `em ${daysLeft} dias`;
     }
-    
+
     setMoonData({
       faseLua: data.faseLua,
       age: data.age,
@@ -158,7 +158,9 @@ const MoonPhaseDisplay: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span>Signo:</span>
-                <span className="font-medium text-white">{getSignEmoji(moonData.signo)} {moonData.signo}</span>
+                <span className="font-medium text-white">
+                  {getSignEmoji(moonData.signo)} {moonData.signo}
+                </span>
               </div>
               <div className="border-t border-slate-700 pt-1.5 mt-1.5 flex justify-between">
                 <span>{moonData.cycleInfo}</span>

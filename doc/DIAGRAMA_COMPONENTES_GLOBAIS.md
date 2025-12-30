@@ -165,6 +165,7 @@ components/
 ## Padrão de Imports
 
 ### ❌ Antes (Antigos)
+
 ```
 components/
 ├── AuthGate.tsx ──────────────────→ import AuthGate from '@/components/AuthGate'
@@ -176,6 +177,7 @@ components/
 ```
 
 ### ✅ Depois (Novos - Organizados)
+
 ```
 components/
 ├── auth/AuthGate.tsx ─────────────→ import { AuthGate } from '@/components/auth'
@@ -257,16 +259,16 @@ App Carrega
 
 ## Matriz de Responsabilidades
 
-| Componente | Auth | Layout | Sync | Nav | Audio | Global |
-|------------|------|--------|------|-----|-------|--------|
-| AuthGate | ✅ | - | - | - | - | ✅ |
-| SfxProvider | - | - | - | - | - | ✅ |
-| SpacePageLayout | - | ✅ | - | - | - | ✅ |
-| AutoSyncLunar | - | - | ✅ | - | - | ✅ |
-| LunationSync | - | - | ✅ | - | - | ✅ |
-| GalaxySunsSync | - | - | 🔄 | - | - | 🔄 |
-| NavMenu | - | - | - | ✅ | - | ✅ |
-| RadioPlayer | - | - | - | - | ✅ | ✅ |
+| Componente      | Auth | Layout | Sync | Nav | Audio | Global |
+| --------------- | ---- | ------ | ---- | --- | ----- | ------ |
+| AuthGate        | ✅   | -      | -    | -   | -     | ✅     |
+| SfxProvider     | -    | -      | -    | -   | -     | ✅     |
+| SpacePageLayout | -    | ✅     | -    | -   | -     | ✅     |
+| AutoSyncLunar   | -    | -      | ✅   | -   | -     | ✅     |
+| LunationSync    | -    | -      | ✅   | -   | -     | ✅     |
+| GalaxySunsSync  | -    | -      | 🔄   | -   | -     | 🔄     |
+| NavMenu         | -    | -      | -    | ✅  | -     | ✅     |
+| RadioPlayer     | -    | -      | -    | -   | ✅    | ✅     |
 
 **Legenda:** ✅ = Implementado | 🔄 = Em progresso/Placeholder | - = Não aplicável
 
