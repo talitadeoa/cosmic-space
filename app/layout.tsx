@@ -8,8 +8,15 @@ import { GalaxySunsSync } from '@/components/sync';
 
 export const metadata: Metadata = {
   title: 'Flua',
-  description: 'Conecte-se com os ciclos lunares e menstruais. Rastreie emoções, compreenda padrões cíclicos e explore a sabedoria cósmica.',
-  keywords: ['ciclo lunar', 'ciclo menstrual', 'bem-estar feminino', 'rastreamento lunar', 'astrologia'],
+  description:
+    'Conecte-se com os ciclos lunares e menstruais. Rastreie emoções, compreenda padrões cíclicos e explore a sabedoria cósmica.',
+  keywords: [
+    'ciclo lunar',
+    'ciclo menstrual',
+    'bem-estar feminino',
+    'rastreamento lunar',
+    'astrologia',
+  ],
   authors: [{ name: 'Talita' }],
   creator: 'Talita',
   openGraph: {

@@ -10,7 +10,10 @@ export default async function LogsPage() {
   const token = cookieStore.get('auth_token')?.value;
   const isAuthenticated = token ? validateToken(token) : false;
 
-  let rows: any[] = [];
+  type SheetCell = string | number | boolean | null;
+  type SheetRow = SheetCell[];
+
+  let rows: SheetRow[] = [];
   let error: string | null = null;
 
   if (isAuthenticated) {
@@ -29,8 +32,8 @@ export default async function LogsPage() {
     }
   }
 
-  const header = Array.isArray(rows[0]) ? rows[0] : [];
-  const bodyRows = Array.isArray(rows[0]) ? rows.slice(1) : [];
+  const header: SheetRow = Array.isArray(rows[0]) ? (rows[0] as SheetRow) : [];
+  const bodyRows: SheetRow[] = Array.isArray(rows[0]) ? rows.slice(1) : [];
 
   return (
     <AuthGate>
@@ -47,7 +50,7 @@ export default async function LogsPage() {
             <table className="w-full text-xs sm:text-sm">
               <thead>
                 <tr className="text-left text-slate-400 bg-black/40">
-                  {header.map((_: any, i: number) => (
+                  {header.map((_, i: number) => (
                     <th key={i} className="px-2 sm:px-4 py-2 sm:py-3">
                       Coluna {i + 1}
                     </th>
@@ -55,14 +58,14 @@ export default async function LogsPage() {
                 </tr>
               </thead>
               <tbody>
-                {bodyRows.map((row: any, rowIndex: number) => {
-                  const cells = Array.isArray(row) ? row : [row];
+                {bodyRows.map((row: SheetRow | SheetCell, rowIndex: number) => {
+                  const cells: SheetCell[] = Array.isArray(row) ? row : [row];
                   return (
                     <tr
                       key={rowIndex}
                       className="border-t border-slate-800 hover:bg-black/20 transition-colors"
                     >
-                      {cells.map((cell: any, cellIndex: number) => (
+                      {cells.map((cell: SheetCell, cellIndex: number) => (
                         <td
                           key={cellIndex}
                           className="px-2 sm:px-4 py-2 sm:py-3 align-top text-slate-200 break-words"

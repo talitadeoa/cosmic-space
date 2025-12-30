@@ -28,7 +28,6 @@ type MoonClusterProps = {
   moonCounts: Record<MoonPhase, number>;
   isDraggingTodo: boolean;
   selectedPhase: MoonPhase | null;
-  onMoonNavigate: (phase: MoonPhase, event: React.MouseEvent<HTMLDivElement>) => void;
   onMoonFilter: (phase: MoonPhase | null) => void;
   onDrop: (phase: MoonPhase) => (event: React.DragEvent) => void;
   onDragOver: (phase: MoonPhase) => (event: React.DragEvent) => void;
@@ -40,7 +39,7 @@ const MoonCluster = ({
   moonCounts,
   isDraggingTodo,
   selectedPhase,
-  onMoonNavigate,
+  onMoonNavigate: _onMoonNavigate,
   onMoonFilter,
   onDrop,
   onDragOver,
@@ -67,7 +66,7 @@ const MoonCluster = ({
               type={moonType}
               size="sm"
               interactive
-              onClick={(event) => {
+              onClick={() => {
                 if (isDraggingTodo) return;
                 // Se a fase já está selecionada, deseleciona; caso contrário, seleciona
                 if (isSelectedPhase) {
@@ -181,7 +180,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
-  const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
   const dropHandledRef = useRef(false);
   const { saveInput } = usePhaseInputs();
   const { islandNames, renameIsland } = useIslandNames();
@@ -298,14 +296,12 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     e.dataTransfer.setData('text/todo-id', todoId);
     dropHandledRef.current = false;
     setIsDraggingTodo(true);
-    setDraggingTodoId(todoId);
   };
 
   const handleDragEnd = () => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
-    setDraggingTodoId(null);
     dropHandledRef.current = false;
   };
 
@@ -402,12 +398,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
               <div className="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
                 <div>
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
-                    
-                  </p>
-                  <h3 className="text-lg font-semibold text-white sm:text-xl">
-                     
-                  </h3>
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80"></p>
+                  <h3 className="text-lg font-semibold text-white sm:text-xl"></h3>
                 </div>
                 <button
                   type="button"

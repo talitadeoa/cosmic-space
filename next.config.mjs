@@ -1,9 +1,9 @@
-import path from 'path';
+// import path from 'path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
+
   // SEO e Branding
   async headers() {
     return [

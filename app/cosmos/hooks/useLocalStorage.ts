@@ -12,7 +12,7 @@ export function useLocalStorage<T>(
     stringify?: (value: T) => string;
   }
 ) {
-  const parse = options?.parse ?? (JSON.parse as any);
+  const parse: (value: string) => T = options?.parse ?? ((value: string) => JSON.parse(value) as T);
   const stringify = options?.stringify ?? JSON.stringify;
 
   const getValue = (): T => {
