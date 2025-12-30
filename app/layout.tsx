@@ -42,11 +42,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const isDev = process.env.NODE_ENV === 'development';
+
   return (
     <html lang="pt-BR">
       <body className="min-h-[100dvh] bg-space-dark bg-cosmic-gradient text-slate-100">
         <SfxProvider>
-          <NavMenu />
+          {isDev && <NavMenu />}
           <AutoSyncLunar />
           <GalaxySunsSync autoSync={true} />
           {children}
