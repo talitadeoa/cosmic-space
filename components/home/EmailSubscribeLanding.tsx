@@ -33,11 +33,7 @@ export default function EmailSubscribeLanding() {
               href="/universo/home"
               className="text-sm text-slate-300/90 transition hover:text-slate-100"
             >
-              Toque aqui se quiser explorar o{' '}
-              <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-rose-300 bg-clip-text text-transparent">
-                cosmos
-              </span>{' '}
-              antes do lançamento
+              Explorar o cosmos antes do lançamento ✨
             </Link>
           </div>
         </div>
