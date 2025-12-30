@@ -1,0 +1,170 @@
+.scene {
+  position: relative;
+  min-height: 100vh;
+  background: #05070b;
+  color: #f4f6fb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(20px, 4vw, 40px);
+  overflow: hidden;
+}
+
+.scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(120, 150, 200, 0.18), transparent 40%),
+    radial-gradient(circle at 70% 30%, rgba(70, 100, 150, 0.14), transparent 50%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.2) 0.5px, transparent 1.5px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    140px 140px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.glow {
+  position: absolute;
+  inset: auto;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(130, 170, 230, 0.2), transparent 70%);
+  top: 15vh;
+  filter: blur(12px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.moonWrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding-top: clamp(30px, 8vh, 80px);
+}
+
+.moon {
+  width: clamp(220px, 50vw, 360px);
+  height: clamp(220px, 50vw, 360px);
+  filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.45));
+}
+
+.moonText {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phaseLabel {
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 500;
+}
+
+.dateLabel {
+  font-size: 0.95rem;
+  color: rgba(190, 200, 215, 0.9);
+  font-weight: 300;
+  text-transform: lowercase;
+}
+
+.timelineZone {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  padding-bottom: clamp(16px, 4vw, 28px);
+}
+
+.timelineScroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 12px 0 28px;
+  scrollbar-width: none;
+}
+
+.timelineScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.timeline {
+  position: relative;
+  height: 70px;
+}
+
+.tick {
+  position: absolute;
+  bottom: 18px;
+  width: 1px;
+  background: rgba(220, 230, 245, 0.25);
+}
+
+.tick-sm {
+  height: 10px;
+}
+
+.tick-lg {
+  height: 18px;
+  background: rgba(220, 230, 245, 0.4);
+}
+
+.tick-xl {
+  height: 28px;
+  background: rgba(240, 245, 255, 0.7);
+}
+
+.dayLabel {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: rgba(200, 210, 225, 0.75);
+}
+
+.centerIndicator {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -10px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.centerLine {
+  position: absolute;
+  top: 0;
+  bottom: 22px;
+  width: 1px;
+  background: rgba(240, 245, 255, 0.7);
+  left: 50%;
+}
+
+.centerArrow {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border-left: 1px solid rgba(240, 245, 255, 0.8);
+  border-bottom: 1px solid rgba(240, 245, 255, 0.8);
+  transform: translateX(-50%) rotate(-45deg);
+}
+
+@media (max-width: 640px) {
+  .timeline {
+    height: 64px;
+  }
+
+  .glow {
+    width: 280px;
+    height: 280px;
+  }
+}

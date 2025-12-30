@@ -18,10 +18,12 @@ export async function GET() {
       response_type: 'code',
       scope: 'openid email profile',
       access_type: 'offline',
-      prompt: 'consent'
+      prompt: 'consent',
     });
 
-    return NextResponse.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+    return NextResponse.redirect(
+      `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
+    );
   } catch (error) {
     console.error('Erro ao iniciar OAuth Google:', error);
     return NextResponse.json({ error: 'Erro ao iniciar OAuth Google' }, { status: 500 });

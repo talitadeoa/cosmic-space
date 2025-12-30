@@ -4,11 +4,11 @@
 
 Você tem **3 opções** de componentes para o input de insights em lualist:
 
-| Componente | Estilo | Cores | Respostas | Best For |
-|-----------|--------|-------|-----------|----------|
-| **MonthlyInsightModal** | Formulário | - | ❌ | Simples |
-| **MonthlyInsightChatModal** | Chat | Padrão | ✅ | Básico |
-| **MonthlyInsightAdvancedChatModal** | Chat | Dinâmicas | ✅ | Completo ⭐ |
+| Componente                          | Estilo     | Cores     | Respostas | Best For    |
+| ----------------------------------- | ---------- | --------- | --------- | ----------- |
+| **MonthlyInsightModal**             | Formulário | -         | ❌        | Simples     |
+| **MonthlyInsightChatModal**         | Chat       | Padrão    | ✅        | Básico      |
+| **MonthlyInsightAdvancedChatModal** | Chat       | Dinâmicas | ✅        | Completo ⭐ |
 
 ---
 
@@ -18,7 +18,7 @@ Você tem **3 opções** de componentes para o input de insights em lualist:
 
 ```tsx
 // Em /app/cosmos/screens/LuaListScreen.tsx
-import MonthlyInsightAdvancedChatModal from "@/components/MonthlyInsightAdvancedChatModal";
+import MonthlyInsightAdvancedChatModal from '@/components/MonthlyInsightAdvancedChatModal';
 ```
 
 ### Passo 2: Use no lugar do antigo
@@ -58,7 +58,7 @@ Os props são exatamente iguais, então não precisa mudar mais nada.
 🎨 **Cores Dinâmicas** (Avançado) - Cada fase tem uma cor  
 💬 **Respostas Automáticas** - Sistema incentiva o usuário  
 📱 **Responsivo** - Funciona em qualquer tela  
-🔄 **Compatível** - Salva igual no banco  
+🔄 **Compatível** - Salva igual no banco
 
 ---
 
@@ -67,30 +67,33 @@ Os props são exatamente iguais, então não precisa mudar mais nada.
 Abra `MonthlyInsightAdvancedChatModal.tsx` e mude:
 
 ### Mudar Emojis
+
 ```tsx
 const moonPhaseLabels = {
-  luaNova: '✨ Lua Nova',     // Mude o emoji
+  luaNova: '✨ Lua Nova', // Mude o emoji
   // ...
 };
 ```
 
 ### Mudar Respostas
+
 ```tsx
 const systemResponses = {
   luaNova: [
-    'Sua resposta aqui!',    // Adicione novas
+    'Sua resposta aqui!', // Adicione novas
     // ...
   ],
 };
 ```
 
 ### Mudar Cores
+
 ```tsx
 const moonPhaseColors = {
-  luaNova: { 
-    bg: 'bg-purple-950',      // Mude a cor de fundo
+  luaNova: {
+    bg: 'bg-purple-950', // Mude a cor de fundo
     border: 'border-purple-700',
-    text: 'text-purple-100'
+    text: 'text-purple-100',
   },
 };
 ```

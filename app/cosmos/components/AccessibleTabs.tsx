@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useCallback } from "react";
-import type { TabItem } from "../types/screen";
+import React, { useCallback } from 'react';
+import type { TabItem } from '../types/screen';
 
 interface AccessibleTabsProps {
   /**
@@ -54,10 +54,10 @@ export const AccessibleTabs: React.FC<AccessibleTabsProps> = ({
   items,
   value,
   onChange,
-  id = "tabs",
-  containerClassName = "",
-  activeClassName = "border-indigo-400 bg-indigo-500/20 text-indigo-100",
-  inactiveClassName = "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60",
+  id = 'tabs',
+  containerClassName = '',
+  activeClassName = 'border-indigo-400 bg-indigo-500/20 text-indigo-100',
+  inactiveClassName = 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60',
 }) => {
   const currentIndex = items.findIndex((item) => item.value === value);
 
@@ -66,21 +66,21 @@ export const AccessibleTabs: React.FC<AccessibleTabsProps> = ({
       let nextIndex = index;
 
       switch (e.key) {
-        case "ArrowRight":
-        case "ArrowDown":
+        case 'ArrowRight':
+        case 'ArrowDown':
           e.preventDefault();
           nextIndex = (index + 1) % items.length;
           break;
-        case "ArrowLeft":
-        case "ArrowUp":
+        case 'ArrowLeft':
+        case 'ArrowUp':
           e.preventDefault();
           nextIndex = (index - 1 + items.length) % items.length;
           break;
-        case "Home":
+        case 'Home':
           e.preventDefault();
           nextIndex = 0;
           break;
-        case "End":
+        case 'End':
           e.preventDefault();
           nextIndex = items.length - 1;
           break;

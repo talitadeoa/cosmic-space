@@ -3,51 +3,51 @@
 ## 1. Dados Mock para Testes Rápidos
 
 ```typescript
-import { SavedTodo } from "@/app/cosmos/utils/todoStorage";
-import type { MoonPhase } from "@/app/cosmos/utils/moonPhases";
-import type { IslandId } from "@/app/cosmos/types/screen";
+import { SavedTodo } from '@/app/cosmos/utils/todoStorage';
+import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
+import type { IslandId } from '@/app/cosmos/types/screen';
 
 export const MOCK_TODOS: SavedTodo[] = [
   {
-    id: "todo-1",
-    text: "Revisar design do componente EmptyState",
+    id: 'todo-1',
+    text: 'Revisar design do componente EmptyState',
     completed: false,
     depth: 0,
-    phase: "luaNova",
-    islandId: "ilha1",
-    project: "Cosmic Space",
-    category: "Design",
-    dueDate: "2025-12-24",
+    phase: 'luaNova',
+    islandId: 'ilha1',
+    project: 'Flua',
+    category: 'Design',
+    dueDate: '2025-12-24',
   },
   {
-    id: "todo-2",
-    text: "Implementar AccessibleTabs",
+    id: 'todo-2',
+    text: 'Implementar AccessibleTabs',
     completed: true,
     depth: 0,
-    phase: "luaCrescente",
-    islandId: "ilha2",
-    project: "Cosmic Space",
-    category: "Development",
-    dueDate: "2025-12-23",
+    phase: 'luaCrescente',
+    islandId: 'ilha2',
+    project: 'Flua',
+    category: 'Development',
+    dueDate: '2025-12-23',
   },
   {
-    id: "todo-3",
-    text: "Testar navegação de teclado em IslandsList",
+    id: 'todo-3',
+    text: 'Testar navegação de teclado em IslandsList',
     completed: false,
     depth: 1,
-    phase: "luaCheia",
-    islandId: "ilha3",
-    project: "QA",
-    category: "Testing",
-    dueDate: "2025-12-25",
+    phase: 'luaCheia',
+    islandId: 'ilha3',
+    project: 'QA',
+    category: 'Testing',
+    dueDate: '2025-12-25',
   },
 ];
 
 export const MOCK_STATE = {
   savedTodos: MOCK_TODOS,
-  selectedProject: "Cosmic Space",
-  selectedIsland: "ilha1" as IslandId,
-  selectedPhase: "luaNova" as MoonPhase,
+  selectedProject: 'Flua',
+  selectedIsland: 'ilha1' as IslandId,
+  selectedPhase: 'luaNova' as MoonPhase,
 };
 ```
 
@@ -56,19 +56,19 @@ export const MOCK_STATE = {
 ## 2. Exemplo Completo - SidePlanetCardScreen
 
 ```tsx
-"use client";
+'use client';
 
-import React from "react";
-import { SavedTodosPanel } from "@/app/cosmos/components/SavedTodosPanel";
-import { MoonPhasesRail } from "@/app/cosmos/components/MoonPhasesRail";
-import { IslandsList } from "@/app/cosmos/components/IslandsList";
-import type { SavedTodo, MoonPhase } from "@/app/cosmos/utils/todoStorage";
-import type { IslandId } from "@/app/cosmos/types/screen";
-import { MOCK_TODOS } from "@/doc/EXEMPLOS_INTEGRACAO";
+import React from 'react';
+import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
+import { MoonPhasesRail } from '@/app/cosmos/components/MoonPhasesRail';
+import { IslandsList } from '@/app/cosmos/components/IslandsList';
+import type { SavedTodo, MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { IslandId } from '@/app/cosmos/types/screen';
+import { MOCK_TODOS } from '@/doc/EXEMPLOS_INTEGRACAO';
 
 export function SidePlanetCardScreenExample() {
   const [savedTodos, setSavedTodos] = React.useState<SavedTodo[]>(MOCK_TODOS);
-  const [selectedProject, setSelectedProject] = React.useState("");
+  const [selectedProject, setSelectedProject] = React.useState('');
   const [selectedIsland, setSelectedIsland] = React.useState<IslandId | null>(null);
   const [selectedPhase, setSelectedPhase] = React.useState<MoonPhase | null>(null);
 
@@ -94,8 +94,7 @@ export function SidePlanetCardScreenExample() {
     const trimmed = selectedProject.trim();
     if (!trimmed) return savedTodos;
     return savedTodos.filter(
-      (todo) =>
-        (todo.project ?? "").toLowerCase() === trimmed.toLowerCase()
+      (todo) => (todo.project ?? '').toLowerCase() === trimmed.toLowerCase()
     );
   }, [savedTodos, selectedProject]);
 
@@ -111,18 +110,12 @@ export function SidePlanetCardScreenExample() {
 
   const handleToggleComplete = (todoId: string) => {
     setSavedTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
-      )
+      prev.map((todo) => (todo.id === todoId ? { ...todo, completed: !todo.completed } : todo))
     );
   };
 
   const handleAssignPhase = (todoId: string, phase: MoonPhase) => {
-    setSavedTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === todoId ? { ...todo, phase } : todo
-      )
-    );
+    setSavedTodos((prev) => prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)));
   };
 
   // =========================================================================
@@ -132,13 +125,9 @@ export function SidePlanetCardScreenExample() {
   return (
     <div className="relative flex w-full items-start justify-center px-4 sm:px-8 pt-4 sm:pt-6">
       <div className="relative flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-        
         {/* Coluna Esquerda */}
         <div className="flex w-full flex-col gap-6 lg:w-auto lg:max-w-xs">
-          <IslandsList
-            selectedIsland={selectedIsland}
-            onSelectIsland={setSelectedIsland}
-          />
+          <IslandsList selectedIsland={selectedIsland} onSelectIsland={setSelectedIsland} />
         </div>
 
         {/* Coluna Central */}
@@ -175,27 +164,25 @@ export function SidePlanetCardScreenExample() {
 ### SavedTodosPanel com Filtro de Fase
 
 ```tsx
-import { SavedTodosPanel } from "@/app/cosmos/components/SavedTodosPanel";
+import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
 
-const [selectedPhase, setSelectedPhase] = React.useState<MoonPhase | null>(
-  "luaNova"
-);
+const [selectedPhase, setSelectedPhase] = React.useState<MoonPhase | null>('luaNova');
 
 export function SavedTodosPanelExample() {
   return (
     <SavedTodosPanel
       savedTodos={MOCK_TODOS}
       onDragStart={(todoId) => (e) => {
-        console.log("Drag start:", todoId);
+        console.log('Drag start:', todoId);
       }}
       onDragEnd={() => {
-        console.log("Drag end");
+        console.log('Drag end');
       }}
       onToggleComplete={(todoId) => {
-        console.log("Toggle complete:", todoId);
+        console.log('Toggle complete:', todoId);
       }}
       onAssignPhase={(todoId, phase) => {
-        console.log("Assign phase:", todoId, phase);
+        console.log('Assign phase:', todoId, phase);
       }}
       selectedPhase={selectedPhase}
       // Resultado: Mostra apenas tarefas com phase === "luaNova"
@@ -207,13 +194,11 @@ export function SavedTodosPanelExample() {
 ### MoonPhasesRail com Contadores
 
 ```tsx
-import { MoonPhasesRail } from "@/app/cosmos/components/MoonPhasesRail";
-import type { MoonPhase } from "@/app/cosmos/utils/moonPhases";
+import { MoonPhasesRail } from '@/app/cosmos/components/MoonPhasesRail';
+import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
 export function MoonPhasesRailExample() {
-  const [selectedPhase, setSelectedPhase] = React.useState<MoonPhase | null>(
-    null
-  );
+  const [selectedPhase, setSelectedPhase] = React.useState<MoonPhase | null>(null);
 
   const phaseCounts: Record<MoonPhase, number> = {
     luaNova: 5,
@@ -237,13 +222,11 @@ export function MoonPhasesRailExample() {
 ### IslandsList com Seleção
 
 ```tsx
-import { IslandsList } from "@/app/cosmos/components/IslandsList";
-import type { IslandId } from "@/app/cosmos/types/screen";
+import { IslandsList } from '@/app/cosmos/components/IslandsList';
+import type { IslandId } from '@/app/cosmos/types/screen';
 
 export function IslandsListExample() {
-  const [selectedIsland, setSelectedIsland] = React.useState<IslandId | null>(
-    null
-  );
+  const [selectedIsland, setSelectedIsland] = React.useState<IslandId | null>(null);
 
   return (
     <IslandsList
@@ -258,17 +241,17 @@ export function IslandsListExample() {
 ### AccessibleTabs para Navegação
 
 ```tsx
-import { AccessibleTabs } from "@/app/cosmos/components/AccessibleTabs";
+import { AccessibleTabs } from '@/app/cosmos/components/AccessibleTabs';
 
 export function AccessibleTabsExample() {
-  const [activeTab, setActiveTab] = React.useState("inbox");
+  const [activeTab, setActiveTab] = React.useState('inbox');
 
   return (
     <AccessibleTabs
       id="main-tabs"
       items={[
-        { id: "inbox-tab", label: "Inbox", value: "inbox" },
-        { id: "moon-tab", label: "Lua Atual", value: "moon" },
+        { id: 'inbox-tab', label: 'Inbox', value: 'inbox' },
+        { id: 'moon-tab', label: 'Lua Atual', value: 'moon' },
       ]}
       value={activeTab}
       onChange={setActiveTab}
@@ -281,7 +264,7 @@ export function AccessibleTabsExample() {
 ### EmptyState Quando Sem Tarefas
 
 ```tsx
-import { EmptyState } from "@/app/cosmos/components/EmptyState";
+import { EmptyState } from '@/app/cosmos/components/EmptyState';
 
 export function EmptyStateExample() {
   const isEmpty = true; // Simular sem tarefas
@@ -308,20 +291,18 @@ const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
   const items = MOCK_TODOS;
 
   switch (e.key) {
-    case "ArrowDown":
+    case 'ArrowDown':
       e.preventDefault();
       setFocusedIndex((prev) => (prev + 1) % items.length);
       break;
-    case "ArrowUp":
+    case 'ArrowUp':
       e.preventDefault();
-      setFocusedIndex((prev) =>
-        (prev - 1 + items.length) % items.length
-      );
+      setFocusedIndex((prev) => (prev - 1 + items.length) % items.length);
       break;
-    case "Enter":
-    case " ":
+    case 'Enter':
+    case ' ':
       e.preventDefault();
-      console.log("Ação em:", items[index].id);
+      console.log('Ação em:', items[index].id);
       break;
   }
 };
@@ -335,8 +316,8 @@ const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
 
 ```tsx
 export function AdvancedFilteringExample() {
-  const [project, setProject] = React.useState("Cosmic Space");
-  const [phase, setPhase] = React.useState<MoonPhase | null>("luaNova");
+  const [project, setProject] = React.useState('Flua');
+  const [phase, setPhase] = React.useState<MoonPhase | null>('luaNova');
 
   // Filtro composto
   const filtered = MOCK_TODOS.filter(
@@ -351,7 +332,7 @@ export function AdvancedFilteringExample() {
         <label>Projeto:</label>
         <select value={project} onChange={(e) => setProject(e.target.value)}>
           <option value="">Todos</option>
-          <option value="Cosmic Space">Cosmic Space</option>
+          <option value="Flua">Flua</option>
           <option value="QA">QA</option>
         </select>
       </div>
@@ -359,10 +340,8 @@ export function AdvancedFilteringExample() {
       <div>
         <label>Fase:</label>
         <select
-          value={phase ?? ""}
-          onChange={(e) =>
-            setPhase((e.target.value as MoonPhase) || null)
-          }
+          value={phase ?? ''}
+          onChange={(e) => setPhase((e.target.value as MoonPhase) || null)}
         >
           <option value="">Todas</option>
           <option value="luaNova">Lua Nova</option>
@@ -376,7 +355,7 @@ export function AdvancedFilteringExample() {
       <ul>
         {filtered.map((todo) => (
           <li key={todo.id}>
-            {todo.text} ({todo.project} - {todo.phase || "sem fase"})
+            {todo.text} ({todo.project} - {todo.phase || 'sem fase'})
           </li>
         ))}
       </ul>
@@ -416,15 +395,15 @@ const phaseCounters = MOCK_TODOS.reduce(
 ## 7. Imports Necessários
 
 ```typescript
-import React from "react";
-import { SavedTodosPanel } from "@/app/cosmos/components/SavedTodosPanel";
-import { MoonPhasesRail } from "@/app/cosmos/components/MoonPhasesRail";
-import { IslandsList } from "@/app/cosmos/components/IslandsList";
-import { AccessibleTabs } from "@/app/cosmos/components/AccessibleTabs";
-import { EmptyState } from "@/app/cosmos/components/EmptyState";
-import type { SavedTodo, MoonPhase } from "@/app/cosmos/utils/todoStorage";
-import type { IslandId } from "@/app/cosmos/types/screen";
-import { phaseLabels } from "@/app/cosmos/utils/todoStorage";
+import React from 'react';
+import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
+import { MoonPhasesRail } from '@/app/cosmos/components/MoonPhasesRail';
+import { IslandsList } from '@/app/cosmos/components/IslandsList';
+import { AccessibleTabs } from '@/app/cosmos/components/AccessibleTabs';
+import { EmptyState } from '@/app/cosmos/components/EmptyState';
+import type { SavedTodo, MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { IslandId } from '@/app/cosmos/types/screen';
+import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
 ```
 
 ---
@@ -487,30 +466,30 @@ const [state, setState] = React.useState<MoonPhase | null>(null);
 ### Verificar Contadores
 
 ```tsx
-console.log("moonCounts:", moonCounts);
+console.log('moonCounts:', moonCounts);
 // { luaNova: 3, luaCrescente: 1, ... }
 ```
 
 ### Verificar Filtro
 
 ```tsx
-console.log("filteredTodos:", filteredTodos);
-console.log("length:", filteredTodos.length);
+console.log('filteredTodos:', filteredTodos);
+console.log('length:', filteredTodos.length);
 ```
 
 ### Verificar Estado
 
 ```tsx
-console.log("selectedPhase:", selectedPhase);
-console.log("selectedIsland:", selectedIsland);
-console.log("selectedProject:", selectedProject);
+console.log('selectedPhase:', selectedPhase);
+console.log('selectedIsland:', selectedIsland);
+console.log('selectedProject:', selectedProject);
 ```
 
 ### Verificar Handlers
 
 ```tsx
 const handleSelect = (phase: MoonPhase | null) => {
-  console.log("Selecionou:", phase);
+  console.log('Selecionou:', phase);
   setSelectedPhase(phase);
 };
 ```

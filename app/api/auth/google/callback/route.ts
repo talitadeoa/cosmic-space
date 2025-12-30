@@ -56,17 +56,20 @@ export async function GET(request: NextRequest) {
     const profile = await userResp.json();
 
     const db = getDb();
-    const userRows = await db`
+    const userRows = (await db`
       INSERT INTO users (email, provider, last_login)
       VALUES (${profile.email}, 'google', NOW())
       ON CONFLICT (email) DO UPDATE
       SET last_login = NOW()
       RETURNING id
-    ` as Array<{ id: string }>;
+    `) as Array<{ id: string }>;
     const userId = userRows?.[0]?.id;
 
     if (!userId) {
-      return NextResponse.json({ error: 'Não foi possível identificar o usuário' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Não foi possível identificar o usuário' },
+        { status: 500 }
+      );
     }
 
     // Criar token de sessão local

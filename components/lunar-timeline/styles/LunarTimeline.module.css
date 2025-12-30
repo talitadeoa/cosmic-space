@@ -1,0 +1,290 @@
+/* Componente principal - Lunar Timeline */
+
+.lunarTimelineContainer {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #000000;
+  background-image:
+    radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 40px),
+    radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 30px),
+    radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 40px),
+    radial-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1) 2px, transparent 30px);
+  background-size:
+    550px 550px,
+    350px 350px,
+    250px 250px,
+    150px 150px;
+  background-position:
+    0 0,
+    40px 60px,
+    130px 270px,
+    70px 100px;
+  overflow: hidden;
+}
+
+/* Seção da Lua (área central) */
+.moonSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Renderizador da Lua */
+.moonRenderer {
+  position: relative;
+  animation: moonAppear 1s ease-out;
+}
+
+@keyframes moonAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Informações da Lua */
+.moonInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  max-width: 600px;
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Nome da fase lunar */
+.phaseName {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 300;
+  color: #e8e8ff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 20px rgba(232, 232, 255, 0.5),
+    0 0 40px rgba(232, 232, 255, 0.3);
+}
+
+/* Data e hora */
+.dateTime {
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-weight: 400;
+  color: rgba(232, 232, 255, 0.8);
+  letter-spacing: 1px;
+  text-transform: capitalize;
+}
+
+/* Detalhes adicionais */
+.details {
+  display: flex;
+  gap: 32px;
+  margin-top: 16px;
+  padding: 20px 32px;
+  background: rgba(10, 14, 20, 0.6);
+  border: 1px solid rgba(232, 232, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(232, 232, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.detailValue {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(232, 232, 255, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Seção da timeline */
+.timelineSection {
+  width: 100%;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Instrução de uso */
+.instruction {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(232, 232, 255, 0.4);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 0;
+  animation: breathe 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Responsividade - Tablet */
+@media (max-width: 1024px) {
+  .moonSection {
+    gap: 24px;
+    padding: 32px 20px;
+  }
+
+  .details {
+    gap: 24px;
+    padding: 16px 24px;
+  }
+
+  .instruction {
+    bottom: 120px;
+    font-size: 13px;
+  }
+}
+
+/* Responsividade - Mobile */
+@media (max-width: 768px) {
+  .moonSection {
+    gap: 20px;
+    padding: 24px 16px;
+  }
+
+  .moonInfo {
+    gap: 12px;
+  }
+
+  .details {
+    gap: 20px;
+    padding: 12px 20px;
+    flex-wrap: wrap;
+  }
+
+  .detailLabel {
+    font-size: 10px;
+  }
+
+  .detailValue {
+    font-size: 16px;
+  }
+
+  .instruction {
+    bottom: 110px;
+    font-size: 12px;
+  }
+}
+
+/* Responsividade - Mobile pequeno */
+@media (max-width: 480px) {
+  .moonSection {
+    gap: 16px;
+    padding: 20px 12px;
+  }
+
+  .details {
+    gap: 16px;
+    padding: 10px 16px;
+  }
+
+  .detailItem {
+    gap: 2px;
+  }
+
+  .detailLabel {
+    font-size: 9px;
+  }
+
+  .detailValue {
+    font-size: 14px;
+  }
+
+  .instruction {
+    display: none; /* Ocultar em telas muito pequenas */
+  }
+}
+
+/* Landscape mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+  .moonSection {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    padding: 20px;
+  }
+
+  .moonRenderer {
+    flex-shrink: 0;
+  }
+
+  .moonInfo {
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .details {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .instruction {
+    bottom: 100px;
+    font-size: 11px;
+  }
+}
+
+/* Preferência de movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  .moonRenderer,
+  .moonInfo,
+  .instruction {
+    animation: none;
+  }
+}
+
+/* Tema escuro forçado */
+@media (prefers-color-scheme: dark) {
+  /* Já está no tema escuro por padrão */
+}

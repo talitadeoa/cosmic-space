@@ -1,35 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/galaxysuns/sync
  * Sincroniza dados lunares para GalaxySunsScreen
  * Busca fases lunares de múltiplos anos (backend entende que referencia 1 ano atrás)
- * 
+ *
  * Query params:
  *   - years: números de anos separados por vírgula (ex: 2024,2025,2026)
  *   - default: últimos 2 anos, presente, próximos 2 anos
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const yearsParam = searchParams.get("years");
+  const yearsParam = searchParams.get('years');
 
   const currentYear = new Date().getFullYear();
   let years: number[] = [];
 
   if (yearsParam) {
     years = yearsParam
-      .split(",")
+      .split(',')
       .map((y) => parseInt(y.trim(), 10))
       .filter((y) => !Number.isNaN(y));
   } else {
-    years = [
-      currentYear - 1,
-      currentYear,
-      currentYear + 1,
-      currentYear + 2,
-    ];
+    years = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
   }
 
   try {
@@ -63,8 +58,7 @@ export async function GET(request: NextRequest) {
 
         days.forEach((day: any) => {
           if (day.normalizedPhase) {
-            phaseCount[day.normalizedPhase] =
-              (phaseCount[day.normalizedPhase] || 0) + 1;
+            phaseCount[day.normalizedPhase] = (phaseCount[day.normalizedPhase] || 0) + 1;
           }
           if (day.sign) {
             signCount[day.sign] = (signCount[day.sign] || 0) + 1;
@@ -73,16 +67,14 @@ export async function GET(request: NextRequest) {
 
         // Encontrar fase dominante
         const [dominantPhase] = Object.entries(phaseCount).reduce(
-          (acc, [phase, count]) =>
-            count > acc[1] ? [phase, count] : acc,
-          ["luaNova" as string, 0]
+          (acc, [phase, count]) => (count > acc[1] ? [phase, count] : acc),
+          ['luaNova' as string, 0]
         );
 
         // Encontrar signo dominante
         const [dominantSign] = Object.entries(signCount).reduce(
-          (acc, [sign, count]) =>
-            count > acc[1] ? [sign, count] : acc,
-          ["" as string, 0]
+          (acc, [sign, count]) => (count > acc[1] ? [sign, count] : acc),
+          ['' as string, 0]
         );
 
         results[year] = {
@@ -98,7 +90,7 @@ export async function GET(request: NextRequest) {
         console.error(`❌ Erro ao processar ano ${year}:`, yearError);
         results[year] = {
           year,
-          error: yearError instanceof Error ? yearError.message : "Erro desconhecido",
+          error: yearError instanceof Error ? yearError.message : 'Erro desconhecido',
         };
       }
     }
@@ -112,7 +104,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: err instanceof Error ? err.message : "Erro desconhecido",
+        error: err instanceof Error ? err.message : 'Erro desconhecido',
       },
       { status: 500 }
     );

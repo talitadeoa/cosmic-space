@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    COSMIC SPACE APPLICATION                      │
+│                    FLUA APPLICATION                      │
 └─────────────────────────────────────────────────────────────────┘
 
                          PÁGINA PROTEGIDA
@@ -261,7 +261,7 @@ Fazendo Logout (POST /api/auth/logout):
 ## Estrutura de Arquivos
 
 ```
-cosmic-space/
+flua/
 ├── lib/
 │   ├── auth.ts                    # Lógica de autenticação
 │   └── sheets.ts                  # Integração Google Sheets

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 
 export interface MonthlyInsight {
   moonPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
+  year: number;
   monthNumber: number;
   insight: string;
   timestamp: string;
@@ -10,6 +11,7 @@ export interface MonthlyInsight {
 export interface MonthlyInsightRecord {
   id: number;
   moonPhase: string;
+  year: number;
   monthNumber: number;
   insight: string;
   createdAt: string;
@@ -24,7 +26,7 @@ export function useMonthlyInsights() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const saveInsight = useCallback(
-    async (moonPhase: string, monthNumber: number, insight: string) => {
+    async (moonPhase: string, year: number, monthNumber: number, insight: string) => {
       setIsLoading(true);
       setError(null);
 
@@ -32,7 +34,7 @@ export function useMonthlyInsights() {
         const response = await fetch('/api/form/monthly-insight', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ moonPhase, monthNumber, insight }),
+          body: JSON.stringify({ moonPhase, year, monthNumber, insight }),
           credentials: 'include',
         });
 
@@ -43,6 +45,7 @@ export function useMonthlyInsights() {
 
         const newInsight: MonthlyInsight = {
           moonPhase: moonPhase as any,
+          year,
           monthNumber,
           insight,
           timestamp: new Date().toISOString(),
@@ -61,13 +64,14 @@ export function useMonthlyInsights() {
     []
   );
 
-  const loadInsight = useCallback(async (moonPhase: string, monthNumber: number) => {
+  const loadInsight = useCallback(async (moonPhase: string, year: number, monthNumber: number) => {
     setIsFetching(true);
     setFetchError(null);
 
     try {
       const params = new URLSearchParams({
         moonPhase,
+        year: String(year),
         monthNumber: String(monthNumber),
       });
       const response = await fetch(`/api/form/monthly-insight?${params.toString()}`, {

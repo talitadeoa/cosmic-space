@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import type { TimelineItem, TimelineItemType } from "@/types/timeline";
+import { motion } from 'framer-motion';
+import type { TimelineItem, TimelineItemType } from '@/types/timeline';
 
 const typeLabels: Record<TimelineItemType, string> = {
-  mensal: "Insight mensal",
-  trimestral: "Insight trimestral",
-  anual: "Insight anual",
-  energia: "Energia lunar",
+  mensal: 'Insight mensal',
+  trimestral: 'Insight trimestral',
+  anual: 'Insight anual',
+  energia: 'Energia lunar',
 };
 
 const typeGradients: Record<TimelineItemType, string> = {
-  mensal: "from-indigo-500/30 via-sky-500/20 to-transparent",
-  trimestral: "from-emerald-500/25 via-teal-500/20 to-transparent",
-  anual: "from-rose-500/25 via-amber-500/20 to-transparent",
-  energia: "from-violet-500/25 via-indigo-500/20 to-transparent",
+  mensal: 'from-indigo-500/30 via-sky-500/20 to-transparent',
+  trimestral: 'from-emerald-500/25 via-teal-500/20 to-transparent',
+  anual: 'from-rose-500/25 via-amber-500/20 to-transparent',
+  energia: 'from-violet-500/25 via-indigo-500/20 to-transparent',
 };
 
 const formatDate = (value: string) =>
-  new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
+  new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
   }).format(new Date(value));
 
 const formatRecordedLabel = (item: TimelineItem) => {
@@ -31,9 +31,9 @@ const formatRecordedLabel = (item: TimelineItem) => {
 
 const formatPeriod = (item: TimelineItem) => {
   if (!item.period) return null;
-  if (item.type === "mensal") return `Mês ${item.period}`;
-  if (item.type === "trimestral") return `Trimestre ${item.period}`;
-  if (item.type === "anual") return `Ano ${item.period}`;
+  if (item.type === 'mensal') return `Mês ${item.period}`;
+  if (item.type === 'trimestral') return `Trimestre ${item.period}`;
+  if (item.type === 'anual') return `Ano ${item.period}`;
   return null;
 };
 
@@ -68,9 +68,7 @@ export default function TimelineItemCard({ item, index }: TimelineItemCardProps)
           ) : null}
         </div>
 
-        {formatPeriod(item) ? (
-          <p className="text-xs text-slate-400">{formatPeriod(item)}</p>
-        ) : null}
+        {formatPeriod(item) ? <p className="text-xs text-slate-400">{formatPeriod(item)}</p> : null}
 
         {item.insight ? (
           <p className="text-sm leading-relaxed text-slate-100">{item.insight}</p>

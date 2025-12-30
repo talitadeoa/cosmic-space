@@ -1,14 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CelestialObject } from "../components/CelestialObject";
-import MoonPhaseDisplay from "../components/MoonPhaseDisplay";
-import type {
-  CelestialSize,
-  CelestialType,
-  ScreenId,
-  ScreenProps,
-} from "../types";
+import React from 'react';
+import { CelestialObject } from '../components/CelestialObject';
+import MoonPhaseDisplay from '../components/MoonPhaseDisplay';
+import type { CelestialSize, CelestialType, ScreenId, ScreenProps } from '../types';
 
 type HomeCelestial = {
   id: string;
@@ -19,40 +14,40 @@ type HomeCelestial = {
   col: number;
 };
 
-const HOME_OBJECT_SIZE: CelestialSize = "md";
+const HOME_OBJECT_SIZE: CelestialSize = 'md';
 
 // Ajuste row/col aqui para reposicionar rapidamente cada objeto na grade.
 const HOME_OBJECTS: HomeCelestial[] = [
-  { id: "lua", type: "lua", target: "luaList", floatOffset: -2, row: 1, col: 1 },
+  { id: 'lua', type: 'lua', target: 'luaList', floatOffset: -2, row: 1, col: 1 },
   {
-    id: "eclipse",
-    type: "eclipse",
-    target: "eclipseProductivity",
+    id: 'eclipse',
+    type: 'eclipse',
+    target: 'eclipseProductivity',
     floatOffset: -3,
     row: 1,
     col: 2,
   },
   {
-    id: "galaxiaNorte",
-    type: "galaxia",
-    target: "ringGalaxy",
+    id: 'galaxiaNorte',
+    type: 'galaxia',
+    target: 'ringGalaxy',
     floatOffset: 1,
     row: 1,
     col: 3,
   },
   {
-    id: "galaxiaSul",
-    type: "galaxia",
-    target: "galaxySuns",
+    id: 'galaxiaSul',
+    type: 'galaxia',
+    target: 'galaxySuns',
     floatOffset: 2,
     row: 2,
     col: 1,
   },
-  { id: "sol", type: "sol", target: "solOrbit", floatOffset: 0, row: 2, col: 2 },
+  { id: 'sol', type: 'sol', target: 'solOrbit', floatOffset: 0, row: 2, col: 2 },
   {
-    id: "planeta",
-    type: "planeta",
-    target: "sidePlanetCard",
+    id: 'planeta',
+    type: 'planeta',
+    target: 'sidePlanetCard',
     floatOffset: -1,
     row: 2,
     col: 3,
@@ -63,10 +58,14 @@ const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   return (
     <div className="relative flex h-full w-full items-center justify-center px-4 sm:px-10">
       <MoonPhaseDisplay />
-      
+
       <div className="grid h-full w-full max-w-5xl grid-cols-3 grid-rows-2 place-items-center gap-6 sm:gap-12">
         {HOME_OBJECTS.map(({ id, type, target, floatOffset, row, col }) => (
-          <div key={id} style={{ gridColumn: col, gridRow: row }} className="flex items-center justify-center">
+          <div
+            key={id}
+            style={{ gridColumn: col, gridRow: row }}
+            className="flex items-center justify-center"
+          >
             <CelestialObject
               type={type}
               size={HOME_OBJECT_SIZE}

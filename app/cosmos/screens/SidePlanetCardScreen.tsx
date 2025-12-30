@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CelestialObject } from "../components/CelestialObject";
-import { Card } from "../components/Card";
-import TodoInput, { TodoItem as ParsedTodoItem } from "../components/TodoInput";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { CelestialObject } from '../components/CelestialObject';
+import { Card } from '../components/Card';
+import TodoInput, { TodoItem as ParsedTodoItem } from '../components/TodoInput';
 import {
   loadSavedTodos,
   phaseLabels,
   saveSavedTodos,
   type MoonPhase,
   type SavedTodo,
-} from "../utils/todoStorage";
-import { PHASE_VIBES } from "../utils/phaseVibes";
-import type { ScreenProps } from "../types";
-import type { IslandId } from "../types/screen";
-import { usePhaseInputs } from "@/hooks/usePhaseInputs";
-import { useFilteredTodos, type FilterState } from "@/hooks/useFilteredTodos";
-import { SavedTodosPanel } from "../components/SavedTodosPanel";
-import { IslandsList } from "../components/IslandsList";
-import { useIslandNames } from "@/hooks/useIslandNames";
-import { getIslandLabel, type IslandNames } from "../utils/islandNames";
+} from '../utils/todoStorage';
+import { PHASE_VIBES } from '../utils/phaseVibes';
+import type { ScreenProps } from '../types';
+import type { IslandId } from '../types/screen';
+import { usePhaseInputs } from '@/hooks/usePhaseInputs';
+import { useFilteredTodos, type FilterState } from '@/hooks/useFilteredTodos';
+import { SavedTodosPanel } from '../components/SavedTodosPanel';
+import { IslandsList } from '../components/IslandsList';
+import { useIslandNames } from '@/hooks/useIslandNames';
+import { getIslandLabel, type IslandNames } from '../utils/islandNames';
 
 const MOON_COUNT = 4;
 
@@ -28,7 +28,6 @@ type MoonClusterProps = {
   moonCounts: Record<MoonPhase, number>;
   isDraggingTodo: boolean;
   selectedPhase: MoonPhase | null;
-  onMoonNavigate: (phase: MoonPhase, event: React.MouseEvent<HTMLDivElement>) => void;
   onMoonFilter: (phase: MoonPhase | null) => void;
   onDrop: (phase: MoonPhase) => (event: React.DragEvent) => void;
   onDragOver: (phase: MoonPhase) => (event: React.DragEvent) => void;
@@ -40,7 +39,7 @@ const MoonCluster = ({
   moonCounts,
   isDraggingTodo,
   selectedPhase,
-  onMoonNavigate,
+  onMoonNavigate: _onMoonNavigate,
   onMoonFilter,
   onDrop,
   onDragOver,
@@ -49,7 +48,7 @@ const MoonCluster = ({
   <div className="flex w-full flex-col items-center gap-4">
     <div className="flex flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:flex-col lg:items-center">
       {Array.from({ length: MOON_COUNT }).map((_, i) => {
-        const moonTypes = ["luaNova", "luaCrescente", "luaCheia", "luaMinguante"] as const;
+        const moonTypes = ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'] as const;
         const moonType = moonTypes[i % moonTypes.length];
         const isActiveDrop = activeDrop === moonType;
         const isSelectedPhase = selectedPhase === moonType;
@@ -67,7 +66,7 @@ const MoonCluster = ({
               type={moonType}
               size="sm"
               interactive
-              onClick={(event) => {
+              onClick={() => {
                 if (isDraggingTodo) return;
                 // Se a fase já está selecionada, deseleciona; caso contrário, seleciona
                 if (isSelectedPhase) {
@@ -81,10 +80,8 @@ const MoonCluster = ({
               onDragOver={onDragOver(moonType)}
               onDragLeave={onDragLeave}
               className={`transition-transform duration-300 ${
-                isActiveDrop ? "scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]" : ""
-              } ${
-                isSelectedPhase ? "drop-shadow-[0_0_20px_rgba(129,140,248,0.9)]" : ""
-              }`}
+                isActiveDrop ? 'scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]' : ''
+              } ${isSelectedPhase ? 'drop-shadow-[0_0_20px_rgba(129,140,248,0.9)]' : ''}`}
             />
           </div>
         );
@@ -100,16 +97,11 @@ type FiltersPanelProps = {
   islandNames: IslandNames;
 };
 
-const FiltersPanel = ({
-  isOpen,
-  filters,
-  onClearFilters,
-  islandNames,
-}: FiltersPanelProps) => {
-  const showTodoStatus = filters.inputType === "checkbox" && filters.todoStatus !== "all";
+const FiltersPanel = ({ isOpen, filters, onClearFilters, islandNames }: FiltersPanelProps) => {
+  const showTodoStatus = filters.inputType === 'checkbox' && filters.todoStatus !== 'all';
   const hasActiveFilters =
-    filters.view === "lua-atual" ||
-    filters.inputType !== "all" ||
+    filters.view === 'lua-atual' ||
+    filters.inputType !== 'all' ||
     showTodoStatus ||
     Boolean(filters.phase) ||
     Boolean(filters.island);
@@ -119,38 +111,36 @@ const FiltersPanel = ({
   return (
     <div
       className={`overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-950/70 shadow-xl shadow-indigo-900/20 transition-[max-height,opacity,transform] duration-300 ${
-        isOpen ? "max-h-80 opacity-100 translate-y-0 p-3" : "max-h-0 opacity-0 -translate-y-2 p-0"
+        isOpen ? 'max-h-80 opacity-100 translate-y-0 p-3' : 'max-h-0 opacity-0 -translate-y-2 p-0'
       }`}
     >
       <div>
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
           Painel de filtros
         </p>
-        <p className="text-[0.75rem] text-slate-400">
-          Ajuste como as tarefas aparecem na lista.
-        </p>
+        <p className="text-[0.75rem] text-slate-400">Ajuste como as tarefas aparecem na lista.</p>
       </div>
 
       {hasActiveFilters ? (
         <div className="mt-3 flex flex-wrap gap-2 text-[0.7rem] font-semibold text-slate-200">
-          {filters.view === "lua-atual" && (
+          {filters.view === 'lua-atual' && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
               Lua atual
             </span>
           )}
-          {filters.inputType === "text" && (
+          {filters.inputType === 'text' && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
               Texto
             </span>
           )}
-          {filters.inputType === "checkbox" && (
+          {filters.inputType === 'checkbox' && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
               To-dos
             </span>
           )}
           {showTodoStatus && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
-              {filters.todoStatus === "completed" ? "Completas" : "Em aberto"}
+              {filters.todoStatus === 'completed' ? 'Completas' : 'Em aberto'}
             </span>
           )}
           {filters.phase && (
@@ -190,28 +180,30 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
-  const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dropHandledRef = useRef(false);
   const { saveInput } = usePhaseInputs();
   const { islandNames, renameIsland } = useIslandNames();
 
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
-    view: "inbox",
-    inputType: "all",
-    todoStatus: "all",
+    view: 'inbox',
+    inputType: 'all',
+    todoStatus: 'all',
     phase: null,
     island: null,
+    month: null,
+    year: null,
   });
 
   const resetFilters = () => {
     setFilters({
-      view: "inbox",
-      inputType: "all",
-      todoStatus: "all",
+      view: 'inbox',
+      inputType: 'all',
+      todoStatus: 'all',
       phase: null,
       island: null,
+      month: null,
+      year: null,
     });
   };
 
@@ -233,12 +225,11 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
     setSavedTodos((prev) => {
       const key = `${resolvedTodo.inputType}|${resolvedTodo.text}|${resolvedTodo.depth}|${
-        resolvedTodo.islandId ?? "sem-ilha"
+        resolvedTodo.islandId ?? 'sem-ilha'
       }`;
       const existingIndex = prev.findIndex(
         (item) =>
-          `${item.inputType}|${item.text}|${item.depth}|${item.islandId ?? "sem-ilha"}` ===
-            key,
+          `${item.inputType}|${item.text}|${item.depth}|${item.islandId ?? 'sem-ilha'}` === key
       );
       if (existingIndex === -1) {
         return [...prev, resolvedTodo];
@@ -255,15 +246,13 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const handleToggleComplete = (todoId: string) => {
     setSavedTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === todoId ? { ...todo, completed: !todo.completed } : todo,
-      ),
+      prev.map((todo) => (todo.id === todoId ? { ...todo, completed: !todo.completed } : todo))
     );
   };
 
   const handleUpdateTodo = (todoId: string, updates: Partial<SavedTodo>) => {
     setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, ...updates } : todo)),
+      prev.map((todo) => (todo.id === todoId ? { ...todo, ...updates } : todo))
     );
   };
 
@@ -272,13 +261,11 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (!target) return;
     if (target.phase === phase) return;
 
-    setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)),
-    );
+    setSavedTodos((prev) => prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)));
 
     saveInput({
       moonPhase: phase,
-      inputType: "tarefa",
+      inputType: 'tarefa',
       sourceId: target.id,
       content: target.text,
       vibe: PHASE_VIBES[phase].label,
@@ -291,7 +278,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         islandId: target.islandId ?? null,
       },
     }).catch((error) => {
-      console.warn("Falha ao salvar tarefa na fase:", error);
+      console.warn('Falha ao salvar tarefa na fase:', error);
     });
   };
 
@@ -301,39 +288,31 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (target.islandId === islandId) return;
 
     setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, islandId } : todo)),
+      prev.map((todo) => (todo.id === todoId ? { ...todo, islandId } : todo))
     );
   };
 
   const handleDragStart = (todoId: string) => (e: React.DragEvent) => {
-    e.dataTransfer.setData("text/todo-id", todoId);
+    e.dataTransfer.setData('text/todo-id', todoId);
     dropHandledRef.current = false;
     setIsDraggingTodo(true);
-    setDraggingTodoId(todoId);
   };
 
   const handleDragEnd = () => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
-    if (!dropHandledRef.current && draggingTodoId) {
-      setShowDeleteConfirm(true);
-    } else {
-      setDraggingTodoId(null);
-    }
     dropHandledRef.current = false;
   };
 
   const handleDeleteTodo = (todoId: string) => {
     setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
-    setShowDeleteConfirm(false);
-    setDraggingTodoId(null);
   };
 
   const handleDropOnPhase = (phase: MoonPhase) => (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const todoId = e.dataTransfer.getData("text/todo-id");
+    const todoId = e.dataTransfer.getData('text/todo-id');
     if (!todoId) return;
     dropHandledRef.current = true;
     assignTodoToPhase(todoId, phase);
@@ -353,7 +332,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const handleDropOnIsland = (islandId: IslandId) => (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const todoId = e.dataTransfer.getData("text/todo-id");
+    const todoId = e.dataTransfer.getData('text/todo-id');
     if (!todoId) return;
     dropHandledRef.current = true;
     assignTodoToIsland(todoId, islandId);
@@ -380,9 +359,9 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           if (todo.phase) acc[todo.phase] = (acc[todo.phase] ?? 0) + 1;
           return acc;
         },
-        {} as Record<MoonPhase, number>,
+        {} as Record<MoonPhase, number>
       ),
-    [displayedTodos],
+    [displayedTodos]
   );
 
   return (
@@ -402,9 +381,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           {/* Ilhas abaixo do planeta */}
           <IslandsList
             selectedIsland={filters.island}
-            onSelectIsland={(island) =>
-              setFilters((prev) => ({ ...prev, island }))
-            }
+            onSelectIsland={(island) => setFilters((prev) => ({ ...prev, island }))}
             activeDropIsland={activeIslandDrop}
             onDropIsland={handleDropOnIsland}
             onDragOverIsland={handleDragOverIsland}
@@ -421,19 +398,15 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
               <div className="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
                 <div>
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
-                    Painel lunar lateral
-                  </p>
-                  <h3 className="text-lg font-semibold text-white sm:text-xl">
-                    Organize tarefas por fase lunar
-                  </h3>
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80"></p>
+                  <h3 className="text-lg font-semibold text-white sm:text-xl"></h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
                   className="rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
                 >
-                  {isFiltersPanelOpen ? "Esconder" : "Mostrar"} painel
+                  {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
                 </button>
               </div>
 
@@ -461,6 +434,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onDropInside={() => {
                     dropHandledRef.current = true;
                   }}
+                  onDeleteTodo={handleDeleteTodo}
                   onUpdateTodo={handleUpdateTodo}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}
@@ -502,11 +476,9 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             isDraggingTodo={isDraggingTodo}
             selectedPhase={filters.phase}
             onMoonNavigate={(phase, event) =>
-              navigateWithFocus("planetCardStandalone", { event, type: phase, size: "sm" })
+              navigateWithFocus('planetCardStandalone', { event, type: phase, size: 'sm' })
             }
-            onMoonFilter={(phase) =>
-              setFilters((prev) => ({ ...prev, phase }))
-            }
+            onMoonFilter={(phase) => setFilters((prev) => ({ ...prev, phase }))}
             onDrop={handleDropOnPhase}
             onDragOver={handleDragOverPhase}
             onDragLeave={handleDragLeavePhase}
@@ -519,46 +491,13 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             interactive
             onClick={(event) => {
               if (isDraggingTodo) return;
-              navigateWithFocus("planetCardBelowSun", { event, type: "sol", size: "md" });
+              navigateWithFocus('planetCardBelowSun', { event, type: 'sol', size: 'md' });
             }}
             floatOffset={-2}
             className="scale-90 sm:scale-100"
           />
         </div>
       </div>
-
-      {/* Modal de confirmação de exclusão */}
-      {showDeleteConfirm && draggingTodoId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="rounded-2xl border border-indigo-500/30 bg-slate-950/95 shadow-2xl shadow-indigo-900/40 p-6 max-w-sm w-full mx-4">
-            <h2 className="text-xl font-semibold text-white mb-2">
-              Deletar tarefa?
-            </h2>
-            <p className="text-slate-300 mb-6">
-              Você realmente deseja deletar essa tarefa? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setDraggingTodoId(null);
-                }}
-                className="rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-900 hover:border-slate-600"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => draggingTodoId && handleDeleteTodo(draggingTodoId)}
-                className="rounded-lg bg-red-600/80 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 shadow-lg"
-              >
-                Deletar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

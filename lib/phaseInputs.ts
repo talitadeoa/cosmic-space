@@ -1,7 +1,11 @@
-import { getDb } from "./db";
+import 'server-only';
+import { getDb } from './db';
+import { logger } from './logger';
+import type { MoonPhase } from '@/types/moon';
+import type { PhaseInputType } from '@/types/inputs';
 
-export type MoonPhase = "luaNova" | "luaCrescente" | "luaCheia" | "luaMinguante";
-export type PhaseInputType = "energia" | "tarefa" | "insight_trimestral";
+// Re-exportar tipos para compatibilidade
+export type { MoonPhase, PhaseInputType };
 
 export interface PhaseInputRecord {
   id: number;
@@ -33,7 +37,7 @@ export interface PhaseInputListParams {
 
 export async function savePhaseInput(
   userId: string | number,
-  data: PhaseInputSave,
+  data: PhaseInputSave
 ): Promise<PhaseInputRecord> {
   try {
     const db = getDb();
@@ -83,25 +87,26 @@ export async function savePhaseInput(
       moonPhase: row.moon_phase as MoonPhase,
       inputType: row.input_type as PhaseInputType,
       sourceId: row.source_id ?? null,
-      content: row.content ?? "",
+      content: row.content ?? '',
       vibe: row.vibe ?? null,
       metadata: row.metadata ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at ?? null,
     };
   } catch (error) {
-    console.error("Erro ao salvar phase input no banco", error);
+    logger.error('Erro ao salvar phase input no banco', error);
     throw error;
   }
 }
 
 export async function listPhaseInputs(
   userId: string | number,
-  params: PhaseInputListParams = {},
+  params: PhaseInputListParams = {}
 ): Promise<PhaseInputRecord[]> {
   try {
     const db = getDb();
     const limit = params.limit ?? 120;
+
     const rows = (await db`
       SELECT
         id,
@@ -116,8 +121,8 @@ export async function listPhaseInputs(
         updated_at
       FROM phase_inputs
       WHERE user_id = ${userId}
-        AND (${params.moonPhase ?? null}::TEXT IS NULL OR moon_phase = ${params.moonPhase})
-        AND (${params.inputType ?? null}::TEXT IS NULL OR input_type = ${params.inputType})
+        ${params.moonPhase ? db`AND moon_phase = ${params.moonPhase}` : db``}
+        ${params.inputType ? db`AND input_type = ${params.inputType}` : db``}
       ORDER BY created_at DESC
       LIMIT ${limit}
     `) as any[];
@@ -128,14 +133,14 @@ export async function listPhaseInputs(
       moonPhase: row.moon_phase as MoonPhase,
       inputType: row.input_type as PhaseInputType,
       sourceId: row.source_id ?? null,
-      content: row.content ?? "",
+      content: row.content ?? '',
       vibe: row.vibe ?? null,
       metadata: row.metadata ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at ?? null,
     }));
   } catch (error) {
-    console.error("Erro ao listar phase inputs no banco", error);
+    logger.error('Erro ao listar phase inputs no banco', error);
     throw error;
   }
 }

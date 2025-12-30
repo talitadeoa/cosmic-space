@@ -8,12 +8,9 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
-    
+
     if (!token || !validateToken(token)) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -57,24 +54,18 @@ export async function POST(request: NextRequest) {
     const success = await appendToSheet(sheetData);
 
     if (!success) {
-      return NextResponse.json(
-        { error: 'Erro ao salvar dados da ilha' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Erro ao salvar dados da ilha' }, { status: 500 });
     }
 
     return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Dados da ilha salvos com sucesso' 
+      {
+        success: true,
+        message: 'Dados da ilha salvos com sucesso',
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('Erro ao processar dados da ilha:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
