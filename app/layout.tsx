@@ -7,7 +7,7 @@ import { AutoSyncLunar } from '@/components/sync';
 import { GalaxySunsSync } from '@/components/sync';
 
 export const metadata: Metadata = {
-  title: 'Flua - Fluxo Astral',
+  title: 'Flua',
   description: 'Conecte-se com os ciclos lunares e menstruais. Rastreie emoções, compreenda padrões cíclicos e explore a sabedoria cósmica.',
   keywords: ['ciclo lunar', 'ciclo menstrual', 'bem-estar feminino', 'rastreamento lunar', 'astrologia'],
   authors: [{ name: 'Talita' }],
@@ -17,20 +17,20 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     url: 'https://flua.vercel.app',
     siteName: 'Flua',
-    title: 'Flua - Fluxo Astral',
+    title: 'Flua',
     description: 'Conecte-se com os ciclos lunares e menstruais.',
     images: [
       {
         url: 'https://flua.vercel.app/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Flua - Fluxo Astral',
+        alt: 'Flua',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Flua - Fluxo Astral',
+    title: 'Flua',
     description: 'Conecte-se com os ciclos lunares e menstruais.',
     images: ['https://flua.vercel.app/og-image.png'],
   },
