@@ -22,7 +22,7 @@ const SolRouteContent: React.FC<{
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center py-10">
+    <div className="flex min-h-screen w-full items-center justify-center px-4 py-6 sm:px-6 sm:py-10">
       {screen === 'solorbit' ? (
         <section className="mx-auto w-full max-w-5xl">
           <SolOrbitExperience onOrbitClick={onOrbitClick} onOutsideClick={onOutsideClick} />

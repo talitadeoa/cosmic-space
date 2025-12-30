@@ -300,9 +300,9 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   }, []);
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center overflow-hidden">
+    <div className="flex min-h-[100svh] w-full items-center justify-center overflow-hidden py-6 sm:py-10">
       <div
-        className="relative aspect-square w-[min(90vh,90vw)] h-[min(90vh,90vw)] max-w-[720px] max-h-[720px]"
+        className="relative aspect-square h-[min(84svh,92vw)] w-[min(84svh,92vw)] max-h-[720px] max-w-[720px] sm:h-[min(90vh,90vw)] sm:w-[min(90vh,90vw)]"
         onClick={handleSpaceClick}
       >
         {/* Canvas da órbita */}

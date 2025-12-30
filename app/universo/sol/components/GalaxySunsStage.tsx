@@ -28,7 +28,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
   onGalaxyCoreClick,
 }) => {
   const largestOrbit = orbitSizes[orbitSizes.length - 1] ?? 0;
-  const stagePadding = 120;
+  const stagePadding = Math.max(80, Math.round(largestOrbit * 0.28));
   const stageSize = largestOrbit + stagePadding;
   const angleStep = yearSuns.length > 0 ? 360 / yearSuns.length : 0;
   const leftOrbitPositioning = { right: '50%', translateY: '-50%' };
