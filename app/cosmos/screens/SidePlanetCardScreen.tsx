@@ -403,10 +403,10 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               <div className="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
                 <div>
                   <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
-                    Painel lunar lateral
+                    
                   </p>
                   <h3 className="text-lg font-semibold text-white sm:text-xl">
-                    Organize tarefas por fase lunar
+                     
                   </h3>
                 </div>
                 <button
