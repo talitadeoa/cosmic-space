@@ -28,6 +28,7 @@ type MoonClusterProps = {
   moonCounts: Record<MoonPhase, number>;
   isDraggingTodo: boolean;
   selectedPhase: MoonPhase | null;
+  onMoonNavigate: (phase: MoonPhase, event: React.MouseEvent<HTMLDivElement>) => void;
   onMoonFilter: (phase: MoonPhase | null) => void;
   onDrop: (phase: MoonPhase) => (event: React.DragEvent) => void;
   onDragOver: (phase: MoonPhase) => (event: React.DragEvent) => void;
