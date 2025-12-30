@@ -28,6 +28,7 @@ type MoonClusterProps = {
   moonCounts: Record<MoonPhase, number>;
   isDraggingTodo: boolean;
   selectedPhase: MoonPhase | null;
+  onMoonNavigate?: (phase: MoonPhase) => void;
   onMoonFilter: (phase: MoonPhase | null) => void;
   onDrop: (phase: MoonPhase) => (event: React.DragEvent) => void;
   onDragOver: (phase: MoonPhase) => (event: React.DragEvent) => void;
@@ -475,8 +476,8 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             moonCounts={moonCounts}
             isDraggingTodo={isDraggingTodo}
             selectedPhase={filters.phase}
-            onMoonNavigate={(phase, event) =>
-              navigateWithFocus('planetCardStandalone', { event, type: phase, size: 'sm' })
+            onMoonNavigate={(phase) =>
+              navigateWithFocus('planetCardStandalone', { type: phase, size: 'sm' })
             }
             onMoonFilter={(phase) => setFilters((prev) => ({ ...prev, phase }))}
             onDrop={handleDropOnPhase}

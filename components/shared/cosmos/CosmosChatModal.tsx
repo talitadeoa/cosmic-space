@@ -256,7 +256,7 @@ function ChatComposer({
   onSave,
   placeholder,
   submitLabel,
-  inline,
+  inline: _inline,
   styles,
   isSaving,
   hasUserMessage,
