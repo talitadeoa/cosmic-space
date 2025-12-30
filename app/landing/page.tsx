@@ -90,9 +90,9 @@ export default function LandingPage() {
               modo órbita
             </div>
             <h1 className="mt-6 text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
-              Aterrissagem oficial da{' '}
+              Aterrissagem oficial de{' '}
               <span className="bg-gradient-to-r from-indigo-200 via-sky-200 to-rose-200 bg-clip-text text-transparent">
-                Cosmic Space
+                Flua
               </span>
             </h1>
             <p className="mt-4 text-base text-slate-300 sm:text-lg">
@@ -270,7 +270,7 @@ export default function LandingPage() {
             </div>
           </div>
           <p className="mt-10 text-center text-[11px] text-slate-400">
-            © {year} Cosmic Space • Construído no hiperespaço com som ambiente
+            © {year} Flua • Construído no hiperespaço
           </p>
         </section>
       </div>

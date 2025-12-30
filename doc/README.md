@@ -1,4 +1,4 @@
-# 📚 Documentação Cosmic Space
+# 📚 Documentação Flua
 
 > Documentação consolidada e organizada do projeto Flua - Sistema lunar/astral integrado
 
@@ -40,7 +40,7 @@
 ## 🏗️ Arquitetura Rápida
 
 ```
-cosmic-space/
+flua/
 ├── app/              # Next.js App Router
 │   ├── (root)/      # Rotas protegidas (AuthGate)
 │   └── api/         # API routes
