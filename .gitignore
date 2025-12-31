@@ -22,3 +22,6 @@ npm-packages-offline-cache/
 *.log
 public/build/
 /.parcel-cache/
+.env.local
+.env.production
+.husky

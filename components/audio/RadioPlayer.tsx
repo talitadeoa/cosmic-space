@@ -2,34 +2,53 @@
 
 import { useAudioPlayer, RadioStation } from '@/hooks/useAudioPlayer';
 import { useYouTubePlayer, YouTubeStation } from '@/hooks/useYouTubePlayer';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-type Station = (RadioStation & { type?: 'radio' }) | (YouTubeStation & { type: 'youtube' });
+type Station =
+  | (RadioStation & { type?: 'radio'; disabled?: boolean })
+  | (YouTubeStation & { type: 'youtube'; disabled?: boolean });
 
 const STATIONS: Station[] = [
   {
-    id: 'space-station',
-    name: '🌌 SomaFM Space Station',
-    url: 'https://ice1.somafm.com/space-station-128-mp3',
+    id: 'astral',
+    name: '✨ Astral',
+    url: '/everything is falling into divine alignment.mp3',
     type: 'radio',
   },
   {
-    id: 'drone-zone',
-    name: '🛰️ SomaFM Drone Zone',
-    url: 'https://ice1.somafm.com/dronezone-128-mp3',
+    id: 'cyberpunk',
+    name: '🌆 Cyberpunk',
+    url: '',
     type: 'radio',
+    disabled: true,
   },
   {
-    id: 'deepspace-one',
-    name: '🚀 SomaFM Deep Space One',
-    url: 'https://ice1.somafm.com/deepspaceone-128-mp3',
+    id: 'cyberpunk-rainy',
+    name: '🌧️ Cyberpunk Rainy',
+    url: '',
     type: 'radio',
+    disabled: true,
   },
   {
-    id: 'beatblender',
-    name: '🌊 SomaFM Beat Blender',
-    url: 'https://ice1.somafm.com/beatblender-128-mp3',
+    id: 'xamanica',
+    name: '🪶 Xamanica',
+    url: '',
     type: 'radio',
+    disabled: true,
+  },
+  {
+    id: 'brasileira',
+    name: '🇧🇷 Brasileira',
+    url: '',
+    type: 'radio',
+    disabled: true,
+  },
+  {
+    id: 'maat',
+    name: '⚖️ Ma`at',
+    url: '',
+    type: 'radio',
+    disabled: true,
   },
 ];
 
@@ -69,11 +88,13 @@ export default function RadioPlayer() {
   const volume = currentType === 'youtube' ? youtubeVolume : audioVolume;
 
   const handleSelect = (station: Station) => {
+    if (station.disabled) return;
     if (station.type === 'youtube') {
       pauseAudio();
       playYouTube(station);
       setCurrentType('youtube');
     } else {
+      if (!station.url) return;
       pauseYouTube();
       playAudio(station);
       setCurrentType('radio');
@@ -84,6 +105,10 @@ export default function RadioPlayer() {
     setAudioVolume(value);
     setYoutubeVolume(value);
   };
+
+  useEffect(() => {
+    handleSelect(STATIONS[0]);
+  }, []);
 
   return (
     <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50">
@@ -124,7 +149,12 @@ export default function RadioPlayer() {
                 <button
                   key={station.id}
                   onClick={() => handleSelect(station)}
+                  disabled={station.disabled}
                   className={`w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
+                    station.disabled
+                      ? 'bg-slate-900/40 text-slate-500 border border-slate-800/60 cursor-not-allowed'
+                      : ''
+                  } ${
                     isCurrent
                       ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-500/50'
                       : 'bg-slate-800/40 text-slate-300 hover:bg-slate-700/40 border border-transparent'
@@ -135,7 +165,11 @@ export default function RadioPlayer() {
                       {station.type === 'youtube' ? '' : ''}
                       {station.name}
                     </span>
-                    {isCurrent && isPlaying && <span className="text-xs">▶</span>}
+                    {station.disabled ? (
+                      <span className="text-xs">Em breve</span>
+                    ) : (
+                      isCurrent && isPlaying && <span className="text-xs">▶</span>
+                    )}
                   </div>
                 </button>
               );
