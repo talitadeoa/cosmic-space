@@ -2,6 +2,7 @@
 
 import { useAudioPlayer, RadioStation } from '@/hooks/useAudioPlayer';
 import { useYouTubePlayer, YouTubeStation } from '@/hooks/useYouTubePlayer';
+import { useSfxContext } from '@/components/providers';
 import { useEffect, useMemo, useState } from 'react';
 
 type Station =
@@ -53,6 +54,7 @@ const STATIONS: Station[] = [
 ];
 
 export default function RadioPlayer() {
+  const sfx = useSfxContext();
   const {
     isPlaying: isAudioPlaying,
     currentStation: currentAudioStation,
@@ -177,7 +179,7 @@ export default function RadioPlayer() {
           </div>
 
           {/* Controle de volume */}
-          <div className="space-y-1.5 sm:space-y-2">
+          <div className="space-y-2 sm:space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs text-slate-400">Volume</label>
               <span className="text-xs text-slate-400">{Math.round(volume * 100)}%</span>
@@ -191,6 +193,20 @@ export default function RadioPlayer() {
               onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
               className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
             />
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-slate-400">Efeitos Sonoros</label>
+              <button
+                type="button"
+                onClick={() => sfx.toggle()}
+                className={`text-xs px-2 py-1 rounded-md border transition-colors ${
+                  sfx.enabled
+                    ? 'border-emerald-400/60 text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20'
+                    : 'border-slate-700 text-slate-400 bg-slate-900/40 hover:bg-slate-800/60'
+                }`}
+              >
+                {sfx.enabled ? 'On' : 'Off'}
+              </button>
+            </div>
           </div>
         </div>
       )}
