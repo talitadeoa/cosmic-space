@@ -4,12 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import { Card } from '@/app/cosmos/components/Card';
 import TodoInput, { TodoItem as ParsedTodoItem } from '@/app/cosmos/components/TodoInput';
-import {
-  loadSavedTodos,
-  saveSavedTodos,
-  type MoonPhase,
-  type SavedTodo,
-} from '@/app/cosmos/utils/todoStorage';
+import { type MoonPhase, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
 import { PHASE_VIBES } from '@/app/cosmos/utils/phaseVibes';
 import type { ScreenProps } from '@/app/cosmos/types';
 import type { IslandId } from '@/app/cosmos/types/screen';
@@ -21,6 +16,7 @@ import { useTemporal } from '@/app/universo/planeta/state/TemporalContext';
 import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/components/IslandsList';
 import { useIslandNames } from '@/hooks/useIslandNames';
+import { usePlanetTodos } from '@/hooks/usePlanetTodos';
 import { FiltersPanel } from './FiltersPanel';
 import { MoonCluster } from './MoonCluster';
 
@@ -35,8 +31,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     new Date().getFullYear() + 1,
   ]);
   const lunations = useLunations();
-  const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
-  const [hasLoadedTodos, setHasLoadedTodos] = useState(false);
+  const { todos: savedTodos, setTodos: setSavedTodos } = usePlanetTodos();
   const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
   const [showIslands, setShowIslands] = useState(false);
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
@@ -49,6 +44,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
   const { islandNames, renameIsland } = useIslandNames();
+  const planetIslandIds: IslandId[] = ['ilha1'];
 
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
@@ -103,16 +99,6 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
     syncGalaxySuns();
   }, [temporal.year]);
-
-  useEffect(() => {
-    setSavedTodos(loadSavedTodos());
-    setHasLoadedTodos(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedTodos) return;
-    saveSavedTodos(savedTodos);
-  }, [hasLoadedTodos, savedTodos]);
 
   const handleTodoSubmit = (todo: ParsedTodoItem) => {
     const resolvedTodo = {
@@ -327,12 +313,12 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   return (
     <div
-      className="relative flex w-full min-h-screen items-start justify-center px-4 sm:px-8 pt-4 sm:pt-6"
+      className="relative flex w-full min-h-[100dvh] items-start justify-center px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10"
       onTouchMove={handleTouchMove}
     >
-      <div className="relative flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+      <div className="relative flex w-full max-w-7xl flex-col gap-6 sm:gap-8 xl:flex-row xl:items-start xl:justify-between xl:gap-10">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
-        <div className="order-4 flex w-full flex-col items-center gap-8 lg:order-1 lg:w-auto lg:max-w-xs">
+        <div className="order-4 flex w-full flex-col items-center gap-6 sm:gap-8 xl:order-1 xl:w-auto xl:max-w-xs">
           {/* Planeta */}
           <div className="flex justify-center">
             <CelestialObject
@@ -356,27 +342,20 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               isDraggingTodo={isDraggingTodo}
               islandNames={islandNames}
               onRenameIsland={renameIsland}
+              islandIds={planetIslandIds}
             />
           )}
         </div>
 
         {/* Coluna central: Card com To-dos (ordem 3 no mobile, 2 no desktop) */}
-        <div className="order-3 relative w-full lg:order-2 lg:flex-1">
+        <div className="order-3 relative w-full xl:order-2 xl:flex-1">
           <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-lg sm:p-6">
             <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
-              <div className="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
-                <div>
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-200/80">
-                    Painel lunar lateral
-                  </p>
-                  <h3 className="text-lg font-semibold text-white sm:text-xl">
-                    Organize tarefas por fase lunar
-                  </h3>
-                </div>
+              <div className="flex items-center justify-end flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
-                  className="rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
+                  className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
                 >
                   {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
                 </button>
@@ -455,7 +434,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </div>
 
         {/* Coluna direita: Luas + Sol (ordem 2 e 1 no mobile, 3 no desktop) */}
-        <div className="order-1 flex w-full flex-col items-center justify-center gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
+        <div className="order-1 flex w-full flex-col items-center justify-center gap-6 xl:order-3 xl:w-auto xl:max-w-xs xl:flex-row xl:items-center">
           {/* Sol (ordem 1 no mobile) */}
           <div className="order-1 lg:order-2">
             <CelestialObject

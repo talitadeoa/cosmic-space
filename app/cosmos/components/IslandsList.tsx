@@ -66,6 +66,11 @@ interface IslandsListProps {
   islandNames?: IslandNames;
 
   /**
+   * Lista de ilhas exibidas
+   */
+  islandIds?: IslandId[];
+
+  /**
    * Callback ao renomear uma ilha
    */
   onRenameIsland?: (islandId: IslandId, name: string) => void;
@@ -90,6 +95,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
   onDragLeaveIsland,
   isDraggingTodo = false,
   islandNames = DEFAULT_ISLAND_NAMES,
+  islandIds,
   onRenameIsland,
 }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -144,6 +150,8 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     setEditingIslandName('');
   };
 
+  const visibleIslandIds = islandIds && islandIds.length > 0 ? islandIds : ISLAND_IDS;
+
   return (
     <div
       className={`flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3 sm:p-4 ${containerClassName}`}
@@ -151,7 +159,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
       aria-label="Island selection"
       onClick={(event) => event.stopPropagation()}
     >
-      {ISLAND_IDS.map((islandId) => {
+      {visibleIslandIds.map((islandId) => {
         const isActiveDrop = activeDropIsland === islandId;
         const label = getIslandLabel(islandId, islandNames) ?? 'Ilha';
         const isEditing = editingIslandId === islandId;

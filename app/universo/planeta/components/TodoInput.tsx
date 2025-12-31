@@ -66,26 +66,12 @@ const TodoInput: React.FC<TodoInputProps> = ({
     checkbox: {
       actionLabel: isChatOpen ? 'Fechar chat' : 'Adicionar to-do',
       placeholder: 'Digite a tarefa que deseja adicionar...',
-      systemGreeting: 'Vamos registrar uma nova tarefa.',
-      systemQuestion: 'Qual tarefa quer adicionar agora?',
       submitLabel: '✨ Salvar tarefa',
-      responses: [
-        'Tarefa registrada. ✨',
-        'Checklist atualizado com sucesso. ✅',
-        'Mais um passo concluído. 🚀',
-      ],
     },
     text: {
       actionLabel: isChatOpen ? 'Fechar chat' : 'Adicionar texto',
       placeholder: 'Digite o texto que deseja salvar...',
-      systemGreeting: 'Vamos registrar um novo texto.',
-      systemQuestion: 'Que texto quer salvar agora?',
       submitLabel: '✨ Salvar texto',
-      responses: [
-        'Texto salvo. ✨',
-        'Anotação registrada com sucesso.',
-        'Mais um registro guardado. 🚀',
-      ],
     },
   } as const;
   const activeCopy = copyByType[inputType];
@@ -151,13 +137,10 @@ const TodoInput: React.FC<TodoInputProps> = ({
         eyebrow=""
         subtitle=""
         placeholder={activeCopy.placeholder}
-        systemGreeting={activeCopy.systemGreeting}
-        systemQuestion={activeCopy.systemQuestion}
         submitLabel={activeCopy.submitLabel}
         tone="indigo"
         submitStrategy="last"
         headerExtra={headerExtra}
-        systemResponses={[...activeCopy.responses]}
         suggestions={
           isCheckbox
             ? [

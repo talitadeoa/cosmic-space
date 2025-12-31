@@ -377,6 +377,28 @@ export async function saveIsland(
   }
 }
 
+export interface IslandRow {
+  island_key: string;
+  title: string | null;
+}
+
+export async function listIslands(userId: string | number): Promise<IslandRow[]> {
+  try {
+    const db = getDb();
+    const rows = (await db`
+      SELECT island_key, title
+      FROM islands
+      WHERE user_id = ${userId}
+      ORDER BY island_key ASC
+    `) as any[];
+
+    return rows as IslandRow[];
+  } catch (error) {
+    logger.error('Erro ao listar ilhas no banco', error);
+    throw error;
+  }
+}
+
 // Lunações
 export async function saveLunations(lunations: LunationData[]): Promise<any[]> {
   try {
