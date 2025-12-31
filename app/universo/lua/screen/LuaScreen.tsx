@@ -86,7 +86,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
       const response = await fetchLunations({
         start: rangeStart,
         end: rangeEnd,
-        source: 'db',
+        source: 'auto',
         signal: controller.signal,
       });
       if (controller.signal.aborted) return;

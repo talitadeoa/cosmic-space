@@ -133,10 +133,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState(nextState);
       persistAuthState(nextState);
     } catch (error) {
+      // Erros de rede/fetch são diferentes de "não autenticado"
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.warn('Erro ao verificar autenticação:', message);
       const nextState: AuthState = {
         isAuthenticated: false,
         loading: false,
-        error: 'Erro ao verificar autenticação',
+        error: silent ? null : 'Erro ao verificar autenticação',
         user: null,
       };
 

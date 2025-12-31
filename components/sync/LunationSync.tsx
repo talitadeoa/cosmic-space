@@ -53,7 +53,7 @@ export function LunationSync({
 
           // 1. Verificar se já existem dados no banco
           const checkResponse = await fetch(
-            `/api/moons/lunations?start=${startDate}&end=${endDate}&source=db`
+            `/api/moons/lunations?start=${startDate}&end=${endDate}&source=auto`
           );
 
           const existingData = checkResponse.ok ? await checkResponse.json() : null;

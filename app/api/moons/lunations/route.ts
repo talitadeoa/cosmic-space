@@ -150,6 +150,7 @@ export async function GET(request: NextRequest) {
 
     let dbLunations: any[] = [];
     let usedDatabase = false;
+    let dbError: Error | null = null;
 
     // 1. Tentar buscar do banco de dados se source é 'auto' ou 'db'
     if ((source === 'auto' || source === 'db') && process.env.DATABASE_URL) {
@@ -157,6 +158,7 @@ export async function GET(request: NextRequest) {
         dbLunations = await getLunations(startParam, endParam);
         if (dbLunations && dbLunations.length > 0) {
           usedDatabase = true;
+          console.log(`✅ Lunações do banco: ${dbLunations.length} registros (${startParam} a ${endParam})`);
           return NextResponse.json({
             days: dbLunations.map((l: any) => ({
               date: l.lunation_date,
@@ -172,21 +174,24 @@ export async function GET(request: NextRequest) {
             range: { start: startParam, end: endParam },
           });
         }
-      } catch (dbError) {
-        console.warn('Banco não disponível, usando geração local:', (dbError as Error).message);
+      } catch (error) {
+        dbError = error instanceof Error ? error : new Error(String(error));
+        console.warn(`⚠️  Banco não disponível (${startParam} a ${endParam}):`, dbError.message);
         // Continua para gerar localmente
       }
     }
 
     // Se source é 'db' e banco falhou, retornar erro
     if (source === 'db' && !usedDatabase) {
+      console.error(`❌ Erro crítico: source=db solicitado mas banco não disponível`, dbError?.message);
       return NextResponse.json(
-        { error: 'Banco de dados não disponível e source=db foi solicitado' },
+        { error: 'Banco de dados não disponível e source=db foi solicitado', details: dbError?.message },
         { status: 503 }
       );
     }
 
     // 2. Gerar localmente (fallback ou source=generated)
+    console.log(`📊 Gerando lunações localmente (${startParam} a ${endParam})`);
     const days = generateRange(startDate, endDate);
 
     return NextResponse.json({
