@@ -66,6 +66,11 @@ interface IslandsListProps {
   islandNames?: IslandNames;
 
   /**
+   * Máximo de ilhas permitidas
+   */
+  maxIslands?: number;
+
+  /**
    * Lista de ilhas exibidas
    */
   islandIds?: IslandId[];
@@ -74,6 +79,16 @@ interface IslandsListProps {
    * Callback ao renomear uma ilha
    */
   onRenameIsland?: (islandId: IslandId, name: string) => void;
+
+  /**
+   * Callback ao criar uma nova ilha
+   */
+  onCreateIsland?: (name: string) => IslandId | null;
+
+  /**
+   * Callback ao remover uma ilha
+   */
+  onRemoveIsland?: (islandId: IslandId) => boolean | void;
 }
 
 /**
@@ -95,8 +110,11 @@ export const IslandsList: React.FC<IslandsListProps> = ({
   onDragLeaveIsland,
   isDraggingTodo = false,
   islandNames = DEFAULT_ISLAND_NAMES,
+  maxIslands,
   islandIds,
   onRenameIsland,
+  onCreateIsland,
+  onRemoveIsland,
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newIslandName, setNewIslandName] = useState('');
@@ -124,8 +142,11 @@ export const IslandsList: React.FC<IslandsListProps> = ({
   const handleCreateIsland = () => {
     const trimmed = newIslandName.trim();
     if (!trimmed) return;
-    // Aqui você pode adicionar lógica para criar a nova ilha
-    console.warn('Criar nova ilha:', trimmed);
+    if (!onCreateIsland) return;
+    const createdId = onCreateIsland(trimmed);
+    if (createdId) {
+      onSelectIsland(createdId);
+    }
     setNewIslandName('');
     setIsCreating(false);
   };
@@ -150,7 +171,22 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     setEditingIslandName('');
   };
 
+  const handleRemoveIsland = () => {
+    if (!editingIslandId || !onRemoveIsland || isDraggingTodo) return;
+    const removed = onRemoveIsland(editingIslandId);
+    if (removed === false) return;
+    if (selectedIsland === editingIslandId) {
+      onSelectIsland(null);
+    }
+    setEditingIslandId(null);
+    setEditingIslandName('');
+  };
+
   const visibleIslandIds = islandIds && islandIds.length > 0 ? islandIds : ISLAND_IDS;
+  const canCreate =
+    Boolean(onCreateIsland) && (maxIslands ? visibleIslandIds.length < maxIslands : true);
+  const canRemove =
+    Boolean(onRemoveIsland) && (maxIslands ? visibleIslandIds.length > 1 : true);
 
   return (
     <div
@@ -220,13 +256,22 @@ export const IslandsList: React.FC<IslandsListProps> = ({
                     Cancelar
                   </button>
                 </div>
+                {canRemove && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveIsland}
+                    className="rounded-md border border-red-500/60 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200 transition hover:bg-red-500/20"
+                  >
+                    Remover ilha
+                  </button>
+                )}
               </div>
             )}
           </div>
         );
       })}
 
-      {isCreating ? (
+      {isCreating && canCreate ? (
         <div className="flex flex-col gap-2">
           <input
             value={newIslandName}
@@ -261,7 +306,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
             </button>
           </div>
         </div>
-      ) : (
+      ) : canCreate ? (
         <button
           type="button"
           onClick={() => setIsCreating(true)}
@@ -270,7 +315,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
         >
           <span className="text-base">+</span>
         </button>
-      )}
+      ) : null}
     </div>
   );
 };

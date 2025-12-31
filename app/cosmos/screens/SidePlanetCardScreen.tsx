@@ -18,6 +18,7 @@ import { usePhaseInputs } from '@/hooks/usePhaseInputs';
 import { useFilteredTodos, type FilterState } from '@/hooks/useFilteredTodos';
 import { SavedTodosPanel } from '../components/SavedTodosPanel';
 import { IslandsList } from '../components/IslandsList';
+import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';
 import { useIslandNames } from '@/hooks/useIslandNames';
 import { getIslandLabel, type IslandNames } from '../utils/islandNames';
 
@@ -183,7 +184,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
   const dropHandledRef = useRef(false);
   const { saveInput } = usePhaseInputs();
-  const { islandNames, renameIsland } = useIslandNames();
+  const { islandNames, islandIds, renameIsland, createIsland, removeIsland } = useIslandNames();
 
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
@@ -390,6 +391,10 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
             isDraggingTodo={isDraggingTodo}
             islandNames={islandNames}
             onRenameIsland={renameIsland}
+            islandIds={islandIds}
+            maxIslands={MAX_ISLANDS}
+            onCreateIsland={createIsland}
+            onRemoveIsland={removeIsland}
           />
         </div>
 

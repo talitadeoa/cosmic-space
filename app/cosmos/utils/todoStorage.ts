@@ -6,7 +6,17 @@ import { MOON_PHASE_LABELS, MOON_PHASES, type MoonPhase } from './moonPhases';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export type { MoonPhase } from './moonPhases';
-export type IslandId = 'ilha1' | 'ilha2' | 'ilha3' | 'ilha4';
+export type IslandId =
+  | 'ilha1'
+  | 'ilha2'
+  | 'ilha3'
+  | 'ilha4'
+  | 'ilha5'
+  | 'ilha6'
+  | 'ilha7'
+  | 'ilha8'
+  | 'ilha9'
+  | 'ilha10';
 
 export type SavedTodo = ParsedTodoItem & {
   phase?: MoonPhase;
@@ -25,7 +35,16 @@ const isValidPhase = (phase: unknown): phase is MoonPhase =>
   phase === 'luaCheia' ||
   phase === 'luaMinguante';
 const isValidIsland = (island: unknown): island is IslandId =>
-  island === 'ilha1' || island === 'ilha2' || island === 'ilha3' || island === 'ilha4';
+  island === 'ilha1' ||
+  island === 'ilha2' ||
+  island === 'ilha3' ||
+  island === 'ilha4' ||
+  island === 'ilha5' ||
+  island === 'ilha6' ||
+  island === 'ilha7' ||
+  island === 'ilha8' ||
+  island === 'ilha9' ||
+  island === 'ilha10';
 const isValidInputType = (inputType: unknown): inputType is TodoInputType =>
   inputType === 'text' || inputType === 'checkbox';
 

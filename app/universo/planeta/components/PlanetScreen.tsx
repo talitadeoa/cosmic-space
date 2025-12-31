@@ -15,6 +15,7 @@ import { useLunations } from '@/hooks/useLunations';
 import { useTemporal } from '@/app/universo/planeta/state/TemporalContext';
 import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/components/IslandsList';
+import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';
 import { useIslandNames } from '@/hooks/useIslandNames';
 import { usePlanetTodos } from '@/hooks/usePlanetTodos';
 import { FiltersPanel } from './FiltersPanel';
@@ -43,8 +44,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const dropHandledRef = useRef(false);
   const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
-  const { islandNames, renameIsland } = useIslandNames();
-  const planetIslandIds: IslandId[] = ['ilha1'];
+  const { islandNames, islandIds, renameIsland, createIsland, removeIsland } = useIslandNames();
 
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
@@ -342,7 +342,10 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               isDraggingTodo={isDraggingTodo}
               islandNames={islandNames}
               onRenameIsland={renameIsland}
-              islandIds={planetIslandIds}
+              islandIds={islandIds}
+              maxIslands={MAX_ISLANDS}
+              onCreateIsland={createIsland}
+              onRemoveIsland={removeIsland}
             />
           )}
         </div>

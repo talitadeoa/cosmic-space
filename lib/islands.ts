@@ -8,7 +8,17 @@
 /**
  * IDs únicos das ilhas disponíveis
  */
-export type IslandId = 'ilha1' | 'ilha2' | 'ilha3' | 'ilha4';
+export type IslandId =
+  | 'ilha1'
+  | 'ilha2'
+  | 'ilha3'
+  | 'ilha4'
+  | 'ilha5'
+  | 'ilha6'
+  | 'ilha7'
+  | 'ilha8'
+  | 'ilha9'
+  | 'ilha10';
 
 /**
  * Metadata completo de cada ilha
@@ -58,12 +68,71 @@ export const ISLANDS: Record<IslandId, IslandMetadata> = {
     icon: '🌍',
     cor: '#90EE90',
   },
+  ilha5: {
+    id: 'ilha5',
+    nome: 'Ilha 5',
+    label: 'ILHA 5',
+    descricao: 'Ilha personalizada',
+    icon: '🏝️',
+    cor: '#FFD1A1',
+  },
+  ilha6: {
+    id: 'ilha6',
+    nome: 'Ilha 6',
+    label: 'ILHA 6',
+    descricao: 'Ilha personalizada',
+    icon: '🏝️',
+    cor: '#FFE5B4',
+  },
+  ilha7: {
+    id: 'ilha7',
+    nome: 'Ilha 7',
+    label: 'ILHA 7',
+    descricao: 'Ilha personalizada',
+    icon: '🏝️',
+    cor: '#FADADD',
+  },
+  ilha8: {
+    id: 'ilha8',
+    nome: 'Ilha 8',
+    label: 'ILHA 8',
+    descricao: 'Ilha personalizada',
+    icon: '🏝️',
+    cor: '#D5F4E6',
+  },
+  ilha9: {
+    id: 'ilha9',
+    nome: 'Ilha 9',
+    label: 'ILHA 9',
+    descricao: 'Ilha personalizada',
+    icon: '🏝️',
+    cor: '#CDE7FF',
+  },
+  ilha10: {
+    id: 'ilha10',
+    nome: 'Ilha 10',
+    label: 'ILHA 10',
+    descricao: 'Ilha personalizada',
+    icon: '🏝️',
+    cor: '#E3D7FF',
+  },
 } as const;
 
 /**
  * Lista ordenada de IDs de ilhas
  */
-export const ISLAND_IDS: readonly IslandId[] = ['ilha1', 'ilha2', 'ilha3', 'ilha4'] as const;
+export const ISLAND_IDS: readonly IslandId[] = [
+  'ilha1',
+  'ilha2',
+  'ilha3',
+  'ilha4',
+  'ilha5',
+  'ilha6',
+  'ilha7',
+  'ilha8',
+  'ilha9',
+  'ilha10',
+] as const;
 
 /**
  * Obtém metadata de uma ilha pelo ID
@@ -81,6 +150,12 @@ export const getIslandNames = (): Record<IslandId, string> => {
     ilha2: ISLANDS.ilha2.nome,
     ilha3: ISLANDS.ilha3.nome,
     ilha4: ISLANDS.ilha4.nome,
+    ilha5: ISLANDS.ilha5.nome,
+    ilha6: ISLANDS.ilha6.nome,
+    ilha7: ISLANDS.ilha7.nome,
+    ilha8: ISLANDS.ilha8.nome,
+    ilha9: ISLANDS.ilha9.nome,
+    ilha10: ISLANDS.ilha10.nome,
   };
 };
 
@@ -88,5 +163,16 @@ export const getIslandNames = (): Record<IslandId, string> => {
  * Valida se um valor é um IslandId válido
  */
 export const isValidIslandId = (id: unknown): id is IslandId => {
-  return ['ilha1', 'ilha2', 'ilha3', 'ilha4'].includes(id as string);
+  return [
+    'ilha1',
+    'ilha2',
+    'ilha3',
+    'ilha4',
+    'ilha5',
+    'ilha6',
+    'ilha7',
+    'ilha8',
+    'ilha9',
+    'ilha10',
+  ].includes(id as string);
 };

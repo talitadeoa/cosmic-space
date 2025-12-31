@@ -3,7 +3,17 @@
 import type { SavedTodo } from '../utils/todoStorage';
 import type { MoonPhase } from '../utils/moonPhases';
 
-export type IslandId = 'ilha1' | 'ilha2' | 'ilha3' | 'ilha4';
+export type IslandId =
+  | 'ilha1'
+  | 'ilha2'
+  | 'ilha3'
+  | 'ilha4'
+  | 'ilha5'
+  | 'ilha6'
+  | 'ilha7'
+  | 'ilha8'
+  | 'ilha9'
+  | 'ilha10';
 
 /**
  * Estilo TaskWithState é apenas para documentação

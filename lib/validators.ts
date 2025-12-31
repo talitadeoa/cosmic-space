@@ -24,7 +24,18 @@ export const isMoonPhase = (phase: unknown): phase is MoonPhase => {
  * @returns true se é um IslandId válido
  */
 export const isIslandId = (island: unknown): island is IslandId => {
-  return ['ilha1', 'ilha2', 'ilha3', 'ilha4'].includes(island as string);
+  return [
+    'ilha1',
+    'ilha2',
+    'ilha3',
+    'ilha4',
+    'ilha5',
+    'ilha6',
+    'ilha7',
+    'ilha8',
+    'ilha9',
+    'ilha10',
+  ].includes(island as string);
 };
 
 /**
