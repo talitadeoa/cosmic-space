@@ -8,6 +8,7 @@ export interface RadioStation {
 
 export const useAudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const unlockHandlerRef = useRef<(() => void) | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStation, setCurrentStation] = useState<RadioStation | null>(null);
   const [volume, setVolume] = useState(0.3);
@@ -33,6 +34,25 @@ export const useAudioPlayer = () => {
   const _handlePlayError = (error: Error) => {
     console.error('Erro ao reproduzir:', error);
     setIsPlaying(false);
+    if (error.name === 'NotAllowedError') {
+      _registerAutoplayUnlock();
+    }
+  };
+
+  const _registerAutoplayUnlock = () => {
+    if (typeof window === 'undefined') return;
+    if (unlockHandlerRef.current) return;
+
+    const handler = () => {
+      unlockHandlerRef.current = null;
+      window.removeEventListener('pointerdown', handler);
+      window.removeEventListener('keydown', handler);
+      audioRef.current?.play().catch(_handlePlayError);
+    };
+
+    unlockHandlerRef.current = handler;
+    window.addEventListener('pointerdown', handler, { once: true });
+    window.addEventListener('keydown', handler, { once: true });
   };
 
   // Inicializa o elemento de áudio
@@ -49,6 +69,11 @@ export const useAudioPlayer = () => {
     }
 
     return () => {
+      if (unlockHandlerRef.current) {
+        window.removeEventListener('pointerdown', unlockHandlerRef.current);
+        window.removeEventListener('keydown', unlockHandlerRef.current);
+        unlockHandlerRef.current = null;
+      }
       if (!audioRef.current) return;
       audioRef.current.pause();
       if (audioRef.current.parentNode) {
