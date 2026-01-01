@@ -33,6 +33,8 @@ interface CosmosChatModalProps {
   systemResponses?: string[];
   submitStrategy?: SubmitStrategy;
   resetOnSubmit?: boolean;
+  closeOnSubmit?: boolean;
+  submitOnSend?: boolean;
   windowClassName?: string;
   onClose: () => void;
   onSubmit: (value: string, messages: ChatMessage[], meta?: ChatMessageMeta) => Promise<void>;
@@ -390,6 +392,8 @@ export default function CosmosChatModal({
   systemResponses = [],
   submitStrategy = 'concat',
   resetOnSubmit = false,
+  closeOnSubmit = true,
+  submitOnSend = false,
   windowClassName = '',
   requiresAuthOnSave = false,
   authRedirectPath: _authRedirectPath = '/cosmos/auth',
@@ -521,11 +525,15 @@ export default function CosmosChatModal({
     setMetaDraft({});
     setSubmitError(null);
 
-    setMessages((prev) => {
-      const next = [...prev, userMessage];
-      saveChatHistory(storageKey, next);
-      return next;
-    });
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
+    saveChatHistory(storageKey, nextMessages);
+
+    if (submitOnSend) {
+      const value =
+        submitStrategy === 'last' ? userMessage.content : buildSubmitValue(nextMessages);
+      void submitMessages(value, nextMessages, userMessage.meta);
+    }
 
     if (systemResponses.length > 0) {
       window.setTimeout(() => {
@@ -540,10 +548,10 @@ export default function CosmosChatModal({
     }
   };
 
-  const buildSubmitValue = () => {
-    const userMessages = messages
+  const buildSubmitValue = (messagesToSubmit: ChatMessage[]) => {
+    const userMessages = messagesToSubmit
       .filter((message) => message.role === 'user')
-      .map((m) => m.content);
+      .map((message) => message.content);
     if (!userMessages.length) return '';
     if (submitStrategy === 'last') {
       return userMessages[userMessages.length - 1] ?? '';
@@ -551,33 +559,36 @@ export default function CosmosChatModal({
     return userMessages.join('\n\n');
   };
 
-  const getLastUserMeta = () => {
-    for (let i = messages.length - 1; i >= 0; i -= 1) {
-      if (messages[i].role === 'user') {
-        return messages[i].meta;
+  const getLastUserMeta = (messagesToSearch: ChatMessage[]) => {
+    for (let i = messagesToSearch.length - 1; i >= 0; i -= 1) {
+      if (messagesToSearch[i].role === 'user') {
+        return messagesToSearch[i].meta;
       }
     }
     return undefined;
   };
 
-  const handleSave = async () => {
-    const value = buildSubmitValue();
+  const submitMessages = async (
+    value: string,
+    messagesToSubmit: ChatMessage[],
+    meta?: ChatMessageMeta
+  ) => {
     if (value.trim().length < 3) {
       setSubmitError('Escreva pelo menos 3 caracteres para salvar.');
-      return;
+      return false;
     }
 
     if (requiresAuthOnSave && !isAuthenticated) {
       setShowAuthPrompt(true);
       setPendingAuthSave(true);
-      return;
+      return false;
     }
 
     setIsSaving(true);
     setSubmitError(null);
 
     try {
-      await onSubmit(value, messages, getLastUserMeta());
+      await onSubmit(value, messagesToSubmit, meta ?? getLastUserMeta(messagesToSubmit));
       if (resetOnSubmit) {
         setMessages([]);
         saveChatHistory(storageKey, []);
@@ -585,7 +596,10 @@ export default function CosmosChatModal({
         setMetaDraft({});
         setSubmitError(null);
       }
-      onClose();
+      if (closeOnSubmit) {
+        onClose();
+      }
+      return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao salvar.';
       const normalized = message.toLowerCase();
@@ -598,12 +612,18 @@ export default function CosmosChatModal({
       ) {
         setShowAuthPrompt(true);
         setSubmitError(null);
-        return;
+        return false;
       }
       setSubmitError(message);
+      return false;
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSave = async () => {
+    const value = buildSubmitValue(messages);
+    await submitMessages(value, messages);
   };
 
   const handleSuggestionClick = (

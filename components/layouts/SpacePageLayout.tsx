@@ -36,7 +36,9 @@ export const SpacePageLayout: React.FC<SpacePageLayoutProps> = React.memo(
         style={{ minHeight: '100vh' }}
       >
         <SpaceBackground />
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10" onClick={(event) => event.stopPropagation()}>
+          {children}
+        </div>
       </div>
     );
   }

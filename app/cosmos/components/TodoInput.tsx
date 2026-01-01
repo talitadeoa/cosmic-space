@@ -142,6 +142,8 @@ const TodoInput: React.FC<TodoInputProps> = ({
         tone="indigo"
         submitStrategy="last"
         resetOnSubmit
+        closeOnSubmit={false}
+        submitOnSend
         windowClassName="bg-white/5 border-white/10 shadow-xl shadow-indigo-900/20 backdrop-blur-xl"
         headerExtra={headerExtra}
         suggestions={
