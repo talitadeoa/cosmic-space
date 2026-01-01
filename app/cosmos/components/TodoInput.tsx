@@ -65,12 +65,12 @@ const TodoInput: React.FC<TodoInputProps> = ({
   nextWeek.setDate(today.getDate() + 7);
   const copyByType = {
     checkbox: {
-      actionLabel: isChatOpen ? 'Fechar chat' : 'Adicionar to-do',
+      actionLabel: isChatOpen ? 'Fechar' : 'Adicionar to-do',
       placeholder: 'Digite a tarefa que deseja adicionar...',
       submitLabel: '✨ Salvar tarefa',
     },
     text: {
-      actionLabel: isChatOpen ? 'Fechar chat' : 'Adicionar texto',
+      actionLabel: isChatOpen ? 'Fechar' : 'Adicionar texto',
       placeholder: 'Digite o texto que deseja salvar...',
       submitLabel: '✨ Salvar texto',
     },
@@ -90,7 +90,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
       variant="nebula"
       size="sm"
       radius="md"
-      className={`flex flex-col gap-5 ${className}`}
+      className={`flex flex-col gap-5 bg-slate-950/35 border-white/10 shadow-xl shadow-indigo-900/20 backdrop-blur-md ${className}`}
     >
       <div className="flex flex-wrap items-center gap-2">
         <button
@@ -141,6 +141,8 @@ const TodoInput: React.FC<TodoInputProps> = ({
         submitLabel={activeCopy.submitLabel}
         tone="indigo"
         submitStrategy="last"
+        resetOnSubmit
+        windowClassName="bg-white/5 border-white/10 shadow-xl shadow-indigo-900/20 backdrop-blur-xl"
         headerExtra={headerExtra}
         suggestions={
           isCheckbox

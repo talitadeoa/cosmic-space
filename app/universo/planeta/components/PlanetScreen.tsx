@@ -38,7 +38,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
-  const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
+  const [_draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const dropHandledRef = useRef(false);
@@ -48,7 +48,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
-    view: 'inbox',
+    view: 'em-aberto',
     inputType: 'all',
     todoStatus: 'all',
     phase: null,
@@ -59,7 +59,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const resetFilters = () => {
     setFilters({
-      view: 'inbox',
+      view: 'em-aberto',
       inputType: 'all',
       todoStatus: 'all',
       phase: null,
@@ -242,7 +242,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   };
 
   // Funções para suporte a touch (mobile drag and drop)
-  const handleTouchStart = (todoId: string) => (e: React.TouchEvent) => {
+  const handleTouchStart = (todoId: string) => (_e: React.TouchEvent) => {
     touchIdRef.current = todoId;
     setIsDraggingTodo(true);
     setDraggingTodoId(todoId);
@@ -316,9 +316,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       className="relative flex w-full min-h-[100dvh] items-start justify-center px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10"
       onTouchMove={handleTouchMove}
     >
-      <div className="relative flex w-full max-w-7xl flex-col gap-6 sm:gap-8 xl:flex-row xl:items-start xl:justify-between xl:gap-10">
+      <div className="relative flex w-full max-w-7xl flex-col gap-6 sm:gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
-        <div className="order-4 flex w-full flex-col items-center gap-6 sm:gap-8 xl:order-1 xl:w-auto xl:max-w-xs">
+        <div className="order-4 flex w-full flex-col items-center gap-6 sm:gap-8 lg:order-1 lg:w-auto lg:max-w-xs">
           {/* Planeta */}
           <div className="flex justify-center">
             <CelestialObject
@@ -326,7 +326,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               size="lg"
               interactive
               onClick={() => setShowIslands((prev) => !prev)}
-              className="scale-75 transition-transform xl:scale-90 2xl:scale-100"
+              className="scale-75 transition-transform lg:scale-90 2xl:scale-100"
             />
           </div>
 
@@ -351,19 +351,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </div>
 
         {/* Coluna central: Card com To-dos (ordem 3 no mobile, 2 no desktop) */}
-        <div className="order-3 relative w-full xl:order-2 xl:flex-1">
-          <Card className="relative z-10 w-full overflow-hidden border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-lg sm:p-6">
+        <div className="order-3 relative w-full lg:order-2 lg:flex-1">
+          <Card className="relative z-10 w-full overflow-hidden border border-white/10 bg-transparent p-4 shadow-none backdrop-blur-0 sm:p-6 !bg-transparent !backdrop-blur-0 !shadow-none">
             <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
-              <div className="flex items-center justify-end flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
-                  className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
-                >
-                  {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
-                </button>
-              </div>
-
               <div className="flex flex-col gap-4 flex-shrink-0">
                 <SavedTodosPanel
                   savedTodos={displayedTodos}
@@ -380,7 +370,6 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onTouchEnd={handleTouchEnd}
                   onTouchMove={handleTouchMove}
                   onToggleComplete={handleToggleComplete}
-                  onAssignPhase={assignTodoToPhase}
                   onDropInside={() => {
                     dropHandledRef.current = true;
                   }}
@@ -404,6 +393,15 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                     }))
                   }
                 />
+                <div className="flex items-center justify-end flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
+                    className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
+                  >
+                    {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
+                  </button>
+                </div>
 
                 <FiltersPanel
                   isOpen={isFiltersPanelOpen}
@@ -437,7 +435,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </div>
 
         {/* Coluna direita: Luas + Sol (ordem 2 e 1 no mobile, 3 no desktop) */}
-        <div className="order-1 flex w-full flex-col items-center justify-center gap-6 xl:order-3 xl:w-auto xl:max-w-xs xl:flex-row xl:items-center">
+        <div className="order-1 flex w-full flex-col items-center justify-center gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
           {/* Sol (ordem 1 no mobile) */}
           <div className="order-1 lg:order-2">
             <CelestialObject

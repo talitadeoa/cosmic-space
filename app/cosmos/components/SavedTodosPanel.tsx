@@ -8,15 +8,14 @@ import { getIslandLabel, type IslandNames } from '../utils/islandNames';
 
 interface SavedTodosPanelProps {
   savedTodos: SavedTodo[];
-  view?: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
-  onViewChange?: (view: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => void;
+  view?: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
+  onViewChange?: (view: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => void;
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
   onTouchStart?: (todoId: string) => (event: React.TouchEvent) => void;
   onTouchEnd?: () => void;
   onTouchMove?: (event: React.TouchEvent) => void;
   onToggleComplete: (todoId: string) => void;
-  onAssignPhase?: (todoId: string, phase: MoonPhase) => void;
   onDropInside?: () => void;
   onDeleteTodo?: (todoId: string) => void;
   selectedPhase?: MoonPhase | null;
@@ -40,7 +39,7 @@ interface SavedTodosPanelProps {
  */
 export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   savedTodos,
-  view = 'inbox',
+  view = 'em-aberto',
   onViewChange,
   onDragStart,
   onDragEnd,
@@ -48,7 +47,6 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onTouchEnd,
   onTouchMove,
   onToggleComplete,
-  onAssignPhase,
   onDropInside,
   onDeleteTodo,
   selectedPhase,
@@ -103,7 +101,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     const nextStatus = todoStatusFilter === status ? 'all' : status;
     onTodoStatusFilterChange?.(nextStatus);
   };
-  const handleViewChange = (nextView: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => {
+  const handleViewChange = (nextView: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => {
     onViewChange?.(nextView);
   };
 
@@ -138,7 +136,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
    * Handler para quando input é solto em uma visão
    */
   const handleDropOnView =
-    (viewType: 'inbox' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') =>
+    (viewType: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') =>
     (event: React.DragEvent) => {
       event.preventDefault();
       event.stopPropagation();
@@ -149,8 +147,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       // Mudar a visão
       handleViewChange(viewType);
 
-      // Se não for inbox, atualizar a data do input
-      if (viewType !== 'inbox' && onUpdateTodo) {
+      // Se não for em-aberto, atualizar a data do input
+      if (viewType !== 'em-aberto' && onUpdateTodo) {
         const dueDate = getDateForView(viewType);
         if (dueDate) {
           const todo = savedTodos.find((t) => t.id === todoId);
@@ -325,7 +323,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
         if (timeSinceLastTap < 300 && distFromLastTap < 50) {
           // Double-tap detectado: ativar modo edição
           if (doubleTapTimeoutRef.current) clearTimeout(doubleTapTimeoutRef.current);
-          handleStartEditing(savedTodos.find((t) => t.id === todoId)!);
+          const todo = savedTodos.find((t) => t.id === todoId);
+          if (todo) handleStartEditing(todo);
           lastTapRef.current = null;
         } else {
           lastTapRef.current = { x: touch.clientX, y: touch.clientY, time: now };
@@ -363,28 +362,28 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
 
   const headerLabel = (() => {
     if (selectedPhase && islandLabel) {
-      return `Inputs - ${phaseLabels[selectedPhase]} • ${islandLabel}`;
+      return `salvos - ${phaseLabels[selectedPhase]} • ${islandLabel}`;
     }
     if (selectedPhase) {
-      return `Inputs - ${phaseLabels[selectedPhase]}`;
+      return `salvos - ${phaseLabels[selectedPhase]}`;
     }
     if (islandLabel) {
-      return `Inputs - ${islandLabel}`;
+      return `salvos - ${islandLabel}`;
     }
-    return 'Inputs salvos';
+    return 'salvos';
   })();
 
   const headerDescription = (() => {
     if (selectedPhase && islandLabel) {
-      return `Inputs associados à fase ${phaseLabels[selectedPhase]} na ${islandLabel}.`;
+      return `salvos associados à fase ${phaseLabels[selectedPhase]} na ${islandLabel}.`;
     }
     if (selectedPhase) {
-      return `Inputs associados à fase: ${phaseLabels[selectedPhase]}`;
+      return `salvos associados à fase: ${phaseLabels[selectedPhase]}`;
     }
     if (islandLabel) {
-      return `Inputs associados à ${islandLabel}.`;
+      return `salvos associados à ${islandLabel}.`;
     }
-    return 'Adicione inputs e arraste para a fase lunar desejada.';
+    return 'Adicione e arraste para a fase lunar desejada.';
   })();
 
   const getMoonEmoji = (phase: MoonPhase | null): string => {
@@ -405,7 +404,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-xl shadow-indigo-900/20"
+      className="rounded-2xl border border-white/10 bg-slate-950/35 p-4 shadow-xl shadow-indigo-900/20 backdrop-blur-md"
+      role="region"
+      aria-label="Painel de tarefas salvas"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
@@ -426,107 +427,91 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           </div>
           <p className="text-[0.75rem] text-slate-400">{headerDescription}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <div
+            <button
+              type="button"
               onDragOver={handleDragOverView}
-              onDrop={handleDropOnView('inbox')}
+              onDrop={handleDropOnView('em-aberto')}
               onDragLeave={() => setActiveViewDrop(null)}
-              onDragEnter={() => setActiveViewDrop('inbox')}
-              className={`rounded-lg transition ${
-                activeViewDrop === 'inbox'
+              onDragEnter={() => setActiveViewDrop('em-aberto')}
+              onClick={() => handleViewChange('em-aberto')}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+                activeViewDrop === 'em-aberto'
                   ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950'
                   : ''
+              } ${
+                view === 'em-aberto'
+                  ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
+                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
               }`}
             >
-              <button
-                type="button"
-                onClick={() => handleViewChange('inbox')}
-                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-                  view === 'inbox'
-                    ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
-                }`}
-              >
-                Inbox
-              </button>
-            </div>
-            <div
+              Em aberto
+            </button>
+            <button
+              type="button"
               onDragOver={handleDragOverView}
               onDrop={handleDropOnView('lua-atual')}
               onDragLeave={() => setActiveViewDrop(null)}
               onDragEnter={() => setActiveViewDrop('lua-atual')}
-              className={`rounded-lg transition ${
+              onClick={() => handleViewChange('lua-atual')}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
                 activeViewDrop === 'lua-atual'
                   ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950'
                   : ''
+              } ${
+                view === 'lua-atual'
+                  ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
+                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
               }`}
             >
-              <button
-                type="button"
-                onClick={() => handleViewChange('lua-atual')}
-                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-                  view === 'lua-atual'
-                    ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
-                }`}
-              >
-                Lua atual
-              </button>
-            </div>
-            <div
+              Lua atual
+            </button>
+            <button
+              type="button"
               onDragOver={handleDragOverView}
               onDrop={handleDropOnView('proxima-fase')}
               onDragLeave={() => setActiveViewDrop(null)}
               onDragEnter={() => setActiveViewDrop('proxima-fase')}
-              className={`rounded-lg transition ${
+              onClick={() => handleViewChange('proxima-fase')}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
                 activeViewDrop === 'proxima-fase'
                   ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950'
                   : ''
+              } ${
+                view === 'proxima-fase'
+                  ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
+                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-400/60'
               }`}
+              title={
+                selectedPhase
+                  ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}`
+                  : 'Próxima fase lunar'
+              }
             >
-              <button
-                type="button"
-                onClick={() => handleViewChange('proxima-fase')}
-                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
-                  view === 'proxima-fase'
-                    ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-400/60'
-                }`}
-                title={
-                  selectedPhase
-                    ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}`
-                    : 'Próxima fase lunar'
-                }
-              >
-                <span className="text-sm">
-                  {selectedPhase ? getMoonEmoji(getNextPhase(selectedPhase)) : '🌙'}
-                </span>
-                <span>Próxima fase</span>
-              </button>
-            </div>
-            <div
+              <span className="text-sm">
+                {selectedPhase ? getMoonEmoji(getNextPhase(selectedPhase)) : '🌙'}
+              </span>
+              <span>Próxima fase</span>
+            </button>
+            <button
+              type="button"
               onDragOver={handleDragOverView}
               onDrop={handleDropOnView('proximo-ciclo')}
               onDragLeave={() => setActiveViewDrop(null)}
               onDragEnter={() => setActiveViewDrop('proximo-ciclo')}
-              className={`rounded-lg transition ${
+              onClick={() => handleViewChange('proximo-ciclo')}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
                 activeViewDrop === 'proximo-ciclo'
                   ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-slate-950'
                   : ''
+              } ${
+                view === 'proximo-ciclo'
+                  ? 'border border-rose-300/80 bg-rose-500/20 text-rose-100'
+                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-rose-400/60'
               }`}
             >
-              <button
-                type="button"
-                onClick={() => handleViewChange('proximo-ciclo')}
-                className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
-                  view === 'proximo-ciclo'
-                    ? 'border border-rose-300/80 bg-rose-500/20 text-rose-100'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-rose-400/60'
-                }`}
-              >
-                <span>📅</span>
-                <span>Próximo ciclo</span>
-              </button>
-            </div>
+              <span>📅</span>
+              <span>Próximo ciclo</span>
+            </button>
           </div>
           {selectedPhase && (
             <div className="mt-3 flex items-center gap-1.5 text-[0.65rem] text-slate-400">
@@ -643,17 +628,17 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           <EmptyState
             title={
               selectedPhase
-                ? 'Nenhum input nesta fase'
+                ? 'Nada salvo nesta fase'
                 : islandLabel
-                  ? 'Nenhum input nesta ilha'
-                  : 'Nenhum input salvo'
+                  ? 'Nada salvo nesta ilha'
+                  : 'Nada salvo'
             }
             description={
               selectedPhase
                 ? `Arraste um input para ${phaseLabels[selectedPhase]} ou crie um novo.`
                 : islandLabel
                   ? `Arraste um input para ${islandLabel} ou crie um novo.`
-                  : 'Crie um input ou selecione uma fase lunar.'
+                  : 'Adcione ou selecione uma fase lunar.'
             }
             icon="✨"
           />
@@ -672,6 +657,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               <div
                 key={todo.id}
                 draggable={canDrag}
+                role="article"
+                aria-label={`Tarefa: ${todo.text}`}
                 onDragStart={canDrag ? onDragStart(todo.id) : undefined}
                 onDragEnd={canDrag ? onDragEnd : undefined}
                 onTouchStart={(e) => {
@@ -683,7 +670,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                   canDrag && onTouchEnd ? onTouchEnd() : undefined;
                 }}
                 onTouchMove={canDrag && onTouchMove ? onTouchMove : undefined}
-                className="group relative flex items-start justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/20 transition hover:border-indigo-600/60 hover:bg-slate-900"
+                className="group relative flex items-start justify-between gap-3 rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/30 transition hover:border-indigo-500/60 hover:bg-slate-900/90"
               >
                 <div className="flex items-start gap-3">
                   {isCheckbox ? (
@@ -831,6 +818,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                 {swipeDeleteId === todo.id && (
                   <div
                     className="absolute inset-y-0 right-0 flex items-center justify-center gap-2 rounded-r-xl bg-red-500/20 border-l border-red-500/50 px-3 pl-4"
+                    role="region"
+                    aria-label="Ações de deleção"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button

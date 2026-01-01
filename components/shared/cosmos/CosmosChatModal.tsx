@@ -5,8 +5,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputWindow from './InputWindow';
 import { ChatMessage, ChatMessageMeta, loadChatHistory, saveChatHistory } from '@/lib/chatHistory';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import AuthChatFlow from '@/components/auth/AuthChatFlow';
 
 type SubmitStrategy = 'concat' | 'last';
 
@@ -236,16 +236,12 @@ interface ChatComposerProps {
   isSaving: boolean;
   hasUserMessage: boolean;
   submitError: string | null;
-  authPrompt?: {
-    title: string;
-    description: string;
-  } | null;
-  onAuthConfirm: () => void;
-  onAuthCancel: () => void;
+  authSlot?: React.ReactNode;
   suggestions?: CosmosChatModalProps['suggestions'];
   metaDraft: ChatMessageMeta;
   onSuggestionClick: (suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]) => void;
   onClearMeta: (key: keyof ChatMessageMeta) => void;
+  isInputDisabled?: boolean;
 }
 
 function ChatComposer({
@@ -261,42 +257,18 @@ function ChatComposer({
   isSaving,
   hasUserMessage,
   submitError,
-  authPrompt,
-  onAuthConfirm,
-  onAuthCancel,
+  authSlot,
   suggestions,
   metaDraft,
   onSuggestionClick,
   onClearMeta,
+  isInputDisabled,
 }: ChatComposerProps) {
+  const isLocked = isSaving || isInputDisabled;
+
   return (
     <div className="space-y-3 border-t border-white/10 pt-4">
-      {authPrompt && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 shadow-inner shadow-black/20"
-        >
-          <p className="font-semibold">{authPrompt.title}</p>
-          <p className="mt-1 text-xs text-slate-200/80">{authPrompt.description}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={onAuthConfirm}
-              className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:border-white/40 hover:bg-white/20"
-            >
-              Autenticar
-            </button>
-            <button
-              type="button"
-              onClick={onAuthCancel}
-              className="rounded-full border border-white/10 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:text-white"
-            >
-              Agora não
-            </button>
-          </div>
-        </motion.div>
-      )}
+      {authSlot}
       {(metaDraft.category || metaDraft.date || metaDraft.tags?.length) && (
         <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-slate-200/80">
           {metaDraft.category && (
@@ -361,13 +333,13 @@ function ChatComposer({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
-          disabled={isSaving}
+          disabled={isLocked}
           className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50"
         />
         <button
           type="button"
           onClick={onSend}
-          disabled={isSaving || inputValue.trim().length < 3}
+          disabled={isLocked || inputValue.trim().length < 3}
           className={`rounded-2xl border px-4 py-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.sendButton}`}
           aria-label="Enviar mensagem"
         >
@@ -388,7 +360,7 @@ function ChatComposer({
           animate={{ opacity: 1, y: 0 }}
           type="button"
           onClick={onSave}
-          disabled={isSaving}
+          disabled={isLocked}
           className={`w-full rounded-2xl border px-4 py-3 font-semibold shadow-md transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.submitButton}`}
         >
           {isSaving ? 'Salvando...' : submitLabel}
@@ -416,7 +388,7 @@ export default function CosmosChatModal({
   systemResponses = [],
   submitStrategy = 'concat',
   requiresAuthOnSave = false,
-  authRedirectPath = '/cosmos/auth',
+  authRedirectPath: _authRedirectPath = '/cosmos/auth',
   onClose,
   onSubmit,
   headerExtra,
@@ -424,13 +396,13 @@ export default function CosmosChatModal({
   contextEntries = [],
   suggestions = [],
 }: CosmosChatModalProps) {
-  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [pendingAuthSave, setPendingAuthSave] = useState(false);
   const [metaDraft, setMetaDraft] = useState<ChatMessageMeta>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -499,6 +471,7 @@ export default function CosmosChatModal({
       setSubmitError(null);
       setIsSaving(false);
       setShowAuthPrompt(false);
+      setPendingAuthSave(false);
       setMetaDraft({});
       return;
     }
@@ -592,6 +565,7 @@ export default function CosmosChatModal({
 
     if (requiresAuthOnSave && !isAuthenticated) {
       setShowAuthPrompt(true);
+      setPendingAuthSave(true);
       return;
     }
 
@@ -654,6 +628,18 @@ export default function CosmosChatModal({
     }
   };
 
+  const handleAuthComplete = () => {
+    setShowAuthPrompt(false);
+    if (pendingAuthSave && !isSaving) {
+      setPendingAuthSave(false);
+      setTimeout(() => {
+        void handleSave();
+      }, 0);
+      return;
+    }
+    setPendingAuthSave(false);
+  };
+
   if (!isMounted) return null;
 
   const chatWindow = (
@@ -691,7 +677,7 @@ export default function CosmosChatModal({
         styles={styles}
       />
 
-      {contextEntries.length > 0 && (
+      {!showAuthPrompt && contextEntries.length > 0 && (
         <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-200/80 shadow-inner shadow-black/10">
           <div className="flex items-center justify-between gap-2">
             <span className="font-semibold uppercase tracking-[0.18em] text-[0.65rem] text-slate-200/80">
@@ -716,15 +702,28 @@ export default function CosmosChatModal({
         </div>
       )}
 
-      <ChatMessages
-        messages={messages}
-        styles={styles}
-        inline={inline}
-        containerRef={messagesContainerRef}
-        messagesEndRef={messagesEndRef}
-      />
+      {showAuthPrompt ? (
+        <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-200/80 shadow-inner shadow-black/10">
+          <AuthChatFlow
+            variant="embedded"
+            onAuthenticated={handleAuthComplete}
+            onCancel={() => {
+              setShowAuthPrompt(false);
+              setPendingAuthSave(false);
+            }}
+          />
+        </div>
+      ) : (
+        <ChatMessages
+          messages={messages}
+          styles={styles}
+          inline={inline}
+          containerRef={messagesContainerRef}
+          messagesEndRef={messagesEndRef}
+        />
+      )}
 
-      {hasUserMessage && !inline && (
+      {hasUserMessage && !inline && !showAuthPrompt && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -748,24 +747,12 @@ export default function CosmosChatModal({
         isSaving={isSaving}
         hasUserMessage={hasUserMessage}
         submitError={submitError}
-        authPrompt={
-          showAuthPrompt
-            ? {
-                title: 'Quer autenticar para salvar?',
-                description: 'Se preferir, faça login agora para gravar seu registro.',
-              }
-            : null
-        }
-        onAuthConfirm={() => {
-          setShowAuthPrompt(false);
-          onClose();
-          router.push(authRedirectPath);
-        }}
-        onAuthCancel={() => setShowAuthPrompt(false)}
+        authSlot={null}
         suggestions={suggestions}
         metaDraft={metaDraft}
         onSuggestionClick={handleSuggestionClick}
         onClearMeta={handleClearMeta}
+        isInputDisabled={showAuthPrompt}
       />
     </InputWindow>
   );

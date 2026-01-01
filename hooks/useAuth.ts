@@ -145,15 +145,18 @@ export function useAuth() {
           return false;
         }
 
-        // Verificar após autenticação
-        await verifyAuth();
-
-        setState((prev) => ({
-          ...prev,
+        const nextState: AuthState = {
           isAuthenticated: true,
           loading: false,
           error: null,
-        }));
+          user: data.user ?? null,
+        };
+
+        setState(nextState);
+        persistAuthState(nextState);
+
+        // Atualiza os dados em background para evitar travar o fluxo do chat.
+        void verifyAuth({ silent: true });
 
         router.refresh();
         return true;

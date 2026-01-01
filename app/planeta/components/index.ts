@@ -1,2 +1,2 @@
-export { IslandsList } from './IslandsList';
-export { SavedTodosPanel } from './SavedTodosPanel';
+export { IslandsList } from '@/app/cosmos/components/IslandsList';
+export { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';

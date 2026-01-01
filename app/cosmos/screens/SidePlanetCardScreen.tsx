@@ -188,7 +188,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   // Estado consolidado de filtros
   const [filters, setFilters] = useState<FilterState>({
-    view: 'inbox',
+    view: 'em-aberto',
     inputType: 'all',
     todoStatus: 'all',
     phase: null,
@@ -199,7 +199,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const resetFilters = () => {
     setFilters({
-      view: 'inbox',
+      view: 'em-aberto',
       inputType: 'all',
       todoStatus: 'all',
       phase: null,
@@ -436,7 +436,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onToggleComplete={handleToggleComplete}
-                  onAssignPhase={assignTodoToPhase}
                   onDropInside={() => {
                     dropHandledRef.current = true;
                   }}

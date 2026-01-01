@@ -244,13 +244,13 @@ export function IslandsListExample() {
 import { AccessibleTabs } from '@/app/cosmos/components/AccessibleTabs';
 
 export function AccessibleTabsExample() {
-  const [activeTab, setActiveTab] = React.useState('inbox');
+  const [activeTab, setActiveTab] = React.useState('em aberto');
 
   return (
     <AccessibleTabs
       id="main-tabs"
       items={[
-        { id: 'inbox-tab', label: 'Inbox', value: 'inbox' },
+        { id: 'emaberto-tab', label: 'Em aberto', value: 'em aberto' },
         { id: 'moon-tab', label: 'Lua Atual', value: 'moon' },
       ]}
       value={activeTab}
