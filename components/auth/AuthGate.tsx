@@ -32,9 +32,7 @@ export default function AuthGate({ children }: AuthGateProps) {
             <AuthChatFlow
               variant="page"
               header={{
-                eyebrow: 'Cosmos',
-                title: 'Autenticação em conversa',
-                subtitle: 'Responda às perguntas para acessar o painel do Cosmos.',
+                title: "Bem-vindo ao Cosmic Space",
               }}
             />
           </InputWindow>

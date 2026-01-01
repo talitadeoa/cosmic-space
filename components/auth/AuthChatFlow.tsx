@@ -95,7 +95,6 @@ export default function AuthChatFlow({
   useEffect(() => {
     if (loading || messages.length > 0) return;
     setMessages([
-      buildSystemMessage('Oi! Vamos autenticar em fluxo de conversa.'),
       buildSystemMessage('Você prefere entrar ou criar conta?'),
     ]);
   }, [loading, messages.length]);
