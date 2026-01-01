@@ -41,7 +41,7 @@ const SolPage = () => {
   const router = useRouter();
 
   const handleBackgroundClick = () => {
-    router.push('/universo/home');
+    router.push('/cosmos/home');
   };
 
   return (
@@ -50,7 +50,7 @@ const SolPage = () => {
         <SolRouteContent
           screen={screen}
           onOrbitClick={() => setScreen('galaxysuns')}
-          onOutsideClick={() => router.push('/universo/home')}
+          onOutsideClick={() => router.push('/cosmos/home')}
           onSunSelect={() => setScreen('solorbit')}
         />
       </SpacePageLayout>

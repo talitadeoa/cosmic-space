@@ -30,7 +30,7 @@ export default function EmailSubscribeLanding() {
           <EmailSignupForm />
           <div className="mt-4 text-center">
             <Link
-              href="/universo/home"
+              href="/cosmos/home"
               className="text-sm text-slate-300/90 transition hover:text-slate-100"
             >
               Explorar o cosmos antes do lançamento ✨

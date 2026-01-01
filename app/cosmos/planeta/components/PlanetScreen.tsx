@@ -12,7 +12,7 @@ import { usePhaseInputs } from '@/hooks/usePhaseInputs';
 import { useFilteredTodos, type FilterState } from '@/hooks/useFilteredTodos';
 import { useGalaxySunsSync } from '@/hooks/useGalaxySunsSync';
 import { useLunations } from '@/hooks/useLunations';
-import { useTemporal } from '@/app/universo/planeta/state/TemporalContext';
+import { useTemporal } from '@/app/cosmos/planeta/state/TemporalContext';
 import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/components/IslandsList';
 import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';

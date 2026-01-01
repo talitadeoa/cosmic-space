@@ -1,3 +1,3 @@
 'use client';
 
-export { default } from '@/app/universo/planeta/components/PlanetScreen';
+export { default } from '@/app/cosmos/planeta/components/PlanetScreen';
