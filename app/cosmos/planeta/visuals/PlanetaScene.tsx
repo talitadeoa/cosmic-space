@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { SpacePageLayout } from '@/components/layouts';
 
 export type PlanetaSceneProps = {
@@ -8,5 +9,11 @@ export type PlanetaSceneProps = {
 };
 
 export const PlanetaScene: React.FC<PlanetaSceneProps> = ({ children }) => {
-  return <SpacePageLayout allowBackNavigation>{children}</SpacePageLayout>;
+  const router = useRouter();
+
+  return (
+    <SpacePageLayout onBackgroundClick={() => router.push('/cosmos/home')}>
+      {children}
+    </SpacePageLayout>
+  );
 };

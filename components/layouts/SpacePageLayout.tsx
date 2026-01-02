@@ -21,13 +21,24 @@ export const SpacePageLayout: React.FC<SpacePageLayoutProps> = React.memo(
   ({ children, className = '', onBackgroundClick, allowBackNavigation = false }) => {
     const router = useRouter();
 
-    const handleBackgroundClick = useCallback(() => {
-      if (onBackgroundClick) {
-        onBackgroundClick();
-      } else if (allowBackNavigation) {
-        router.back();
-      }
-    }, [onBackgroundClick, allowBackNavigation, router]);
+    const handleBackgroundClick = useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+
+        const interactive = target.closest(
+          'button,a,input,select,textarea,[role="button"],[data-stop-background-click="true"]'
+        );
+        if (interactive) return;
+
+        if (onBackgroundClick) {
+          onBackgroundClick();
+        } else if (allowBackNavigation) {
+          router.back();
+        }
+      },
+      [onBackgroundClick, allowBackNavigation, router]
+    );
 
     return (
       <div
@@ -36,9 +47,7 @@ export const SpacePageLayout: React.FC<SpacePageLayoutProps> = React.memo(
         style={{ minHeight: '100vh' }}
       >
         <SpaceBackground />
-        <div className="relative z-10" onClick={(event) => event.stopPropagation()}>
-          {children}
-        </div>
+        <div className="relative z-10">{children}</div>
       </div>
     );
   }
