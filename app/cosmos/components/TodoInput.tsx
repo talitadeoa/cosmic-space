@@ -39,22 +39,60 @@ const TodoInput: React.FC<TodoInputProps> = ({
   const [inputType, setInputType] = useState<TodoInputType>('checkbox');
   const islandLabel = getIslandLabel(selectedIsland, islandNames);
 
-  const handleAddTodo = (text: string, meta?: { category?: string; date?: string }) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
+  const submitTodos = (texts: string[], meta?: { category?: string; date?: string }) => {
     const isCheckbox = inputType === 'checkbox';
 
-    onTodoSubmit({
-      id: `todo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      text: trimmed,
-      completed: false,
-      depth: newDepth,
-      inputType,
-      category: isCheckbox ? meta?.category : undefined,
-      dueDate: isCheckbox ? meta?.date : undefined,
-      islandId: selectedIsland ?? undefined,
-      createdAt: new Date().toISOString(),
+    texts.forEach((text) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      onTodoSubmit({
+        id: `todo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        text: trimmed,
+        completed: false,
+        depth: newDepth,
+        inputType,
+        category: isCheckbox ? meta?.category : undefined,
+        dueDate: isCheckbox ? meta?.date : undefined,
+        islandId: selectedIsland ?? undefined,
+        createdAt: new Date().toISOString(),
+      });
     });
+  };
+
+  const fetchParsedTodos = async (text: string) => {
+    try {
+      const response = await fetch('/api/todo-parser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (!Array.isArray(data?.items)) return null;
+
+      return data.items.filter((item: any) => typeof item === 'string');
+    } catch (error) {
+      console.warn('Falha ao converter texto em tarefas:', error);
+      return null;
+    }
+  };
+
+  const handleAddTodo = async (text: string, meta?: { category?: string; date?: string }) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    if (inputType === 'checkbox') {
+      const parsed = await fetchParsedTodos(trimmed);
+      if (parsed) {
+        if (parsed.length === 0) return;
+        submitTodos(parsed, meta);
+        return;
+      }
+    }
+
+    submitTodos([trimmed], meta);
   };
 
   const formatDate = (date: Date) => date.toISOString().slice(0, 10);
@@ -177,7 +215,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
         }
         onClose={() => setIsChatOpen(false)}
         onSubmit={async (value, _messages, meta) => {
-          handleAddTodo(value, { category: meta?.category, date: meta?.date });
+          await handleAddTodo(value, { category: meta?.category, date: meta?.date });
         }}
       />
     </InputWindow>

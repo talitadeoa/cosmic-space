@@ -193,6 +193,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
+    if (view === 'em-aberto') {
+      return todos.filter((todo) => !todo.phase && !todo.dueDate && !todo.islandId);
+    }
     if (view === 'lua-atual' && currentPhase) {
       // Até próxima fase (aprox. 7-8 dias)
       const nextPhaseDate = new Date(today);
