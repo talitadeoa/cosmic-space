@@ -26,6 +26,7 @@ interface SavedTodosPanelProps {
   onInputTypeFilterChange?: (filter: 'all' | 'text' | 'checkbox') => void;
   onTodoStatusFilterChange?: (filter: 'all' | 'completed' | 'open') => void;
   onUpdateTodo?: (todoId: string, updates: Partial<SavedTodo>) => void;
+  onBatchDelete?: (todoIds: string[]) => void;
 }
 
 /**
@@ -57,6 +58,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onInputTypeFilterChange,
   onTodoStatusFilterChange,
   onUpdateTodo,
+  onBatchDelete,
 }) => {
   const panelRef = React.useRef<HTMLDivElement>(null);
   const islandLabel = getIslandLabel(selectedIsland, islandNames);
@@ -81,7 +83,12 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const [swipeDeleteId, setSwipeDeleteId] = React.useState<string | null>(null);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [activeViewDrop, setActiveViewDrop] = React.useState<string | null>(null);
+  const [isSelectionMode, setIsSelectionMode] = React.useState(false);
+  const [selectedTodoIds, setSelectedTodoIds] = React.useState<string[]>([]);
   const ITEMS_PER_PAGE = 10;
+  const selectionTouchActiveRef = React.useRef(false);
+  const selectionTouchModeRef = React.useRef<'select' | 'deselect'>('select');
+  const lastTouchedIdRef = React.useRef<string | null>(null);
 
   // Refs para rastrear gestos (sem chamar hooks dentro do map)
   const touchStartRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
@@ -141,8 +148,25 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       event.preventDefault();
       event.stopPropagation();
 
-      const todoId = event.dataTransfer.getData('text/todo-id');
-      if (!todoId) return;
+      const rawTodoIds = event.dataTransfer.getData('text/todo-ids');
+      let todoIds: string[] = [];
+      if (rawTodoIds) {
+        try {
+          const parsed = JSON.parse(rawTodoIds);
+          if (Array.isArray(parsed)) {
+            todoIds = parsed.filter((id) => typeof id === 'string');
+          }
+        } catch (error) {
+          console.warn('Falha ao ler seleção de to-dos:', error);
+        }
+      }
+
+      if (todoIds.length === 0) {
+        const todoId = event.dataTransfer.getData('text/todo-id');
+        if (todoId) todoIds = [todoId];
+      }
+
+      if (todoIds.length === 0) return;
 
       // Mudar a visão
       handleViewChange(viewType);
@@ -151,10 +175,12 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       if (viewType !== 'em-aberto' && onUpdateTodo) {
         const dueDate = getDateForView(viewType);
         if (dueDate) {
-          const todo = savedTodos.find((t) => t.id === todoId);
-          if (todo) {
-            onUpdateTodo(todoId, { dueDate });
-          }
+          todoIds.forEach((id) => {
+            const todo = savedTodos.find((t) => t.id === id);
+            if (todo) {
+              onUpdateTodo(id, { dueDate });
+            }
+          });
         }
       }
 
@@ -357,11 +383,98 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const startIndex = currentPage * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const displayedTodos = filteredTodos.slice(startIndex, endIndex);
+  const selectedCount = selectedTodoIds.length;
+  const allDisplayedSelected =
+    displayedTodos.length > 0 && displayedTodos.every((todo) => selectedTodoIds.includes(todo.id));
 
   // Reset página se mudar filtro
   React.useEffect(() => {
     setCurrentPage(0);
   }, [selectedPhase, selectedIsland]);
+
+  React.useEffect(() => {
+    setSelectedTodoIds((prev) => prev.filter((id) => savedTodos.some((todo) => todo.id === id)));
+  }, [savedTodos]);
+
+  const toggleSelectionMode = () => {
+    setIsSelectionMode((prev) => {
+      const next = !prev;
+      if (!next) {
+        setSelectedTodoIds([]);
+      }
+      return next;
+    });
+  };
+
+  const toggleTodoSelection = (todoId: string) => {
+    setSelectedTodoIds((prev) =>
+      prev.includes(todoId) ? prev.filter((id) => id !== todoId) : [...prev, todoId]
+    );
+  };
+
+  const handleToggleSelectDisplayed = () => {
+    if (displayedTodos.length === 0) return;
+    if (allDisplayedSelected) {
+      setSelectedTodoIds((prev) => prev.filter((id) => !displayedTodos.some((todo) => todo.id === id)));
+      return;
+    }
+    const displayedIds = displayedTodos.map((todo) => todo.id);
+    setSelectedTodoIds((prev) => Array.from(new Set([...prev, ...displayedIds])));
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedCount === 0 || !onBatchDelete) return;
+    onBatchDelete(selectedTodoIds);
+    setSelectedTodoIds([]);
+  };
+
+  const getDragTodoIds = (todoId: string) => {
+    if (isSelectionMode && selectedTodoIds.includes(todoId) && selectedTodoIds.length > 0) {
+      return selectedTodoIds;
+    }
+    return [todoId];
+  };
+
+  const applySelectionForId = (todoId: string, mode: 'select' | 'deselect') => {
+    setSelectedTodoIds((prev) => {
+      const hasId = prev.includes(todoId);
+      if (mode === 'select') {
+        if (hasId) return prev;
+        return [...prev, todoId];
+      }
+      if (!hasId) return prev;
+      return prev.filter((id) => id !== todoId);
+    });
+  };
+
+  const handleSelectionTouchStart = (todoId: string, event: React.TouchEvent) => {
+    if (!isSelectionMode) return;
+    event.preventDefault();
+    const isSelected = selectedTodoIds.includes(todoId);
+    const mode: 'select' | 'deselect' = isSelected ? 'deselect' : 'select';
+    selectionTouchActiveRef.current = true;
+    selectionTouchModeRef.current = mode;
+    lastTouchedIdRef.current = todoId;
+    applySelectionForId(todoId, mode);
+  };
+
+  const handleSelectionTouchMove = (event: React.TouchEvent) => {
+    if (!isSelectionMode || !selectionTouchActiveRef.current) return;
+    event.preventDefault();
+    const touch = event.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!element) return;
+    const item = element.closest('[data-todo-id]') as HTMLElement | null;
+    const todoId = item?.dataset.todoId;
+    if (!todoId || todoId === lastTouchedIdRef.current) return;
+    lastTouchedIdRef.current = todoId;
+    applySelectionForId(todoId, selectionTouchModeRef.current);
+  };
+
+  const handleSelectionTouchEnd = () => {
+    selectionTouchActiveRef.current = false;
+    lastTouchedIdRef.current = null;
+  };
 
   const headerLabel = (() => {
     if (selectedPhase && islandLabel) {
@@ -569,6 +682,19 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               ✏️
             </button>
           )}
+          <button
+            type="button"
+            onClick={toggleSelectionMode}
+            aria-pressed={isSelectionMode}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
+              isSelectionMode
+                ? 'border border-emerald-300/80 bg-emerald-500/20 text-emerald-100'
+                : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-emerald-300/60'
+            }`}
+            title={isSelectionMode ? 'Sair da seleção múltipla' : 'Selecionar múltiplos inputs'}
+          >
+            ⬚
+          </button>
           <div className="flex gap-2">
             <button
               type="button"
@@ -625,8 +751,46 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           )}
         </div>
       </div>
+      {isSelectionMode && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-[0.65rem] text-slate-300">
+          <span>{selectedCount === 0 ? 'Nenhum selecionado' : `${selectedCount} selecionado(s)`}</span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleToggleSelectDisplayed}
+              className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 font-semibold uppercase tracking-[0.16em] text-slate-200 transition hover:border-slate-500"
+            >
+              {allDisplayedSelected ? 'Limpar página' : 'Selecionar página'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTodoIds([])}
+              className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 font-semibold uppercase tracking-[0.16em] text-slate-200 transition hover:border-slate-500"
+            >
+              Limpar seleção
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchDelete}
+              disabled={selectedCount === 0 || !onBatchDelete}
+              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+                selectedCount === 0 || !onBatchDelete
+                  ? 'border-slate-700 bg-slate-900/60 text-slate-500'
+                  : 'border-red-400/60 bg-red-500/20 text-red-100 hover:bg-red-500/30'
+              }`}
+            >
+              Excluir selecionados
+            </button>
+          </div>
+        </div>
+      )}
 
-      <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64">
+      <div
+        className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64"
+        onTouchMove={handleSelectionTouchMove}
+        onTouchEnd={handleSelectionTouchEnd}
+        onTouchCancel={handleSelectionTouchEnd}
+      >
         {displayedTodos.length === 0 ? (
           <EmptyState
             title={
@@ -655,25 +819,53 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
             const isEditing = editingTodoId === todo.id;
             const canDrag = !isEditMode;
             const isSaveDisabled = !editingText.trim();
+            const isSelected = selectedTodoIds.includes(todo.id);
 
             return (
               <div
                 key={todo.id}
+                data-todo-id={todo.id}
                 draggable={canDrag}
                 role="article"
                 aria-label={`Tarefa: ${todo.text}`}
-                onDragStart={canDrag ? onDragStart(todo.id) : undefined}
+                onDragStart={
+                  canDrag
+                    ? (event) => {
+                        const dragIds = getDragTodoIds(todo.id);
+                        event.dataTransfer.setData('text/todo-ids', JSON.stringify(dragIds));
+                        onDragStart(todo.id)(event);
+                      }
+                    : undefined
+                }
                 onDragEnd={canDrag ? onDragEnd : undefined}
                 onTouchStart={(e) => {
+                  if (isSelectionMode) {
+                    handleSelectionTouchStart(todo.id, e);
+                    return;
+                  }
                   handleItemTouchStart(e);
                   canDrag && onTouchStart ? onTouchStart(todo.id)(e) : undefined;
                 }}
                 onTouchEnd={(e) => {
+                  if (isSelectionMode) {
+                    handleSelectionTouchEnd();
+                    return;
+                  }
                   handleItemTouchEnd(todo.id)(e);
                   canDrag && onTouchEnd ? onTouchEnd() : undefined;
                 }}
-                onTouchMove={canDrag && onTouchMove ? onTouchMove : undefined}
-                className="group relative flex items-start justify-between gap-3 rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/30 transition hover:border-indigo-500/60 hover:bg-slate-900/90"
+                onTouchMove={
+                  isSelectionMode
+                    ? handleSelectionTouchMove
+                    : canDrag && onTouchMove
+                      ? onTouchMove
+                      : undefined
+                }
+                className={`group relative flex items-start justify-between gap-3 rounded-xl border px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/30 transition hover:border-indigo-500/60 hover:bg-slate-900/90 ${
+                  isSelected
+                    ? 'border-emerald-400/70 bg-emerald-500/10'
+                    : 'border-slate-700 bg-slate-900/80'
+                }`}
               >
                 <div className="flex items-start gap-3">
                   {isCheckbox ? (
@@ -800,6 +992,24 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  {isSelectionMode && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleTodoSelection(todo.id);
+                      }}
+                      aria-pressed={isSelected}
+                      className={`flex h-6 w-6 items-center justify-center rounded-full border text-[0.6rem] transition ${
+                        isSelected
+                          ? 'border-emerald-300 bg-emerald-500/20 text-emerald-100'
+                          : 'border-slate-700 bg-slate-900/70 text-slate-400 hover:border-emerald-300/60'
+                      }`}
+                      title={isSelected ? 'Desmarcar' : 'Selecionar'}
+                    >
+                      {isSelected ? '✓' : ''}
+                    </button>
+                  )}
                   {isEditMode && canEdit && (
                     <button
                       type="button"

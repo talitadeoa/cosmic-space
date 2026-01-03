@@ -258,39 +258,41 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     );
   };
 
-  const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
-    const target = savedTodos.find((todo) => todo.id === todoId);
-    if (!target) return;
-    if (target.phase === phase) return;
+  const assignTodosToPhase = (todoIds: string[], phase: MoonPhase) => {
+    const ids = new Set(todoIds);
+    const targets = savedTodos.filter((todo) => ids.has(todo.id) && todo.phase !== phase);
+    if (targets.length === 0) return;
 
-    setSavedTodos((prev) => prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)));
+    setSavedTodos((prev) => prev.map((todo) => (ids.has(todo.id) ? { ...todo, phase } : todo)));
 
-    saveInput({
-      moonPhase: phase,
-      inputType: 'tarefa',
-      sourceId: target.id,
-      content: target.text,
-      vibe: PHASE_VIBES[phase].label,
-      metadata: {
-        category: target.category ?? null,
-        dueDate: target.dueDate ?? null,
-        depth: target.depth,
-        completed: target.completed,
-        inputType: target.inputType,
-        islandId: target.islandId ?? null,
-      },
-    }).catch((error) => {
-      console.warn('Falha ao salvar tarefa na fase:', error);
+    targets.forEach((target) => {
+      saveInput({
+        moonPhase: phase,
+        inputType: 'tarefa',
+        sourceId: target.id,
+        content: target.text,
+        vibe: PHASE_VIBES[phase].label,
+        metadata: {
+          category: target.category ?? null,
+          dueDate: target.dueDate ?? null,
+          depth: target.depth,
+          completed: target.completed,
+          inputType: target.inputType,
+          islandId: target.islandId ?? null,
+        },
+      }).catch((error) => {
+        console.warn('Falha ao salvar tarefa na fase:', error);
+      });
     });
   };
 
-  const assignTodoToIsland = (todoId: string, islandId: IslandId) => {
-    const target = savedTodos.find((todo) => todo.id === todoId);
-    if (!target) return;
-    if (target.islandId === islandId) return;
+  const assignTodosToIsland = (todoIds: string[], islandId: IslandId) => {
+    const ids = new Set(todoIds);
+    const hasTargets = savedTodos.some((todo) => ids.has(todo.id) && todo.islandId !== islandId);
+    if (!hasTargets) return;
 
     setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, islandId } : todo))
+      prev.map((todo) => (ids.has(todo.id) ? { ...todo, islandId } : todo))
     );
   };
 
@@ -307,17 +309,39 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     dropHandledRef.current = false;
   };
 
+  const getDraggedTodoIds = (event: React.DragEvent) => {
+    const rawTodoIds = event.dataTransfer.getData('text/todo-ids');
+    if (rawTodoIds) {
+      try {
+        const parsed = JSON.parse(rawTodoIds);
+        if (Array.isArray(parsed)) {
+          const ids = parsed.filter((id) => typeof id === 'string');
+          if (ids.length > 0) return ids;
+        }
+      } catch (error) {
+        console.warn('Falha ao ler seleção de to-dos:', error);
+      }
+    }
+    const todoId = event.dataTransfer.getData('text/todo-id');
+    return todoId ? [todoId] : [];
+  };
+
   const handleDeleteTodo = (todoId: string) => {
     setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
+  };
+
+  const handleDeleteTodos = (todoIds: string[]) => {
+    const ids = new Set(todoIds);
+    setSavedTodos((prev) => prev.filter((todo) => !ids.has(todo.id)));
   };
 
   const handleDropOnPhase = (phase: MoonPhase) => (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const todoId = e.dataTransfer.getData('text/todo-id');
-    if (!todoId) return;
+    const todoIds = getDraggedTodoIds(e);
+    if (todoIds.length === 0) return;
     dropHandledRef.current = true;
-    assignTodoToPhase(todoId, phase);
+    assignTodosToPhase(todoIds, phase);
     setActiveDrop(null);
     setIsDraggingTodo(false);
   };
@@ -334,10 +358,10 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const handleDropOnIsland = (islandId: IslandId) => (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const todoId = e.dataTransfer.getData('text/todo-id');
-    if (!todoId) return;
+    const todoIds = getDraggedTodoIds(e);
+    if (todoIds.length === 0) return;
     dropHandledRef.current = true;
-    assignTodoToIsland(todoId, islandId);
+    assignTodosToIsland(todoIds, islandId);
     setActiveIslandDrop(null);
     setIsDraggingTodo(false);
   };
@@ -440,6 +464,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                     dropHandledRef.current = true;
                   }}
                   onDeleteTodo={handleDeleteTodo}
+                  onBatchDelete={handleDeleteTodos}
                   onUpdateTodo={handleUpdateTodo}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}

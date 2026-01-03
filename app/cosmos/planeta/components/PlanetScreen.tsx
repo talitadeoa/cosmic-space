@@ -41,6 +41,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [_draggingTodoId, setDraggingTodoId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
+  const [batchDeleteIds, setBatchDeleteIds] = useState<string[] | null>(null);
   const dropHandledRef = useRef(false);
   const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
@@ -145,44 +146,61 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setDeletingTodoId(null);
   };
 
+  const handleDeleteTodos = (todoIds: string[]) => {
+    const ids = new Set(todoIds);
+    setSavedTodos((prev) => prev.filter((todo) => !ids.has(todo.id)));
+    setShowDeleteConfirm(false);
+    setBatchDeleteIds(null);
+  };
+
   const handleRequestDelete = (todoId: string) => {
     setDeletingTodoId(todoId);
+    setBatchDeleteIds(null);
     setShowDeleteConfirm(true);
   };
 
-  const assignTodoToPhase = (todoId: string, phase: MoonPhase) => {
-    const target = savedTodos.find((todo) => todo.id === todoId);
-    if (!target) return;
-    if (target.phase === phase) return;
+  const handleRequestBatchDelete = (todoIds: string[]) => {
+    if (todoIds.length === 0) return;
+    setBatchDeleteIds(todoIds);
+    setDeletingTodoId(null);
+    setShowDeleteConfirm(true);
+  };
 
-    setSavedTodos((prev) => prev.map((todo) => (todo.id === todoId ? { ...todo, phase } : todo)));
+  const assignTodosToPhase = (todoIds: string[], phase: MoonPhase) => {
+    const ids = new Set(todoIds);
+    const targets = savedTodos.filter((todo) => ids.has(todo.id) && todo.phase !== phase);
+    if (targets.length === 0) return;
 
-    saveInput({
-      moonPhase: phase,
-      inputType: 'tarefa',
-      sourceId: target.id,
-      content: target.text,
-      vibe: PHASE_VIBES[phase].label,
-      metadata: {
-        category: target.category ?? null,
-        dueDate: target.dueDate ?? null,
-        depth: target.depth,
-        completed: target.completed,
-        inputType: target.inputType,
-        islandId: target.islandId ?? null,
-      },
-    }).catch((error) => {
-      console.warn('Falha ao salvar tarefa na fase:', error);
+    setSavedTodos((prev) => prev.map((todo) => (ids.has(todo.id) ? { ...todo, phase } : todo)));
+
+    targets.forEach((target) => {
+      saveInput({
+        moonPhase: phase,
+        inputType: 'tarefa',
+        sourceId: target.id,
+        content: target.text,
+        vibe: PHASE_VIBES[phase].label,
+        metadata: {
+          category: target.category ?? null,
+          dueDate: target.dueDate ?? null,
+          depth: target.depth,
+          completed: target.completed,
+          inputType: target.inputType,
+          islandId: target.islandId ?? null,
+        },
+      }).catch((error) => {
+        console.warn('Falha ao salvar tarefa na fase:', error);
+      });
     });
   };
 
-  const assignTodoToIsland = (todoId: string, islandId: IslandId) => {
-    const target = savedTodos.find((todo) => todo.id === todoId);
-    if (!target) return;
-    if (target.islandId === islandId) return;
+  const assignTodosToIsland = (todoIds: string[], islandId: IslandId) => {
+    const ids = new Set(todoIds);
+    const hasTargets = savedTodos.some((todo) => ids.has(todo.id) && todo.islandId !== islandId);
+    if (!hasTargets) return;
 
     setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, islandId } : todo))
+      prev.map((todo) => (ids.has(todo.id) ? { ...todo, islandId } : todo))
     );
   };
 
@@ -201,13 +219,30 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     dropHandledRef.current = false;
   };
 
+  const getDraggedTodoIds = (event: React.DragEvent) => {
+    const rawTodoIds = event.dataTransfer.getData('text/todo-ids');
+    if (rawTodoIds) {
+      try {
+        const parsed = JSON.parse(rawTodoIds);
+        if (Array.isArray(parsed)) {
+          const ids = parsed.filter((id) => typeof id === 'string');
+          if (ids.length > 0) return ids;
+        }
+      } catch (error) {
+        console.warn('Falha ao ler seleção de to-dos:', error);
+      }
+    }
+    const todoId = event.dataTransfer.getData('text/todo-id');
+    return todoId ? [todoId] : [];
+  };
+
   const handleDropOnPhase = (phase: MoonPhase) => (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const todoId = e.dataTransfer.getData('text/todo-id');
-    if (!todoId) return;
+    const todoIds = getDraggedTodoIds(e);
+    if (todoIds.length === 0) return;
     dropHandledRef.current = true;
-    assignTodoToPhase(todoId, phase);
+    assignTodosToPhase(todoIds, phase);
     setActiveDrop(null);
     setIsDraggingTodo(false);
   };
@@ -224,10 +259,10 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const handleDropOnIsland = (islandId: IslandId) => (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const todoId = e.dataTransfer.getData('text/todo-id');
-    if (!todoId) return;
+    const todoIds = getDraggedTodoIds(e);
+    if (todoIds.length === 0) return;
     dropHandledRef.current = true;
-    assignTodoToIsland(todoId, islandId);
+    assignTodosToIsland(todoIds, islandId);
     setActiveIslandDrop(null);
     setIsDraggingTodo(false);
   };
@@ -253,10 +288,10 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (touchIdRef.current && isDraggingTodo) {
       // Verificar se houver um drop ativo e processar
       if (activeDrop) {
-        assignTodoToPhase(touchIdRef.current, activeDrop);
+        assignTodosToPhase([touchIdRef.current], activeDrop);
         dropHandledRef.current = true;
       } else if (activeIslandDrop) {
-        assignTodoToIsland(touchIdRef.current, activeIslandDrop);
+        assignTodosToIsland([touchIdRef.current], activeIslandDrop);
         dropHandledRef.current = true;
       }
     }
@@ -374,6 +409,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                     dropHandledRef.current = true;
                   }}
                   onDeleteTodo={handleRequestDelete}
+                  onBatchDelete={handleRequestBatchDelete}
                   onUpdateTodo={handleUpdateTodo}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}
@@ -471,12 +507,16 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       </div>
 
       {/* Modal de confirmação de exclusão */}
-      {showDeleteConfirm && deletingTodoId && (
+      {showDeleteConfirm && (deletingTodoId || batchDeleteIds) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="rounded-2xl border border-indigo-500/30 bg-slate-950/95 shadow-2xl shadow-indigo-900/40 p-6 max-w-sm w-full mx-4">
-            <h2 className="text-xl font-semibold text-white mb-2">Deletar tarefa?</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">
+              {batchDeleteIds ? 'Deletar tarefas?' : 'Deletar tarefa?'}
+            </h2>
             <p className="text-slate-300 mb-6">
-              Você realmente deseja deletar essa tarefa? Esta ação não pode ser desfeita.
+              {batchDeleteIds
+                ? `Você realmente deseja deletar ${batchDeleteIds.length} tarefas? Esta ação não pode ser desfeita.`
+                : 'Você realmente deseja deletar essa tarefa? Esta ação não pode ser desfeita.'}
             </p>
             <div className="flex gap-3 justify-end">
               <button
@@ -484,6 +524,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setDeletingTodoId(null);
+                  setBatchDeleteIds(null);
                 }}
                 className="rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-900 hover:border-slate-600"
               >
@@ -491,7 +532,15 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               </button>
               <button
                 type="button"
-                onClick={() => deletingTodoId && handleDeleteTodo(deletingTodoId)}
+                onClick={() => {
+                  if (batchDeleteIds) {
+                    handleDeleteTodos(batchDeleteIds);
+                    return;
+                  }
+                  if (deletingTodoId) {
+                    handleDeleteTodo(deletingTodoId);
+                  }
+                }}
                 className="rounded-lg bg-red-600/80 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 shadow-lg"
               >
                 Deletar
