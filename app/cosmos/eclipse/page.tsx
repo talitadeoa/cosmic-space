@@ -10,7 +10,7 @@ const EclipsePage = () => {
   const router = useRouter();
 
   return (
-    <AuthGate>
+    <AuthGate chatButtonSize="compact">
       <SpacePageLayout
         className="px-4 py-12 sm:px-6 lg:px-8"
         onBackgroundClick={() => router.push('/cosmos/home')}

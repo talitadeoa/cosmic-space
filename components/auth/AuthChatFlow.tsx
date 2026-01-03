@@ -1,16 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import type { ChatMessage } from '@/lib/chatHistory';
 
 type AuthMode = 'login' | 'signup';
 type AuthStep = 'mode' | 'firstName' | 'lastName' | 'birthDate' | 'gender' | 'email' | 'password';
-
-interface ChatMessage {
-  id: string;
-  role: 'system' | 'user';
-  content: string;
-}
+type AuthTone = 'indigo' | 'violet' | 'amber' | 'sky';
 
 interface AuthChatHeader {
   eyebrow?: string;
@@ -24,18 +20,52 @@ interface AuthChatFlowProps {
   onAuthenticated?: () => void;
   onCancel?: () => void;
   className?: string;
+  tone?: AuthTone;
+  sendButtonSize?: 'default' | 'compact';
 }
+
+const toneStyles: Record<
+  AuthTone,
+  {
+    userBubble: string;
+    systemBubble: string;
+    button: string;
+  }
+> = {
+  indigo: {
+    userBubble: 'bg-indigo-500/40 border border-indigo-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    button: 'border-indigo-300/60 bg-indigo-500/30 text-white hover:bg-indigo-500/45',
+  },
+  violet: {
+    userBubble: 'bg-violet-500/35 border border-violet-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    button: 'border-violet-300/60 bg-violet-500/30 text-white hover:bg-violet-500/45',
+  },
+  amber: {
+    userBubble: 'bg-amber-500/30 border border-amber-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    button: 'border-amber-300/60 bg-amber-500/30 text-white hover:bg-amber-500/45',
+  },
+  sky: {
+    userBubble: 'bg-sky-500/30 border border-sky-300/40 text-white rounded-br-none',
+    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
+    button: 'border-sky-300/60 bg-sky-500/30 text-white hover:bg-sky-500/45',
+  },
+};
 
 const buildSystemMessage = (content: string): ChatMessage => ({
   id: `system-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
   role: 'system',
   content,
+  timestamp: new Date().toISOString(),
 });
 
 const buildUserMessage = (content: string): ChatMessage => ({
   id: `user-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
   role: 'user',
   content,
+  timestamp: new Date().toISOString(),
 });
 
 const normalizeText = (value: string) =>
@@ -68,47 +98,60 @@ const parseGender = (value: string) => {
   return null;
 };
 
-export default function AuthChatFlow({
-  variant = 'embedded',
-  header,
+const initialFormData = {
+  email: '',
+  password: '',
+  firstName: '',
+  lastName: '',
+  birthDate: '',
+  gender: '',
+};
+
+type AuthFlowSuggestion = {
+  id: string;
+  label: string;
+  value: string;
+};
+
+export function useAuthChatFlow({
+  isActive = true,
   onAuthenticated,
-  onCancel,
-  className = '',
-}: AuthChatFlowProps) {
+}: {
+  isActive?: boolean;
+  onAuthenticated?: () => void;
+}) {
   const { isAuthenticated, loading, error, login, signup } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputValue, setInputValue] = useState('');
   const [step, setStep] = useState<AuthStep>('mode');
   const [mode, setMode] = useState<AuthMode | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    gender: '',
-  });
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [formData, setFormData] = useState(initialFormData);
+
+  const resetFlow = useCallback((nextMode: AuthMode | null) => {
+    setMode(nextMode);
+    setStep(nextMode === 'signup' ? 'firstName' : 'email');
+    setFormData(initialFormData);
+  }, []);
+
+  const resetAll = useCallback(() => {
+    setMessages([]);
+    setStep('mode');
+    setMode(null);
+    setIsSubmitting(false);
+    setFormData(initialFormData);
+  }, []);
 
   useEffect(() => {
-    if (loading || messages.length > 0) return;
-    setMessages([
-      buildSystemMessage('Você prefere entrar ou criar conta?'),
-    ]);
-  }, [loading, messages.length]);
-
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (container) {
-      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    if (!isActive) {
+      resetAll();
       return;
     }
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, [messages]);
 
-  const stepSuggestions = useMemo(() => {
+    if (loading || messages.length > 0) return;
+    setMessages([buildSystemMessage('Você prefere entrar ou criar conta?')]);
+  }, [isActive, loading, messages.length, resetAll]);
+
+  const stepSuggestions: AuthFlowSuggestion[] = useMemo(() => {
     if (step === 'mode') {
       return [
         { id: 'login', label: 'Entrar', value: 'entrar' },
@@ -126,167 +169,220 @@ export default function AuthChatFlow({
     return [];
   }, [step]);
 
-  const pushSystemMessage = (content: string) => {
+  const pushSystemMessage = useCallback((content: string) => {
     setMessages((prev) => [...prev, buildSystemMessage(content)]);
-  };
+  }, []);
 
-  const resetFlow = (nextMode: AuthMode | null) => {
-    setMode(nextMode);
-    setStep(nextMode === 'signup' ? 'firstName' : 'email');
-    setFormData({
-      email: '',
-      password: '',
-      firstName: '',
-      lastName: '',
-      birthDate: '',
-      gender: '',
-    });
-  };
-
-  const submitAuth = async (payload: typeof formData, activeMode: AuthMode) => {
-    setIsSubmitting(true);
-    pushSystemMessage('Validando seus dados...');
-    const success =
-      activeMode === 'login'
-        ? await login(payload.email, payload.password)
-        : await signup({
-            email: payload.email,
-            password: payload.password,
-            firstName: payload.firstName,
-            lastName: payload.lastName,
-            birthDate: payload.birthDate,
-            gender: payload.gender,
-          });
-    setIsSubmitting(false);
-
-    if (!success) {
-      pushSystemMessage(error || 'Não consegui autenticar. Vamos tentar de novo?');
-      resetFlow(activeMode);
-      pushSystemMessage(
+  const submitAuth = useCallback(
+    async (payload: typeof formData, activeMode: AuthMode) => {
+      setIsSubmitting(true);
+      const success =
         activeMode === 'login'
-          ? 'Me diga seu email para tentar novamente.'
-          : 'Vamos reiniciar o cadastro. Qual seu nome?'
-      );
-      return;
-    }
+          ? await login(payload.email, payload.password)
+          : await signup({
+              email: payload.email,
+              password: payload.password,
+              firstName: payload.firstName,
+              lastName: payload.lastName,
+              birthDate: payload.birthDate,
+              gender: payload.gender,
+            });
+      setIsSubmitting(false);
 
-    pushSystemMessage('Acesso liberado! Pode continuar.');
-    onAuthenticated?.();
-  };
-
-  const handleUserInput = async (value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed || isSubmitting || loading || isAuthenticated) return;
-
-    setInputValue('');
-    setMessages((prev) => [...prev, buildUserMessage(trimmed)]);
-
-    const normalized = normalizeText(trimmed);
-
-    if (step === 'mode') {
-      if (normalized.includes('entrar') || normalized.includes('login')) {
-        setMode('login');
-        setStep('email');
-        pushSystemMessage('Perfeito. Qual seu email?');
-        return;
-      }
-      if (
-        normalized.includes('criar') ||
-        normalized.includes('cadastro') ||
-        normalized.includes('signup')
-      ) {
-        setMode('signup');
-        setStep('firstName');
-        pushSystemMessage('Vamos criar sua conta. Como você se chama?');
-        return;
-      }
-      pushSystemMessage('Não entendi. Você prefere entrar ou criar conta?');
-      return;
-    }
-
-    if (step === 'firstName') {
-      if (trimmed.length < 2) {
-        pushSystemMessage('Pode me dizer seu nome com mais detalhes?');
-        return;
-      }
-      setFormData((prev) => ({ ...prev, firstName: trimmed }));
-      setStep('lastName');
-      pushSystemMessage('E seu sobrenome?');
-      return;
-    }
-
-    if (step === 'lastName') {
-      if (trimmed.length < 2) {
-        pushSystemMessage('Sobrenome completo ajuda. Pode reenviar?');
-        return;
-      }
-      setFormData((prev) => ({ ...prev, lastName: trimmed }));
-      setStep('birthDate');
-      pushSystemMessage('Qual sua data de nascimento? (dd/mm/aaaa)');
-      return;
-    }
-
-    if (step === 'birthDate') {
-      const parsed = parseBirthDate(trimmed);
-      if (!parsed) {
-        pushSystemMessage('Ainda não peguei. Me envie no formato dd/mm/aaaa.');
-        return;
-      }
-      setFormData((prev) => ({ ...prev, birthDate: parsed }));
-      setStep('gender');
-      pushSystemMessage('Como você prefere registrar seu gênero?');
-      return;
-    }
-
-    if (step === 'gender') {
-      const parsed = parseGender(trimmed);
-      if (!parsed) {
+      if (!success) {
+        pushSystemMessage(error || 'Não consegui autenticar. Vamos tentar de novo?');
+        resetFlow(activeMode);
         pushSystemMessage(
-          'Pode escolher uma das opções: feminino, masculino, outro, prefiro não informar.'
+          activeMode === 'login'
+            ? 'Me diga seu email para tentar novamente.'
+            : 'Vamos reiniciar o cadastro. Qual seu nome?'
         );
-        return;
+        return false;
       }
-      setFormData((prev) => ({ ...prev, gender: parsed }));
-      setStep('email');
-      pushSystemMessage('Qual email vamos usar?');
-      return;
-    }
 
-    if (step === 'email') {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-        pushSystemMessage('Esse email parece inválido. Tenta de novo?');
-        return;
-      }
-      setFormData((prev) => ({ ...prev, email: trimmed }));
-      setStep('password');
-      pushSystemMessage('Agora digite sua senha.');
-      return;
-    }
+      pushSystemMessage('Acesso liberado.');
+      onAuthenticated?.();
+      return true;
+    },
+    [error, login, onAuthenticated, pushSystemMessage, resetFlow, signup]
+  );
 
-    if (step === 'password') {
-      if (trimmed.length < 4) {
-        pushSystemMessage('A senha está muito curta. Pode enviar outra?');
-        return;
+  const handleUserInput = useCallback(
+    async (value: string) => {
+      const trimmed = value.trim();
+      if (!isActive || !trimmed || isSubmitting || loading || isAuthenticated) return false;
+
+      const shouldMask = step === 'password';
+      const visibleValue = shouldMask ? '****' : trimmed;
+      setMessages((prev) => [...prev, buildUserMessage(visibleValue)]);
+
+      const normalized = normalizeText(trimmed);
+
+      if (step === 'mode') {
+        if (normalized.includes('entrar') || normalized.includes('login')) {
+          setMode('login');
+          setStep('email');
+          pushSystemMessage('Perfeito. Qual seu email?');
+          return true;
+        }
+        if (
+          normalized.includes('criar') ||
+          normalized.includes('cadastro') ||
+          normalized.includes('signup')
+        ) {
+          setMode('signup');
+          setStep('firstName');
+          pushSystemMessage('Vamos criar sua conta. Como você se chama?');
+          return true;
+        }
+        pushSystemMessage('Não entendi. Você prefere entrar ou criar conta?');
+        return true;
       }
-      const nextPayload = { ...formData, password: trimmed };
-      setFormData(nextPayload);
-      if (!mode) {
-        pushSystemMessage('Algo deu errado com o fluxo. Vamos recomeçar?');
-        resetFlow(null);
-        return;
+
+      if (step === 'firstName') {
+        if (trimmed.length < 2) {
+          pushSystemMessage('Pode me dizer seu nome com mais detalhes?');
+          return true;
+        }
+        setFormData((prev) => ({ ...prev, firstName: trimmed }));
+        setStep('lastName');
+        pushSystemMessage('E seu sobrenome?');
+        return true;
       }
-      await submitAuth(nextPayload, mode);
-    }
+
+      if (step === 'lastName') {
+        if (trimmed.length < 2) {
+          pushSystemMessage('Sobrenome completo ajuda. Pode reenviar?');
+          return true;
+        }
+        setFormData((prev) => ({ ...prev, lastName: trimmed }));
+        setStep('birthDate');
+        pushSystemMessage('Qual sua data de nascimento? (dd/mm/aaaa)');
+        return true;
+      }
+
+      if (step === 'birthDate') {
+        const parsed = parseBirthDate(trimmed);
+        if (!parsed) {
+          pushSystemMessage('Ainda não peguei. Me envie no formato dd/mm/aaaa.');
+          return true;
+        }
+        setFormData((prev) => ({ ...prev, birthDate: parsed }));
+        setStep('gender');
+        pushSystemMessage('Como você prefere registrar seu gênero?');
+        return true;
+      }
+
+      if (step === 'gender') {
+        const parsed = parseGender(trimmed);
+        if (!parsed) {
+          pushSystemMessage(
+            'Pode escolher uma das opções: feminino, masculino, outro, prefiro não informar.'
+          );
+          return true;
+        }
+        setFormData((prev) => ({ ...prev, gender: parsed }));
+        setStep('email');
+        pushSystemMessage('Qual email vamos usar?');
+        return true;
+      }
+
+      if (step === 'email') {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+          pushSystemMessage('Esse email parece inválido. Tenta de novo?');
+          return true;
+        }
+        setFormData((prev) => ({ ...prev, email: trimmed }));
+        setStep('password');
+        pushSystemMessage('Agora digite sua senha.');
+        return true;
+      }
+
+      if (step === 'password') {
+        if (trimmed.length < 4) {
+          pushSystemMessage('A senha está muito curta. Pode enviar outra?');
+          return true;
+        }
+        const nextPayload = { ...formData, password: trimmed };
+        setFormData(nextPayload);
+        if (!mode) {
+          pushSystemMessage('Algo deu errado com o fluxo. Vamos recomeçar?');
+          resetFlow(null);
+          return true;
+        }
+        await submitAuth(nextPayload, mode);
+        return true;
+      }
+
+      return false;
+    },
+    [
+      formData,
+      isActive,
+      isAuthenticated,
+      isSubmitting,
+      loading,
+      mode,
+      pushSystemMessage,
+      resetFlow,
+      step,
+      submitAuth,
+    ]
+  );
+
+  return {
+    messages,
+    step,
+    stepSuggestions,
+    isSubmitting,
+    isAuthenticated,
+    loading,
+    handleUserInput,
+    resetAll,
   };
+}
+
+export default function AuthChatFlow({
+  variant = 'embedded',
+  header,
+  onAuthenticated,
+  onCancel,
+  className = '',
+  tone = 'indigo',
+  sendButtonSize = 'default',
+}: AuthChatFlowProps) {
+  const { messages, step, stepSuggestions, isSubmitting, isAuthenticated, loading, handleUserInput } =
+    useAuthChatFlow({ onAuthenticated });
+  const [inputValue, setInputValue] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const activeTone = toneStyles[tone];
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      return;
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [messages]);
 
   const handleSend = () => {
-    void handleUserInput(inputValue);
+    void handleUserInput(inputValue).then((didSend) => {
+      if (didSend) {
+        setInputValue('');
+      }
+    });
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      void handleUserInput(inputValue);
+      void handleUserInput(inputValue).then((didSend) => {
+        if (didSend) {
+          setInputValue('');
+        }
+      });
     }
   };
 
@@ -295,6 +391,23 @@ export default function AuthChatFlow({
     variant === 'page' ? '' : 'max-h-[55vh] sm:max-h-[320px] overflow-hidden';
   const messagesHeight =
     variant === 'page' ? 'max-h-[45vh] sm:max-h-[360px]' : 'max-h-[30vh] sm:max-h-[220px]';
+  const inputType = step === 'password' ? 'password' : step === 'email' ? 'email' : 'text';
+  const inputPlaceholder = step === 'password' ? 'Digite sua senha...' : 'Digite sua resposta...';
+  const inputAutoComplete =
+    step === 'email' ? 'email' : step === 'password' ? 'current-password' : undefined;
+  const inputName = step === 'email' ? 'email' : step === 'password' ? 'password' : undefined;
+  const sendButtonClasses =
+    sendButtonSize === 'compact'
+      ? 'px-3 py-0 text-sm h-11'
+      : 'px-4 py-3';
+  const sendIconClasses = sendButtonSize === 'compact' ? 'h-4 w-4' : 'h-5 w-5';
+  const inputRowClassName =
+    sendButtonSize === 'compact'
+      ? 'flex flex-row items-center gap-2 border-t border-white/10 pt-3'
+      : 'flex flex-col items-stretch gap-2 border-t border-white/10 pt-3 sm:flex-row sm:items-center';
+  const sendButtonWidthClasses =
+    sendButtonSize === 'compact' ? 'w-auto' : 'w-full sm:w-auto';
+  const inputHeightClasses = sendButtonSize === 'compact' ? 'h-11 py-0' : '';
 
   return (
     <div className={`flex min-h-0 flex-col gap-3 ${rootSizing} ${className}`}>
@@ -321,9 +434,7 @@ export default function AuthChatFlow({
           >
             <div
               className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2.5 text-xs sm:max-w-md sm:px-4 sm:py-3 sm:text-sm ${
-                message.role === 'user'
-                  ? 'bg-indigo-500/40 border border-indigo-300/40 text-white rounded-br-none'
-                  : 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none'
+                message.role === 'user' ? activeTone.userBubble : activeTone.systemBubble
               }`}
             >
               {message.content}
@@ -340,7 +451,7 @@ export default function AuthChatFlow({
               key={suggestion.id}
               type="button"
               onClick={() => void handleUserInput(suggestion.value)}
-              className="rounded-full border border-indigo-300/60 bg-indigo-500/30 px-3 py-1 text-[0.65rem] font-semibold text-white transition hover:bg-indigo-500/45"
+              className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold transition ${activeTone.button}`}
               disabled={isSubmitting || loading || isAuthenticated}
             >
               {suggestion.label}
@@ -349,24 +460,26 @@ export default function AuthChatFlow({
         </div>
       )}
 
-      <div className="flex flex-col items-stretch gap-2 border-t border-white/10 pt-3 sm:flex-row sm:items-center">
+      <div className={inputRowClassName}>
         <input
-          type="text"
+          type={inputType}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Digite sua resposta..."
+          placeholder={inputPlaceholder}
           disabled={isSubmitting || loading || isAuthenticated}
-          className="min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50"
+          autoComplete={inputAutoComplete}
+          name={inputName}
+          className={`min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50 ${inputHeightClasses}`}
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={isSubmitting || loading || isAuthenticated || inputValue.trim().length < 1}
-          className="w-full rounded-2xl border border-indigo-300/60 bg-indigo-500/30 px-4 py-3 text-white transition hover:bg-indigo-500/45 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className={`rounded-2xl border text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${activeTone.button} ${sendButtonClasses} ${sendButtonWidthClasses}`}
           aria-label="Enviar mensagem"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={sendIconClasses} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

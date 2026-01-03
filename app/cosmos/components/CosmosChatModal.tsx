@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import InputWindow from './InputWindow';
 import { ChatMessage, ChatMessageMeta, loadChatHistory, saveChatHistory } from '@/lib/chatHistory';
 import { useAuth } from '@/hooks/useAuth';
-import AuthChatFlow from '@/components/auth/AuthChatFlow';
+import { useAuthChatFlow } from '@/components/auth/AuthChatFlow';
 
 type SubmitStrategy = 'concat' | 'last';
 
@@ -234,6 +234,10 @@ interface ChatComposerProps {
   onSend: () => void;
   onSave: () => void;
   placeholder: string;
+  inputType?: 'text' | 'password' | 'email';
+  inputAutoComplete?: string;
+  inputName?: string;
+  minInputLength?: number;
   submitLabel: string;
   inline: boolean;
   styles: ChatStyles;
@@ -246,6 +250,7 @@ interface ChatComposerProps {
   onSuggestionClick: (suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]) => void;
   onClearMeta: (key: keyof ChatMessageMeta) => void;
   isInputDisabled?: boolean;
+  isAuthFlowActive?: boolean;
 }
 
 function ChatComposer({
@@ -255,6 +260,10 @@ function ChatComposer({
   onSend,
   onSave,
   placeholder,
+  inputType = 'text',
+  inputAutoComplete,
+  inputName,
+  minInputLength = 3,
   submitLabel,
   inline: _inline,
   styles,
@@ -267,13 +276,17 @@ function ChatComposer({
   onSuggestionClick,
   onClearMeta,
   isInputDisabled,
+  isAuthFlowActive,
 }: ChatComposerProps) {
   const isLocked = isSaving || isInputDisabled;
+  const showMeta = !isAuthFlowActive;
+  const showSubmitError = !isAuthFlowActive && submitError;
+  const showSaveButton = !isAuthFlowActive && hasUserMessage;
 
   return (
     <div className="space-y-3 border-t border-white/10 pt-4">
       {authSlot}
-      {(metaDraft.category || metaDraft.date || metaDraft.tags?.length) && (
+      {showMeta && (metaDraft.category || metaDraft.date || metaDraft.tags?.length) && (
         <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-slate-200/80">
           {metaDraft.category && (
             <button
@@ -320,7 +333,7 @@ function ChatComposer({
         </div>
       )}
 
-      {submitError && (
+      {showSubmitError && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -332,18 +345,20 @@ function ChatComposer({
 
       <div className="flex gap-2">
         <input
-          type="text"
+          type={inputType}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           disabled={isLocked}
+          autoComplete={inputAutoComplete}
+          name={inputName}
           className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50"
         />
         <button
           type="button"
           onClick={onSend}
-          disabled={isLocked || inputValue.trim().length < 3}
+          disabled={isLocked || inputValue.trim().length < minInputLength}
           className={`rounded-2xl border px-4 py-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.sendButton}`}
           aria-label="Enviar mensagem"
         >
@@ -358,7 +373,7 @@ function ChatComposer({
         </button>
       </div>
 
-      {hasUserMessage && (
+      {showSaveButton && (
         <motion.button
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -416,6 +431,32 @@ export default function CosmosChatModal({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  const handleAuthComplete = () => {
+    setShowAuthPrompt(false);
+    const shouldSave = pendingAuthSave && !isSaving;
+    if (shouldSave) {
+      setPendingAuthSave(false);
+      setTimeout(() => {
+        void handleSave();
+      }, 0);
+    }
+    setPendingAuthSave(false);
+    onClose();
+  };
+
+  const {
+    messages: authMessages,
+    step: authStep,
+    stepSuggestions: authSuggestions,
+    isSubmitting: isAuthSubmitting,
+    isAuthenticated: isAuthComplete,
+    loading: isAuthLoading,
+    handleUserInput: handleAuthInput,
+    resetAll: resetAuthFlow,
+  } = useAuthChatFlow({ isActive: showAuthPrompt, onAuthenticated: handleAuthComplete });
+
+  const authInputLocked = isAuthSubmitting || isAuthLoading || isAuthComplete;
+
   const styles = toneStyles[tone];
   const hasUserMessage = useMemo(
     () => messages.some((message) => message.role === 'user'),
@@ -442,11 +483,17 @@ export default function CosmosChatModal({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, authMessages, showAuthPrompt]);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!showAuthPrompt) {
+      resetAuthFlow();
+    }
+  }, [showAuthPrompt, resetAuthFlow]);
 
   useEffect(() => {
     if (inline || !isOpen || typeof document === 'undefined') return;
@@ -548,6 +595,13 @@ export default function CosmosChatModal({
     }
   };
 
+  const handleAuthSend = async (value: string) => {
+    const didSend = await handleAuthInput(value);
+    if (didSend) {
+      setInputValue('');
+    }
+  };
+
   const buildSubmitValue = (messagesToSubmit: ChatMessage[]) => {
     const userMessages = messagesToSubmit
       .filter((message) => message.role === 'user')
@@ -629,6 +683,11 @@ export default function CosmosChatModal({
   const handleSuggestionClick = (
     suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]
   ) => {
+    if (showAuthPrompt) {
+      const value = suggestion.value ?? suggestion.label;
+      void handleAuthSend(value);
+      return;
+    }
     if (suggestion.value) {
       setInputValue((prev) =>
         prev ? `${prev} ${suggestion.value}` : (suggestion.value as string)
@@ -655,23 +714,53 @@ export default function CosmosChatModal({
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
+      if (showAuthPrompt) {
+        void handleAuthSend(inputValue);
+        return;
+      }
       handleSendMessage();
     }
   };
 
-  const handleAuthComplete = () => {
-    setShowAuthPrompt(false);
-    if (pendingAuthSave && !isSaving) {
-      setPendingAuthSave(false);
-      setTimeout(() => {
-        void handleSave();
-      }, 0);
+  if (!isMounted) return null;
+  const displayMessages = showAuthPrompt ? [...messages, ...authMessages] : messages;
+  const composerPlaceholder = showAuthPrompt
+    ? authStep === 'password'
+      ? 'Digite sua senha...'
+      : 'Digite sua resposta...'
+    : placeholder;
+  const composerInputType = showAuthPrompt
+    ? authStep === 'password'
+      ? 'password'
+      : authStep === 'email'
+        ? 'email'
+        : 'text'
+    : 'text';
+  const composerAutoComplete = showAuthPrompt
+    ? authStep === 'email'
+      ? 'email'
+      : authStep === 'password'
+        ? 'current-password'
+        : undefined
+    : undefined;
+  const composerInputName = showAuthPrompt
+    ? authStep === 'email'
+      ? 'email'
+      : authStep === 'password'
+        ? 'password'
+        : undefined
+    : undefined;
+  const composerSuggestions = showAuthPrompt
+    ? authSuggestions.map((suggestion) => ({ ...suggestion, tone }))
+    : suggestions;
+  const composerInputDisabled = showAuthPrompt ? authInputLocked : false;
+  const handleComposerSend = () => {
+    if (showAuthPrompt) {
+      void handleAuthSend(inputValue);
       return;
     }
-    setPendingAuthSave(false);
+    handleSendMessage();
   };
-
-  if (!isMounted) return null;
 
   const chatWindow = (
     <InputWindow
@@ -733,26 +822,13 @@ export default function CosmosChatModal({
         </div>
       )}
 
-      {showAuthPrompt ? (
-        <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-200/80 shadow-inner shadow-black/10">
-          <AuthChatFlow
-            variant="embedded"
-            onAuthenticated={handleAuthComplete}
-            onCancel={() => {
-              setShowAuthPrompt(false);
-              setPendingAuthSave(false);
-            }}
-          />
-        </div>
-      ) : (
-        <ChatMessages
-          messages={messages}
-          styles={styles}
-          inline={inline}
-          containerRef={messagesContainerRef}
-          messagesEndRef={messagesEndRef}
-        />
-      )}
+      <ChatMessages
+        messages={displayMessages}
+        styles={styles}
+        inline={inline}
+        containerRef={messagesContainerRef}
+        messagesEndRef={messagesEndRef}
+      />
 
       {hasUserMessage && !inline && !showAuthPrompt && (
         <motion.div
@@ -769,9 +845,13 @@ export default function CosmosChatModal({
         inputValue={inputValue}
         setInputValue={setInputValue}
         onKeyDown={handleKeyDown}
-        onSend={handleSendMessage}
+        onSend={handleComposerSend}
         onSave={handleSave}
-        placeholder={placeholder}
+        placeholder={composerPlaceholder}
+        inputType={composerInputType}
+        inputAutoComplete={composerAutoComplete}
+        inputName={composerInputName}
+        minInputLength={showAuthPrompt ? 1 : 3}
         submitLabel={submitLabel}
         inline={inline}
         styles={styles}
@@ -779,11 +859,12 @@ export default function CosmosChatModal({
         hasUserMessage={hasUserMessage}
         submitError={submitError}
         authSlot={null}
-        suggestions={suggestions}
+        suggestions={composerSuggestions}
         metaDraft={metaDraft}
         onSuggestionClick={handleSuggestionClick}
         onClearMeta={handleClearMeta}
-        isInputDisabled={showAuthPrompt}
+        isInputDisabled={composerInputDisabled}
+        isAuthFlowActive={showAuthPrompt}
       />
     </InputWindow>
   );

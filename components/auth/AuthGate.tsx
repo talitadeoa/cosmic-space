@@ -1,15 +1,19 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { SpaceBackground } from '@/app/cosmos/components/SpaceBackground';
 import InputWindow from '@/components/shared/cosmos/InputWindow';
 import { useAuth } from '@/hooks/useAuth';
 import AuthChatFlow from './AuthChatFlow';
 
 interface AuthGateProps {
   children: React.ReactNode;
+  chatButtonSize?: 'default' | 'compact';
 }
 
-export default function AuthGate({ children }: AuthGateProps) {
+export default function AuthGate({ children, chatButtonSize = 'default' }: AuthGateProps) {
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
   // Renderiza o conteúdo autenticado
   if (isAuthenticated) {
@@ -17,11 +21,25 @@ export default function AuthGate({ children }: AuthGateProps) {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-black text-slate-50">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.14),transparent_32%),radial-gradient(circle_at_80%_30%,rgba(168,85,247,0.14),transparent_32%),radial-gradient(circle_at_50%_80%,rgba(236,72,153,0.12),transparent_36%)]" />
-
+    <div
+      className="relative min-h-screen cursor-pointer overflow-hidden bg-slate-950 text-slate-50"
+      onClick={() => router.back()}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          router.back();
+        }
+      }}
+      aria-label="Voltar"
+    >
+      <SpaceBackground />
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10">
-        <div className="w-full max-w-2xl">
+        <div
+          className="w-full max-w-2xl cursor-auto"
+          onClick={(event) => event.stopPropagation()}
+        >
           <InputWindow
             variant="glass"
             size="md"
@@ -31,8 +49,9 @@ export default function AuthGate({ children }: AuthGateProps) {
           >
             <AuthChatFlow
               variant="page"
+              sendButtonSize={chatButtonSize}
               header={{
-                title: "Bem-vindo ao Cosmic Space",
+                title: "Seja bem-vindo(a)",
               }}
             />
           </InputWindow>
