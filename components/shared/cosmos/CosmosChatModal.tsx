@@ -396,7 +396,7 @@ export default function CosmosChatModal({
   contextEntries = [],
   suggestions = [],
 }: CosmosChatModalProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, verifyAuth } = useAuth();
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -407,6 +407,7 @@ export default function CosmosChatModal({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const authBypassRef = useRef(false);
 
   const styles = toneStyles[tone];
   const hasUserMessage = useMemo(
@@ -441,6 +442,12 @@ export default function CosmosChatModal({
   }, []);
 
   useEffect(() => {
+    if (isAuthenticated) {
+      authBypassRef.current = false;
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (inline || !isOpen || typeof document === 'undefined') return;
 
     // Usar html em vez de body para evitar problemas com overflow
@@ -473,6 +480,7 @@ export default function CosmosChatModal({
       setShowAuthPrompt(false);
       setPendingAuthSave(false);
       setMetaDraft({});
+      authBypassRef.current = false;
       return;
     }
 
@@ -563,7 +571,7 @@ export default function CosmosChatModal({
       return;
     }
 
-    if (requiresAuthOnSave && !isAuthenticated) {
+    if (requiresAuthOnSave && !isAuthenticated && !authBypassRef.current) {
       setShowAuthPrompt(true);
       setPendingAuthSave(true);
       return;
@@ -585,6 +593,7 @@ export default function CosmosChatModal({
         normalized.includes('nao autorizado') ||
         normalized.includes('unauthorized')
       ) {
+        authBypassRef.current = false;
         setShowAuthPrompt(true);
         setSubmitError(null);
         return;
@@ -629,6 +638,8 @@ export default function CosmosChatModal({
   };
 
   const handleAuthComplete = () => {
+    void verifyAuth({ silent: true });
+    authBypassRef.current = true;
     setShowAuthPrompt(false);
     if (pendingAuthSave && !isSaving) {
       setPendingAuthSave(false);
