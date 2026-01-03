@@ -171,6 +171,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
       <CosmosChatModal
         inline={chatInline}
         isOpen={isChatOpen}
+        requiresAuthOnSave
         storageKey={`todo-input-${inputType}`}
         title=""
         eyebrow=""
