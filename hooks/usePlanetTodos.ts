@@ -5,14 +5,17 @@ import { loadSavedTodos, saveSavedTodos, type SavedTodo } from '@/app/cosmos/uti
 import { useAuth } from '@/hooks/useAuth';
 
 const SAVE_DEBOUNCE_MS = 800;
+const SYNC_INTERVAL_MS = 10000; // Sincroniza a cada 10 segundos
 
 export const usePlanetTodos = () => {
   const [todos, setTodos] = useState<SavedTodo[]>([]);
   const [hasLoaded, setHasLoaded] = useState(false);
   const { isAuthenticated, loading } = useAuth();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const didHydrateRef = useRef(false);
 
+  // Carregamento inicial e sincronização periódica
   useEffect(() => {
     if (loading) return;
     let isMounted = true;
@@ -70,8 +73,30 @@ export const usePlanetTodos = () => {
 
     loadTodos();
 
+    // ✅ NOVO: Sincronização periódica (polling)
+    syncIntervalRef.current = setInterval(async () => {
+      if (isMounted && isAuthenticated && hasLoaded) {
+        try {
+          const response = await fetch('/api/planet-todos', { credentials: 'include' });
+          if (response.ok) {
+            const data = await response.json();
+            const serverItems = Array.isArray(data?.items) ? (data.items as SavedTodo[]) : [];
+            
+            // Atualiza se o servidor tem dados diferentes
+            setTodos(serverItems);
+          }
+        } catch (error) {
+          // Silenciosamente ignora erros de sincronização
+          console.debug('Falha ao sincronizar tarefas:', error);
+        }
+      }
+    }, SYNC_INTERVAL_MS);
+
     return () => {
       isMounted = false;
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+      }
     };
   }, [isAuthenticated, loading]);
 

@@ -11,14 +11,17 @@ import {
 } from '@/app/cosmos/utils/planetStateStorage';
 
 const SAVE_DEBOUNCE_MS = 800;
+const SYNC_INTERVAL_MS = 10000; // Sincroniza a cada 10 segundos
 
 export const usePlanetState = () => {
   const [state, setState] = useState<PlanetUiState>(() => loadPlanetState());
   const [hasLoaded, setHasLoaded] = useState(false);
   const { isAuthenticated, loading } = useAuth();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const didHydrateRef = useRef(false);
 
+  // Carregamento inicial e sincronização periódica
   useEffect(() => {
     if (loading) return;
     let isMounted = true;
@@ -76,8 +79,31 @@ export const usePlanetState = () => {
 
     loadState();
 
+    // ✅ NOVO: Sincronização periódica (polling)
+    syncIntervalRef.current = setInterval(async () => {
+      if (isMounted && isAuthenticated && hasLoaded) {
+        try {
+          const response = await fetch('/api/planet-state', { credentials: 'include' });
+          if (response.ok) {
+            const data = await response.json();
+            const remoteState = normalizePlanetState(data?.state ?? null);
+            
+            // Atualiza se o servidor tem versão diferente
+            // (presume que o servidor sempre tem a versão mais recente)
+            setState(remoteState);
+          }
+        } catch (error) {
+          // Silenciosamente ignora erros de sincronização
+          console.debug('Falha ao sincronizar estado do Planeta:', error);
+        }
+      }
+    }, SYNC_INTERVAL_MS);
+
     return () => {
       isMounted = false;
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+      }
     };
   }, [isAuthenticated, loading]);
 
