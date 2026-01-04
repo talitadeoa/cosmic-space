@@ -43,6 +43,30 @@ const normalizePhaseName = (phase: any): MoonPhase => {
   return 'luaCrescente';
 };
 
+const toDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseLunaDate = (raw: string | Date | undefined) => {
+  if (!raw) return null;
+  if (raw instanceof Date) return raw;
+  if (typeof raw !== 'string') return new Date(raw as any);
+  if (raw.includes('T')) return new Date(raw);
+  return new Date(`${raw}T00:00:00`);
+};
+
+const getLunaDateKey = (luna: any) => {
+  const raw = luna?.lunation_date || luna?.date;
+  if (typeof raw === 'string') {
+    return raw.split('T')[0];
+  }
+  const parsed = parseLunaDate(raw);
+  return parsed ? toDateKey(parsed) : '';
+};
+
 export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhaseData | null {
   const [data, setData] = useState<CurrentWeekPhaseData | null>(null);
 
@@ -84,19 +108,18 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
 
         // Filtrar lunações da semana
         const weekLunations = lunas.filter((luna: any) => {
-          const lunaDate = new Date(luna.lunation_date || luna.date);
+          const lunaDate = parseLunaDate(luna.lunation_date || luna.date);
+          if (!lunaDate) return false;
           return lunaDate >= weekStart && lunaDate <= weekEnd;
         });
 
         // Encontrar fase de hoje
-        const todayLuna = lunas.find((luna: any) => {
-          const lunaDate = new Date(luna.lunation_date || luna.date);
-          const lunaDateStr = lunaDate.toDateString();
-          const nowStr = now.toDateString();
-          return lunaDateStr === nowStr;
-        });
+        const todayKey = toDateKey(now);
+        const todayLuna = lunas.find((luna: any) => getLunaDateKey(luna) === todayKey);
 
-        const currentPhase = normalizePhaseName(todayLuna?.moon_phase || todayLuna?.moonPhase);
+        const currentPhaseCandidate = todayLuna
+          ? normalizePhaseName(todayLuna?.moon_phase || todayLuna?.moonPhase)
+          : null;
 
         const nextWeekStart = new Date(weekEnd);
         nextWeekStart.setDate(weekEnd.getDate() + 1);
@@ -107,7 +130,8 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
         nextWeekEnd.setHours(23, 59, 59, 999);
 
         const nextWeekLunations = lunas.filter((luna: any) => {
-          const lunaDate = new Date(luna.lunation_date || luna.date);
+          const lunaDate = parseLunaDate(luna.lunation_date || luna.date);
+          if (!lunaDate) return false;
           return lunaDate >= nextWeekStart && lunaDate <= nextWeekEnd;
         });
 
@@ -120,7 +144,7 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
         const nextWeekDominantPhase =
           nextWeekPhaseFreq.size > 0
             ? Array.from(nextWeekPhaseFreq.entries()).sort((a, b) => b[1] - a[1])[0][0]
-            : currentPhase;
+            : currentPhaseCandidate ?? 'luaCrescente';
 
         // Fases únicas na semana
         const phasesInWeekSet = new Set<MoonPhase>();
@@ -140,14 +164,19 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
         const dominantPhase =
           phaseFreq.size > 0
             ? Array.from(phaseFreq.entries()).sort((a, b) => b[1] - a[1])[0][0]
-            : currentPhase;
+            : currentPhaseCandidate ?? 'luaCrescente';
+
+        const currentPhase = currentPhaseCandidate ?? dominantPhase;
 
         // Timeline de fases
-        const phaseTimeline = weekLunations.map((l: any) => ({
-          phase: normalizePhaseName(l.moon_phase || l.moonPhase),
-          startDate: new Date(l.lunation_date || l.date),
-          endDate: new Date(l.lunation_date || l.date),
-        }));
+        const phaseTimeline = weekLunations.map((l: any) => {
+          const date = parseLunaDate(l.lunation_date || l.date) ?? new Date();
+          return {
+            phase: normalizePhaseName(l.moon_phase || l.moonPhase),
+            startDate: date,
+            endDate: date,
+          };
+        });
 
         setData({
           weekStart,
