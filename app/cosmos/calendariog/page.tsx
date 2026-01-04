@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 import LunarCalendarWidget, { LunarDayData, LunarPhase } from './LunarCalendarWidget';
-import styles from './page.module.css';
 
 const phaseCycle: LunarPhase[] = [
   'new',
@@ -85,7 +84,7 @@ const CalendarPage = () => {
   };
 
   return (
-    <main className={styles.page}>
+    <main className="min-h-screen bg-[#080c12] p-[clamp(16px,4vw,36px)]">
       <LunarCalendarWidget
         month={viewMonth}
         year={viewYear}

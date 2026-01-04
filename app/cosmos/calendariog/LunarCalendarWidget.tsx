@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useId, useMemo, useState } from 'react';
-import styles from './LunarCalendarWidget.module.css';
 
 export type LunarPhase =
   | 'new'
@@ -262,42 +261,44 @@ const LunarCalendarWidget: React.FC<LunarCalendarWidgetProps> = ({
 
   return (
     <section
-      className={styles.widget}
+      className="relative grid min-h-screen grid-cols-[minmax(240px,0.9fr)_minmax(320px,1.2fr)] gap-[clamp(20px,4vw,40px)] overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_20%_20%,rgba(58,77,110,0.18),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(120,160,220,0.15),transparent_50%),#0b0f14] p-[clamp(28px,5vw,48px)] font-['Space_Grotesk','Sora',sans-serif] text-[#f2f6ff] shadow-[0_24px_60px_rgba(2,8,20,0.55)] before:pointer-events-none before:absolute before:inset-0 before:content-[''] before:bg-[radial-gradient(circle,rgba(255,255,255,0.15)_0.5px,transparent_1.5px),radial-gradient(circle,rgba(255,255,255,0.08)_0.5px,transparent_1.2px)] before:[background-size:140px_140px,220px_220px] before:[background-position:0_0,80px_40px] before:opacity-[0.35] after:pointer-events-none after:absolute after:inset-0 after:content-[''] after:bg-[linear-gradient(120deg,rgba(9,12,18,0.7),transparent_60%)] max-[900px]:grid-cols-1"
       aria-label="Calendario lunar"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className={styles.hero} aria-live="polite">
-        <div className={styles.moonCard}>
+      <div className="relative z-[1] flex items-center justify-center" aria-live="polite">
+        <div className="flex w-[min(320px,100%)] flex-col items-center justify-center gap-[18px] rounded-[32px] bg-[rgba(16,22,32,0.86)] p-[clamp(20px,4vw,30px)] shadow-[inset_0_0_30px_rgba(16,22,32,0.4),0_18px_50px_rgba(2,8,20,0.55)] backdrop-blur-[10px] [aspect-ratio:1/1.2] max-[900px]:w-full">
           <MoonPhaseIcon
             phase={heroPhase}
             illumination={heroIllumination}
-            className={styles.moonHero}
+            className="h-[min(220px,60vw)] w-[min(220px,60vw)] rounded-full shadow-[0_0_40px_rgba(180,200,240,0.12)]"
           />
-          <p className={styles.moonLabel}>
+          <p className="text-[1.05rem] font-normal text-[#d8dee9]">
             {heroLabel} {percentLabel}
           </p>
         </div>
       </div>
 
       <div
-        className={styles.calendar}
+        className="relative z-[1] flex flex-col gap-[20px] rounded-[24px] bg-[rgba(16,22,32,0.86)] p-[clamp(20px,4vw,32px)] shadow-[inset_0_0_30px_rgba(16,22,32,0.4)]"
         role="grid"
         aria-label={`Calendario de ${monthLong[viewMonth - 1]} de ${viewYear}`}
       >
-        <header className={styles.calendarHeader}>
+        <header className="flex items-center justify-between gap-4">
           <div>
-            <p className={styles.headerDay}>{formatSelectedLabel(selectedDate)}</p>
-            <p className={styles.headerMonth}>
+            <p className="text-[1.05rem] font-light lowercase text-[#f2f6ff]">
+              {formatSelectedLabel(selectedDate)}
+            </p>
+            <p className="mt-[6px] text-[0.95rem] text-[#9aa6b8]">
               {monthLong[viewMonth - 1]} {viewYear}
             </p>
           </div>
-          <div className={styles.navButtons}>
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => handleMonthShift(-1)}
               aria-label="Mes anterior"
-              className={styles.navButton}
+              className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] text-[1.2rem] text-[#f2f6ff] transition-[transform,background-color] duration-200 ease-in hover:-translate-y-[1px] hover:bg-[rgba(255,255,255,0.12)]"
             >
               ‹
             </button>
@@ -305,22 +306,25 @@ const LunarCalendarWidget: React.FC<LunarCalendarWidgetProps> = ({
               type="button"
               onClick={() => handleMonthShift(1)}
               aria-label="Proximo mes"
-              className={styles.navButton}
+              className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] text-[1.2rem] text-[#f2f6ff] transition-[transform,background-color] duration-200 ease-in hover:-translate-y-[1px] hover:bg-[rgba(255,255,255,0.12)]"
             >
               ›
             </button>
           </div>
         </header>
 
-        <div className={styles.weekdays}>
+        <div className="grid grid-cols-7 gap-2 text-center text-[0.8rem] tracking-[0.08em] text-[#9aa6b8]">
           {weekdayLabels.map((label, index) => (
-            <span key={`${label}-${index}`} className={styles.weekday}>
+            <span key={`${label}-${index}`} className="uppercase">
               {label}
             </span>
           ))}
         </div>
 
-        <div className={styles.grid} key={`${viewYear}-${viewMonth}`}>
+        <div
+          className="grid grid-cols-7 gap-[10px] animate-month-enter max-[600px]:gap-[6px]"
+          key={`${viewYear}-${viewMonth}`}
+        >
           {grid.map((cell) => {
             const dateKey = toDateKey(cell.date);
             const data = lunarDataByDate[dateKey];
@@ -341,7 +345,7 @@ const LunarCalendarWidget: React.FC<LunarCalendarWidgetProps> = ({
               <button
                 type="button"
                 key={dateKey}
-                className={styles.dayButton}
+                className="relative flex h-12 flex-col items-center justify-center gap-1 rounded-full border-0 bg-transparent text-[0.9rem] text-[#f2f6ff] transition-colors duration-200 before:absolute before:inset-1 before:z-0 before:rounded-full before:bg-transparent before:transition-[background-color,box-shadow] before:duration-200 before:ease-in before:content-[''] data-[selected=true]:before:bg-[rgba(148,163,184,0.25)] data-[selected=true]:before:shadow-[0_0_18px_rgba(120,160,220,0.2)] data-[today=true]:text-white data-[today=true]:before:border data-[today=true]:before:border-[rgba(255,255,255,0.25)] data-[outside=true]:opacity-30 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_rgba(148,163,184,0.6)] max-[600px]:h-[42px] max-[600px]:text-[0.85rem]"
                 data-selected={isSelected}
                 data-outside={!cell.inMonth}
                 data-today={isToday}
@@ -349,16 +353,21 @@ const LunarCalendarWidget: React.FC<LunarCalendarWidgetProps> = ({
                 aria-label={ariaLabelParts.join(' - ')}
                 aria-selected={isSelected}
               >
-                <span className={styles.dayNumber}>{cell.date.getDate()}</span>
+                <span className="relative z-[1]">{cell.date.getDate()}</span>
                 {data?.showIcon && (
                   <MoonPhaseIcon
                     phase={data.phase}
                     illumination={data.illumination}
                     size={16}
-                    className={styles.miniMoon}
+                    className="relative z-[1] h-4 w-4 opacity-[0.85]"
                   />
                 )}
-                {data?.hasEvent && <span className={styles.eventDot} aria-hidden="true" />}
+                {data?.hasEvent && (
+                  <span
+                    className="relative z-[1] h-1 w-1 rounded-full bg-[rgba(210,230,255,0.7)]"
+                    aria-hidden="true"
+                  />
+                )}
               </button>
             );
           })}

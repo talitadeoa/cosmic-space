@@ -19,6 +19,7 @@ const config: Config = {
         'float-slow': 'float 10s ease-in-out infinite',
         'float-medium': 'float 8s ease-in-out infinite',
         'float-fast': 'float 6s ease-in-out infinite',
+        'month-enter': 'month-enter 240ms ease',
         'spin-slow': 'spin 16s linear infinite',
         'pulse-soft': 'pulse-soft 4s ease-in-out infinite',
         'orbit-slow': 'orbit 14s linear infinite',
@@ -28,6 +29,10 @@ const config: Config = {
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-14px)' },
+        },
+        'month-enter': {
+          from: { opacity: '0', transform: 'translateY(6px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
         'pulse-soft': {
           '0%, 100%': { opacity: '0.7', transform: 'scale(1)' },
