@@ -66,19 +66,22 @@ export async function GET(request: NextRequest) {
 
       const items = rows
         .filter((row) => isValidIslandId(row.island_key))
-        .map((row) => ({
-          id: row.island_key as IslandId,
-          version: Number(row.version),
-          updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
-          deletedAt: row.deleted_at
-            ? row.deleted_at instanceof Date
-              ? row.deleted_at.toISOString()
-              : row.deleted_at
-            : null,
-          payload: {
-            title: row.title ?? defaultIslandName(row.island_key),
-          },
-        }));
+        .map((row) => {
+          const version = row.version ? Number(row.version) : 1;
+          return {
+            id: row.island_key as IslandId,
+            version,
+            updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+            deletedAt: row.deleted_at
+              ? row.deleted_at instanceof Date
+                ? row.deleted_at.toISOString()
+                : row.deleted_at
+              : null,
+            payload: {
+              title: row.title ?? defaultIslandName(row.island_key),
+            },
+          };
+        });
 
       const lastChange = (await db`
         SELECT id
@@ -123,19 +126,22 @@ export async function GET(request: NextRequest) {
         AND island_key = ANY(${islandIds})
     `) as any[];
 
-    const items = rows.map((row) => ({
-      id: row.island_key as IslandId,
-      version: Number(row.version),
-      updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
-      deletedAt: row.deleted_at
-        ? row.deleted_at instanceof Date
-          ? row.deleted_at.toISOString()
-          : row.deleted_at
-        : null,
-      payload: {
-        title: row.title ?? defaultIslandName(row.island_key),
-      },
-    }));
+    const items = rows.map((row) => {
+      const version = row.version ? Number(row.version) : 1;
+      return {
+        id: row.island_key as IslandId,
+        version,
+        updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+        deletedAt: row.deleted_at
+          ? row.deleted_at instanceof Date
+            ? row.deleted_at.toISOString()
+            : row.deleted_at
+          : null,
+        payload: {
+          title: row.title ?? defaultIslandName(row.island_key),
+        },
+      };
+    });
 
     const nextCursor = changes[changes.length - 1]?.id ?? cursor;
     return NextResponse.json({ items, cursor: nextCursor }, { status: 200 });
@@ -216,8 +222,10 @@ export async function POST(request: NextRequest) {
 
       const existing = existingRows[0];
       const baseVersion = typeof change.baseVersion === 'number' ? change.baseVersion : null;
+      const existingVersion = existing ? Number(existing.version) : null;
 
-      if (existing && baseVersion && baseVersion !== Number(existing.version)) {
+      // Conflict apenas se existir no servidor com version válida e baseVersion não bate
+      if (existing && existingVersion && existingVersion > 0 && baseVersion !== null && baseVersion !== existingVersion) {
         conflicts.push({
           id: change.entityId,
           clientChangeId: change.clientChangeId,
@@ -227,7 +235,8 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      if (!baseVersion && existing) {
+      // Se não tem baseVersion mas existe com version válida, comparar timestamps
+      if (!baseVersion && existingVersion && existingVersion > 0) {
         const incomingUpdated = parseTimestamp(change.updatedAt);
         const existingUpdated = existing.updated_at instanceof Date
           ? existing.updated_at
@@ -245,7 +254,7 @@ export async function POST(request: NextRequest) {
 
       const title = normalizeTitle(change.payload?.title) ?? defaultIslandName(change.entityId);
       const now = new Date();
-      const nextVersion = existing ? Number(existing.version) + 1 : 1;
+      const nextVersion = existingVersion && existingVersion > 0 ? existingVersion + 1 : 1;
       const deletedAt = change.deletedAt ? now : null;
 
       await db`

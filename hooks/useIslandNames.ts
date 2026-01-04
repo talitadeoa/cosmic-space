@@ -80,7 +80,7 @@ export const useIslandNames = () => {
   const deviceId = useMemo(() => getDeviceId(), []);
   const metaRef = useRef<IslandMeta>(loadIslandMeta());
   const pendingRef = useRef<Set<IslandId>>(new Set());
-  const suppressOutboxRef = useRef(false);
+  const suppressOutboxApplyRef = useRef(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ export const useIslandNames = () => {
       try {
         const pullResult = await pullIslandChanges(user.userId);
         if (!pullResult.items?.length) return;
-        suppressOutboxRef.current = true;
+        suppressOutboxApplyRef.current = true;
         setIslandNamesState((prevNames) => {
           const filtered = pullResult.items.filter((item) => !pendingRef.current.has(item.id));
           const { names, ids } = applyIslandItems(prevNames, islandIds, metaRef.current, filtered);
@@ -153,7 +153,7 @@ export const useIslandNames = () => {
           saveIslandMeta(metaRef.current);
           return names;
         });
-        suppressOutboxRef.current = false;
+        suppressOutboxApplyRef.current = false;
       } catch (error) {
         console.debug('Falha ao buscar ilhas:', error);
       }
@@ -177,7 +177,6 @@ export const useIslandNames = () => {
 
   const queueIslandChange = useCallback(
     (islandId: IslandId, name: string | null, deletedAt: string | null) => {
-      if (suppressOutboxRef.current) return;
       const now = new Date().toISOString();
       pendingRef.current.add(islandId);
       metaRef.current[islandId] = {

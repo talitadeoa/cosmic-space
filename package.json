@@ -17,6 +17,7 @@
     "import:lunations": "node scripts/import-lunations-csv.js",
     "sync:csv": "npx tsx scripts/sync-csv-to-db.ts",
     "sync:sheets": "npx tsx scripts/sync-sheets.ts",
+    "sync:migrations": "npx tsx scripts/run-sync-migrations.ts",
     "prepare": "husky install 2>/dev/null || true"
   },
   "dependencies": {
