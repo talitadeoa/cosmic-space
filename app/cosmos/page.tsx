@@ -11,13 +11,13 @@ import type { ScreenId, FocusState, ScreenProps, CelestialType, CelestialSize } 
 
 import HomeScreen from './screens/HomeScreen';
 import SolOrbitScreen from './screens/SolOrbitScreen';
-import LuaListScreen from './screens/LuaListScreen';
+import LuaListScreen from './screens/LuasScreen';
 import PlanetCardBelowSunScreen from './screens/PlanetCardBelowSunScreen';
 import PlanetCardStandaloneScreen from './screens/PlanetCardStandaloneScreen';
 import GalaxySunsScreen from './screens/GalaxySunsScreen';
-import RingGalaxyScreen from './screens/RingGalaxyScreen';
+import RingGalaxyScreen from './screens/GalaxyScreen';
 import ColumnSolLuaPlanetaScreen from './screens/ColumnSolLuaPlanetaScreen';
-import EclipseProductivityScreen from './screens/EclipseProductivityScreen';
+import EclipseProductivityScreen from './screens/EclipseScreen';
 import PlanetScreen from './planeta/components/PlanetScreen';
 
 const screenVariants = {

@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-[100dvh] bg-space-dark bg-cosmic-gradient text-slate-100">
         <AuthProvider>
           <SfxProvider>
-            {isDev && <NavMenu />}
+            <NavMenu showDevRoutes={isDev} />
             <AutoSyncLunar />
             <GalaxySunsSync autoSync={true} />
             {children}
