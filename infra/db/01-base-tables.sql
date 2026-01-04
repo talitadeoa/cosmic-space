@@ -16,6 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_auth_tokens_expires_at ON auth_tokens (expires_at
 CREATE TABLE IF NOT EXISTS users (
   id BIGSERIAL PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
+  password_hash TEXT,
   provider TEXT DEFAULT 'password',
   first_name TEXT,
   last_name TEXT,
@@ -29,6 +30,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS birth_date DATE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS gender TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
 CREATE INDEX IF NOT EXISTS idx_users_created_at ON users (created_at DESC);

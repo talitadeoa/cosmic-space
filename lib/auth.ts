@@ -1,13 +1,11 @@
 // lib/auth.ts
 import 'server-only';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import { getDb } from './db';
 
-const validCredentials = {
-  password: process.env.AUTH_PASSWORD || 'cosmos2025',
-};
-
 const DEFAULT_TOKEN_TTL_SECONDS = 24 * 60 * 60;
+const BCRYPT_ROUNDS = 10;
 
 const resolveTokenTtlSeconds = (): number | null => {
   const raw = process.env.AUTH_TOKEN_TTL_SECONDS;
@@ -72,8 +70,12 @@ export async function getTokenPayload(token: string): Promise<Record<string, any
   return rows[0]?.payload ?? null;
 }
 
-export function validatePassword(password: string): boolean {
-  return password === validCredentials.password;
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, BCRYPT_ROUNDS);
+}
+
+export async function validatePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }
 
 export async function revokeToken(token: string): Promise<void> {

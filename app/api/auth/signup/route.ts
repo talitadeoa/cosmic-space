@@ -1,6 +1,6 @@
 // app/api/auth/signup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { validatePassword, createAuthToken } from '@/lib/auth';
+import { hashPassword, createAuthToken } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Sexo inválido' }, { status: 400 });
     }
 
-    if (!validatePassword(password)) {
-      return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
+    if (password.length < 4) {
+      return NextResponse.json({ error: 'Senha deve ter pelo menos 4 caracteres' }, { status: 400 });
     }
 
     const db = getDb();
@@ -53,9 +53,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 });
     }
 
+    const passwordHash = await hashPassword(password);
+
     const userRows = (await db`
-      INSERT INTO users (email, provider, last_login, first_name, last_name, birth_date, gender)
-      VALUES (${email}, 'password', NOW(), ${firstName}, ${lastName}, ${birthDate}, ${gender})
+      INSERT INTO users (email, password_hash, provider, last_login, first_name, last_name, birth_date, gender)
+      VALUES (${email}, ${passwordHash}, 'password', NOW(), ${firstName}, ${lastName}, ${birthDate}, ${gender})
       RETURNING id
     `) as Array<{ id: string }>;
     const userId = userRows?.[0]?.id;

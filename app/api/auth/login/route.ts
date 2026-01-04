@@ -17,28 +17,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Senha é obrigatória' }, { status: 400 });
     }
 
-    if (!validatePassword(password)) {
-      return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
-    }
-
     const db = getDb();
+    
+    // Buscar usuário por email
     const userRows = (await db`
-      INSERT INTO users (email, provider, last_login)
-      VALUES (${email}, 'password', NOW())
-      ON CONFLICT (email) DO UPDATE
-      SET last_login = NOW()
-      RETURNING id
-    `) as Array<{ id: string }>;
-    const userId = userRows?.[0]?.id;
+      SELECT id, password_hash FROM users WHERE email = ${email}
+    `) as Array<{ id: string; password_hash: string | null }>;
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Não foi possível identificar o usuário' },
-        { status: 500 }
-      );
+    if (userRows.length === 0) {
+      return NextResponse.json({ error: 'Email ou senha inválidos' }, { status: 401 });
     }
 
-    const token = await createAuthToken({ provider: 'password', email, userId });
+    const user = userRows[0];
+
+    // Se não tem password_hash, usuário foi criado com outro provider
+    if (!user.password_hash) {
+      return NextResponse.json({ error: 'Email ou senha inválidos' }, { status: 401 });
+    }
+
+    // Validar senha contra o hash
+    const passwordIsValid = await validatePassword(password, user.password_hash);
+    if (!passwordIsValid) {
+      return NextResponse.json({ error: 'Email ou senha inválidos' }, { status: 401 });
+    }
+
+    // Atualizar last_login
+    await db`
+      UPDATE users SET last_login = NOW() WHERE id = ${user.id}
+    `;
+
+    const token = await createAuthToken({ provider: 'password', email, userId: user.id });
 
     const response = NextResponse.json(
       { success: true, token, message: 'Autenticação bem-sucedida' },
