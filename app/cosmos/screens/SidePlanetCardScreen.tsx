@@ -16,6 +16,7 @@ import type { ScreenProps } from '../types';
 import type { IslandId } from '../types/screen';
 import { usePhaseInputs } from '@/hooks/usePhaseInputs';
 import { useFilteredTodos, type FilterState } from '@/hooks/useFilteredTodos';
+import { useCurrentWeekPhase } from '@/hooks/useCurrentWeekPhase';
 import { SavedTodosPanel } from '../components/SavedTodosPanel';
 import { IslandsList } from '../components/IslandsList';
 import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';
@@ -196,6 +197,7 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     month: null,
     year: null,
   });
+  const currentWeekPhase = useCurrentWeekPhase();
 
   const resetFilters = () => {
     setFilters({
@@ -376,7 +378,12 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   };
 
   // Usar o hook useFilteredTodos para aplicar todos os filtros
-  const displayedTodos = useFilteredTodos(savedTodos, filters);
+  const displayedTodos = useFilteredTodos(
+    savedTodos,
+    filters,
+    currentWeekPhase?.currentPhase,
+    currentWeekPhase?.nextWeekDominantPhase
+  );
 
   const moonCounts = useMemo(
     () =>

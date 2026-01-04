@@ -9,6 +9,7 @@ type MoonClusterProps = {
   moonCounts: Record<MoonPhase, number>;
   isDraggingTodo: boolean;
   selectedPhase: MoonPhase | null;
+  currentPhase?: MoonPhase | null;
   onMoonNavigate: (phase: MoonPhase, event: React.MouseEvent<HTMLDivElement>) => void;
   onMoonFilter: (phase: MoonPhase | null) => void;
   onDrop: (phase: MoonPhase) => (event: React.DragEvent) => void;
@@ -23,6 +24,7 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
   moonCounts,
   isDraggingTodo,
   selectedPhase,
+  currentPhase,
   onMoonNavigate: _onMoonNavigate,
   onMoonFilter,
   onDrop,
@@ -36,6 +38,7 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
           const moonType = MOON_TYPES[index % MOON_TYPES.length];
           const isActiveDrop = activeDrop === moonType;
           const isSelectedPhase = selectedPhase === moonType;
+          const isCurrentPhase = currentPhase === moonType;
           const badgeCount = moonCounts[moonType] ?? 0;
           const floatOffset = index * 1.5 - 3;
 
@@ -69,7 +72,11 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
                 onDragLeave={onDragLeave}
                 className={`transition-all duration-300 ${
                   isActiveDrop ? 'scale-110 drop-shadow-[0_0_14px_rgba(129,140,248,0.75)]' : ''
-                } ${isSelectedPhase ? 'drop-shadow-[0_0_20px_rgba(129,140,248,0.9)]' : ''} group-hover:drop-shadow-[0_0_25px_rgba(129,140,248,0.8)]`}
+                } ${isSelectedPhase ? 'drop-shadow-[0_0_20px_rgba(129,140,248,0.9)]' : ''} ${
+                  isCurrentPhase
+                    ? 'ring-2 ring-amber-200/70 shadow-[0_0_20px_rgba(251,191,36,0.6)]'
+                    : ''
+                } group-hover:drop-shadow-[0_0_25px_rgba(129,140,248,0.8)]`}
               />
             </div>
           );

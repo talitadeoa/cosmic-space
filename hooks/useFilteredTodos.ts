@@ -19,13 +19,27 @@ export type FilterState = {
  * Hook que aplica filtros em cascata aos todos
  * Ordem: view → inputType → todoStatus → phase → island → month → year
  */
-export const useFilteredTodos = (todos: SavedTodo[], filters: FilterState) => {
+export const useFilteredTodos = (
+  todos: SavedTodo[],
+  filters: FilterState,
+  currentWeekPhase?: MoonPhase | null,
+  nextWeekDominantPhase?: MoonPhase | null
+) => {
   return useMemo(() => {
     return (
       todos
         // 1. Filtrar por view (inbox ou lua-atual)
         .filter((todo) => {
           if (filters.view === 'lua-atual') {
+            if (currentWeekPhase) {
+              return todo.phase === currentWeekPhase;
+            }
+            return todo.phase !== null;
+          }
+          if (filters.view === 'proxima-fase') {
+            if (nextWeekDominantPhase) {
+              return todo.phase === nextWeekDominantPhase;
+            }
             return todo.phase !== null;
           }
           return true;
@@ -72,5 +86,5 @@ export const useFilteredTodos = (todos: SavedTodo[], filters: FilterState) => {
           return todoMonth === filters.month;
         })
     );
-  }, [todos, filters]);
+  }, [todos, filters, currentWeekPhase, nextWeekDominantPhase]);
 };

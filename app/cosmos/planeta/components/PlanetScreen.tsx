@@ -12,6 +12,7 @@ import { usePhaseInputs } from '@/hooks/usePhaseInputs';
 import { useFilteredTodos, type FilterState } from '@/hooks/useFilteredTodos';
 import { useGalaxySunsSync } from '@/hooks/useGalaxySunsSync';
 import { useLunations } from '@/hooks/useLunations';
+import { useCurrentWeekPhase } from '@/hooks/useCurrentWeekPhase';
 import { useTemporal } from '@/app/cosmos/planeta/state/TemporalContext';
 import { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/components/IslandsList';
@@ -32,6 +33,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     new Date().getFullYear() + 1,
   ]);
   const lunations = useLunations();
+  const currentWeekPhase = useCurrentWeekPhase(
+    lunations.data.length > 0 ? lunations.data : undefined
+  );
   const { todos: savedTodos, setTodos: setSavedTodos } = usePlanetTodos();
   const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
   const [showIslands, setShowIslands] = useState(false);
@@ -332,7 +336,12 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   };
 
   // Usar o hook useFilteredTodos para aplicar todos os filtros
-  const displayedTodos = useFilteredTodos(savedTodos, filters);
+  const displayedTodos = useFilteredTodos(
+    savedTodos,
+    filters,
+    currentWeekPhase?.currentPhase,
+    currentWeekPhase?.nextWeekDominantPhase
+  );
 
   const moonCounts = useMemo(
     () =>
@@ -494,6 +503,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               moonCounts={moonCounts}
               isDraggingTodo={isDraggingTodo}
               selectedPhase={filters.phase}
+              currentPhase={currentWeekPhase?.currentPhase ?? null}
               onMoonNavigate={(phase, event) =>
                 navigateWithFocus('planetCardStandalone', { event, type: phase, size: 'sm' })
               }

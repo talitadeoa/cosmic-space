@@ -20,6 +20,7 @@ export interface CurrentWeekPhaseData {
   currentPhase: MoonPhase;
   phasesInWeek: MoonPhase[];
   dominantPhase: MoonPhase;
+  nextWeekDominantPhase: MoonPhase;
   illumination: number;
   phaseTimeline: Array<{
     phase: MoonPhase;
@@ -97,6 +98,30 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
 
         const currentPhase = normalizePhaseName(todayLuna?.moon_phase || todayLuna?.moonPhase);
 
+        const nextWeekStart = new Date(weekEnd);
+        nextWeekStart.setDate(weekEnd.getDate() + 1);
+        nextWeekStart.setHours(0, 0, 0, 0);
+
+        const nextWeekEnd = new Date(nextWeekStart);
+        nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+        nextWeekEnd.setHours(23, 59, 59, 999);
+
+        const nextWeekLunations = lunas.filter((luna: any) => {
+          const lunaDate = new Date(luna.lunation_date || luna.date);
+          return lunaDate >= nextWeekStart && lunaDate <= nextWeekEnd;
+        });
+
+        const nextWeekPhaseFreq = new Map<MoonPhase, number>();
+        nextWeekLunations.forEach((l: any) => {
+          const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
+          nextWeekPhaseFreq.set(phase, (nextWeekPhaseFreq.get(phase) || 0) + 1);
+        });
+
+        const nextWeekDominantPhase =
+          nextWeekPhaseFreq.size > 0
+            ? Array.from(nextWeekPhaseFreq.entries()).sort((a, b) => b[1] - a[1])[0][0]
+            : currentPhase;
+
         // Fases únicas na semana
         const phasesInWeekSet = new Set<MoonPhase>();
         weekLunations.forEach((l: any) => {
@@ -131,6 +156,7 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
           currentPhase,
           phasesInWeek,
           dominantPhase,
+          nextWeekDominantPhase,
           illumination: todayLuna?.illumination || 50,
           phaseTimeline,
           isWeekBeforePhaseChange: phasesInWeek.length > 1,

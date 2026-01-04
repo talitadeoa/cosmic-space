@@ -1,16 +1,37 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getLunarPhaseAndSign, getSignEmoji } from '@/lib/astro';
-import { findNearestNewMoon, findPhaseDay } from '@/lib/lunar-cycle-utils';
+import { getSignEmoji } from '@/lib/astro';
+import { fetchLunations } from '@/hooks/useLunations';
 
 type MoonPhaseData = {
   faseLua: string;
-  age: number;
+  normalizedPhase: string;
+  age?: number;
   signo: string;
   cycleInfo?: string;
   daysUntilEvent?: string;
   phaseDay?: string;
+};
+
+const SYNODIC_MONTH = 29.53058867;
+const REFRESH_INTERVAL_MS = 60 * 60 * 1000;
+
+const formatLocalDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const normalizePhaseLabel = (phase: string): string => {
+  const normalized = phase.toLowerCase();
+  if (normalized.includes('primeiro quarto')) return 'Primeiro Quarto';
+  if (normalized.includes('nova')) return 'Nova';
+  if (normalized.includes('crescente')) return 'Crescente';
+  if (normalized.includes('cheia')) return 'Cheia';
+  if (normalized.includes('minguante')) return 'Minguante';
+  return phase;
 };
 
 const MoonPhaseDisplay: React.FC = () => {
@@ -18,62 +39,92 @@ const MoonPhaseDisplay: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    const data = getLunarPhaseAndSign();
-    const newMoon = findNearestNewMoon(new Date(), 'before');
+    let isMounted = true;
+    const controller = new AbortController();
 
-    // Calcular qual é o dia dentro da fase específica
-    const SYNODIC_MONTH = 29.53058867;
-    let phaseDay = '';
-    let phase = '';
+    const buildPhaseDetails = (ageDays?: number) => {
+      if (ageDays === undefined || Number.isNaN(ageDays)) {
+        return { age: undefined, phaseDay: undefined, cycleInfo: undefined, daysUntilEvent: undefined };
+      }
 
-    const age = data.age;
-    if (age < 1.5 || age > SYNODIC_MONTH - 1.5) {
-      // Lua Nova
-      phase = 'Lua Nova';
-      phaseDay = `Dia ${Math.ceil(age)}/1`;
-    } else if (age < SYNODIC_MONTH / 2 - 1.2) {
-      // Crescente
-      phase = 'Crescente';
-      const dayInPhase = Math.ceil(age - 1.5);
-      phaseDay = `Dia ${dayInPhase} da ${phase}`;
-    } else if (age < SYNODIC_MONTH / 2 + 1.2) {
-      // Cheia
-      phase = 'Cheia';
-      phaseDay = `Dia ${Math.ceil(age - (SYNODIC_MONTH / 2 - 1.2))}/1`;
-    } else {
-      // Minguante
-      phase = 'Minguante';
-      const dayInPhase = Math.ceil(age - (SYNODIC_MONTH / 2 + 1.2));
-      phaseDay = `Dia ${dayInPhase} da ${phase}`;
-    }
+      const age = Math.round(ageDays);
+      let phaseDay = '';
+      let phase = '';
 
-    // Determinar qual será o próximo evento importante
-    let cycleInfo = '';
-    let daysUntilEvent = '';
+      if (ageDays < 1.5 || ageDays > SYNODIC_MONTH - 1.5) {
+        phase = 'Lua Nova';
+        phaseDay = `Dia ${Math.ceil(ageDays)}/1`;
+      } else if (ageDays < SYNODIC_MONTH / 2 - 1.2) {
+        phase = 'Crescente';
+        const dayInPhase = Math.ceil(ageDays - 1.5);
+        phaseDay = `Dia ${dayInPhase} da ${phase}`;
+      } else if (ageDays < SYNODIC_MONTH / 2 + 1.2) {
+        phase = 'Cheia';
+        phaseDay = `Dia ${Math.ceil(ageDays - (SYNODIC_MONTH / 2 - 1.2))}/1`;
+      } else {
+        phase = 'Minguante';
+        const dayInPhase = Math.ceil(ageDays - (SYNODIC_MONTH / 2 + 1.2));
+        phaseDay = `Dia ${dayInPhase} da ${phase}`;
+      }
 
-    if (age < 14.765) {
-      // Crescente - próximo é Cheia
-      const daysLeft = Math.round(14.765 - age);
-      cycleInfo = 'Próximo: Lua Cheia';
-      daysUntilEvent = `em ${daysLeft} dias`;
-    } else if (age < 15.765) {
-      cycleInfo = 'Agora: Lua Cheia';
-      daysUntilEvent = '';
-    } else {
-      // Minguante - próximo é Nova
-      const daysLeft = Math.round(29.53 - age);
-      cycleInfo = 'Próximo: Lua Nova';
-      daysUntilEvent = `em ${daysLeft} dias`;
-    }
+      let cycleInfo = '';
+      let daysUntilEvent = '';
 
-    setMoonData({
-      faseLua: data.faseLua,
-      age: data.age,
-      signo: data.signo,
-      cycleInfo,
-      daysUntilEvent,
-      phaseDay,
-    });
+      if (ageDays < 14.765) {
+        const daysLeft = Math.round(14.765 - ageDays);
+        cycleInfo = 'Próximo: Lua Cheia';
+        daysUntilEvent = `em ${daysLeft} dias`;
+      } else if (ageDays < 15.765) {
+        cycleInfo = 'Agora: Lua Cheia';
+        daysUntilEvent = '';
+      } else {
+        const daysLeft = Math.round(SYNODIC_MONTH - ageDays);
+        cycleInfo = 'Próximo: Lua Nova';
+        daysUntilEvent = `em ${daysLeft} dias`;
+      }
+
+      return { age, phaseDay, cycleInfo, daysUntilEvent };
+    };
+
+    const loadToday = async () => {
+      const today = new Date();
+      const dateStr = formatLocalDate(today);
+
+      try {
+        const response = await fetchLunations({
+          start: dateStr,
+          end: dateStr,
+          source: 'db',
+          signal: controller.signal,
+        });
+
+        const day = response.days[0];
+        if (!day) return;
+
+        const normalizedPhase = normalizePhaseLabel(day.moonPhase);
+        const details = buildPhaseDetails(day.ageDays);
+
+        if (!isMounted) return;
+        setMoonData({
+          faseLua: day.moonPhase,
+          normalizedPhase,
+          signo: day.sign,
+          ...details,
+        });
+      } catch (error) {
+        if ((error as Error)?.name === 'AbortError') return;
+        console.warn('Falha ao carregar lunações do banco:', error);
+      }
+    };
+
+    loadToday();
+    const interval = window.setInterval(loadToday, REFRESH_INTERVAL_MS);
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+      window.clearInterval(interval);
+    };
   }, []);
 
   if (!moonData) return null;
@@ -124,16 +175,16 @@ const MoonPhaseDisplay: React.FC = () => {
     <div className="absolute top-3 sm:top-6 left-1/2 -translate-x-1/2 z-30">
       <button
         onClick={() => setShowDetails(!showDetails)}
-        className={`flex items-center gap-3 rounded-full px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r ${getPhaseColor(moonData.faseLua)} shadow-lg shadow-indigo-900/30 border border-white/10 backdrop-blur-md transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50 cursor-pointer`}
+        className={`flex items-center gap-3 rounded-full px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r ${getPhaseColor(moonData.normalizedPhase)} shadow-lg shadow-indigo-900/30 border border-white/10 backdrop-blur-md transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50 cursor-pointer`}
       >
-        <span className="text-2xl sm:text-3xl">{getPhaseEmoji(moonData.faseLua)}</span>
+        <span className="text-2xl sm:text-3xl">{getPhaseEmoji(moonData.normalizedPhase)}</span>
         <div className="flex flex-col gap-0.5 text-left">
           <span className="text-xs sm:text-sm font-semibold uppercase tracking-[0.15em] text-white/90">
-            {phaseNameMap[moonData.faseLua] || moonData.faseLua}
+            {phaseNameMap[moonData.normalizedPhase] || moonData.faseLua}
           </span>
           <div className="flex items-center gap-2">
             <span className="text-[0.65rem] sm:text-xs text-white/60 font-medium">
-              {moonData.phaseDay} • {getSignEmoji(moonData.signo)} {moonData.signo}
+              {moonData.phaseDay || 'Dia —'} • {getSignEmoji(moonData.signo)} {moonData.signo}
             </span>
             {showDetails && (
               <span className="text-[0.6rem] sm:text-[0.7rem] text-white/40 ml-1">▾</span>
@@ -150,11 +201,13 @@ const MoonPhaseDisplay: React.FC = () => {
             <div className="space-y-1.5 text-slate-300">
               <div className="flex justify-between">
                 <span>Ciclo:</span>
-                <span className="font-medium text-white">Dia {moonData.age}/29</span>
+                <span className="font-medium text-white">
+                  {moonData.age !== undefined ? `Dia ${moonData.age}/29` : 'Dia —/29'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Fase:</span>
-                <span className="font-medium text-white">{moonData.phaseDay}</span>
+                <span className="font-medium text-white">{moonData.phaseDay || '—'}</span>
               </div>
               <div className="flex justify-between">
                 <span>Signo:</span>
@@ -162,10 +215,12 @@ const MoonPhaseDisplay: React.FC = () => {
                   {getSignEmoji(moonData.signo)} {moonData.signo}
                 </span>
               </div>
-              <div className="border-t border-slate-700 pt-1.5 mt-1.5 flex justify-between">
-                <span>{moonData.cycleInfo}</span>
-                <span className="font-medium text-amber-300">{moonData.daysUntilEvent}</span>
-              </div>
+              {(moonData.cycleInfo || moonData.daysUntilEvent) && (
+                <div className="border-t border-slate-700 pt-1.5 mt-1.5 flex justify-between">
+                  <span>{moonData.cycleInfo}</span>
+                  <span className="font-medium text-amber-300">{moonData.daysUntilEvent}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
