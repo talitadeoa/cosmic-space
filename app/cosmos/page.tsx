@@ -16,9 +16,9 @@ import PlanetCardBelowSunScreen from './screens/PlanetCardBelowSunScreen';
 import PlanetCardStandaloneScreen from './screens/PlanetCardStandaloneScreen';
 import GalaxySunsScreen from './screens/GalaxySunsScreen';
 import RingGalaxyScreen from './screens/RingGalaxyScreen';
-import SidePlanetCardScreen from './screens/SidePlanetCardScreen';
 import ColumnSolLuaPlanetaScreen from './screens/ColumnSolLuaPlanetaScreen';
 import EclipseProductivityScreen from './screens/EclipseProductivityScreen';
+import PlanetScreen from './planeta/components/PlanetScreen';
 
 const screenVariants = {
   initial: { opacity: 0, scale: 0.96 },
@@ -42,7 +42,7 @@ const screens: Record<ScreenId, React.FC<ScreenProps>> = {
   planetCardStandalone: PlanetCardStandaloneScreen,
   galaxySuns: GalaxySunsScreen,
   ringGalaxy: RingGalaxyScreen,
-  sidePlanetCard: SidePlanetCardScreen,
+  sidePlanetCard: PlanetScreen,
   eclipseProductivity: EclipseProductivityScreen,
   columnSolLuaPlaneta: ColumnSolLuaPlanetaScreen,
 };
