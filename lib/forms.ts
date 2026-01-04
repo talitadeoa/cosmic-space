@@ -389,6 +389,7 @@ export async function listIslands(userId: string | number): Promise<IslandRow[]>
       SELECT island_key, title
       FROM islands
       WHERE user_id = ${userId}
+        AND deleted_at IS NULL
       ORDER BY island_key ASC
     `) as any[];
 

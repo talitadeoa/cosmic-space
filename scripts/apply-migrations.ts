@@ -48,6 +48,8 @@ const files = [
   'infra/db/08-planet-state.sql',
   'infra/db/09-sync-changes.sql',
   'infra/db/10-planet-sync-alter.sql',
+  'infra/db/11-island-sync-alter.sql',
+  'infra/db/12-planet-todos-indexes.sql',
 ];
 
 (async () => {

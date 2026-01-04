@@ -1,6 +1,6 @@
 'use client';
 
-export type SyncEntityType = 'planet_todo' | 'planet_state';
+export type SyncEntityType = 'planet_todo' | 'planet_state' | 'island';
 export type SyncChangeStatus = 'pending' | 'conflict';
 
 export type OutboxChange<TPayload = unknown> = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_ISLAND_NAMES,
   loadIslandNames,
@@ -13,135 +13,198 @@ import {
   type IslandNames,
 } from '@/app/cosmos/utils/islandNames';
 import { useAuth } from '@/hooks/useAuth';
+import { getDeviceId } from '@/app/cosmos/utils/deviceId';
+import { loadIslandMeta, saveIslandMeta, type IslandMeta } from '@/app/cosmos/utils/islandMetaStorage';
+import {
+  buildIslandPayload,
+  enqueueIslandChange,
+  pullIslandChanges,
+  pushIslandChanges,
+  type SyncIslandItem,
+} from '@/app/cosmos/utils/islandSync';
+import { listOutboxChanges } from '@/app/cosmos/utils/syncOutbox';
+
+const SYNC_INTERVAL_MS = 10000;
+
+const createChangeId = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `change-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+
+const orderIslandIds = (ids: Iterable<IslandId>) =>
+  ISLAND_IDS.filter((id) => Array.from(ids).includes(id)).slice(0, MAX_ISLANDS);
+
+const applyIslandItems = (
+  prevNames: IslandNames,
+  prevIds: IslandId[],
+  meta: IslandMeta,
+  items: SyncIslandItem[]
+) => {
+  const names: IslandNames = { ...prevNames };
+  const idSet = new Set<IslandId>(prevIds);
+
+  items.forEach((item) => {
+    meta[item.id] = {
+      version: item.version,
+      updatedAt: item.updatedAt,
+      deletedAt: item.deletedAt,
+    };
+
+    if (item.deletedAt) {
+      idSet.delete(item.id);
+      return;
+    }
+
+    idSet.add(item.id);
+    const title = item.payload?.title?.trim();
+    if (title) {
+      names[item.id] = title;
+    }
+  });
+
+  if (!idSet.has('ilha1')) {
+    idSet.add('ilha1');
+  }
+
+  return {
+    names,
+    ids: orderIslandIds(idSet),
+  };
+};
 
 export const useIslandNames = () => {
-  const [islandNames, setIslandNames] = useState<IslandNames>(DEFAULT_ISLAND_NAMES);
-  const [islandIds, setIslandIds] = useState<IslandId[]>(['ilha1']);
+  const [islandNames, setIslandNamesState] = useState<IslandNames>(DEFAULT_ISLAND_NAMES);
+  const [islandIds, setIslandIdsState] = useState<IslandId[]>(['ilha1']);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const didHydrateRef = useRef(false);
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
+  const deviceId = useMemo(() => getDeviceId(), []);
+  const metaRef = useRef<IslandMeta>(loadIslandMeta());
+  const pendingRef = useRef<Set<IslandId>>(new Set());
+  const suppressOutboxRef = useRef(false);
+  const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (loading) return;
-    let isMounted = true;
+    const localNames = loadIslandNames();
+    const localIds = loadIslandIds().slice(0, MAX_ISLANDS);
 
-    const loadNames = async () => {
-      const localNames = loadIslandNames();
-      const localIds = loadIslandIds().slice(0, MAX_ISLANDS);
-      const localHasCustomNames = ISLAND_IDS.some(
-        (islandId) => localNames[islandId] !== DEFAULT_ISLAND_NAMES[islandId]
-      );
+    setIslandNamesState({
+      ...DEFAULT_ISLAND_NAMES,
+      ...localNames,
+    });
+    setIslandIdsState(orderIslandIds(localIds));
+    setHasLoaded(true);
 
-      if (isAuthenticated) {
-        try {
-          const response = await fetch('/api/islands', { credentials: 'include' });
-          if (response.ok) {
-            const data = await response.json();
-            const remoteIds = Array.isArray(data?.ids)
-              ? data.ids.filter((id: any): id is IslandId => ISLAND_IDS.includes(id))
-              : [];
-            const activeIds = (remoteIds.length > 0 ? remoteIds : ['ilha1']).slice(0, MAX_ISLANDS);
-            const nextNames = {
-              ...DEFAULT_ISLAND_NAMES,
-              ...(data?.names ?? {}),
-            };
-            const remoteIsDefaultOnly =
-              activeIds.length === 1 &&
-              activeIds[0] === 'ilha1' &&
-              Object.keys(data?.names ?? {}).length === 0;
-            const localHasExtraIds = localIds.some((id) => !activeIds.includes(id));
-            const shouldSeedRemote = remoteIsDefaultOnly && (localHasExtraIds || localHasCustomNames);
-
-            if (shouldSeedRemote) {
-              if (isMounted) {
-                setIslandNames(localNames);
-                setIslandIds(localIds);
-              }
-              await fetch('/api/islands', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ ids: localIds, names: localNames }),
-              });
-              if (isMounted) {
-                setHasLoaded(true);
-              }
-              return;
-            }
-            if (isMounted) {
-              setIslandNames(nextNames);
-              setIslandIds(activeIds);
-            }
-          } else {
-            if (isMounted) {
-              setIslandNames(localNames);
-              setIslandIds(localIds);
-            }
-          }
-        } catch (error) {
-          console.warn('Falha ao carregar ilhas do servidor:', error);
-          if (isMounted) {
-            setIslandNames(localNames);
-            setIslandIds(localIds);
-          }
-        }
-      } else {
-        if (isMounted) {
-          setIslandNames(localNames);
-          setIslandIds(localIds);
-        }
-      }
-
-      if (isMounted) {
-        setHasLoaded(true);
-      }
-    };
-
-    loadNames();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated, loading]);
+    if (isAuthenticated) {
+      void listOutboxChanges('island', 200, true).then((items) => {
+        pendingRef.current = new Set(items.map((item) => item.entityId as IslandId));
+      });
+    } else {
+      pendingRef.current = new Set();
+    }
+  }, [loading, isAuthenticated]);
 
   useEffect(() => {
     if (!hasLoaded) return;
-    if (!didHydrateRef.current) {
-      didHydrateRef.current = true;
+    saveIslandNames(islandNames);
+    saveIslandIds(islandIds);
+    saveIslandMeta(metaRef.current);
+  }, [hasLoaded, islandNames, islandIds]);
+
+  useEffect(() => {
+    if (!hasLoaded || !isAuthenticated || !user?.userId) {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
       return;
     }
 
-    if (!isAuthenticated) {
-      saveIslandNames(islandNames);
-      saveIslandIds(islandIds);
-      return;
-    }
+    let isMounted = true;
 
-    const persistRemote = async () => {
+    const syncIslands = async () => {
+      if (!isMounted) return;
       try {
-        const namesPayload: Partial<IslandNames> = {};
-        islandIds.forEach((islandId) => {
-          namesPayload[islandId] = islandNames[islandId] ?? DEFAULT_ISLAND_NAMES[islandId];
-        });
-
-        await fetch('/api/islands', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ ids: islandIds, names: namesPayload }),
-        });
+        const pushResult = await pushIslandChanges();
+        if (pushResult?.applied?.length) {
+          pushResult.applied.forEach((item) => {
+            metaRef.current[item.id] = {
+              ...metaRef.current[item.id],
+              version: item.version,
+              updatedAt: item.updatedAt,
+              deletedAt: null,
+            };
+            pendingRef.current.delete(item.id);
+          });
+          saveIslandMeta(metaRef.current);
+        }
       } catch (error) {
-        console.warn('Falha ao salvar ilhas no servidor:', error);
-        saveIslandNames(islandNames);
-        saveIslandIds(islandIds);
+        console.debug('Falha ao enviar ilhas:', error);
+      }
+
+      try {
+        const pullResult = await pullIslandChanges(user.userId);
+        if (!pullResult.items?.length) return;
+        suppressOutboxRef.current = true;
+        setIslandNamesState((prevNames) => {
+          const filtered = pullResult.items.filter((item) => !pendingRef.current.has(item.id));
+          const { names, ids } = applyIslandItems(prevNames, islandIds, metaRef.current, filtered);
+          setIslandIdsState(ids);
+          saveIslandMeta(metaRef.current);
+          return names;
+        });
+        suppressOutboxRef.current = false;
+      } catch (error) {
+        console.debug('Falha ao buscar ilhas:', error);
       }
     };
 
-    persistRemote();
-  }, [hasLoaded, islandNames, islandIds, isAuthenticated]);
+    const immediateTimeoutRef = setTimeout(() => {
+      syncIslands();
+    }, 100);
+
+    syncIntervalRef.current = setInterval(syncIslands, SYNC_INTERVAL_MS);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(immediateTimeoutRef);
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+    };
+  }, [hasLoaded, isAuthenticated, user?.userId, islandIds]);
+
+  const queueIslandChange = useCallback(
+    (islandId: IslandId, name: string | null, deletedAt: string | null) => {
+      if (suppressOutboxRef.current) return;
+      const now = new Date().toISOString();
+      pendingRef.current.add(islandId);
+      metaRef.current[islandId] = {
+        ...metaRef.current[islandId],
+        updatedAt: now,
+        deletedAt,
+      };
+      saveIslandMeta(metaRef.current);
+      void enqueueIslandChange({
+        clientChangeId: createChangeId(),
+        type: 'island',
+        entityId: islandId,
+        deviceId,
+        baseVersion: metaRef.current[islandId]?.version ?? null,
+        updatedAt: now,
+        deletedAt,
+        payload: buildIslandPayload(name),
+      });
+    },
+    [deviceId]
+  );
 
   const renameIsland = (islandId: IslandId, name: string) => {
-    setIslandNames((prev) => ({ ...prev, [islandId]: name }));
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setIslandNamesState((prev) => ({ ...prev, [islandId]: trimmed }));
+    queueIslandChange(islandId, trimmed, null);
   };
 
   const createIsland = (name: string): IslandId | null => {
@@ -151,15 +214,17 @@ export const useIslandNames = () => {
     const trimmed = name.trim();
     if (!trimmed) return null;
 
-    setIslandIds((prev) => [...prev, nextId]);
-    setIslandNames((prev) => ({ ...prev, [nextId]: trimmed }));
+    setIslandIdsState((prev) => orderIslandIds([...prev, nextId]));
+    setIslandNamesState((prev) => ({ ...prev, [nextId]: trimmed }));
+    queueIslandChange(nextId, trimmed, null);
     return nextId;
   };
 
   const removeIsland = (islandId: IslandId): boolean => {
     if (!islandIds.includes(islandId)) return false;
     if (islandIds.length <= 1) return false;
-    setIslandIds((prev) => prev.filter((id) => id !== islandId));
+    setIslandIdsState((prev) => prev.filter((id) => id !== islandId));
+    queueIslandChange(islandId, islandNames[islandId], new Date().toISOString());
     return true;
   };
 
