@@ -15,9 +15,14 @@ async function runMigrations() {
   try {
     const dbPath = join(process.cwd(), 'infra', 'db');
 
+    const script09 = readFileSync(join(dbPath, '09-sync-changes.sql'), 'utf8');
     const script10 = readFileSync(join(dbPath, '10-planet-sync-alter.sql'), 'utf8');
     const script11 = readFileSync(join(dbPath, '11-island-sync-alter.sql'), 'utf8');
     const script12 = readFileSync(join(dbPath, '12-planet-todos-indexes.sql'), 'utf8');
+
+    console.log('⏳ Executando script 09: sync-changes...');
+    await sql.unsafe(script09);
+    console.log('✅ Script 09 concluído\n');
 
     console.log('⏳ Executando script 10: planet-sync-alter...');
     await sql.unsafe(script10);
