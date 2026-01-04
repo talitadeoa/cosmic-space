@@ -26,6 +26,12 @@ export const useIslandNames = () => {
     let isMounted = true;
 
     const loadNames = async () => {
+      const localNames = loadIslandNames();
+      const localIds = loadIslandIds().slice(0, MAX_ISLANDS);
+      const localHasCustomNames = ISLAND_IDS.some(
+        (islandId) => localNames[islandId] !== DEFAULT_ISLAND_NAMES[islandId]
+      );
+
       if (isAuthenticated) {
         try {
           const response = await fetch('/api/islands', { credentials: 'include' });
@@ -39,27 +45,50 @@ export const useIslandNames = () => {
               ...DEFAULT_ISLAND_NAMES,
               ...(data?.names ?? {}),
             };
+            const remoteIsDefaultOnly =
+              activeIds.length === 1 &&
+              activeIds[0] === 'ilha1' &&
+              Object.keys(data?.names ?? {}).length === 0;
+            const localHasExtraIds = localIds.some((id) => !activeIds.includes(id));
+            const shouldSeedRemote = remoteIsDefaultOnly && (localHasExtraIds || localHasCustomNames);
+
+            if (shouldSeedRemote) {
+              if (isMounted) {
+                setIslandNames(localNames);
+                setIslandIds(localIds);
+              }
+              await fetch('/api/islands', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ ids: localIds, names: localNames }),
+              });
+              if (isMounted) {
+                setHasLoaded(true);
+              }
+              return;
+            }
             if (isMounted) {
               setIslandNames(nextNames);
               setIslandIds(activeIds);
             }
           } else {
             if (isMounted) {
-              setIslandNames(loadIslandNames());
-              setIslandIds(loadIslandIds().slice(0, MAX_ISLANDS));
+              setIslandNames(localNames);
+              setIslandIds(localIds);
             }
           }
         } catch (error) {
           console.warn('Falha ao carregar ilhas do servidor:', error);
           if (isMounted) {
-            setIslandNames(loadIslandNames());
-            setIslandIds(loadIslandIds());
+            setIslandNames(localNames);
+            setIslandIds(localIds);
           }
         }
       } else {
         if (isMounted) {
-          setIslandNames(loadIslandNames());
-          setIslandIds(loadIslandIds().slice(0, MAX_ISLANDS));
+          setIslandNames(localNames);
+          setIslandIds(localIds);
         }
       }
 

@@ -1,19 +1,9 @@
 import { useMemo } from 'react';
 import type { SavedTodo, MoonPhase } from '@/app/cosmos/utils/todoStorage';
-import type { IslandId } from '@/app/cosmos/types/screen';
+import type { PlanetFiltersState, InputTypeFilter, TodoStatusFilter } from '@/types/planetState';
 
-export type InputTypeFilter = 'all' | SavedTodo['inputType'];
-export type TodoStatusFilter = 'all' | 'completed' | 'open';
-
-export type FilterState = {
-  view: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
-  inputType: InputTypeFilter;
-  todoStatus: TodoStatusFilter;
-  phase: MoonPhase | null;
-  island: IslandId | null;
-  month: number | null; // 1-12 ou null para todos
-  year: number | null; // YYYY ou null para todos
-};
+export type FilterState = PlanetFiltersState;
+export type { InputTypeFilter, TodoStatusFilter };
 
 /**
  * Hook que aplica filtros em cascata aos todos

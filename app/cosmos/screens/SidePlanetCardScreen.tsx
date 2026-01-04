@@ -1,16 +1,10 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { CelestialObject } from '../components/CelestialObject';
 import { Card } from '../components/Card';
 import TodoInput, { TodoItem as ParsedTodoItem } from '../components/TodoInput';
-import {
-  loadSavedTodos,
-  phaseLabels,
-  saveSavedTodos,
-  type MoonPhase,
-  type SavedTodo,
-} from '../utils/todoStorage';
+import { phaseLabels, type MoonPhase, type SavedTodo } from '../utils/todoStorage';
 import { PHASE_VIBES } from '../utils/phaseVibes';
 import type { ScreenProps } from '../types';
 import type { IslandId } from '../types/screen';
@@ -22,6 +16,8 @@ import { IslandsList } from '../components/IslandsList';
 import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';
 import { useIslandNames } from '@/hooks/useIslandNames';
 import { getIslandLabel, type IslandNames } from '../utils/islandNames';
+import { usePlanetTodos } from '@/hooks/usePlanetTodos';
+import { usePlanetState } from '@/hooks/usePlanetState';
 
 const MOON_COUNT = 4;
 
@@ -177,9 +173,9 @@ const FiltersPanel = ({ isOpen, filters, onClearFilters, islandNames }: FiltersP
 };
 
 const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
-  const [savedTodos, setSavedTodos] = useState<SavedTodo[]>([]);
-  const [hasLoadedTodos, setHasLoadedTodos] = useState(false);
-  const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
+  const { todos: savedTodos, setTodos: setSavedTodos } = usePlanetTodos();
+  const { state: planetState, setState: setPlanetState } = usePlanetState();
+  const { isFiltersPanelOpen, filters } = planetState;
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
@@ -187,16 +183,20 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const { saveInput } = usePhaseInputs();
   const { islandNames, islandIds, renameIsland, createIsland, removeIsland } = useIslandNames();
 
-  // Estado consolidado de filtros
-  const [filters, setFilters] = useState<FilterState>({
-    view: 'em-aberto',
-    inputType: 'all',
-    todoStatus: 'all',
-    phase: null,
-    island: null,
-    month: null,
-    year: null,
-  });
+  const setFilters = (next: FilterState | ((prev: FilterState) => FilterState)) => {
+    setPlanetState((prev) => ({
+      ...prev,
+      filters: typeof next === 'function' ? next(prev.filters) : next,
+    }));
+  };
+
+  const setIsFiltersPanelOpen = (next: boolean | ((prev: boolean) => boolean)) => {
+    setPlanetState((prev) => ({
+      ...prev,
+      isFiltersPanelOpen:
+        typeof next === 'function' ? next(prev.isFiltersPanelOpen) : next,
+    }));
+  };
   const currentWeekPhase = useCurrentWeekPhase();
 
   const resetFilters = () => {
@@ -210,16 +210,6 @@ const SidePlanetCardScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       year: null,
     });
   };
-
-  useEffect(() => {
-    setSavedTodos(loadSavedTodos());
-    setHasLoadedTodos(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedTodos) return;
-    saveSavedTodos(savedTodos);
-  }, [hasLoadedTodos, savedTodos]);
 
   const handleTodoSubmit = (todo: ParsedTodoItem) => {
     const resolvedTodo = {

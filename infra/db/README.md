@@ -62,6 +62,22 @@ Execute estes scripts **na ordem** no Neon SQL Editor.
 
 ---
 
+### ✅ 7. Planeta (Tarefas)
+
+**Arquivo:** `07-planet-todos.sql`
+
+- `planet_todos` - Tarefas do Planeta
+
+---
+
+### ✅ 8. Planeta (Estado UI)
+
+**Arquivo:** `08-planet-state.sql`
+
+- `planet_state` - Estado de UI e filtros do Planeta
+
+---
+
 ## 🚀 Como Executar no Neon Console
 
 1. **Acesse:** https://console.neon.tech/
@@ -83,12 +99,14 @@ Execute estes scripts **na ordem** no Neon SQL Editor.
 - [ ] `04-lunations.sql`
 - [ ] `05-phase-inputs.sql`
 - [ ] `06-community.sql`
+- [ ] `07-planet-todos.sql`
+- [ ] `08-planet-state.sql`
 
 ---
 
 ## 📊 Resultado Final
 
-Você deve ter **14 tabelas** criadas:
+Você deve ter **16 tabelas** criadas:
 
 1. `auth_tokens` - Tokens de sessão
 2. `users` - Usuários
@@ -104,6 +122,8 @@ Você deve ter **14 tabelas** criadas:
 12. `community_comments` - Comentários
 13. `community_tags` - Tags
 14. `community_post_tags` - Post + tags
+15. `planet_todos` - Tarefas do Planeta
+16. `planet_state` - Estado de UI do Planeta
 
 ---
 

@@ -19,6 +19,7 @@ import { IslandsList } from '@/app/cosmos/components/IslandsList';
 import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';
 import { useIslandNames } from '@/hooks/useIslandNames';
 import { usePlanetTodos } from '@/hooks/usePlanetTodos';
+import { usePlanetState } from '@/hooks/usePlanetState';
 import { FiltersPanel } from './FiltersPanel';
 import { MoonCluster } from './MoonCluster';
 
@@ -37,8 +38,8 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     lunations.data.length > 0 ? lunations.data : undefined
   );
   const { todos: savedTodos, setTodos: setSavedTodos } = usePlanetTodos();
-  const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
-  const [showIslands, setShowIslands] = useState(false);
+  const { state: planetState, setState: setPlanetState } = usePlanetState();
+  const { showIslands, isFiltersPanelOpen, filters } = planetState;
   const [activeDrop, setActiveDrop] = useState<MoonPhase | null>(null);
   const [activeIslandDrop, setActiveIslandDrop] = useState<IslandId | null>(null);
   const [isDraggingTodo, setIsDraggingTodo] = useState(false);
@@ -51,16 +52,27 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const { saveInput } = usePhaseInputs();
   const { islandNames, islandIds, renameIsland, createIsland, removeIsland } = useIslandNames();
 
-  // Estado consolidado de filtros
-  const [filters, setFilters] = useState<FilterState>({
-    view: 'em-aberto',
-    inputType: 'all',
-    todoStatus: 'all',
-    phase: null,
-    island: null,
-    month: null,
-    year: null,
-  });
+  const setFilters = (next: FilterState | ((prev: FilterState) => FilterState)) => {
+    setPlanetState((prev) => ({
+      ...prev,
+      filters: typeof next === 'function' ? next(prev.filters) : next,
+    }));
+  };
+
+  const setShowIslands = (next: boolean | ((prev: boolean) => boolean)) => {
+    setPlanetState((prev) => ({
+      ...prev,
+      showIslands: typeof next === 'function' ? next(prev.showIslands) : next,
+    }));
+  };
+
+  const setIsFiltersPanelOpen = (next: boolean | ((prev: boolean) => boolean)) => {
+    setPlanetState((prev) => ({
+      ...prev,
+      isFiltersPanelOpen:
+        typeof next === 'function' ? next(prev.isFiltersPanelOpen) : next,
+    }));
+  };
 
   const resetFilters = () => {
     setFilters({
