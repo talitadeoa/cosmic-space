@@ -184,7 +184,7 @@ const MoonPhaseDisplay: React.FC = () => {
           </span>
           <div className="flex items-center gap-2">
             <span className="text-[0.65rem] sm:text-xs text-white/60 font-medium">
-              {moonData.phaseDay || 'Dia —'} • {getSignEmoji(moonData.signo)} {moonData.signo}
+              {moonData.phaseDay || '—'} • {getSignEmoji(moonData.signo)} {moonData.signo}
             </span>
             {showDetails && (
               <span className="text-[0.6rem] sm:text-[0.7rem] text-white/40 ml-1">▾</span>
@@ -202,7 +202,7 @@ const MoonPhaseDisplay: React.FC = () => {
               <div className="flex justify-between">
                 <span>Ciclo:</span>
                 <span className="font-medium text-white">
-                  {moonData.age !== undefined ? `Dia ${moonData.age}/29` : 'Dia —/29'}
+                  {moonData.age !== undefined ? `Dia ${moonData.age}/29` : '—'}
                 </span>
               </div>
               <div className="flex justify-between">

@@ -1,96 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getLunations, saveLunations, deleteLunations } from '@/lib/forms';
-import { getLunarPhaseAndSign } from '@/lib/astro';
+import fs from 'fs';
+import path from 'path';
+import { saveLunations, deleteLunations } from '@/lib/forms';
 
 export const dynamic = 'force-dynamic';
 
-const SYNODIC_MONTH = 29.53058867; // dias
+const CSV_FILE_NAME = 'Calendario - Lunações.csv';
 const MAX_DAYS = 550;
 
-type MoonDay = {
-  date: string;
-  moonPhase: string;
-  sign: string;
-  illumination: number;
-  ageDays: number;
-  normalizedPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
-};
+const parseCsv = (content: string): string[][] => {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
 
-const toJulianDay = (date: Date) => {
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth() + 1;
-  const day = date.getUTCDate();
-  const a = Math.floor((14 - month) / 12);
-  const y = year + 4800 - a;
-  const m = month + 12 * a - 3;
-  return (
-    day +
-    Math.floor((153 * m + 2) / 5) +
-    365 * y +
-    Math.floor(y / 4) -
-    Math.floor(y / 100) +
-    Math.floor(y / 400) -
-    32045
-  );
-};
+  for (let i = 0; i < content.length; i += 1) {
+    const char = content[i];
+    const next = content[i + 1];
 
-const calcMoonAge = (date: Date) => {
-  const jd = toJulianDay(date) + (date.getUTCHours() - 12) / 24 + date.getUTCMinutes() / 1440;
-  const daysSinceNew = jd - 2451549.5;
-  const newMoons = daysSinceNew / SYNODIC_MONTH;
-  const frac = newMoons - Math.floor(newMoons);
-  return frac * SYNODIC_MONTH;
-};
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        field += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
 
-const illuminationFromAge = (ageDays: number) =>
-  0.5 * (1 - Math.cos((2 * Math.PI * ageDays) / SYNODIC_MONTH));
+    if (!inQuotes && (char === ',' || char === '\n' || char === '\r')) {
+      row.push(field);
+      field = '';
 
-const labelPhase = (ageDays: number): 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' => {
-  if (ageDays < 1.5 || ageDays > SYNODIC_MONTH - 1.5) return 'luaNova';
-  if (ageDays < SYNODIC_MONTH / 2 - 1.2) return 'luaCrescente';
-  if (ageDays < SYNODIC_MONTH / 2 + 1.2) return 'luaCheia';
-  return 'luaMinguante';
-};
+      if (char === ',') {
+        continue;
+      }
 
-const describePhase = (norm: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante') => {
-  switch (norm) {
-    case 'luaNova':
-      return 'Lua Nova';
-    case 'luaCrescente':
-      return 'Lua Crescente';
-    case 'luaCheia':
-      return 'Lua Cheia';
-    case 'luaMinguante':
-      return 'Lua Minguante';
-    default:
-      return 'Lua';
+      if (char === '\r' && next === '\n') {
+        i += 1;
+      }
+
+      if (row.some((value) => value.trim().length > 0)) {
+        rows.push(row);
+      }
+      row = [];
+      continue;
+    }
+
+    field += char;
   }
+
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    if (row.some((value) => value.trim().length > 0)) {
+      rows.push(row);
+    }
+  }
+
+  return rows;
 };
 
-const zodiacCutoffs: Array<[string, number]> = [
-  ['Capricórnio', 20],
-  ['Aquário', 19],
-  ['Peixes', 21],
-  ['Áries', 20],
-  ['Touro', 21],
-  ['Gêmeos', 21],
-  ['Câncer', 23],
-  ['Leão', 23],
-  ['Virgem', 23],
-  ['Libra', 23],
-  ['Escorpião', 22],
-  ['Sagitário', 22],
-];
-
-const approximateSign = (date: Date) => {
-  const dayOfMonth = date.getUTCDate();
-  const monthIndex = date.getUTCMonth();
-  const cutoff = zodiacCutoffs[monthIndex][1];
-  const sign =
-    dayOfMonth < cutoff
-      ? zodiacCutoffs[monthIndex === 0 ? 11 : monthIndex - 1][0]
-      : zodiacCutoffs[monthIndex][0];
-  return sign;
+const convertDateFormat = (dateStr: string): string | null => {
+  const parts = dateStr.trim().split('/');
+  if (parts.length !== 3) return null;
+  const [day, month, year] = parts;
+  if (!day || !month || !year) return null;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
 const parseIsoDate = (value: string | null): Date | null => {
@@ -101,28 +76,49 @@ const parseIsoDate = (value: string | null): Date | null => {
 
 const formatIsoDate = (date: Date) => date.toISOString().slice(0, 10);
 
-const generateRange = (start: Date, end: Date): MoonDay[] => {
-  const days: MoonDay[] = [];
-  let cursor = new Date(start);
-  let counter = 0;
+const loadCsvLunations = (start: Date, end: Date) => {
+  const csvPath = path.join(process.cwd(), CSV_FILE_NAME);
 
-  while (cursor <= end && counter < MAX_DAYS) {
-    const ageDays = calcMoonAge(cursor);
-    const normalizedPhase = labelPhase(ageDays);
-    const illumination = illuminationFromAge(ageDays);
-    const sign = approximateSign(cursor);
+  if (!fs.existsSync(csvPath)) {
+    throw new Error(`Arquivo CSV não encontrado: ${csvPath}`);
+  }
+
+  const content = fs.readFileSync(csvPath, 'utf-8');
+  const rows = parseCsv(content);
+
+  if (rows.length < 2) {
+    throw new Error('CSV vazio ou sem dados válidos');
+  }
+
+  const dataRows = rows.slice(1);
+  const startIso = formatIsoDate(start);
+  const endIso = formatIsoDate(end);
+  const days: Array<{
+    date: string;
+    moonPhase: string;
+    sign: string;
+    source: string;
+  }> = [];
+
+  for (const row of dataRows) {
+    const rawDate = row[0]?.trim();
+    const phase = row[1]?.trim();
+    const sign = row[3]?.trim();
+
+    if (!rawDate || !phase || !sign) continue;
+    const isoDate = convertDateFormat(rawDate);
+    if (!isoDate) continue;
+
+    if (isoDate < startIso || isoDate > endIso) continue;
 
     days.push({
-      date: formatIsoDate(cursor),
-      moonPhase: describePhase(normalizedPhase),
+      date: isoDate,
+      moonPhase: phase,
       sign,
-      illumination,
-      ageDays: Number(ageDays.toFixed(3)),
-      normalizedPhase,
+      source: 'csv',
     });
 
-    cursor = new Date(cursor.getTime() + 24 * 60 * 60 * 1000);
-    counter += 1;
+    if (days.length >= MAX_DAYS) break;
   }
 
   return days;
@@ -136,8 +132,6 @@ export async function GET(request: NextRequest) {
 
     const startParam = searchParams.get('start') || `${defaultYear}-01-01`;
     const endParam = searchParams.get('end') || `${defaultYear}-12-31`;
-    const source = searchParams.get('source') || 'auto'; // 'auto', 'db', 'generated'
-
     const startDate = parseIsoDate(startParam);
     const endDate = parseIsoDate(endParam);
 
@@ -148,57 +142,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let dbLunations: any[] = [];
-    let usedDatabase = false;
-    let dbError: Error | null = null;
-
-    // 1. Tentar buscar do banco de dados se source é 'auto' ou 'db'
-    if ((source === 'auto' || source === 'db') && process.env.DATABASE_URL) {
-      try {
-        dbLunations = await getLunations(startParam, endParam);
-        if (dbLunations && dbLunations.length > 0) {
-          usedDatabase = true;
-          console.log(`✅ Lunações do banco: ${dbLunations.length} registros (${startParam} a ${endParam})`);
-          return NextResponse.json({
-            days: dbLunations.map((l: any) => ({
-              date: l.lunation_date,
-              moonPhase: l.moon_phase,
-              sign: l.zodiac_sign,
-              illumination: l.illumination,
-              ageDays: l.age_days,
-              description: l.description,
-              source: 'database',
-            })),
-            generatedAt: new Date().toISOString(),
-            source: 'database',
-            range: { start: startParam, end: endParam },
-          });
-        }
-      } catch (error) {
-        dbError = error instanceof Error ? error : new Error(String(error));
-        console.warn(`⚠️  Banco não disponível (${startParam} a ${endParam}):`, dbError.message);
-        // Continua para gerar localmente
-      }
-    }
-
-    // Se source é 'db' e banco falhou, retornar erro
-    if (source === 'db' && !usedDatabase) {
-      console.error(`❌ Erro crítico: source=db solicitado mas banco não disponível`, dbError?.message);
-      return NextResponse.json(
-        { error: 'Banco de dados não disponível e source=db foi solicitado', details: dbError?.message },
-        { status: 503 }
-      );
-    }
-
-    // 2. Gerar localmente (fallback ou source=generated)
-    console.log(`📊 Gerando lunações localmente (${startParam} a ${endParam})`);
-    const days = generateRange(startDate, endDate);
+    const days = loadCsvLunations(startDate, endDate);
 
     return NextResponse.json({
       days,
       generatedAt: new Date().toISOString(),
-      source: 'generated',
-      range: { start: formatIsoDate(startDate), end: formatIsoDate(endDate) },
+      source: 'csv',
+      range: { start: startParam, end: endParam },
     });
   } catch (error) {
     console.error('Erro ao buscar lunações:', error);
