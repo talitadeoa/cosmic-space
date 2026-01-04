@@ -5,10 +5,26 @@ import { useState } from 'react';
 import { useSfxContext } from '@/components/providers/SfxProvider';
 import { useAuth } from '@/hooks/useAuth';
 
-export default function NavMenu() {
+type NavMenuProps = {
+  showDevRoutes?: boolean;
+};
+
+const baseRoutes = [
+  { href: '/cosmos/home', label: 'Home' },
+  { href: '/cosmos', label: 'Cosmos' },
+];
+
+const devRoutes = [
+  { href: '/landing', label: 'Landing' },
+  { href: '/page', label: 'Page' },
+  { href: '/ilha', label: 'Ilha' },
+];
+
+export default function NavMenu({ showDevRoutes = false }: NavMenuProps) {
   const [open, setOpen] = useState(false);
   const sfx = useSfxContext();
   const auth = useAuth();
+  const routes = showDevRoutes ? [...baseRoutes, ...devRoutes] : baseRoutes;
 
   return (
     <div className="fixed top-4 left-4 z-50 sm:top-6 sm:left-6">
@@ -25,48 +41,15 @@ export default function NavMenu() {
       {open && (
         <div className="mt-2 w-56 rounded-lg sm:rounded-xl border border-slate-800 bg-black/60 p-3 shadow-lg backdrop-blur-md">
           <nav className="space-y-2">
-            <Link
-              href="/cosmos/home"
-              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
-            >
-              Home
-            </Link>
-            <Link
-              href="/landing"
-              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
-            >
-              Landing
-            </Link>
-            <Link
-              href="/page"
-              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
-            >
-              Page
-            </Link>
-            <Link
-              href="/cosmos"
-              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
-            >
-              Cosmos
-            </Link>
-            <Link
-              href="/ilha"
-              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
-            >
-              Ilha
-            </Link>
-            <Link
-              href="/comunidade"
-              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
-            >
-              Comunidade
-            </Link>
-            <Link
-              href="/perfil"
-              className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
-            >
-              Perfil
-            </Link>
+            {routes.map((route) => (
+              <Link
+                key={route.href}
+                href={route.href}
+                className="block px-3 py-2 rounded hover:bg-slate-800/50 transition-colors text-sm"
+              >
+                {route.label}
+              </Link>
+            ))}
           </nav>
 
           <div className="mt-3 border-t border-slate-800 pt-3">
