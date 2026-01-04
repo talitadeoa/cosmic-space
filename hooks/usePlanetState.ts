@@ -1,93 +1,94 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import type { PlanetUiState } from '@/types/planetState';
+import { loadPlanetStateSync, normalizePlanetState, savePlanetState } from '@/app/cosmos/utils/planetStateStorage';
+import { loadPlanetStateMeta, savePlanetStateMeta } from '@/app/cosmos/utils/planetStateMetaStorage';
+import { getDeviceId } from '@/app/cosmos/utils/deviceId';
 import {
-  hasCustomPlanetState,
-  loadPlanetState,
-  loadPlanetStateSync,
-  normalizePlanetState,
-  savePlanetState,
-} from '@/app/cosmos/utils/planetStateStorage';
+  enqueueStateChange,
+  pullStateChanges,
+  pushStateChanges,
+  type SyncStateItem,
+} from '@/app/cosmos/utils/planetSync';
+import { listOutboxChanges } from '@/app/cosmos/utils/syncOutbox';
 
-const SAVE_DEBOUNCE_MS = 800;
-const SYNC_INTERVAL_MS = 10000; // Sincroniza a cada 10 segundos
+const SYNC_INTERVAL_MS = 10000;
+
+const createChangeId = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `change-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+
+const shouldApplyState = (incoming: SyncStateItem, localVersion: number | null) => {
+  if (!localVersion) return true;
+  return incoming.version >= localVersion;
+};
 
 export const usePlanetState = () => {
-  const [state, setState] = useState<PlanetUiState>(() => loadPlanetStateSync());
+  const [state, setStateInternal] = useState<PlanetUiState>(() => loadPlanetStateSync());
   const [hasLoaded, setHasLoaded] = useState(false);
-  const { isAuthenticated, loading } = useAuth();
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isAuthenticated, loading, user } = useAuth();
+  const deviceId = useMemo(() => getDeviceId(), []);
+  const metaRef = useRef(loadPlanetStateMeta());
+  const pendingRef = useRef(false);
+  const suppressOutboxRef = useRef(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const didHydrateRef = useRef(false);
 
-  // Carregamento inicial e sincronização periódica
+  const setState = useCallback(
+    (next: PlanetUiState | ((prev: PlanetUiState) => PlanetUiState)) => {
+      setStateInternal((prev) => {
+        const resolved = typeof next === 'function' ? next(prev) : next;
+        if (!hasLoaded || suppressOutboxRef.current) {
+          return resolved;
+        }
+
+        const updatedAt = new Date().toISOString();
+        metaRef.current = {
+          version: metaRef.current.version ?? null,
+          updatedAt,
+        };
+        savePlanetStateMeta(metaRef.current);
+        pendingRef.current = true;
+        void enqueueStateChange({
+          clientChangeId: createChangeId(),
+          type: 'planet_state',
+          entityId: 'planet_state',
+          deviceId,
+          baseVersion: metaRef.current.version ?? null,
+          updatedAt,
+          deletedAt: null,
+          payload: resolved,
+        });
+        return resolved;
+      });
+    },
+    [deviceId, hasLoaded]
+  );
+
   useEffect(() => {
     if (loading) return;
-    let isMounted = true;
+    const localState = normalizePlanetState(loadPlanetStateSync());
+    setStateInternal(localState);
+    setHasLoaded(true);
 
-    const loadState = async () => {
-      const localState = loadPlanetState();
-      const localHasCustom = hasCustomPlanetState(localState);
+    if (isAuthenticated) {
+      void listOutboxChanges('planet_state', 50, true).then((items) => {
+        pendingRef.current = items.length > 0;
+      });
+    } else {
+      pendingRef.current = false;
+    }
+  }, [loading, isAuthenticated]);
 
-      if (isAuthenticated) {
-        try {
-          const response = await fetch('/api/planet-state', { credentials: 'include' });
-          if (response.ok) {
-            const data = await response.json();
-            const remoteState = normalizePlanetState(data?.state ?? null);
-            const remoteHasCustom = Boolean(data?.state) && hasCustomPlanetState(remoteState);
-
-            if (!remoteHasCustom && localHasCustom) {
-              if (isMounted) {
-                setState(localState);
-              }
-              await fetch('/api/planet-state', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ state: localState }),
-              });
-              if (isMounted) {
-                setHasLoaded(true);
-              }
-              return;
-            }
-
-            if (isMounted) {
-              setState(remoteState);
-            }
-          } else {
-            if (isMounted) {
-              setState(localState);
-            }
-          }
-        } catch (error) {
-          console.warn('Falha ao carregar estado do Planeta:', error);
-          if (isMounted) {
-            setState(localState);
-          }
-        }
-      } else if (isMounted) {
-        setState(localState);
-      }
-
-      if (isMounted) {
-        setHasLoaded(true);
-      }
-    };
-
-    loadState();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated, loading]);
-
-  // ✅ NOVO: Sincronização periódica (polling) em efeito separado
   useEffect(() => {
-    if (!hasLoaded || !isAuthenticated) {
+    if (!hasLoaded) return;
+    savePlanetState(state);
+  }, [hasLoaded, state]);
+
+  useEffect(() => {
+    if (!hasLoaded || !isAuthenticated || !user?.userId) {
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
         syncIntervalRef.current = null;
@@ -97,30 +98,46 @@ export const usePlanetState = () => {
 
     let isMounted = true;
 
-    // Função para sincronizar estado
     const syncState = async () => {
-      if (!isMounted || !isAuthenticated) return;
+      if (!isMounted) return;
       try {
-        const response = await fetch('/api/planet-state', { credentials: 'include' });
-        if (response.ok && isMounted) {
-          const data = await response.json();
-          const remoteState = normalizePlanetState(data?.state ?? null);
-          setState(remoteState);
+        const pushResult = await pushStateChanges();
+        if (pushResult?.applied?.length) {
+          const latest = pushResult.applied[pushResult.applied.length - 1];
+          metaRef.current = {
+            version: latest.version,
+            updatedAt: latest.updatedAt,
+          };
+          savePlanetStateMeta(metaRef.current);
+          pendingRef.current = false;
         }
       } catch (error) {
-        console.debug('Falha ao sincronizar estado do Planeta:', error);
+        console.debug('Falha ao enviar estado do Planeta:', error);
+      }
+
+      try {
+        const pullResult = await pullStateChanges(user.userId);
+        if (!pullResult.item || pendingRef.current) return;
+        if (!shouldApplyState(pullResult.item, metaRef.current.version)) return;
+        suppressOutboxRef.current = true;
+        const normalized = normalizePlanetState(pullResult.item.payload);
+        setStateInternal(normalized);
+        metaRef.current = {
+          version: pullResult.item.version,
+          updatedAt: pullResult.item.updatedAt,
+        };
+        savePlanetStateMeta(metaRef.current);
+        suppressOutboxRef.current = false;
+      } catch (error) {
+        console.debug('Falha ao buscar estado do Planeta:', error);
       }
     };
 
-    // Executar imediatamente na primeira vez (com pequeno delay para garantir que o token está pronto)
     const immediateTimeoutRef = setTimeout(() => {
       syncState();
     }, 100);
 
-    // Depois, configurar polling periódico
-    syncIntervalRef.current = setInterval(() => {
-      syncState();
-    }, SYNC_INTERVAL_MS);
+    syncIntervalRef.current = setInterval(syncState, SYNC_INTERVAL_MS);
 
     return () => {
       isMounted = false;
@@ -130,44 +147,7 @@ export const usePlanetState = () => {
         syncIntervalRef.current = null;
       }
     };
-  }, [hasLoaded, isAuthenticated]);
-
-  useEffect(() => {
-    if (!hasLoaded) return;
-    if (!didHydrateRef.current) {
-      didHydrateRef.current = true;
-      return;
-    }
-
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    if (!isAuthenticated) {
-      savePlanetState(state);
-      return;
-    }
-
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        await fetch('/api/planet-state', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ state }),
-        });
-      } catch (error) {
-        console.warn('Falha ao salvar estado do Planeta:', error);
-        savePlanetState(state);
-      }
-    }, SAVE_DEBOUNCE_MS);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [hasLoaded, state, isAuthenticated]);
+  }, [hasLoaded, isAuthenticated, user?.userId]);
 
   return { state, setState, hasLoaded };
 };

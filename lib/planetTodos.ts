@@ -88,6 +88,7 @@ export async function listPlanetTodos(userId: string | number): Promise<PlanetTo
         updated_at
       FROM planet_todos
       WHERE user_id = ${userId}
+        AND deleted_at IS NULL
       ORDER BY updated_at DESC
     `) as any[];
 
@@ -143,6 +144,7 @@ export async function mergePlanetTodos(
         updated_at
       FROM planet_todos
       WHERE user_id = ${userId}
+        AND deleted_at IS NULL
     `) as any[];
 
     const existingMap = new Map<string, PlanetTodoRecord>();
