@@ -17,7 +17,6 @@ const HighlightBanner: React.FC<HighlightBannerProps> = ({ info, onClick }) => (
         <span className="h-2.5 w-2.5 rounded-full bg-sky-300/90 shadow-[0_0_12px_rgba(125,211,252,0.9)] animate-pulse" />
       </span>
       <span className="font-semibold">{info.phaseLabel}</span>
-      <span className="text-slate-300/80">{info.monthName}</span>
       <span className="text-slate-300/80">{info.signLabel}</span>
     </button>
   </div>
