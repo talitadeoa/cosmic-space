@@ -14,10 +14,64 @@ type MoonPhaseData = {
 };
 
 const MoonPhaseDisplay: React.FC = () => {
-  const [moonData, setMoonData] = useState<MoonPhaseData | null>(null);
+  const [moonData, setMoonData] = useState<MoonPhaseData | null>(() => {
+    // Inicializar no servidor/primeira renderização
+    try {
+      const data = getLunarPhaseAndSign();
+      const SYNODIC_MONTH = 29.53058867;
+      let phaseDay = '';
+      let phase = '';
+
+      const age = data.age;
+      if (age < 1.5 || age > SYNODIC_MONTH - 1.5) {
+        phase = 'Lua Nova';
+        phaseDay = `Dia ${Math.ceil(age)}/1`;
+      } else if (age < SYNODIC_MONTH / 2 - 1.2) {
+        phase = 'Crescente';
+        const dayInPhase = Math.ceil(age - 1.5);
+        phaseDay = `Dia ${dayInPhase} da ${phase}`;
+      } else if (age < SYNODIC_MONTH / 2 + 1.2) {
+        phase = 'Cheia';
+        phaseDay = `Dia ${Math.ceil(age - (SYNODIC_MONTH / 2 - 1.2))}/1`;
+      } else {
+        phase = 'Minguante';
+        const dayInPhase = Math.ceil(age - (SYNODIC_MONTH / 2 + 1.2));
+        phaseDay = `Dia ${dayInPhase} da ${phase}`;
+      }
+
+      let cycleInfo = '';
+      let daysUntilEvent = '';
+
+      if (age < 14.765) {
+        const daysLeft = Math.round(14.765 - age);
+        cycleInfo = 'Próximo: Lua Cheia';
+        daysUntilEvent = `em ${daysLeft} dias`;
+      } else if (age < 15.765) {
+        cycleInfo = 'Agora: Lua Cheia';
+        daysUntilEvent = '';
+      } else {
+        const daysLeft = Math.round(29.53 - age);
+        cycleInfo = 'Próximo: Lua Nova';
+        daysUntilEvent = `em ${daysLeft} dias`;
+      }
+
+      return {
+        faseLua: data.faseLua,
+        age: data.age,
+        signo: data.signo,
+        cycleInfo,
+        daysUntilEvent,
+        phaseDay,
+      };
+    } catch (error) {
+      return null;
+    }
+  });
+  
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
+    // Atualizar dados no cliente para sincronização
     const data = getLunarPhaseAndSign();
     const newMoon = findNearestNewMoon(new Date(), 'before');
 
@@ -76,7 +130,13 @@ const MoonPhaseDisplay: React.FC = () => {
     });
   }, []);
 
-  if (!moonData) return null;
+  if (!moonData) {
+    return (
+      <div className="absolute top-3 sm:top-6 left-1/2 -translate-x-1/2 z-30">
+        <div className="h-10 sm:h-12 w-32 bg-slate-800/50 rounded-full animate-pulse" />
+      </div>
+    );
+  }
 
   const getPhaseEmoji = (phase: string): string => {
     switch (phase) {
