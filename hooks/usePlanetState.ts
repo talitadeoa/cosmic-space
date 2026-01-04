@@ -79,21 +79,50 @@ export const usePlanetState = () => {
 
     loadState();
 
-    // ✅ NOVO: Sincronização periódica (polling)
-    syncIntervalRef.current = setInterval(async () => {
-      if (isMounted && isAuthenticated && hasLoaded) {
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, loading]);
+
+  // ✅ NOVO: Sincronização periódica (polling) em efeito separado
+  useEffect(() => {
+    if (!hasLoaded || !isAuthenticated) {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+      return;
+    }
+
+    let isMounted = true;
+
+    // Executar imediatamente na primeira vez
+    (async () => {
+      if (isMounted && isAuthenticated) {
         try {
           const response = await fetch('/api/planet-state', { credentials: 'include' });
-          if (response.ok) {
+          if (response.ok && isMounted) {
             const data = await response.json();
             const remoteState = normalizePlanetState(data?.state ?? null);
-            
-            // Atualiza se o servidor tem versão diferente
-            // (presume que o servidor sempre tem a versão mais recente)
             setState(remoteState);
           }
         } catch (error) {
-          // Silenciosamente ignora erros de sincronização
+          console.debug('Falha ao sincronizar estado do Planeta:', error);
+        }
+      }
+    })();
+
+    // Depois, configurar polling periódico
+    syncIntervalRef.current = setInterval(async () => {
+      if (isMounted && isAuthenticated) {
+        try {
+          const response = await fetch('/api/planet-state', { credentials: 'include' });
+          if (response.ok && isMounted) {
+            const data = await response.json();
+            const remoteState = normalizePlanetState(data?.state ?? null);
+            setState(remoteState);
+          }
+        } catch (error) {
           console.debug('Falha ao sincronizar estado do Planeta:', error);
         }
       }
@@ -103,9 +132,10 @@ export const usePlanetState = () => {
       isMounted = false;
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
       }
     };
-  }, [isAuthenticated, loading]);
+  }, [hasLoaded, isAuthenticated]);
 
   useEffect(() => {
     if (!hasLoaded) return;

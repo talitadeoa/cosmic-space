@@ -73,20 +73,50 @@ export const usePlanetTodos = () => {
 
     loadTodos();
 
-    // ✅ NOVO: Sincronização periódica (polling)
-    syncIntervalRef.current = setInterval(async () => {
-      if (isMounted && isAuthenticated && hasLoaded) {
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, loading]);
+
+  // ✅ NOVO: Sincronização periódica (polling) em efeito separado
+  useEffect(() => {
+    if (!hasLoaded || !isAuthenticated) {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+      return;
+    }
+
+    let isMounted = true;
+
+    // Executar imediatamente na primeira vez
+    (async () => {
+      if (isMounted && isAuthenticated) {
         try {
           const response = await fetch('/api/planet-todos', { credentials: 'include' });
-          if (response.ok) {
+          if (response.ok && isMounted) {
             const data = await response.json();
             const serverItems = Array.isArray(data?.items) ? (data.items as SavedTodo[]) : [];
-            
-            // Atualiza se o servidor tem dados diferentes
             setTodos(serverItems);
           }
         } catch (error) {
-          // Silenciosamente ignora erros de sincronização
+          console.debug('Falha ao sincronizar tarefas:', error);
+        }
+      }
+    })();
+
+    // Depois, configurar polling periódico
+    syncIntervalRef.current = setInterval(async () => {
+      if (isMounted && isAuthenticated) {
+        try {
+          const response = await fetch('/api/planet-todos', { credentials: 'include' });
+          if (response.ok && isMounted) {
+            const data = await response.json();
+            const serverItems = Array.isArray(data?.items) ? (data.items as SavedTodo[]) : [];
+            setTodos(serverItems);
+          }
+        } catch (error) {
           console.debug('Falha ao sincronizar tarefas:', error);
         }
       }
@@ -96,9 +126,10 @@ export const usePlanetTodos = () => {
       isMounted = false;
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
       }
     };
-  }, [isAuthenticated, loading]);
+  }, [hasLoaded, isAuthenticated]);
 
   useEffect(() => {
     if (!hasLoaded) return;
