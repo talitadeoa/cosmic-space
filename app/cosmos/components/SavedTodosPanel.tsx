@@ -85,7 +85,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const [activeViewDrop, setActiveViewDrop] = React.useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = React.useState(false);
   const [selectedTodoIds, setSelectedTodoIds] = React.useState<string[]>([]);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 20;
   const selectionTouchActiveRef = React.useRef(false);
   const selectionTouchModeRef = React.useRef<'select' | 'deselect'>('select');
   const lastTouchedIdRef = React.useRef<string | null>(null);
@@ -786,7 +786,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       )}
 
       <div
-        className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 sm:max-h-64"
+        className="mt-3 max-h-[60vh] space-y-2 overflow-y-auto pr-1 sm:max-h-[70vh] lg:max-h-[75vh]"
         onTouchMove={handleSelectionTouchMove}
         onTouchEnd={handleSelectionTouchEnd}
         onTouchCancel={handleSelectionTouchEnd}
