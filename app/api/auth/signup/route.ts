@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Erro no signup:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Erro desconhecido';
+    return NextResponse.json({ error: message || 'Erro interno do servidor' }, { status: 500 });
   }
 }
