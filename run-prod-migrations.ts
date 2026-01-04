@@ -2,34 +2,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import postgres from 'postgres';
 
-// Determinar qual arquivo .env usar
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local';
-const envPath = join(process.cwd(), envFile);
-
-console.log(`📋 Lendo configurações de: ${envFile}`);
-
-const envContent = readFileSync(envPath, 'utf8');
-const envVars = envContent
-  .split('\n')
-  .filter(line => line.includes('=') && !line.startsWith('#'))
-  .reduce((acc, line) => {
-    const [key, ...valueParts] = line.split('=');
-    acc[key] = valueParts.join('=');
-    return acc;
-  }, {} as Record<string, string>);
-
-process.env = { ...process.env, ...envVars };
-
-const rawDatabaseUrl = process.env.DATABASE_URL || '';
-// Remover parâmetros problemáticos que causam conflito SNI
-const DATABASE_URL = rawDatabaseUrl
-  .replace('&channel_binding=require', '')
-  .replace('&options=endpoint%3Ddevelopment', '');
-
-if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL não configurada em .env.local');
-  process.exit(1);
-}
+// URL de production (sem channel_binding que causa problema)
+const DATABASE_URL = 'postgresql://neondb_owner:npg_d28GLcnPuZYO@ep-raspy-unit-ac2ftblq-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require';
 
 const sql = postgres(DATABASE_URL);
 
@@ -66,7 +40,8 @@ async function runMigrations() {
     console.log('🎉 Todos os scripts executados com sucesso!');
     await sql.end();
   } catch (error) {
-    console.error('❌ Erro:', error instanceof Error ? error.message : String(error));
+    console.error('❌ Erro ao executar migrações:', error);
+    await sql.end();
     process.exit(1);
   }
 }
