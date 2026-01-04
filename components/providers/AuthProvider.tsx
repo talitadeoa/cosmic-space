@@ -261,7 +261,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-
+      if (typeof window !== 'undefined') {localStorage.clear();}
       setState(INITIAL_STATE);
       clearAuthStateCache();
       router.refresh();
