@@ -25,20 +25,29 @@ export async function POST(request: NextRequest) {
     `) as Array<{ id: string; password_hash: string | null }>;
 
     if (userRows.length === 0) {
-      return NextResponse.json({ error: 'Email ou senha inválidos' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Email ou senha inválidos', reason: 'invalid_credentials' },
+        { status: 401 }
+      );
     }
 
     const user = userRows[0];
 
     // Se não tem password_hash, usuário foi criado com outro provider
     if (!user.password_hash) {
-      return NextResponse.json({ error: 'Email ou senha inválidos' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Use o login com Google para esse email', reason: 'provider_mismatch' },
+        { status: 401 }
+      );
     }
 
     // Validar senha contra o hash
     const passwordIsValid = await validatePassword(password, user.password_hash);
     if (!passwordIsValid) {
-      return NextResponse.json({ error: 'Email ou senha inválidos' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Email ou senha inválidos', reason: 'invalid_credentials' },
+        { status: 401 }
+      );
     }
 
     // Atualizar last_login

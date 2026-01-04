@@ -22,6 +22,7 @@ export type SavedTodo = ParsedTodoItem & {
   phase?: MoonPhase;
   islandId?: IslandId;
   createdAt?: string;
+  updatedAt?: string;
 };
 
 export const TODO_STORAGE_KEY = 'flua_todos_salvos';
@@ -48,8 +49,17 @@ const isValidIsland = (island: unknown): island is IslandId =>
 const isValidInputType = (inputType: unknown): inputType is TodoInputType =>
   inputType === 'text' || inputType === 'checkbox';
 
+const normalizeTimestamp = (value: unknown): string | undefined => {
+  if (typeof value === 'string' && value.trim()) {
+    return value;
+  }
+  return undefined;
+};
+
 const normalizeStoredTodo = (item: SavedTodo, idx: number): SavedTodo => {
   const inputType = isValidInputType(item.inputType) ? item.inputType : 'checkbox';
+  const createdAt = normalizeTimestamp(item.createdAt);
+  const updatedAt = normalizeTimestamp(item.updatedAt ?? item.createdAt);
 
   return {
     id: typeof item.id === 'string' ? item.id : `todo-${idx}`,
@@ -59,6 +69,8 @@ const normalizeStoredTodo = (item: SavedTodo, idx: number): SavedTodo => {
     inputType,
     islandId: isValidIsland(item.islandId) ? item.islandId : undefined,
     phase: isValidPhase(item.phase) ? item.phase : undefined,
+    createdAt,
+    updatedAt,
   };
 };
 

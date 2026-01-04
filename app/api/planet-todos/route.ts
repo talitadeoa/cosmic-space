@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTokenPayload, validateToken } from '@/lib/auth';
-import { listPlanetTodos, replacePlanetTodos } from '@/lib/planetTodos';
+import { listPlanetTodos, mergePlanetTodos } from '@/lib/planetTodos';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Lista de tarefas invalida' }, { status: 400 });
     }
 
-    await replacePlanetTodos(userId, items);
-    return NextResponse.json({ success: true }, { status: 200 });
+    const mergedItems = await mergePlanetTodos(userId, items);
+    return NextResponse.json({ success: true, items: mergedItems }, { status: 200 });
   } catch (error) {
     console.error('Erro ao salvar tarefas do Planeta:', error);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });

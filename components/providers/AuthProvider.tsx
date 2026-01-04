@@ -11,11 +11,12 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  errorReason: AuthErrorReason | null;
   user: User | null;
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<AuthResult>;
   signup: (payload: {
     email: string;
     password: string;
@@ -23,7 +24,7 @@ interface AuthContextType extends AuthState {
     lastName: string;
     birthDate: string;
     gender: string;
-  }) => Promise<boolean>;
+  }) => Promise<AuthResult>;
   logout: () => Promise<void>;
   verifyAuth: ({ silent }: { silent?: boolean }) => Promise<void>;
   googleLogin: () => void;
@@ -35,12 +36,22 @@ const INITIAL_STATE: AuthState = {
   isAuthenticated: false,
   loading: true,
   error: null,
+  errorReason: null,
   user: null,
 };
 
 const AUTH_CACHE_KEY = 'flua-auth-state';
 
-type CachedAuthPayload = Pick<AuthState, 'isAuthenticated' | 'user' | 'error'>;
+type CachedAuthPayload = Pick<AuthState, 'isAuthenticated' | 'user' | 'error' | 'errorReason'>;
+
+type AuthErrorReason = 'invalid_credentials' | 'provider_mismatch' | 'validation' | 'server' | 'network' | 'unknown';
+
+type AuthResult = {
+  ok: boolean;
+  error?: string;
+  reason?: AuthErrorReason;
+  status?: number;
+};
 
 const readCachedAuthState = (): AuthState => {
   if (typeof window === 'undefined') {
@@ -73,6 +84,7 @@ const persistAuthState = (state: AuthState) => {
     isAuthenticated: state.isAuthenticated,
     user: state.user,
     error: state.error,
+    errorReason: state.errorReason,
   };
 
   window.sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(payload));
@@ -115,18 +127,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       if (!silent) {
-        setState((prev) => ({ ...prev, loading: true, error: null }));
+        setState((prev) => ({ ...prev, loading: true, error: null, errorReason: null }));
       } else {
         setState((prev) => ({ ...prev, error: null }));
       }
       
-      const response = await fetch('/api/auth/verify');
+      const response = await fetch('/api/auth/verify', {
+        credentials: 'include',
+      });
       const data = await response.json();
+
+      if (!response.ok) {
+        const reason = (data?.reason as AuthErrorReason | undefined) ?? null;
+        const nextState: AuthState = {
+          isAuthenticated: false,
+          loading: false,
+          error: silent ? null : data?.error || 'Erro ao verificar autenticação',
+          errorReason: silent ? null : reason ?? 'unknown',
+          user: null,
+        };
+
+        setState(nextState);
+        persistAuthState(nextState);
+        return;
+      }
 
       const nextState: AuthState = {
         isAuthenticated: Boolean(data.authenticated),
         loading: false,
         error: null,
+        errorReason: null,
         user: data.user ?? null,
       };
 
@@ -140,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: false,
         loading: false,
         error: silent ? null : 'Erro ao verificar autenticação',
+        errorReason: silent ? null : 'network',
         user: null,
       };
 
@@ -151,43 +182,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const _handleAuthRequest = useCallback(
-    async (endpoint: string, payload: Record<string, any>, errorMessage: string) => {
+    async (endpoint: string, payload: Record<string, any>, errorMessage: string): Promise<AuthResult> => {
       try {
         setState((prev) => ({ ...prev, loading: true, error: null }));
 
         const response = await fetch(`/api/auth/${endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(payload),
         });
 
         const data = await response.json();
 
         if (!response.ok) {
+          const reason = (data?.reason as AuthErrorReason | undefined) ?? null;
+          const fallbackReason =
+            response.status >= 500 ? 'server' : response.status === 401 ? 'invalid_credentials' : 'validation';
           setState((prev) => ({
             ...prev,
             loading: false,
             error: data.error || errorMessage,
+            errorReason: reason ?? fallbackReason,
             isAuthenticated: false,
             user: null,
           }));
           clearAuthStateCache();
-          return false;
+          return {
+            ok: false,
+            error: data.error || errorMessage,
+            reason: reason ?? fallbackReason,
+            status: response.status,
+          };
         }
 
         await verifyAuth();
         router.refresh();
-        return true;
+        return { ok: true };
       } catch (error) {
         setState((prev) => ({
           ...prev,
           loading: false,
           error: errorMessage,
+          errorReason: 'network',
           isAuthenticated: false,
           user: null,
         }));
         clearAuthStateCache();
-        return false;
+        return {
+          ok: false,
+          error: errorMessage,
+          reason: 'network',
+        };
       }
     },
     [router, verifyAuth]
@@ -214,7 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }));
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
 
       setState(INITIAL_STATE);
       clearAuthStateCache();
@@ -224,6 +270,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         loading: false,
         error: 'Erro ao fazer logout',
+        errorReason: 'unknown',
       }));
     }
   }, [router]);

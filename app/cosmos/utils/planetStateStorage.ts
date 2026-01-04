@@ -97,6 +97,26 @@ export const loadPlanetState = (): PlanetUiState => {
   return normalizePlanetState(parsed);
 };
 
+/**
+ * Carrega o estado do planeta diretamente do localStorage sem usar hooks.
+ * Use isto para inicialização do estado, não para sincronização reativa.
+ */
+export const loadPlanetStateSync = (): PlanetUiState => {
+  if (typeof window === 'undefined') {
+    return { ...DEFAULT_PLANET_STATE };
+  }
+
+  try {
+    const stored = window.localStorage.getItem(PLANET_STATE_STORAGE_KEY);
+    if (!stored) return { ...DEFAULT_PLANET_STATE };
+    const parsed = JSON.parse(stored);
+    return normalizePlanetState(parsed);
+  } catch (error) {
+    console.warn('Erro ao carregar estado do Planeta do localStorage:', error);
+    return { ...DEFAULT_PLANET_STATE };
+  }
+};
+
 export const savePlanetState = (state: PlanetUiState) => {
   const { setValue } = useLocalStorage<PlanetUiState>(PLANET_STATE_STORAGE_KEY, DEFAULT_PLANET_STATE);
   setValue(state);

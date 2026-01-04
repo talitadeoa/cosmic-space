@@ -120,7 +120,7 @@ export function useAuthChatFlow({
   isActive?: boolean;
   onAuthenticated?: () => void;
 }) {
-  const { isAuthenticated, loading, error, login, signup } = useAuth();
+  const { isAuthenticated, loading, error, errorReason, login, signup } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [step, setStep] = useState<AuthStep>('mode');
   const [mode, setMode] = useState<AuthMode | null>(null);
@@ -173,10 +173,32 @@ export function useAuthChatFlow({
     setMessages((prev) => [...prev, buildSystemMessage(content)]);
   }, []);
 
+  const buildAuthErrorMessage = useCallback(
+    (reason?: string | null, fallback?: string | null) => {
+      if (reason === 'provider_mismatch') {
+        return 'Esse email parece ter sido criado com outro método. Tente entrar com Google.';
+      }
+      if (reason === 'invalid_credentials') {
+        return 'Email ou senha inválidos. Vamos tentar de novo?';
+      }
+      if (reason === 'server') {
+        return 'O servidor não conseguiu autenticar agora. Vamos tentar de novo?';
+      }
+      if (reason === 'network') {
+        return 'Parece que a conexão falhou. Vamos tentar de novo?';
+      }
+      if (reason === 'validation' && fallback) {
+        return fallback;
+      }
+      return fallback || 'Não consegui autenticar. Vamos tentar de novo?';
+    },
+    []
+  );
+
   const submitAuth = useCallback(
     async (payload: typeof formData, activeMode: AuthMode) => {
       setIsSubmitting(true);
-      const success =
+      const result =
         activeMode === 'login'
           ? await login(payload.email, payload.password)
           : await signup({
@@ -189,8 +211,9 @@ export function useAuthChatFlow({
             });
       setIsSubmitting(false);
 
-      if (!success) {
-        pushSystemMessage(error || 'Não consegui autenticar. Vamos tentar de novo?');
+      if (!result.ok) {
+        const message = buildAuthErrorMessage(result.reason ?? errorReason, result.error ?? error);
+        pushSystemMessage(message);
         resetFlow(activeMode);
         pushSystemMessage(
           activeMode === 'login'
@@ -204,7 +227,7 @@ export function useAuthChatFlow({
       onAuthenticated?.();
       return true;
     },
-    [error, login, onAuthenticated, pushSystemMessage, resetFlow, signup]
+    [buildAuthErrorMessage, error, errorReason, login, onAuthenticated, pushSystemMessage, resetFlow, signup]
   );
 
   const handleUserInput = useCallback(

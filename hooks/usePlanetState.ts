@@ -6,6 +6,7 @@ import type { PlanetUiState } from '@/types/planetState';
 import {
   hasCustomPlanetState,
   loadPlanetState,
+  loadPlanetStateSync,
   normalizePlanetState,
   savePlanetState,
 } from '@/app/cosmos/utils/planetStateStorage';
@@ -14,7 +15,7 @@ const SAVE_DEBOUNCE_MS = 800;
 const SYNC_INTERVAL_MS = 10000; // Sincroniza a cada 10 segundos
 
 export const usePlanetState = () => {
-  const [state, setState] = useState<PlanetUiState>(() => loadPlanetState());
+  const [state, setState] = useState<PlanetUiState>(() => loadPlanetStateSync());
   const [hasLoaded, setHasLoaded] = useState(false);
   const { isAuthenticated, loading } = useAuth();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,33 +80,57 @@ export const usePlanetState = () => {
 
     loadState();
 
-    // ✅ NOVO: Sincronização periódica (polling)
-    syncIntervalRef.current = setInterval(async () => {
-      if (isMounted && isAuthenticated && hasLoaded) {
-        try {
-          const response = await fetch('/api/planet-state', { credentials: 'include' });
-          if (response.ok) {
-            const data = await response.json();
-            const remoteState = normalizePlanetState(data?.state ?? null);
-            
-            // Atualiza se o servidor tem versão diferente
-            // (presume que o servidor sempre tem a versão mais recente)
-            setState(remoteState);
-          }
-        } catch (error) {
-          // Silenciosamente ignora erros de sincronização
-          console.debug('Falha ao sincronizar estado do Planeta:', error);
-        }
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, loading]);
+
+  // ✅ NOVO: Sincronização periódica (polling) em efeito separado
+  useEffect(() => {
+    if (!hasLoaded || !isAuthenticated) {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
       }
+      return;
+    }
+
+    let isMounted = true;
+
+    // Função para sincronizar estado
+    const syncState = async () => {
+      if (!isMounted || !isAuthenticated) return;
+      try {
+        const response = await fetch('/api/planet-state', { credentials: 'include' });
+        if (response.ok && isMounted) {
+          const data = await response.json();
+          const remoteState = normalizePlanetState(data?.state ?? null);
+          setState(remoteState);
+        }
+      } catch (error) {
+        console.debug('Falha ao sincronizar estado do Planeta:', error);
+      }
+    };
+
+    // Executar imediatamente na primeira vez (com pequeno delay para garantir que o token está pronto)
+    const immediateTimeoutRef = setTimeout(() => {
+      syncState();
+    }, 100);
+
+    // Depois, configurar polling periódico
+    syncIntervalRef.current = setInterval(() => {
+      syncState();
     }, SYNC_INTERVAL_MS);
 
     return () => {
       isMounted = false;
+      clearTimeout(immediateTimeoutRef);
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
       }
     };
-  }, [isAuthenticated, loading]);
+  }, [hasLoaded, isAuthenticated]);
 
   useEffect(() => {
     if (!hasLoaded) return;

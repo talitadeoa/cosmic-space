@@ -51,6 +51,12 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
   const { islandNames, islandIds, renameIsland, createIsland, removeIsland } = useIslandNames();
+  const nowIso = () => new Date().toISOString();
+  const touchTodo = (todo: SavedTodo, updates: Partial<SavedTodo>) => ({
+    ...todo,
+    ...updates,
+    updatedAt: nowIso(),
+  });
 
   const setFilters = (next: FilterState | ((prev: FilterState) => FilterState)) => {
     setPlanetState((prev) => ({
@@ -118,9 +124,11 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   }, [temporal.year]);
 
   const handleTodoSubmit = (todo: ParsedTodoItem) => {
+    const updatedAt = todo.updatedAt ?? nowIso();
     const resolvedTodo = {
       ...todo,
       islandId: todo.islandId ?? filters.island ?? undefined,
+      updatedAt,
     };
 
     setSavedTodos((prev) => {
@@ -139,6 +147,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         ...updated[existingIndex],
         ...resolvedTodo,
         id: updated[existingIndex].id,
+        updatedAt,
       };
       return updated;
     });
@@ -146,13 +155,15 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const handleToggleComplete = (todoId: string) => {
     setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, completed: !todo.completed } : todo))
+      prev.map((todo) =>
+        todo.id === todoId ? touchTodo(todo, { completed: !todo.completed }) : todo
+      )
     );
   };
 
   const handleUpdateTodo = (todoId: string, updates: Partial<SavedTodo>) => {
     setSavedTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, ...updates } : todo))
+      prev.map((todo) => (todo.id === todoId ? touchTodo(todo, updates) : todo))
     );
   };
 
@@ -187,7 +198,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     const targets = savedTodos.filter((todo) => ids.has(todo.id) && todo.phase !== phase);
     if (targets.length === 0) return;
 
-    setSavedTodos((prev) => prev.map((todo) => (ids.has(todo.id) ? { ...todo, phase } : todo)));
+    setSavedTodos((prev) =>
+      prev.map((todo) => (ids.has(todo.id) ? touchTodo(todo, { phase }) : todo))
+    );
 
     targets.forEach((target) => {
       saveInput({
@@ -216,7 +229,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (!hasTargets) return;
 
     setSavedTodos((prev) =>
-      prev.map((todo) => (ids.has(todo.id) ? { ...todo, islandId } : todo))
+      prev.map((todo) => (ids.has(todo.id) ? touchTodo(todo, { islandId }) : todo))
     );
   };
 
@@ -371,6 +384,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     <div
       className="relative flex w-full min-h-[100dvh] items-start justify-center px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10"
       onTouchMove={handleTouchMove}
+      suppressHydrationWarning
     >
       <div className="relative flex w-full max-w-7xl flex-col gap-6 sm:gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
