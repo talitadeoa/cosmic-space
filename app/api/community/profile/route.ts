@@ -4,16 +4,16 @@ import { getTokenPayload, validateToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-function getUserId(request: NextRequest) {
+async function getUserId(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value;
-  if (!token || !validateToken(token)) return null;
-  const payload = getTokenPayload(token);
+  if (!token || !(await validateToken(token))) return null;
+  const payload = await getTokenPayload(token);
   return payload?.userId ?? null;
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = getUserId(request);
+    const userId = await getUserId(request);
     if (!userId) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = getUserId(request);
+    const userId = await getUserId(request);
     if (!userId) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function LogsPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
-  const isAuthenticated = token ? validateToken(token) : false;
+  const isAuthenticated = token ? await validateToken(token) : false;
 
   type SheetCell = string | number | boolean | null;
   type SheetRow = SheetCell[];

@@ -12,11 +12,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ authenticated: false, reason: 'no_token' }, { status: 401 });
     }
 
-    if (!validateToken(token)) {
+    if (!(await validateToken(token))) {
       return NextResponse.json({ authenticated: false, reason: 'invalid_token' }, { status: 401 });
     }
 
-    const payload = getTokenPayload(token);
+    const payload = await getTokenPayload(token);
 
     if (!payload?.userId) {
       return NextResponse.json({ authenticated: false, reason: 'no_user_id' }, { status: 401 });

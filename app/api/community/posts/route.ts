@@ -151,11 +151,11 @@ export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
 
-    if (!token || !validateToken(token)) {
+    if (!token || !(await validateToken(token))) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    const payload = getTokenPayload(token);
+    const payload = await getTokenPayload(token);
     const userId = payload?.userId;
 
     if (!userId) {

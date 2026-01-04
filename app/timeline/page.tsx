@@ -37,8 +37,8 @@ export default async function TimelinePage({ searchParams }: TimelinePageProps) 
 
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
-  const isAuthenticated = token ? validateToken(token) : false;
-  const userId = isAuthenticated && token ? getTokenPayload(token)?.userId : null;
+  const isAuthenticated = token ? await validateToken(token) : false;
+  const userId = isAuthenticated && token ? (await getTokenPayload(token))?.userId : null;
 
   let error: string | null = null;
   let typeError: string | null = null;

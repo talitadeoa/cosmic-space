@@ -1,36 +1,82 @@
 // lib/auth.ts
 import 'server-only';
 import crypto from 'crypto';
+import { getDb } from './db';
 
-// Em memória: map token -> payload (ex: { email, provider })
-// Em produção use JWT ou um armazenamento persistente.
-const tokens = new Map<string, Record<string, any>>();
 const validCredentials = {
   password: process.env.AUTH_PASSWORD || 'cosmos2025',
+};
+
+const DEFAULT_TOKEN_TTL_SECONDS = 24 * 60 * 60;
+
+const resolveTokenTtlSeconds = (): number | null => {
+  const raw = process.env.AUTH_TOKEN_TTL_SECONDS;
+  if (!raw) return DEFAULT_TOKEN_TTL_SECONDS;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return DEFAULT_TOKEN_TTL_SECONDS;
+  if (parsed <= 0) return null;
+  return Math.floor(parsed);
 };
 
 export function generateToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-export function createAuthToken(payload: Record<string, any> = {}): string {
+export async function createAuthToken(payload: Record<string, any> = {}): Promise<string> {
   const token = generateToken();
-  tokens.set(token, payload || {});
+  const ttlSeconds = resolveTokenTtlSeconds();
+  const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
+  const db = getDb();
+
+  await db`
+    INSERT INTO auth_tokens (token, payload, expires_at)
+    VALUES (${token}, ${payload ?? {}}, ${expiresAt})
+  `;
+
   return token;
 }
 
-export function validateToken(token: string): boolean {
-  return tokens.has(token);
+export async function validateToken(token: string): Promise<boolean> {
+  const db = getDb();
+  const rows = (await db`
+    SELECT expires_at
+    FROM auth_tokens
+    WHERE token = ${token}
+    LIMIT 1
+  `) as Array<{ expires_at: string | null }>;
+
+  if (!rows.length) return false;
+  const expiresAt = rows[0]?.expires_at ? new Date(rows[0].expires_at) : null;
+  if (expiresAt && expiresAt <= new Date()) {
+    await db`DELETE FROM auth_tokens WHERE token = ${token}`;
+    return false;
+  }
+  return true;
 }
 
-export function getTokenPayload(token: string): Record<string, any> | null {
-  return tokens.get(token) ?? null;
+export async function getTokenPayload(token: string): Promise<Record<string, any> | null> {
+  const db = getDb();
+  const rows = (await db`
+    SELECT payload, expires_at
+    FROM auth_tokens
+    WHERE token = ${token}
+    LIMIT 1
+  `) as Array<{ payload: Record<string, any> | null; expires_at: string | null }>;
+
+  if (!rows.length) return null;
+  const expiresAt = rows[0]?.expires_at ? new Date(rows[0].expires_at) : null;
+  if (expiresAt && expiresAt <= new Date()) {
+    await db`DELETE FROM auth_tokens WHERE token = ${token}`;
+    return null;
+  }
+  return rows[0]?.payload ?? null;
 }
 
 export function validatePassword(password: string): boolean {
   return password === validCredentials.password;
 }
 
-export function revokeToken(token: string): void {
-  tokens.delete(token);
+export async function revokeToken(token: string): Promise<void> {
+  const db = getDb();
+  await db`DELETE FROM auth_tokens WHERE token = ${token}`;
 }

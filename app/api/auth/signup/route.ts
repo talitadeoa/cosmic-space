@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não foi possível criar o usuário' }, { status: 500 });
     }
 
-    const token = createAuthToken({ provider: 'password', email, userId });
+    const token = await createAuthToken({ provider: 'password', email, userId });
     const response = NextResponse.json(
       { success: true, token, message: 'Cadastro realizado com sucesso' },
       { status: 201 }

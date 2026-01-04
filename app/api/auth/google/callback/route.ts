@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Criar token de sessão local
-    const token = createAuthToken({
+    const token = await createAuthToken({
       email: profile.email,
       name: profile.name,
       provider: 'google',

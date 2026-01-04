@@ -7,11 +7,11 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
-    if (!token || !validateToken(token)) {
+    if (!token || !(await validateToken(token))) {
       return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 });
     }
 
-    const tokenPayload = getTokenPayload(token);
+    const tokenPayload = await getTokenPayload(token);
     const userId = tokenPayload?.userId;
     if (!userId) {
       return NextResponse.json({ error: 'Usuario nao identificado' }, { status: 401 });
@@ -28,11 +28,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
-    if (!token || !validateToken(token)) {
+    if (!token || !(await validateToken(token))) {
       return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 });
     }
 
-    const tokenPayload = getTokenPayload(token);
+    const tokenPayload = await getTokenPayload(token);
     const userId = tokenPayload?.userId;
     if (!userId) {
       return NextResponse.json({ error: 'Usuario nao identificado' }, { status: 401 });

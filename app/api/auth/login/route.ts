@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = createAuthToken({ provider: 'password', email, userId });
+    const token = await createAuthToken({ provider: 'password', email, userId });
 
     const response = NextResponse.json(
       { success: true, token, message: 'Autenticação bem-sucedida' },

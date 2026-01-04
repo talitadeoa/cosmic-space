@@ -67,7 +67,7 @@ const toCalendarDate = (row: { tipo: InsightCategory; periodo: string; created_a
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
-    if (!token || !validateToken(token)) {
+    if (!token || !(await validateToken(token))) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const tokenPayload = getTokenPayload(token);
+    const tokenPayload = await getTokenPayload(token);
     const userId = tokenPayload?.userId;
 
     if (!userId) {

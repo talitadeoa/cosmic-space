@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const token = request.cookies.get('auth_token')?.value;
 
     if (token) {
-      revokeToken(token);
+      await revokeToken(token);
     }
 
     const response = NextResponse.json(
