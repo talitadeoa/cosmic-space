@@ -22,7 +22,7 @@ import {
   pushIslandChanges,
   type SyncIslandItem,
 } from '@/app/cosmos/utils/islandSync';
-import { listOutboxChanges } from '@/app/cosmos/utils/syncOutbox';
+import { listOutboxChanges, removeOutboxChange } from '@/app/cosmos/utils/syncOutbox';
 
 const SYNC_INTERVAL_MS = 10000;
 
@@ -72,6 +72,30 @@ const applyIslandItems = (
   };
 };
 
+const fetchIslandSnapshot = async (): Promise<{ ids: IslandId[]; names: Partial<IslandNames> }> => {
+  const response = await fetch('/api/islands', { credentials: 'include' });
+  if (!response.ok) {
+    throw new Error('Falha ao buscar snapshot de ilhas');
+  }
+  return (await response.json()) as { ids: IslandId[]; names: Partial<IslandNames> };
+};
+
+const pushIslandSnapshot = async (
+  names: IslandNames,
+  ids: IslandId[]
+): Promise<{ ids: IslandId[]; names: Partial<IslandNames> }> => {
+  const response = await fetch('/api/islands', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ names, ids }),
+  });
+  if (!response.ok) {
+    throw new Error('Falha ao enviar snapshot de ilhas');
+  }
+  return (await response.json()) as { ids: IslandId[]; names: Partial<IslandNames> };
+};
+
 export const useIslandNames = () => {
   const [islandNames, setIslandNamesState] = useState<IslandNames>(DEFAULT_ISLAND_NAMES);
   const [islandIds, setIslandIdsState] = useState<IslandId[]>(['ilha1']);
@@ -82,6 +106,15 @@ export const useIslandNames = () => {
   const pendingRef = useRef<Set<IslandId>>(new Set());
   const suppressOutboxApplyRef = useRef(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const clearIslandOutbox = useCallback(async () => {
+    let items = await listOutboxChanges('island', 200, true);
+    while (items.length) {
+      await Promise.all(items.map((item) => removeOutboxChange(item.clientChangeId)));
+      items = await listOutboxChanges('island', 200, true);
+    }
+    pendingRef.current = new Set();
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -140,6 +173,14 @@ export const useIslandNames = () => {
         }
       } catch (error) {
         console.debug('Falha ao enviar ilhas:', error);
+        try {
+          const snapshot = await pushIslandSnapshot(islandNames, islandIds);
+          setIslandNamesState((prev) => ({ ...prev, ...snapshot.names }));
+          setIslandIdsState(orderIslandIds(snapshot.ids));
+          await clearIslandOutbox();
+        } catch (fallbackError) {
+          console.debug('Falha ao enviar snapshot de ilhas:', fallbackError);
+        }
       }
 
       try {
@@ -156,6 +197,13 @@ export const useIslandNames = () => {
         suppressOutboxApplyRef.current = false;
       } catch (error) {
         console.debug('Falha ao buscar ilhas:', error);
+        try {
+          const snapshot = await fetchIslandSnapshot();
+          setIslandNamesState((prev) => ({ ...prev, ...snapshot.names }));
+          setIslandIdsState(orderIslandIds(snapshot.ids));
+        } catch (fallbackError) {
+          console.debug('Falha ao buscar snapshot de ilhas:', fallbackError);
+        }
       }
     };
 
@@ -173,7 +221,7 @@ export const useIslandNames = () => {
         syncIntervalRef.current = null;
       }
     };
-  }, [hasLoaded, isAuthenticated, user?.userId, islandIds]);
+  }, [clearIslandOutbox, hasLoaded, isAuthenticated, islandIds, islandNames, user?.userId]);
 
   const queueIslandChange = useCallback(
     (islandId: IslandId, name: string | null, deletedAt: string | null) => {
