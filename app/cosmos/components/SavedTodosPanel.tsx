@@ -228,13 +228,21 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const getFilteredTodosByChronology = (
     todos: SavedTodo[],
     view: string | undefined,
-    currentPhase: MoonPhase | null | undefined
+    currentPhase: MoonPhase | null | undefined,
+    selectedIslandId: IslandId | null | undefined
   ): SavedTodo[] => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
     if (view === 'em-aberto') {
-      return todos.filter((todo) => !todo.phase && !todo.dueDate && !todo.islandId);
+      return todos.filter((todo) =>
+        selectedIslandId
+          ? !todo.phase && !todo.dueDate
+          : !todo.phase && !todo.dueDate && !todo.islandId
+      );
+    }
+    if (selectedIslandId) {
+      return todos;
     }
     if (view === 'lua-atual' && currentPhase) {
       // Até próxima fase (aprox. 7-8 dias)
@@ -385,13 +393,12 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   };
 
   // Filtrar tarefas por fase e ilha se estiverem selecionadas
-  const islandFilter = view === 'em-aberto' ? null : selectedIsland;
   let filteredTodos = savedTodos
     .filter((todo) => (selectedPhase ? todo.phase === selectedPhase : true))
-    .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true));
+    .filter((todo) => (selectedIsland ? todo.islandId === selectedIsland : true));
 
   // Aplicar filtro de cronologia (datas de vencimento)
-  filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase);
+  filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase, selectedIsland);
 
   // Aplicar paginação
   const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
