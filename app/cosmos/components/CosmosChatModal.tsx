@@ -791,7 +791,7 @@ export default function CosmosChatModal({
     : undefined;
   const authNudgeSuggestions =
     !showAuthPrompt && showAuthNudge
-      ? [{ id: 'auth-cta', label: 'Entrar ou criar conta', action: 'auth', tone: 'amber' as Tone }]
+      ? [{ id: 'auth-cta', label: 'Entrar ou criar conta', action: 'auth' as const, tone: 'amber' as Tone }]
       : [];
   const composerSuggestions = showAuthPrompt
     ? authSuggestions.map((suggestion) => ({ ...suggestion, tone }))
