@@ -210,9 +210,18 @@ export const IslandsList: React.FC<IslandsListProps> = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => toggleIsland(islandId)}
-                onDoubleClick={() => handleStartEditing(islandId)}
-                onKeyDown={handleKeyDown(islandId)}
+                onClick={() => {
+                  if (isEditing) return;
+                  toggleIsland(islandId);
+                }}
+                onDoubleClick={() => {
+                  if (isEditing) return;
+                  handleStartEditing(islandId);
+                }}
+                onKeyDown={(event) => {
+                  if (isEditing) return;
+                  handleKeyDown(islandId)(event);
+                }}
                 onDrop={onDropIsland ? onDropIsland(islandId) : undefined}
                 onDragOver={onDragOverIsland ? onDragOverIsland(islandId) : undefined}
                 onDragLeave={onDragLeaveIsland}
@@ -222,45 +231,38 @@ export const IslandsList: React.FC<IslandsListProps> = ({
                   selectedIsland === islandId ? activeItemClassName : inactiveItemClassName
                 } ${isActiveDrop ? 'scale-[1.02] border-indigo-300/80 shadow-lg shadow-indigo-500/20' : ''}`}
               >
-                <span>{label}</span>
+                {isEditing ? (
+                  <input
+                    value={editingIslandName}
+                    onChange={(event) => setEditingIslandName(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        handleSaveEditing();
+                      }
+                      if (event.key === 'Escape') {
+                        event.preventDefault();
+                        handleCancelEditing();
+                      }
+                    }}
+                    onBlur={() => handleSaveEditing()}
+                    placeholder="Nome da ilha"
+                    className="w-full rounded-md border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-indigo-50 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                    autoFocus
+                  />
+                ) : (
+                  <span>{label}</span>
+                )}
               </button>
             </div>
             {isEditing && (
-              <div className="flex flex-col gap-2 rounded-lg border border-slate-800 bg-slate-950/60 p-2">
-                <input
-                  value={editingIslandName}
-                  onChange={(event) => setEditingIslandName(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault();
-                      handleSaveEditing();
-                    }
-                  }}
-                  placeholder="Nome da ilha"
-                  className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs text-indigo-50 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleSaveEditing}
-                    className="flex-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:bg-indigo-700"
-                  >
-                    Salvar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCancelEditing}
-                    className="flex-1 rounded-md border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-900"
-                  >
-                    Cancelar
-                  </button>
-                </div>
+              <div className="flex flex-wrap gap-2 pl-1">
                 {canRemove && (
                   <button
                     type="button"
+                    onMouseDown={(event) => event.preventDefault()}
                     onClick={handleRemoveIsland}
-                    className="rounded-md border border-red-500/60 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200 transition hover:bg-red-500/20"
+                    className="rounded-md border border-red-500/60 bg-red-500/10 px-3 py-1.5 text-[0.65rem] font-semibold text-red-200 transition hover:bg-red-500/20"
                   >
                     Remover ilha
                   </button>
