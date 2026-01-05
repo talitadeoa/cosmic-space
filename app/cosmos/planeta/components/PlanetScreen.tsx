@@ -82,7 +82,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   const resetFilters = () => {
     setFilters({
-      view: 'em-aberto',
+      view: 'todos',
       inputType: 'all',
       todoStatus: 'all',
       phase: null,

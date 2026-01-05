@@ -3,6 +3,7 @@ import type { IslandId } from '@/lib/islands';
 import type { TodoInputType } from '@/types/inputs';
 
 export const PLANET_FILTER_VIEWS = [
+  'todos',
   'em-aberto',
   'lua-atual',
   'proxima-fase',
@@ -34,7 +35,7 @@ export type PlanetUiState = {
 };
 
 export const DEFAULT_PLANET_FILTERS: PlanetFiltersState = {
-  view: 'em-aberto',
+  view: 'todos',
   inputType: 'all',
   todoStatus: 'all',
   phase: null,

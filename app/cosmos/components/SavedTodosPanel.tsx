@@ -8,8 +8,10 @@ import { getIslandLabel, ISLAND_IDS, type IslandNames } from '../utils/islandNam
 
 interface SavedTodosPanelProps {
   savedTodos: SavedTodo[];
-  view?: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
-  onViewChange?: (view: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => void;
+  view?: 'todos' | 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
+  onViewChange?: (
+    view: 'todos' | 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo'
+  ) => void;
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
   onTouchStart?: (todoId: string) => (event: React.TouchEvent) => void;
@@ -43,7 +45,7 @@ interface SavedTodosPanelProps {
  */
 export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   savedTodos,
-  view = 'em-aberto',
+  view = 'todos',
   onViewChange,
   onDragStart,
   onDragEnd,
@@ -115,7 +117,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     const nextStatus = todoStatusFilter === status ? 'all' : status;
     onTodoStatusFilterChange?.(nextStatus);
   };
-  const handleViewChange = (nextView: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => {
+  const handleViewChange = (
+    nextView: 'todos' | 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo'
+  ) => {
     onViewChange?.(nextView);
   };
 
@@ -228,21 +232,16 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const getFilteredTodosByChronology = (
     todos: SavedTodo[],
     view: string | undefined,
-    currentPhase: MoonPhase | null | undefined,
-    selectedIslandId: IslandId | null | undefined
+    currentPhase: MoonPhase | null | undefined
   ): SavedTodo[] => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
-    if (view === 'em-aberto') {
-      return todos.filter((todo) =>
-        selectedIslandId
-          ? !todo.phase && !todo.dueDate
-          : !todo.phase && !todo.dueDate && !todo.islandId
-      );
-    }
-    if (selectedIslandId) {
+    if (view === 'todos') {
       return todos;
+    }
+    if (view === 'em-aberto') {
+      return todos.filter((todo) => !todo.phase && !todo.dueDate && !todo.islandId);
     }
     if (view === 'lua-atual' && currentPhase) {
       // Até próxima fase (aprox. 7-8 dias)
@@ -393,12 +392,14 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   };
 
   // Filtrar tarefas por fase e ilha se estiverem selecionadas
+  const phaseFilter = view === 'em-aberto' ? null : selectedPhase;
+  const islandFilter = view === 'em-aberto' ? null : selectedIsland;
   let filteredTodos = savedTodos
-    .filter((todo) => (selectedPhase ? todo.phase === selectedPhase : true))
-    .filter((todo) => (selectedIsland ? todo.islandId === selectedIsland : true));
+    .filter((todo) => (phaseFilter ? todo.phase === phaseFilter : true))
+    .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true));
 
   // Aplicar filtro de cronologia (datas de vencimento)
-  filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase, selectedIsland);
+  filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase);
 
   // Aplicar paginação
   const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
@@ -528,6 +529,18 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   };
 
   const headerLabel = (() => {
+    if (view === 'todos') {
+      if (selectedPhase && islandLabel) {
+        return `todos - ${phaseLabels[selectedPhase]} • ${islandLabel}`;
+      }
+      if (selectedPhase) {
+        return `todos - ${phaseLabels[selectedPhase]}`;
+      }
+      if (islandLabel) {
+        return `todos - ${islandLabel}`;
+      }
+      return 'todos';
+    }
     if (selectedPhase && islandLabel) {
       return `salvos - ${phaseLabels[selectedPhase]} • ${islandLabel}`;
     }
@@ -541,6 +554,18 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   })();
 
   const headerDescription = (() => {
+    if (view === 'todos') {
+      if (selectedPhase && islandLabel) {
+        return `todos associados à fase ${phaseLabels[selectedPhase]} na ${islandLabel}.`;
+      }
+      if (selectedPhase) {
+        return `todos associados à fase: ${phaseLabels[selectedPhase]}`;
+      }
+      if (islandLabel) {
+        return `todos associados à ${islandLabel}.`;
+      }
+      return 'Todas as tarefas salvas.';
+    }
     if (selectedPhase && islandLabel) {
       return `salvos associados à fase ${phaseLabels[selectedPhase]} na ${islandLabel}.`;
     }
@@ -596,6 +621,17 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
           </div>
           <p className="text-[0.75rem] text-slate-400">{headerDescription}</p>
           <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => handleViewChange('todos')}
+              className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
+                view === 'todos'
+                  ? 'border border-slate-300/80 bg-slate-500/20 text-slate-100'
+                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-400/60'
+              }`}
+            >
+              Todos
+            </button>
             <button
               type="button"
               onDragOver={handleDragOverView}
