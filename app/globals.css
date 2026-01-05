@@ -25,3 +25,13 @@ input:focus-visible {
   outline: none;
   @apply ring-2 ring-indigo-400 ring-offset-2 ring-offset-space-dark;
 }
+
+/* Hide scrollbar but allow scrolling (for horizontal chip lists) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

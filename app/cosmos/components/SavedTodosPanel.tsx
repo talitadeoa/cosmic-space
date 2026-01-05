@@ -786,7 +786,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       )}
 
       <div
-        className="mt-3 max-h-[60vh] space-y-2 overflow-y-auto pr-1 sm:max-h-[70vh] lg:max-h-[75vh]"
+        className="mt-3 max-h-[60vh] space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20 sm:max-h-[70vh] lg:max-h-[75vh]"
         onTouchMove={handleSelectionTouchMove}
         onTouchEnd={handleSelectionTouchEnd}
         onTouchCancel={handleSelectionTouchEnd}

@@ -2,14 +2,35 @@
 
 import { SpacePageLayout } from '@/components/layouts';
 import type { CommunityPost } from '@/types/community';
-import Link from 'next/link';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  CommunityHeader,
+  CategoryChips,
+  PostCard,
+  PostSkeletonList,
+  FeaturedCard,
+  EmptyState,
+  ErrorState,
+  NewPostForm,
+  StreamList,
+} from './components';
+
+// =============================================================================
+// TYPES
+// =============================================================================
 
 type CommunityProfile = {
   displayName: string;
   avatarUrl: string;
   bio: string;
 };
+
+type LoadingState = 'idle' | 'loading' | 'error' | 'success';
+type PostType = 'Todos' | 'Pulso' | 'Carta' | 'Evento';
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
 
 const FALLBACK_POSTS: CommunityPost[] = [
   {
@@ -62,24 +83,50 @@ const COMMUNITY_STREAMS = [
   },
 ];
 
-const COMMUNITY_GESTURES = [
-  {
-    title: 'Deslize para navegar',
-    description: 'Alterna entre fluxos (micro-posts, cartas longas e eventos).',
-  },
-  {
-    title: 'Toque & segure',
-    description: 'Salva uma publicação na sua órbita pessoal.',
-  },
-  {
-    title: 'Arraste para reagir',
-    description: 'Envie energia para um post sem usar botões.',
-  },
-];
+const TYPE_FILTERS: PostType[] = ['Todos', 'Pulso', 'Carta', 'Evento'];
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+const classifyPost = (post: CommunityPost): PostType => {
+  const normalizedTags = post.tags.map((tag) => tag.toLowerCase());
+  if (normalizedTags.some((tag) => ['evento', 'eventos', 'lua'].includes(tag))) {
+    return 'Evento';
+  }
+  if (post.body.length > 220 || normalizedTags.includes('cartas')) {
+    return 'Carta';
+  }
+  return 'Pulso';
+};
+
+const truncate = (text: string, length = 140) => {
+  if (text.length <= length) return text;
+  return `${text.slice(0, length).trim()}…`;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapApiPost = (post: any): CommunityPost => ({
+  id: String(post.id),
+  authorName: post.author?.name ?? 'Tripulação',
+  authorAvatarUrl: post.author?.avatarUrl ?? null,
+  createdAt: post.createdAt ?? new Date().toISOString(),
+  title: post.title ?? null,
+  body: post.body ?? '',
+  tags: Array.isArray(post.tags) ? post.tags : [],
+  commentsCount: Number(post.commentsCount ?? 0),
+});
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
 
 const ComunidadePage = () => {
+  // ---------------------------------------------------------------------------
+  // STATE
+  // ---------------------------------------------------------------------------
   const [posts, setPosts] = useState<CommunityPost[]>(FALLBACK_POSTS);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadingState, setLoadingState] = useState<LoadingState>('loading');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchStatus, setSearchStatus] = useState<'idle' | 'searching' | 'error'>('idle');
   const [searchError, setSearchError] = useState('');
@@ -88,8 +135,6 @@ const ComunidadePage = () => {
     avatarUrl: '',
     bio: '',
   });
-  const [profileStatus, setProfileStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [profileError, setProfileError] = useState('');
   const [postStatus, setPostStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [postError, setPostError] = useState('');
   const [postForm, setPostForm] = useState({
@@ -99,6 +144,7 @@ const ComunidadePage = () => {
     images: '',
   });
   const [activeTag, setActiveTag] = useState('Todos');
+  const [activeType, setActiveType] = useState<PostType>('Todos');
   const [savedPosts, setSavedPosts] = useState<Record<string, boolean>>({});
   const [reactions, setReactions] = useState<Record<string, { energia: number; apoio: number }>>(
     {}
@@ -109,191 +155,30 @@ const ComunidadePage = () => {
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [commentError, setCommentError] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    let isActive = true;
-    const loadPosts = async () => {
-      try {
-        const response = await fetch('/api/community/posts?limit=6');
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data?.error ?? 'Erro ao buscar posts');
-        }
-        const apiPosts = Array.isArray(data?.posts)
-          ? data.posts.map((post: any) => ({
-              id: String(post.id),
-              authorName: post.author?.name ?? 'Tripulação',
-              authorAvatarUrl: post.author?.avatarUrl ?? null,
-              createdAt: post.createdAt ?? new Date().toISOString(),
-              title: post.title ?? null,
-              body: post.body ?? '',
-              tags: Array.isArray(post.tags) ? post.tags : [],
-              commentsCount: Number(post.commentsCount ?? 0),
-            }))
-          : [];
-
-        if (isActive && apiPosts.length > 0) {
-          setPosts(apiPosts);
-        }
-      } catch (error) {
-        console.warn('Não foi possível carregar posts da comunidade:', error);
-      } finally {
-        if (isActive) setIsLoading(false);
-      }
-    };
-
-    loadPosts();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isActive = true;
-    const loadProfile = async () => {
-      try {
-        const response = await fetch('/api/community/profile');
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data?.error ?? 'Erro ao buscar perfil');
-        }
-        if (isActive && data?.profile) {
-          setProfile({
-            displayName: data.profile.displayName ?? '',
-            avatarUrl: data.profile.avatarUrl ?? '',
-            bio: data.profile.bio ?? '',
-          });
-        }
-      } catch (error) {
-        if (isActive) {
-          setProfileError('Faça login para editar seu perfil.');
-        }
-      }
-    };
-
-    loadProfile();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
+  // ---------------------------------------------------------------------------
+  // MEMOIZED VALUES
+  // ---------------------------------------------------------------------------
   const relativeTime = useMemo(() => {
     return new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
   }, []);
 
-  const formatRelativeTime = (isoDate: string) => {
-    const date = new Date(isoDate);
-    if (Number.isNaN(date.getTime())) return 'agora';
-    const diffMs = date.getTime() - Date.now();
-    const diffSeconds = Math.round(diffMs / 1000);
-    const diffMinutes = Math.round(diffSeconds / 60);
-    const diffHours = Math.round(diffMinutes / 60);
-    const diffDays = Math.round(diffHours / 24);
+  const formatRelativeTime = useCallback(
+    (isoDate: string) => {
+      const date = new Date(isoDate);
+      if (Number.isNaN(date.getTime())) return 'agora';
+      const diffMs = date.getTime() - Date.now();
+      const diffSeconds = Math.round(diffMs / 1000);
+      const diffMinutes = Math.round(diffSeconds / 60);
+      const diffHours = Math.round(diffMinutes / 60);
+      const diffDays = Math.round(diffHours / 24);
 
-    if (Math.abs(diffSeconds) < 60) return relativeTime.format(diffSeconds, 'second');
-    if (Math.abs(diffMinutes) < 60) return relativeTime.format(diffMinutes, 'minute');
-    if (Math.abs(diffHours) < 24) return relativeTime.format(diffHours, 'hour');
-    return relativeTime.format(diffDays, 'day');
-  };
-
-  const truncate = (text: string, length = 140) => {
-    if (text.length <= length) return text;
-    return `${text.slice(0, length).trim()}…`;
-  };
-
-  const classifyPost = (post: CommunityPost) => {
-    const normalizedTags = post.tags.map((tag) => tag.toLowerCase());
-    if (normalizedTags.some((tag) => ['evento', 'eventos', 'lua'].includes(tag))) {
-      return 'Evento';
-    }
-    if (post.body.length > 220 || normalizedTags.includes('cartas')) {
-      return 'Carta';
-    }
-    return 'Pulso';
-  };
-
-  const initialsFor = (name: string) => {
-    const parts = name.trim().split(' ').filter(Boolean);
-    const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase());
-    return initials.join('') || 'C';
-  };
-
-  const fetchPosts = async (query: string) => {
-    setSearchStatus('searching');
-    setSearchError('');
-    try {
-      const encodedQuery = query ? `&q=${encodeURIComponent(query)}` : '';
-      const response = await fetch(`/api/community/posts?limit=6${encodedQuery}`);
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error ?? 'Erro ao buscar posts');
-      }
-      const apiPosts = Array.isArray(data?.posts)
-        ? data.posts.map((post: any) => ({
-            id: String(post.id),
-            authorName: post.author?.name ?? 'Tripulacao',
-            authorAvatarUrl: post.author?.avatarUrl ?? null,
-            createdAt: post.createdAt ?? new Date().toISOString(),
-            title: post.title ?? null,
-            body: post.body ?? '',
-            tags: Array.isArray(post.tags) ? post.tags : [],
-            commentsCount: Number(post.commentsCount ?? 0),
-          }))
-        : [];
-      setPosts(apiPosts);
-      setSearchStatus('idle');
-    } catch (error) {
-      setSearchStatus('error');
-      setSearchError('Nao foi possivel buscar.');
-    }
-  };
-
-  const handleSearch = async (event: FormEvent) => {
-    event.preventDefault();
-    await fetchPosts(searchQuery.trim());
-  };
-
-  const clearSearch = async () => {
-    setSearchQuery('');
-    await fetchPosts('');
-  };
-
-  const handleProfileChange = (field: keyof CommunityProfile, value: string) => {
-    setProfile((prev) => ({ ...prev, [field]: value }));
-    setProfileStatus('idle');
-    setProfileError('');
-  };
-
-  const saveProfile = async (event: FormEvent) => {
-    event.preventDefault();
-    setProfileStatus('saving');
-    setProfileError('');
-    try {
-      const response = await fetch('/api/community/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          displayName: profile.displayName,
-          avatarUrl: profile.avatarUrl,
-          bio: profile.bio,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error ?? 'Erro ao salvar perfil');
-      }
-      setProfile({
-        displayName: data.profile.displayName ?? '',
-        avatarUrl: data.profile.avatarUrl ?? '',
-        bio: data.profile.bio ?? '',
-      });
-      setProfileStatus('saved');
-    } catch (error) {
-      setProfileStatus('error');
-      setProfileError('Nao foi possivel salvar o perfil.');
-    }
-  };
+      if (Math.abs(diffSeconds) < 60) return relativeTime.format(diffSeconds, 'second');
+      if (Math.abs(diffMinutes) < 60) return relativeTime.format(diffMinutes, 'minute');
+      if (Math.abs(diffHours) < 24) return relativeTime.format(diffHours, 'hour');
+      return relativeTime.format(diffDays, 'day');
+    },
+    [relativeTime]
+  );
 
   const tagFilters = useMemo(() => {
     const tagSet = new Set<string>();
@@ -304,11 +189,126 @@ const ComunidadePage = () => {
   }, [posts]);
 
   const visiblePosts = useMemo(() => {
-    if (activeTag === 'Todos') return posts;
-    return posts.filter((post) => post.tags.includes(activeTag));
-  }, [activeTag, posts]);
+    let filtered = posts;
+    if (activeType !== 'Todos') {
+      filtered = filtered.filter((post) => classifyPost(post) === activeType);
+    }
+    if (activeTag !== 'Todos') {
+      filtered = filtered.filter((post) => post.tags.includes(activeTag));
+    }
+    return filtered;
+  }, [activeTag, activeType, posts]);
 
   const featuredPost = visiblePosts[0];
+  const feedPosts = visiblePosts.slice(1);
+
+  // ---------------------------------------------------------------------------
+  // DATA LOADING
+  // ---------------------------------------------------------------------------
+  const loadPosts = useCallback(async (query?: string) => {
+    try {
+      const encodedQuery = query ? `&q=${encodeURIComponent(query)}` : '';
+      const response = await fetch(`/api/community/posts?limit=6${encodedQuery}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error ?? 'Erro ao buscar posts');
+      }
+      const apiPosts = Array.isArray(data?.posts) ? data.posts.map(mapApiPost) : [];
+      return apiPosts;
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const init = async () => {
+      setLoadingState('loading');
+      try {
+        const [postsData, profileResponse] = await Promise.all([
+          loadPosts().catch(() => null),
+          fetch('/api/community/profile').catch(() => null),
+        ]);
+
+        if (!isActive) return;
+
+        if (postsData && postsData.length > 0) {
+          setPosts(postsData);
+        }
+
+        if (profileResponse?.ok) {
+          const profileData = await profileResponse.json();
+          if (profileData?.profile) {
+            setProfile({
+              displayName: profileData.profile.displayName ?? '',
+              avatarUrl: profileData.profile.avatarUrl ?? '',
+              bio: profileData.profile.bio ?? '',
+            });
+          }
+        }
+
+        setLoadingState('success');
+      } catch {
+        if (isActive) {
+          setLoadingState('error');
+        }
+      }
+    };
+
+    init();
+
+    return () => {
+      isActive = false;
+    };
+  }, [loadPosts]);
+
+  // ---------------------------------------------------------------------------
+  // HANDLERS
+  // ---------------------------------------------------------------------------
+  const handleSearch = async (event: FormEvent) => {
+    event.preventDefault();
+    setSearchStatus('searching');
+    setSearchError('');
+    try {
+      const results = await loadPosts(searchQuery.trim());
+      setPosts(results);
+      setSearchStatus('idle');
+    } catch {
+      setSearchStatus('error');
+      setSearchError('Não foi possível buscar.');
+    }
+  };
+
+  const clearSearch = async () => {
+    setSearchQuery('');
+    setSearchStatus('searching');
+    try {
+      const results = await loadPosts('');
+      setPosts(results);
+      setSearchStatus('idle');
+    } catch {
+      setSearchStatus('error');
+    }
+  };
+
+  const handleRetry = async () => {
+    setLoadingState('loading');
+    try {
+      const results = await loadPosts();
+      if (results.length > 0) {
+        setPosts(results);
+      }
+      setLoadingState('success');
+    } catch {
+      setLoadingState('error');
+    }
+  };
+
+  const resetFilters = () => {
+    setActiveTag('Todos');
+    setActiveType('Todos');
+  };
 
   const handlePostChange = (field: keyof typeof postForm, value: string) => {
     setPostForm((prev) => ({ ...prev, [field]: value }));
@@ -348,25 +348,15 @@ const ComunidadePage = () => {
       }
       setPostStatus('saved');
       setPostForm({ title: '', body: '', tags: '', images: '' });
-      const refresh = await fetch('/api/community/posts?limit=6');
-      const refreshData = await refresh.json();
-      if (refresh.ok && Array.isArray(refreshData?.posts)) {
-        setPosts(
-          refreshData.posts.map((post: any) => ({
-            id: String(post.id),
-            authorName: post.author?.name ?? 'Tripulacao',
-            authorAvatarUrl: post.author?.avatarUrl ?? null,
-            createdAt: post.createdAt ?? new Date().toISOString(),
-            title: post.title ?? null,
-            body: post.body ?? '',
-            tags: Array.isArray(post.tags) ? post.tags : [],
-            commentsCount: Number(post.commentsCount ?? 0),
-          }))
-        );
+
+      // Refresh posts
+      const refreshedPosts = await loadPosts();
+      if (refreshedPosts.length > 0) {
+        setPosts(refreshedPosts);
       }
-    } catch (error) {
+    } catch {
       setPostStatus('error');
-      setPostError('Nao foi possivel publicar. Verifique se esta logado.');
+      setPostError('Não foi possível publicar. Verifique se está logado.');
     }
   };
 
@@ -384,7 +374,7 @@ const ComunidadePage = () => {
     const body = commentInputs[postId]?.trim() ?? '';
     if (!body) {
       setCommentStatus((prev) => ({ ...prev, [postId]: 'error' }));
-      setCommentError((prev) => ({ ...prev, [postId]: 'Escreva um comentario.' }));
+      setCommentError((prev) => ({ ...prev, [postId]: 'Escreva um comentário.' }));
       return;
     }
 
@@ -405,11 +395,11 @@ const ComunidadePage = () => {
           post.id === postId ? { ...post, commentsCount: (post.commentsCount ?? 0) + 1 } : post
         )
       );
-    } catch (error) {
+    } catch {
       setCommentStatus((prev) => ({ ...prev, [postId]: 'error' }));
       setCommentError((prev) => ({
         ...prev,
-        [postId]: 'Nao foi possivel comentar.',
+        [postId]: 'Não foi possível comentar.',
       }));
     }
   };
@@ -429,399 +419,165 @@ const ComunidadePage = () => {
     }));
   };
 
+  // ---------------------------------------------------------------------------
+  // RENDER
+  // ---------------------------------------------------------------------------
   return (
-    <SpacePageLayout className="px-6 py-12 sm:px-10">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <header className="relative space-y-4">
-          <div className="absolute right-0 top-0 flex items-center gap-3 rounded-full border border-slate-800/70 bg-black/40 px-4 py-2 text-xs text-slate-200 shadow-2xl shadow-indigo-950/30">
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-slate-700/70 bg-slate-900 text-[11px] font-semibold text-slate-200">
-              {profile.avatarUrl ? (
-                <img
-                  src={profile.avatarUrl}
-                  alt={profile.displayName || 'Perfil'}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <span>{initialsFor(profile.displayName || 'Tripulacao')}</span>
-              )}
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Perfil</span>
-              <span className="text-sm font-semibold text-slate-100">
-                {profile.displayName || 'Tripulacao'}
-              </span>
-            </div>
-            <Link
-              href="/perfil"
-              className="rounded-full border border-slate-700/70 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
-            >
-              Ver
-            </Link>
-          </div>
-          <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Comunidade</p>
-          <h1 className="text-3xl font-semibold text-white sm:text-4xl">
-            O encontro entre{' '}
+    <SpacePageLayout className="min-h-screen">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-12 sm:px-6">
+        {/* Header compacto */}
+        <CommunityHeader
+          profile={profile}
+          searchQuery={searchQuery}
+          searchStatus={searchStatus}
+          searchError={searchError}
+          onSearchChange={setSearchQuery}
+          onSearchSubmit={handleSearch}
+          onSearchClear={clearSearch}
+        />
+
+        {/* Page intro */}
+        <section className="mt-6" aria-labelledby="page-title">
+          <p className="text-xs uppercase tracking-widest text-slate-500">Comunidade</p>
+          <h1
+            id="page-title"
+            className="mt-1 text-xl font-semibold leading-tight text-white sm:text-2xl"
+          >
+            Conecte-se através de{' '}
             <span className="bg-gradient-to-r from-sky-300 via-indigo-300 to-rose-300 bg-clip-text text-transparent">
-              pulsos sociais
-            </span>{' '}
-            e narrativas profundas
+              histórias
+            </span>
           </h1>
-          <p className="max-w-2xl text-base text-slate-300 sm:text-lg">
-            Um espaço que mistura a velocidade de um feed social com a profundidade de cartas
-            editoriais. Aqui, cada publicação vira uma órbita compartilhada.
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-400">
+            Descubra um espaço onde cada publicação é uma oportunidade de conexão.
           </p>
-          <div className="flex flex-wrap gap-3 text-sm text-slate-300">
-            <span className="rounded-full border border-slate-700/70 bg-black/30 px-4 py-2">
-              Feed em tempo real
-            </span>
-            <span className="rounded-full border border-slate-700/70 bg-black/30 px-4 py-2">
-              Cartas longas
-            </span>
-            <span className="rounded-full border border-slate-700/70 bg-black/30 px-4 py-2">
-              Eventos de lua cheia
-            </span>
-          </div>
-          <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3">
-            <input
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Buscar na comunidade..."
-              className="min-w-[220px] flex-1 rounded-full border border-slate-700/70 bg-black/30 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-            />
-            <button
-              type="submit"
-              disabled={searchStatus === 'searching'}
-              className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-sm text-slate-200 transition hover:border-indigo-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {searchStatus === 'searching' ? 'Buscando' : 'Buscar'}
-            </button>
-            {searchQuery ? (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-sm text-slate-200 transition hover:border-indigo-400 hover:text-white"
-              >
-                Limpar
-              </button>
-            ) : null}
-            {searchError ? (
-              <span className="text-xs uppercase tracking-[0.3em] text-rose-300">
-                {searchError}
-              </span>
-            ) : null}
-          </form>
-          <div className="flex flex-wrap gap-2">
-            {tagFilters.map((tag) => {
-              const isActive = tag === activeTag;
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => setActiveTag(tag)}
-                  className={`rounded-full border px-4 py-2 text-xs uppercase tracking-[0.3em] transition ${
-                    isActive
-                      ? 'border-indigo-400 bg-indigo-500/20 text-white'
-                      : 'border-slate-800/70 bg-black/30 text-slate-300 hover:border-indigo-400 hover:text-white'
-                  }`}
-                >
-                  {tag}
-                </button>
-              );
-            })}
-          </div>
-        </header>
-
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
-            {featuredPost ? (
-              <div className="mb-6 rounded-3xl border border-indigo-400/50 bg-gradient-to-br from-indigo-900/30 via-slate-950/70 to-black/80 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-                  <span className="rounded-full border border-indigo-400/70 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-indigo-200">
-                    Destaque da semana
-                  </span>
-                  <span className="text-[11px] text-slate-500">
-                    {formatRelativeTime(featuredPost.createdAt)}
-                  </span>
-                </div>
-                <h3 className="mt-3 text-xl font-semibold text-white">
-                  {featuredPost.title || 'Pulso em destaque'}
-                </h3>
-                <p className="mt-2 text-sm text-slate-300">{truncate(featuredPost.body, 220)}</p>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-                  <span>Curado para inspirar sua orbita pessoal.</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleSave(featuredPost.id)}
-                    className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
-                  >
-                    {savedPosts[featuredPost.id] ? 'Salvo' : 'Salvar'}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Fluxo orbital</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Postagens em tempo real</h2>
-                {isLoading ? (
-                  <p className="mt-2 text-xs uppercase tracking-[0.3em] text-slate-500">
-                    Carregando sinais da comunidade...
-                  </p>
-                ) : null}
-              </div>
-              <Link
-                href="/cosmos"
-                className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-sm text-slate-200 transition hover:border-indigo-400 hover:text-white"
-              >
-                Visitar cosmos
-              </Link>
-            </div>
-
-            <div className="mt-6 space-y-4">
-              {visiblePosts.length === 0 ? (
-                <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6 text-sm text-slate-300">
-                  <p className="text-white">Nenhum pulso encontrado.</p>
-                  <p className="mt-2 text-slate-400">
-                    Tente outra tag ou volte para "Todos" para ver o fluxo completo.
-                  </p>
-                </div>
-              ) : null}
-              {visiblePosts.map((post) => (
-                <article
-                  key={post.id}
-                  className="rounded-2xl border border-slate-800/80 bg-slate-950/50 p-4 transition hover:border-indigo-400/60"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-slate-700/70 bg-slate-900 text-xs font-semibold text-slate-200">
-                        {post.authorAvatarUrl ? (
-                          <img
-                            src={post.authorAvatarUrl}
-                            alt={post.authorName}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span>{initialsFor(post.authorName)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-slate-200">
-                          {post.authorName}
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          {formatRelativeTime(post.createdAt)}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                      <span className="rounded-full border border-slate-700/70 px-2 py-1">
-                        {classifyPost(post)}
-                      </span>
-                      <span>
-                        {post.commentsCount} comentário{post.commentsCount === 1 ? '' : 's'}
-                      </span>
-                    </div>
-                  </div>
-                  <h3 className="mt-3 text-lg font-semibold text-white">
-                    {post.title || 'Pulso da comunidade'}
-                  </h3>
-                  <p className="mt-2 text-sm text-slate-300">{truncate(post.body, 160)}</p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
-                    {post.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-slate-700/70 bg-black/40 px-3 py-1"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => addReaction(post.id, 'energia')}
-                        className="rounded-full border border-slate-700/70 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
-                      >
-                        Energia {reactions[post.id]?.energia ?? 0}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => addReaction(post.id, 'apoio')}
-                        className="rounded-full border border-slate-700/70 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
-                      >
-                        Apoio {reactions[post.id]?.apoio ?? 0}
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => toggleSave(post.id)}
-                      className="rounded-full border border-slate-700/70 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white"
-                    >
-                      {savedPosts[post.id] ? 'Salvo' : 'Salvar'}
-                    </button>
-                  </div>
-                  <form
-                    className="mt-4 space-y-2"
-                    onSubmit={(event) => submitComment(event, post.id)}
-                  >
-                    <textarea
-                      value={commentInputs[post.id] ?? ''}
-                      onChange={(event) => handleCommentChange(post.id, event.target.value)}
-                      rows={2}
-                      placeholder="Responder com um comentario..."
-                      className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                    />
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-                      <span>{commentError[post.id] ?? ''}</span>
-                      <button
-                        type="submit"
-                        disabled={commentStatus[post.id] === 'saving'}
-                        className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {commentStatus[post.id] === 'saving' ? 'Enviando' : 'Comentar'}
-                      </button>
-                    </div>
-                  </form>
-                </article>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-6">
-            <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Perfil publico</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Ajuste sua identidade</h2>
-              <p className="mt-3 text-sm text-slate-300">
-                Escolha como voce aparece nos posts e comentarios.
-              </p>
-              <form className="mt-5 space-y-4" onSubmit={saveProfile}>
-                <input
-                  value={profile.displayName}
-                  onChange={(event) => handleProfileChange('displayName', event.target.value)}
-                  placeholder="Nome publico"
-                  className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                />
-                <input
-                  value={profile.avatarUrl}
-                  onChange={(event) => handleProfileChange('avatarUrl', event.target.value)}
-                  placeholder="URL do avatar"
-                  className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                />
-                <textarea
-                  value={profile.bio}
-                  onChange={(event) => handleProfileChange('bio', event.target.value)}
-                  placeholder="Bio curta"
-                  rows={3}
-                  className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                />
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-                  <span>{profileError}</span>
-                  <button
-                    type="submit"
-                    disabled={profileStatus === 'saving'}
-                    className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {profileStatus === 'saving' ? 'Salvando' : 'Salvar perfil'}
-                  </button>
-                </div>
-                {profileStatus === 'saved' ? (
-                  <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">
-                    Perfil atualizado
-                  </p>
-                ) : null}
-              </form>
-            </div>
-
-            <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Novo pulso</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Publicar na comunidade</h2>
-              <p className="mt-3 text-sm text-slate-300">
-                Compartilhe insights curtos ou notas mais longas. Tags e imagens sao opcionais.
-              </p>
-              <form className="mt-5 space-y-4" onSubmit={submitPost}>
-                <input
-                  value={postForm.title}
-                  onChange={(event) => handlePostChange('title', event.target.value)}
-                  placeholder="Titulo (opcional)"
-                  className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                />
-                <textarea
-                  value={postForm.body}
-                  onChange={(event) => handlePostChange('body', event.target.value)}
-                  placeholder="Escreva seu post..."
-                  rows={4}
-                  className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                />
-                <input
-                  value={postForm.tags}
-                  onChange={(event) => handlePostChange('tags', event.target.value)}
-                  placeholder="Tags separadas por virgula (ex: rituais, foco)"
-                  className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                />
-                <input
-                  value={postForm.images}
-                  onChange={(event) => handlePostChange('images', event.target.value)}
-                  placeholder="URLs de imagem separadas por virgula"
-                  className="w-full rounded-2xl border border-slate-800/80 bg-black/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                />
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-                  <span>{postError}</span>
-                  <button
-                    type="submit"
-                    disabled={postStatus === 'saving'}
-                    className="rounded-full border border-slate-700/70 bg-black/40 px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-indigo-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {postStatus === 'saving' ? 'Publicando' : 'Publicar'}
-                  </button>
-                </div>
-                {postStatus === 'saved' ? (
-                  <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">
-                    Post publicado
-                  </p>
-                ) : null}
-              </form>
-            </div>
-
-            <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Cartas</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Publicações profundas</h2>
-              <p className="mt-3 text-sm text-slate-300">
-                Escolha uma trilha editorial para acompanhar. Cada stream funciona como um Substack
-                cósmico, com histórias longas e arquivadas por ciclo.
-              </p>
-
-              <div className="mt-5 space-y-4">
-                {COMMUNITY_STREAMS.map((stream) => (
-                  <div key={stream.id} className="rounded-2xl border border-slate-800/80 p-4">
-                    <div className="flex items-center justify-between text-sm text-slate-300">
-                      <span className="font-semibold text-white">{stream.title}</span>
-                      <span className="rounded-full border border-slate-700/70 px-2 py-1 text-xs">
-                        {stream.cadence}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-400">{stream.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Gestos</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Interações sem botões</h2>
-              <ul className="mt-4 space-y-4 text-sm text-slate-300">
-                {COMMUNITY_GESTURES.map((gesture) => (
-                  <li key={gesture.title} className="rounded-2xl border border-slate-800/80 p-4">
-                    <p className="text-sm font-semibold text-white">{gesture.title}</p>
-                    <p className="mt-2 text-sm text-slate-400">{gesture.description}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
         </section>
+
+        {/* Filtros por tipo */}
+        <section className="mt-5" aria-label="Filtros de tipo">
+          <CategoryChips<PostType>
+            items={TYPE_FILTERS}
+            activeItem={activeType}
+            onSelect={setActiveType}
+            variant="type"
+            ariaLabel="Filtrar por tipo de post"
+          />
+        </section>
+
+        {/* Filtros por tag */}
+        {tagFilters.length > 1 && (
+          <section className="mt-3" aria-label="Filtros de tag">
+            <CategoryChips<string>
+              items={tagFilters}
+              activeItem={activeTag}
+              onSelect={setActiveTag}
+              variant="tag"
+              ariaLabel="Filtrar por tag"
+            />
+          </section>
+        )}
+
+        {/* Active filters indicator */}
+        {(activeType !== 'Todos' || activeTag !== 'Todos' || searchQuery) && (
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+            {searchQuery && (
+              <span className="rounded-full border border-slate-700/70 bg-black/30 px-3 py-1">
+                Busca: &ldquo;{searchQuery}&rdquo;
+              </span>
+            )}
+            {activeType !== 'Todos' && (
+              <span className="rounded-full border border-sky-400/40 bg-sky-500/10 px-3 py-1 text-sky-300">
+                {activeType}
+              </span>
+            )}
+            {activeTag !== 'Todos' && (
+              <span className="rounded-full border border-indigo-400/40 bg-indigo-500/10 px-3 py-1 text-indigo-300">
+                #{activeTag}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Main content grid */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+          {/* Feed principal */}
+          <main className="space-y-5">
+            {/* Error state */}
+            {loadingState === 'error' && (
+              <ErrorState
+                title="Erro ao carregar"
+                description="Não foi possível carregar os posts da comunidade."
+                onRetry={handleRetry}
+              />
+            )}
+
+            {/* Loading state */}
+            {loadingState === 'loading' && <PostSkeletonList count={3} />}
+
+            {/* Success state */}
+            {loadingState === 'success' && (
+              <>
+                {/* Featured post */}
+                {featuredPost && (
+                  <FeaturedCard
+                    post={featuredPost}
+                    formatRelativeTime={formatRelativeTime}
+                    truncate={truncate}
+                    isSaved={savedPosts[featuredPost.id] ?? false}
+                    onToggleSave={() => toggleSave(featuredPost.id)}
+                  />
+                )}
+
+                {/* Empty state */}
+                {visiblePosts.length === 0 && (
+                  <EmptyState
+                    title="Nenhum post encontrado"
+                    description="Ajuste os filtros ou volte para 'Todos' para ver o fluxo completo."
+                    action={{
+                      label: 'Limpar filtros',
+                      onClick: resetFilters,
+                    }}
+                  />
+                )}
+
+                {/* Feed posts */}
+                {feedPosts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    formatRelativeTime={formatRelativeTime}
+                    classifyPost={classifyPost}
+                    truncate={truncate}
+                    isSaved={savedPosts[post.id] ?? false}
+                    reactions={reactions[post.id] ?? { energia: 0, apoio: 0 }}
+                    commentValue={commentInputs[post.id] ?? ''}
+                    commentStatus={commentStatus[post.id] ?? 'idle'}
+                    commentError={commentError[post.id] ?? ''}
+                    onToggleSave={() => toggleSave(post.id)}
+                    onReaction={(type) => addReaction(post.id, type)}
+                    onCommentChange={(value) => handleCommentChange(post.id, value)}
+                    onCommentSubmit={(e) => submitComment(e, post.id)}
+                  />
+                ))}
+              </>
+            )}
+          </main>
+
+          {/* Sidebar (desktop) / Stacked (mobile) */}
+          <aside className="space-y-5">
+            {/* New Post Form */}
+            <NewPostForm
+              form={postForm}
+              status={postStatus}
+              error={postError}
+              onChange={handlePostChange}
+              onSubmit={submitPost}
+            />
+
+            {/* Streams */}
+            <StreamList streams={COMMUNITY_STREAMS} />
+          </aside>
+        </div>
       </div>
     </SpacePageLayout>
   );
