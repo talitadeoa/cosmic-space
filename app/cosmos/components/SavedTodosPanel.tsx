@@ -1226,6 +1226,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                     role="region"
                     aria-label="Ações de deleção"
                     onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                   >
                     <button
                       type="button"
