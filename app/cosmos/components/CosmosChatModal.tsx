@@ -17,6 +17,8 @@ interface CosmosChatModalProps {
   isOpen: boolean;
   inline?: boolean;
   requiresAuthOnSave?: boolean;
+  allowUnauthedSubmit?: boolean;
+  authNudgeMessage?: string;
   authRedirectPath?: string;
   storageKey: string;
   title: string;
@@ -51,6 +53,7 @@ interface CosmosChatModalProps {
     value?: string;
     meta?: ChatMessageMeta;
     tone?: Tone;
+    action?: 'auth';
   }>;
 }
 
@@ -411,6 +414,8 @@ export default function CosmosChatModal({
   submitOnSend = false,
   windowClassName = '',
   requiresAuthOnSave = false,
+  allowUnauthedSubmit = false,
+  authNudgeMessage = 'Se deseja salvar no servidor, entre ou crie sua conta.',
   authRedirectPath: _authRedirectPath = '/cosmos/auth',
   onClose,
   onSubmit,
@@ -426,6 +431,7 @@ export default function CosmosChatModal({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [pendingAuthSave, setPendingAuthSave] = useState(false);
+  const [showAuthNudge, setShowAuthNudge] = useState(false);
   const [metaDraft, setMetaDraft] = useState<ChatMessageMeta>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -495,6 +501,7 @@ export default function CosmosChatModal({
   useEffect(() => {
     if (isAuthenticated) {
       authBypassRef.current = false;
+      setShowAuthNudge(false);
     }
   }, [isAuthenticated]);
 
@@ -536,6 +543,7 @@ export default function CosmosChatModal({
       setIsSaving(false);
       setShowAuthPrompt(false);
       setPendingAuthSave(false);
+      setShowAuthNudge(false);
       setMetaDraft({});
       authBypassRef.current = false;
       return;
@@ -632,6 +640,15 @@ export default function CosmosChatModal({
     return undefined;
   };
 
+  const pushSystemMessage = (content: string) => {
+    const systemMessage = buildSystemMessage(`system-${Date.now()}`, content);
+    setMessages((prev) => {
+      const next = [...prev, systemMessage];
+      saveChatHistory(storageKey, next);
+      return next;
+    });
+  };
+
   const submitMessages = async (
     value: string,
     messagesToSubmit: ChatMessage[],
@@ -642,7 +659,10 @@ export default function CosmosChatModal({
       return false;
     }
 
-    if (requiresAuthOnSave && !isAuthenticated && !authBypassRef.current) {
+    const shouldNudgeAuth =
+      requiresAuthOnSave && !isAuthenticated && !authBypassRef.current && allowUnauthedSubmit;
+
+    if (requiresAuthOnSave && !isAuthenticated && !authBypassRef.current && !allowUnauthedSubmit) {
       setShowAuthPrompt(true);
       setPendingAuthSave(true);
       return false;
@@ -653,6 +673,10 @@ export default function CosmosChatModal({
 
     try {
       await onSubmit(value, messagesToSubmit, meta ?? getLastUserMeta(messagesToSubmit));
+      if (shouldNudgeAuth && !showAuthNudge) {
+        pushSystemMessage(authNudgeMessage);
+        setShowAuthNudge(true);
+      }
       if (resetOnSubmit) {
         setMessages([]);
         saveChatHistory(storageKey, []);
@@ -697,6 +721,11 @@ export default function CosmosChatModal({
     if (showAuthPrompt) {
       const value = suggestion.value ?? suggestion.label;
       void handleAuthSend(value);
+      return;
+    }
+    if (suggestion.action === 'auth') {
+      setShowAuthPrompt(true);
+      setPendingAuthSave(false);
       return;
     }
     if (suggestion.value) {
@@ -761,9 +790,13 @@ export default function CosmosChatModal({
         ? 'password'
         : undefined
     : undefined;
+  const authNudgeSuggestions =
+    !showAuthPrompt && showAuthNudge
+      ? [{ id: 'auth-cta', label: 'Entrar ou criar conta', action: 'auth', tone: 'amber' as Tone }]
+      : [];
   const composerSuggestions = showAuthPrompt
     ? authSuggestions.map((suggestion) => ({ ...suggestion, tone }))
-    : suggestions;
+    : [...authNudgeSuggestions, ...(suggestions ?? [])];
   const composerInputDisabled = showAuthPrompt ? authInputLocked : false;
   const handleComposerSend = () => {
     if (showAuthPrompt) {
