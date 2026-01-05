@@ -4,7 +4,7 @@ import React from 'react';
 import { EmptyState } from './EmptyState';
 import type { SavedTodo, MoonPhase, IslandId } from '../utils/todoStorage';
 import { phaseLabels } from '../utils/todoStorage';
-import { getIslandLabel, type IslandNames } from '../utils/islandNames';
+import { getIslandLabel, ISLAND_IDS, type IslandNames } from '../utils/islandNames';
 
 interface SavedTodosPanelProps {
   savedTodos: SavedTodo[];
@@ -27,6 +27,9 @@ interface SavedTodosPanelProps {
   onTodoStatusFilterChange?: (filter: 'all' | 'completed' | 'open') => void;
   onUpdateTodo?: (todoId: string, updates: Partial<SavedTodo>) => void;
   onBatchDelete?: (todoIds: string[]) => void;
+  onBatchAssignPhase?: (todoIds: string[], phase: MoonPhase) => void;
+  onBatchAssignIsland?: (todoIds: string[], islandId: IslandId) => void;
+  islandIds?: IslandId[];
 }
 
 /**
@@ -59,6 +62,9 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onTodoStatusFilterChange,
   onUpdateTodo,
   onBatchDelete,
+  onBatchAssignPhase,
+  onBatchAssignIsland,
+  islandIds,
 }) => {
   const panelRef = React.useRef<HTMLDivElement>(null);
   const islandLabel = getIslandLabel(selectedIsland, islandNames);
@@ -85,6 +91,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const [activeViewDrop, setActiveViewDrop] = React.useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = React.useState(false);
   const [selectedTodoIds, setSelectedTodoIds] = React.useState<string[]>([]);
+  const [batchIsland, setBatchIsland] = React.useState<IslandId | ''>('');
   const ITEMS_PER_PAGE = 20;
   const selectionTouchActiveRef = React.useRef(false);
   const selectionTouchModeRef = React.useRef<'select' | 'deselect'>('select');
@@ -182,6 +189,13 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
             }
           });
         }
+      } else if (viewType === 'em-aberto' && onUpdateTodo) {
+        todoIds.forEach((id) => {
+          const todo = savedTodos.find((t) => t.id === id);
+          if (todo) {
+            onUpdateTodo(id, { dueDate: undefined, phase: undefined, islandId: undefined });
+          }
+        });
       }
 
       setActiveViewDrop(null);
@@ -371,9 +385,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   };
 
   // Filtrar tarefas por fase e ilha se estiverem selecionadas
+  const islandFilter = view === 'em-aberto' ? null : selectedIsland;
   let filteredTodos = savedTodos
     .filter((todo) => (selectedPhase ? todo.phase === selectedPhase : true))
-    .filter((todo) => (selectedIsland ? todo.islandId === selectedIsland : true));
+    .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true));
 
   // Aplicar filtro de cronologia (datas de vencimento)
   filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase);
@@ -401,6 +416,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
       const next = !prev;
       if (!next) {
         setSelectedTodoIds([]);
+        setBatchIsland('');
       }
       return next;
     });
@@ -426,6 +442,34 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     if (selectedCount === 0 || !onBatchDelete) return;
     onBatchDelete(selectedTodoIds);
     setSelectedTodoIds([]);
+  };
+
+  const handleBatchAssignPhase = (phase: MoonPhase) => {
+    if (selectedCount === 0 || !onBatchAssignPhase) return;
+    onBatchAssignPhase(selectedTodoIds, phase);
+  };
+
+  const handleBatchAssignIsland = () => {
+    if (!batchIsland || selectedCount === 0 || !onBatchAssignIsland) return;
+    onBatchAssignIsland(selectedTodoIds, batchIsland);
+  };
+
+  const handleBatchMoveToView = (
+    viewType: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo'
+  ) => {
+    if (selectedCount === 0 || !onUpdateTodo) return;
+    handleViewChange(viewType);
+    if (viewType === 'em-aberto') {
+      selectedTodoIds.forEach((id) => {
+        onUpdateTodo(id, { dueDate: undefined, phase: undefined, islandId: undefined });
+      });
+      return;
+    }
+    const dueDate = getDateForView(viewType);
+    if (!dueDate) return;
+    selectedTodoIds.forEach((id) => {
+      onUpdateTodo(id, { dueDate });
+    });
   };
 
   const getDragTodoIds = (todoId: string) => {
@@ -516,6 +560,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
         return '';
     }
   };
+
+  const visibleIslandIds = islandIds && islandIds.length > 0 ? islandIds : ISLAND_IDS;
 
   return (
     <div
@@ -780,6 +826,109 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               }`}
             >
               Excluir selecionados
+            </button>
+          </div>
+        </div>
+      )}
+      {isSelectionMode && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-[0.6rem] text-slate-300">
+          <span className="uppercase tracking-[0.18em] text-slate-400">Mover para</span>
+          <div className="flex flex-wrap gap-2">
+            {(['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'] as MoonPhase[]).map(
+              (phase) => (
+                <button
+                  key={phase}
+                  type="button"
+                  onClick={() => handleBatchAssignPhase(phase)}
+                  disabled={selectedCount === 0 || !onBatchAssignPhase}
+                  className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+                    selectedCount === 0 || !onBatchAssignPhase
+                      ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                      : 'border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
+                  }`}
+                  title={`Mover para ${phaseLabels[phase]}`}
+                >
+                  {phaseLabels[phase]}
+                </button>
+              )
+            )}
+          </div>
+          {visibleIslandIds.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={batchIsland}
+                onChange={(event) => setBatchIsland(event.target.value as IslandId | '')}
+                className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-slate-200 focus:border-indigo-400 focus:outline-none"
+              >
+                <option value="">Ilha</option>
+                {visibleIslandIds.map((islandId) => (
+                  <option key={islandId} value={islandId}>
+                    {getIslandLabel(islandId, islandNames) ?? islandId}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={handleBatchAssignIsland}
+                disabled={selectedCount === 0 || !batchIsland || !onBatchAssignIsland}
+                className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+                  selectedCount === 0 || !batchIsland || !onBatchAssignIsland
+                    ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                    : 'border-emerald-400/60 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30'
+                }`}
+              >
+                Aplicar ilha
+              </button>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => handleBatchMoveToView('em-aberto')}
+              disabled={selectedCount === 0 || !onUpdateTodo}
+              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+                selectedCount === 0 || !onUpdateTodo
+                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                  : 'border-slate-400/60 bg-slate-500/20 text-slate-100 hover:bg-slate-500/30'
+              }`}
+            >
+              Em aberto
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBatchMoveToView('lua-atual')}
+              disabled={selectedCount === 0 || !onUpdateTodo}
+              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+                selectedCount === 0 || !onUpdateTodo
+                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                  : 'border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
+              }`}
+            >
+              Lua atual
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBatchMoveToView('proxima-fase')}
+              disabled={selectedCount === 0 || !onUpdateTodo}
+              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+                selectedCount === 0 || !onUpdateTodo
+                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                  : 'border-amber-400/60 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30'
+              }`}
+            >
+              Próxima fase
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBatchMoveToView('proximo-ciclo')}
+              disabled={selectedCount === 0 || !onUpdateTodo}
+              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+                selectedCount === 0 || !onUpdateTodo
+                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                  : 'border-rose-400/60 bg-rose-500/20 text-rose-100 hover:bg-rose-500/30'
+              }`}
+            >
+              Próximo ciclo
             </button>
           </div>
         </div>

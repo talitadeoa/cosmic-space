@@ -445,10 +445,13 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   }}
                   onDeleteTodo={handleRequestDelete}
                   onBatchDelete={handleRequestBatchDelete}
+                  onBatchAssignPhase={assignTodosToPhase}
+                  onBatchAssignIsland={assignTodosToIsland}
                   onUpdateTodo={handleUpdateTodo}
                   selectedPhase={filters.phase}
                   selectedIsland={filters.island}
                   islandNames={islandNames}
+                  islandIds={islandIds}
                   inputTypeFilter={filters.inputType}
                   todoStatusFilter={filters.todoStatus}
                   onInputTypeFilterChange={(inputType) =>
