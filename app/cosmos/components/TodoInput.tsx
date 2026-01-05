@@ -173,7 +173,6 @@ const TodoInput: React.FC<TodoInputProps> = ({
       <CosmosChatModal
         inline={chatInline}
         isOpen={isChatOpen}
-        requiresAuthOnSave
         allowUnauthedSubmit
         authNudgeMessage="Se deseja salvar no servidor, entre ou crie sua conta."
         storageKey={`todo-input-${inputType}`}

@@ -659,8 +659,7 @@ export default function CosmosChatModal({
       return false;
     }
 
-    const shouldNudgeAuth =
-      requiresAuthOnSave && !isAuthenticated && !authBypassRef.current && allowUnauthedSubmit;
+    const shouldNudgeAuth = allowUnauthedSubmit && !isAuthenticated && !authBypassRef.current;
 
     if (requiresAuthOnSave && !isAuthenticated && !authBypassRef.current && !allowUnauthedSubmit) {
       setShowAuthPrompt(true);
