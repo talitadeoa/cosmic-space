@@ -18,7 +18,17 @@
     "sync:csv": "npx tsx scripts/sync-csv-to-db.ts",
     "sync:sheets": "npx tsx scripts/sync-sheets.ts",
     "sync:migrations": "npx tsx scripts/run-sync-migrations.ts",
-    "prepare": "husky install 2>/dev/null || true"
+    "prepare": "husky install 2>/dev/null || true",
+    "build:static": "next build",
+    "cap:init": "cap init Flua app.flua.cosmic --web-dir=out",
+    "cap:sync": "cap sync",
+    "cap:add:ios": "cap add ios",
+    "cap:add:android": "cap add android",
+    "cap:open:ios": "cap open ios",
+    "cap:open:android": "cap open android",
+    "mobile:build": "npm run build:static && npm run cap:sync",
+    "mobile:ios": "npm run mobile:build && npm run cap:open:ios",
+    "mobile:android": "npm run mobile:build && npm run cap:open:android"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

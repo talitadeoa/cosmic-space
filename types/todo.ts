@@ -55,9 +55,7 @@ export function isValidIsland(value: unknown): value is IslandId {
   );
 }
 
-export function isValidTodoInputType(value: unknown): value is TodoInputType {
-  return value === 'text' || value === 'checkbox';
-}
+// isValidTodoInputType está em types/inputs.ts
 
 /**
  * Constantes

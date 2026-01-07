@@ -1,83 +1,12 @@
-import { useState, useCallback } from 'react';
+/**
+ * 💡 useMonthlyInsights
+ * 
+ * @deprecated Use import from '@/lib/hooks' instead.
+ * Este arquivo existe apenas para compatibilidade.
+ */
 
-export interface MonthlyInsight {
-  moonPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
-  year: number;
-  monthNumber: number;
-  insight: string;
-  timestamp: string;
-}
+export { useMonthlyInsights, type MonthlyInsight, type MonthlyInsightRecord } from '@/lib/hooks/useMonthlyInsights';
 
-export interface MonthlyInsightRecord {
-  id: number;
-  moonPhase: string;
-  year: number;
-  monthNumber: number;
-  insight: string;
-  createdAt: string;
-  updatedAt: string | null;
-}
-
-export function useMonthlyInsights() {
-  const [insights, setInsights] = useState<MonthlyInsight[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-  const saveInsight = useCallback(
-    async (moonPhase: string, year: number, monthNumber: number, insight: string) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch('/api/form/monthly-insight', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ moonPhase, year, monthNumber, insight }),
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Erro ao salvar insight');
-        }
-
-        const newInsight: MonthlyInsight = {
-          moonPhase: moonPhase as any,
-          year,
-          monthNumber,
-          insight,
-          timestamp: new Date().toISOString(),
-        };
-
-        setInsights((prev) => [...prev, newInsight]);
-        return newInsight;
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-        setError(errorMessage);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  const loadInsight = useCallback(async (moonPhase: string, year: number, monthNumber: number) => {
-    setIsFetching(true);
-    setFetchError(null);
-
-    try {
-      const params = new URLSearchParams({
-        moonPhase,
-        year: String(year),
-        monthNumber: String(monthNumber),
-      });
-      const response = await fetch(`/api/form/monthly-insight?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'include',
-      });
 
       if (!response.ok) {
         const data = await response.json();

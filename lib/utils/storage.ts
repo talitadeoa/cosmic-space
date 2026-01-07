@@ -7,6 +7,8 @@
 
 'use client';
 
+import { useState } from 'react';
+
 /**
  * Storage class com fallback automático
  * Web: localStorage
@@ -100,12 +102,50 @@ class StorageManager {
  */
 export const storage = new StorageManager();
 
+// ============================================
+// CAPACITOR-READY ASYNC STORAGE
+// (Use quando Capacitor for instalado)
+// ============================================
+
+/**
+ * Storage assíncrono compatível com Capacitor Preferences
+ * Placeholder até @capacitor/preferences ser instalado
+ */
+export const asyncStorage = {
+  async get<T>(key: string, defaultValue: T): Promise<T> {
+    // TODO: Quando instalar @capacitor/preferences:
+    // import { Preferences } from '@capacitor/preferences';
+    // const { value } = await Preferences.get({ key });
+    // return value ? JSON.parse(value) : defaultValue;
+    
+    return storage.get(key, defaultValue);
+  },
+
+  async set<T>(key: string, value: T): Promise<void> {
+    // TODO: Quando instalar @capacitor/preferences:
+    // await Preferences.set({ key, value: JSON.stringify(value) });
+    
+    storage.set(key, value);
+  },
+
+  async remove(key: string): Promise<void> {
+    // TODO: Quando instalar @capacitor/preferences:
+    // await Preferences.remove({ key });
+    
+    storage.remove(key);
+  },
+};
+
+// ============================================
+// REACT HOOK
+// ============================================
+
 /**
  * Hook para usar storage com React state
  * (compatível com useLocalStorage existente)
  */
 export function useStorage<T>(key: string, initialValue: T) {
-  const [storedValue, setStoredValue] = React.useState<T>(() => {
+  const [storedValue, setStoredValue] = useState<T>(() => {
     return storage.get(key, initialValue);
   });
 
@@ -122,5 +162,3 @@ export function useStorage<T>(key: string, initialValue: T) {
   return [storedValue, setValue] as const;
 }
 
-// React import (apenas se usado)
-import React from 'react';

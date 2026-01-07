@@ -1,53 +1,9 @@
-import { useState, useCallback } from 'react';
+/**
+ * 💡 useQuarterlyInsights
+ * 
+ * @deprecated Use import from '@/lib/hooks' instead.
+ * Este arquivo existe apenas para compatibilidade.
+ */
 
-export interface QuarterlyInsight {
-  moonPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
-  insight: string;
-  timestamp: string;
-}
+export { useQuarterlyInsights, type QuarterlyInsight } from '@/lib/hooks/useQuarterlyInsights';
 
-export function useQuarterlyInsights() {
-  const [insights, setInsights] = useState<QuarterlyInsight[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const saveInsight = useCallback(
-    async (moonPhase: string, insight: string, quarterNumber?: number, year?: number) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const selectedYear = year ?? new Date().getFullYear();
-        const response = await fetch('/api/form/quarterly-insight', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ moonPhase, insight, quarterNumber, year: selectedYear }),
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Erro ao salvar insight');
-        }
-
-        const newInsight: QuarterlyInsight = {
-          moonPhase: moonPhase as any,
-          insight,
-          timestamp: new Date().toISOString(),
-        };
-
-        setInsights((prev) => [...prev, newInsight]);
-        return newInsight;
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-        setError(errorMessage);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  return { insights, isLoading, error, saveInsight };
-}
