@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useCallback } from 'react';
-import type { SavedTodo, IslandId, MoonPhase } from '@/types';
+import type { SavedTodo, IslandId, MoonPhase } from '@/app/cosmos/utils/todoStorage';
 import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
 import { getIslandLabel, type IslandNames } from '@/app/cosmos/utils/islandNames';
 

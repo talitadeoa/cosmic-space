@@ -94,7 +94,7 @@ const StandaloneHomePage = () => {
         setFocus(null);
       }, 1000);
     },
-    [navigateToRoute]
+    [navigateToRoute, router]
   );
 
   return (

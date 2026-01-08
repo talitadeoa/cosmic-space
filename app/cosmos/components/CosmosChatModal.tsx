@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputWindow from './InputWindow';
@@ -476,14 +476,14 @@ export default function CosmosChatModal({
     [messages]
   );
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     const container = messagesContainerRef.current;
     if (container) {
       container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
       return;
     }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  };
+  }, []);
 
   const persistMessages = (next: ChatMessage[]) => {
     setMessages(next);
@@ -492,7 +492,7 @@ export default function CosmosChatModal({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, authMessages, showAuthPrompt]);
+  }, [messages, authMessages, showAuthPrompt, scrollToBottom]);
 
   useEffect(() => {
     setIsMounted(true);

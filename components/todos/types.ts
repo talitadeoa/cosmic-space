@@ -1,10 +1,12 @@
 /**
  * 🎯 Todo Panel Types
  * 
- * Tipos e interfaces para o SavedTodosPanel refatorado
+ * Tipos e interfaces para o SavedTodosPanel refatorado.
+ * Props agrupadas por domínio para reduzir prop drilling.
  */
 
-import type { SavedTodo, IslandId, MoonPhase } from '@/types';
+import type { SavedTodo, IslandId, MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { IslandNames } from '@/app/cosmos/utils/islandNames';
 
 /**
  * Tipos de view disponíveis
@@ -20,6 +22,103 @@ export type InputTypeFilter = 'all' | 'text' | 'checkbox';
  * Filtros de status do todo
  */
 export type TodoStatusFilter = 'all' | 'completed' | 'open';
+
+// ============================================================================
+// PROPS AGRUPADAS POR DOMÍNIO
+// ============================================================================
+
+/**
+ * Configuração de view/visualização
+ */
+export interface TodoViewConfig {
+  current: TodoView;
+  onChange?: (view: TodoView) => void;
+}
+
+/**
+ * Handlers de drag and drop
+ */
+export interface DragHandlers {
+  onStart: (todoId: string) => (event: React.DragEvent) => void;
+  onEnd: () => void;
+  onDropInside?: () => void;
+}
+
+/**
+ * Handlers de touch (mobile)
+ */
+export interface TouchHandlers {
+  onStart?: (todoId: string) => (event: React.TouchEvent) => void;
+  onEnd?: () => void;
+  onMove?: (event: React.TouchEvent) => void;
+}
+
+/**
+ * Handlers de ações em batch
+ */
+export interface BatchHandlers {
+  onDelete?: (todoIds: string[]) => void;
+  onAssignPhase?: (todoIds: string[], phase: MoonPhase) => void;
+  onAssignIsland?: (todoIds: string[], islandId: IslandId) => void;
+}
+
+/**
+ * Handlers de ações individuais
+ */
+export interface TodoActionHandlers {
+  onToggleComplete: (todoId: string) => void;
+  onDelete?: (todoId: string) => void;
+  onUpdate?: (todoId: string, updates: Partial<SavedTodo>) => void;
+}
+
+/**
+ * Configuração de filtros
+ */
+export interface FilterConfig {
+  selectedPhase?: MoonPhase | null;
+  selectedIsland?: IslandId | null;
+  inputType?: InputTypeFilter;
+  todoStatus?: TodoStatusFilter;
+  onInputTypeChange?: (filter: InputTypeFilter) => void;
+  onTodoStatusChange?: (filter: TodoStatusFilter) => void;
+}
+
+/**
+ * Configuração de ilhas
+ */
+export interface IslandConfig {
+  names?: IslandNames;
+  ids?: IslandId[];
+}
+
+/**
+ * Props principais do SavedTodosPanel (agrupadas)
+ */
+export interface SavedTodosPanelProps {
+  /** Lista de todos a exibir */
+  todos: SavedTodo[];
+  
+  /** Configuração de view */
+  view?: TodoViewConfig;
+  
+  /** Handlers de drag and drop */
+  drag: DragHandlers;
+  
+  /** Handlers de touch (opcional) */
+  touch?: TouchHandlers;
+  
+  /** Handlers de ações em batch */
+  batch?: BatchHandlers;
+  
+  /** Handlers de ações individuais */
+  actions: TodoActionHandlers;
+  
+  /** Configuração de filtros */
+  filters?: FilterConfig;
+  
+  /** Configuração de ilhas */
+  islands?: IslandConfig;
+}
 
 /**
  * State do painel de todos (para useReducer)

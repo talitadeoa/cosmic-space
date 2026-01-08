@@ -104,22 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyingRef = useRef(false);
   const mountedRef = useRef(false);
 
-  // Inicializar apenas uma vez após mount
-  useEffect(() => {
-    if (mountedRef.current) return;
-    mountedRef.current = true;
-
-    const cached = readCachedAuthState();
-    setState(cached);
-    
-    // Verificar autenticação silenciosamente se tinha cache
-    if (cached.isAuthenticated) {
-      verifyAuth({ silent: true });
-    } else {
-      verifyAuth({ silent: false });
-    }
-  }, []);
-
+  // Definir verifyAuth ANTES do useEffect que o usa
   const verifyAuth = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     // Evitar múltiplas requisições simultâneas
     if (verifyingRef.current) return;
@@ -180,6 +165,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       verifyingRef.current = false;
     }
   }, []);
+
+  // Inicializar apenas uma vez após mount - verifyAuth agora disponível
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+
+    const cached = readCachedAuthState();
+    setState(cached);
+    
+    // Verificar autenticação silenciosamente se tinha cache
+    if (cached.isAuthenticated) {
+      verifyAuth({ silent: true });
+    } else {
+      verifyAuth({ silent: false });
+    }
+  }, [verifyAuth]);
 
   const _handleAuthRequest = useCallback(
     async (endpoint: string, payload: Record<string, any>, errorMessage: string): Promise<AuthResult> => {

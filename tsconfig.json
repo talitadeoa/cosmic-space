@@ -25,7 +25,8 @@
       "@/shared/*": ["./shared/*"],
       "@/domains/*": ["./domains/*"],
       "@/features/*": ["./features/*"],
-      "@/app/*": ["./app/*"]
+      "@/app/*": ["./app/*"],
+      "@/types": ["./shared/types/index"]
     }
   },
   "include": [

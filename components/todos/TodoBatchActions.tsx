@@ -7,7 +7,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import type { MoonPhase, IslandId } from '@/types';
+import type { MoonPhase, IslandId } from '@/app/cosmos/utils/todoStorage';
 import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
 import { getIslandLabel, type IslandNames } from '@/app/cosmos/utils/islandNames';
 

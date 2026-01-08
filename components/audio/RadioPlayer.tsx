@@ -3,7 +3,7 @@
 import { useAudioPlayer, RadioStation } from '@/hooks/useAudioPlayer';
 import { useYouTubePlayer, YouTubeStation } from '@/hooks/useYouTubePlayer';
 import { useSfxContext } from '@/components/providers';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 type Station =
   | (RadioStation & { type?: 'radio'; disabled?: boolean })
@@ -89,7 +89,7 @@ export default function RadioPlayer() {
   const isLoading = currentType === 'youtube' ? isYouTubeLoading : isAudioLoading;
   const volume = currentType === 'youtube' ? youtubeVolume : audioVolume;
 
-  const handleSelect = (station: Station) => {
+  const handleSelect = useCallback((station: Station) => {
     if (station.disabled) return;
     if (station.type === 'youtube') {
       pauseAudio();
@@ -101,12 +101,19 @@ export default function RadioPlayer() {
       playAudio(station);
       setCurrentType('radio');
     }
-  };
+  }, [pauseAudio, playYouTube, pauseYouTube, playAudio]);
 
-  const handleVolumeChange = (value: number) => {
+  const handleVolumeChange = useCallback((value: number) => {
     setAudioVolume(value);
     setYoutubeVolume(value);
-  };
+  }, [setAudioVolume, setYoutubeVolume]);
+
+  const handleTogglePlayer = useCallback(() => {
+    if (!isOpen && !activeStation) {
+      handleSelect(STATIONS[0]);
+    }
+    setIsOpen((prev) => !prev);
+  }, [isOpen, activeStation, handleSelect]);
 
   useEffect(() => {
     handleSelect(STATIONS[0]);
@@ -213,12 +220,7 @@ export default function RadioPlayer() {
 
       {/* Botão flutuante */}
       <button
-        onClick={() => {
-          if (!isOpen && !activeStation) {
-            handleSelect(STATIONS[0]);
-          }
-          setIsOpen(!isOpen);
-        }}
+        onClick={handleTogglePlayer}
         className={`p-3 sm:p-4 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
           isPlaying
             ? 'bg-gradient-to-r from-indigo-500 to-sky-500 shadow-indigo-500/50'

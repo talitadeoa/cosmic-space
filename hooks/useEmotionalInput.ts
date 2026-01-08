@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Emotion, EmotionRecord } from '@/components/EmotionalInput';
 
 const EMOTIONS: Emotion[] = [
@@ -120,7 +120,7 @@ export function useEmotionalInput(storageKey: string = 'current_emotion'): UseEm
     setIsLoading(false);
   }, [storageKey]);
 
-  const setEmotion = (emotion: Emotion) => {
+  const setEmotion = useCallback((emotion: Emotion) => {
     // Salvar como emoção atual
     localStorage.setItem(storageKey, JSON.stringify(emotion));
     setCurrentEmotion(emotion);
@@ -133,25 +133,27 @@ export function useEmotionalInput(storageKey: string = 'current_emotion'): UseEm
       date: today,
     };
 
-    const updated = [newRecord, ...emotionHistory].slice(0, 100);
-    localStorage.setItem(`${storageKey}_history`, JSON.stringify(updated));
-    setEmotionHistory(updated);
-  };
+    setEmotionHistory(prev => {
+      const updated = [newRecord, ...prev].slice(0, 100);
+      localStorage.setItem(`${storageKey}_history`, JSON.stringify(updated));
+      return updated;
+    });
+  }, [storageKey]);
 
-  const clearEmotion = () => {
+  const clearEmotion = useCallback(() => {
     localStorage.removeItem(storageKey);
     setCurrentEmotion(null);
-  };
+  }, [storageKey]);
 
-  const getEmotionByDate = (date: string): EmotionRecord | undefined => {
+  const getEmotionByDate = useCallback((date: string): EmotionRecord | undefined => {
     return emotionHistory.find((record) => record.date === date);
-  };
+  }, [emotionHistory]);
 
-  const getAllEmotionsForDate = (date: string): EmotionRecord[] => {
+  const getAllEmotionsForDate = useCallback((date: string): EmotionRecord[] => {
     return emotionHistory.filter((record) => record.date === date);
-  };
+  }, [emotionHistory]);
 
-  const getMostFrequentEmotion = (): Emotion | null => {
+  const getMostFrequentEmotion = useCallback((): Emotion | null => {
     if (emotionHistory.length === 0) return null;
 
     const counts = new Map<string, number>();
@@ -170,9 +172,10 @@ export function useEmotionalInput(storageKey: string = 'current_emotion'): UseEm
 
     if (!mostFrequent) return null;
     return EMOTIONS.find((e) => e.id === mostFrequent) || null;
-  };
+  }, [emotionHistory]);
 
-  return {
+  // Memoizar o retorno para estabilizar referências
+  return useMemo(() => ({
     currentEmotion,
     emotionHistory,
     setEmotion,
@@ -181,7 +184,16 @@ export function useEmotionalInput(storageKey: string = 'current_emotion'): UseEm
     getAllEmotionsForDate,
     getMostFrequentEmotion,
     isLoading,
-  };
+  }), [
+    currentEmotion,
+    emotionHistory,
+    setEmotion,
+    clearEmotion,
+    getEmotionByDate,
+    getAllEmotionsForDate,
+    getMostFrequentEmotion,
+    isLoading,
+  ]);
 }
 
 export { EMOTIONS };

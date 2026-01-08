@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTodoPanelState } from '@/components/todos/useTodoPanelState';
+import { TodoPanelProvider, type TodoPanelContextValue } from '@/components/todos/TodoPanelContext';
 import { TodoList } from '@/components/todos/TodoList';
 import { TodoFilters } from '@/components/todos/TodoFilters';
 import { TodoBatchActions } from '@/components/todos/TodoBatchActions';
@@ -9,13 +10,19 @@ import { EmptyState } from './EmptyState';
 import type { SavedTodo, MoonPhase, IslandId } from '../utils/todoStorage';
 import { phaseLabels } from '../utils/todoStorage';
 import { getIslandLabel, ISLAND_IDS, type IslandNames } from '../utils/islandNames';
+import type { 
+  SavedTodosPanelProps as GroupedProps,
+  TodoView,
+} from '@/components/todos/types';
 
-interface SavedTodosPanelProps {
+// ============================================================================
+// LEGACY PROPS (para compatibilidade durante migração)
+// ============================================================================
+
+interface LegacySavedTodosPanelProps {
   savedTodos: SavedTodo[];
-  view?: 'todos' | 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo';
-  onViewChange?: (
-    view: 'todos' | 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo'
-  ) => void;
+  view?: TodoView;
+  onViewChange?: (view: TodoView) => void;
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
   onTouchStart?: (todoId: string) => (event: React.TouchEvent) => void;
@@ -38,44 +45,93 @@ interface SavedTodosPanelProps {
   islandIds?: IslandId[];
 }
 
+// Suporte a ambos formatos de props
+type SavedTodosPanelProps = LegacySavedTodosPanelProps | GroupedProps;
+
+// Type guard para detectar props agrupadas
+function isGroupedProps(props: SavedTodosPanelProps): props is GroupedProps {
+  return 'todos' in props && 'drag' in props && 'actions' in props;
+}
+
+// Normaliza props para formato interno
+function normalizeProps(props: SavedTodosPanelProps): LegacySavedTodosPanelProps {
+  if (!isGroupedProps(props)) {
+    return props;
+  }
+  
+  // Converte props agrupadas para formato legacy (interno)
+  return {
+    savedTodos: props.todos,
+    view: props.view?.current ?? 'todos',
+    onViewChange: props.view?.onChange,
+    onDragStart: props.drag.onStart,
+    onDragEnd: props.drag.onEnd,
+    onDropInside: props.drag.onDropInside,
+    onTouchStart: props.touch?.onStart,
+    onTouchEnd: props.touch?.onEnd,
+    onTouchMove: props.touch?.onMove,
+    onToggleComplete: props.actions.onToggleComplete,
+    onDeleteTodo: props.actions.onDelete,
+    onUpdateTodo: props.actions.onUpdate,
+    onBatchDelete: props.batch?.onDelete,
+    onBatchAssignPhase: props.batch?.onAssignPhase,
+    onBatchAssignIsland: props.batch?.onAssignIsland,
+    selectedPhase: props.filters?.selectedPhase,
+    selectedIsland: props.filters?.selectedIsland,
+    inputTypeFilter: props.filters?.inputType ?? 'all',
+    todoStatusFilter: props.filters?.todoStatus ?? 'all',
+    onInputTypeFilterChange: props.filters?.onInputTypeChange,
+    onTodoStatusFilterChange: props.filters?.onTodoStatusChange,
+    islandNames: props.islands?.names,
+    islandIds: props.islands?.ids,
+  };
+}
+
 const ITEMS_PER_PAGE = 20;
 
 /**
- * SavedTodosPanel Component (Refatorado)
+ * SavedTodosPanel Component (Refatorado v2)
  *
- * Exibe lista de tarefas salvass com:
+ * Exibe lista de tarefas salvas com:
  * - EmptyState quando não há tarefas
  * - Suporte a drag-and-drop
  * - Filtro opcional por fase lunar
  * - Estados visuais para conclusão
  * 
- * Utiliza useReducer para gerenciar 14+ estados anteriormente esparramados
+ * Refatorações:
+ * - v1: useReducer para gerenciar 14+ estados
+ * - v2: Props agrupadas por domínio + Context interno
+ * 
+ * Aceita tanto props legacy (flat) quanto agrupadas (grouped)
  */
-export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
-  savedTodos,
-  view = 'todos',
-  onViewChange,
-  onDragStart,
-  onDragEnd,
-  onTouchStart,
-  onTouchEnd,
-  onTouchMove,
-  onToggleComplete,
-  onDropInside,
-  onDeleteTodo,
-  selectedPhase,
-  selectedIsland,
-  islandNames,
-  inputTypeFilter = 'all',
-  todoStatusFilter = 'all',
-  onInputTypeFilterChange,
-  onTodoStatusFilterChange,
-  onUpdateTodo,
-  onBatchDelete,
-  onBatchAssignPhase,
-  onBatchAssignIsland,
-  islandIds,
-}) => {
+export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
+  // Normaliza props para formato interno
+  const {
+    savedTodos,
+    view = 'todos',
+    onViewChange,
+    onDragStart,
+    onDragEnd,
+    onTouchStart,
+    onTouchEnd,
+    onTouchMove,
+    onToggleComplete,
+    onDropInside,
+    onDeleteTodo,
+    selectedPhase,
+    selectedIsland,
+    islandNames,
+    inputTypeFilter = 'all',
+    todoStatusFilter = 'all',
+    onInputTypeFilterChange,
+    onTodoStatusFilterChange,
+    onUpdateTodo,
+    onBatchDelete,
+    onBatchAssignPhase,
+    onBatchAssignIsland,
+    islandIds,
+  } = normalizeProps(rawProps);
+
   // Usar novo hook ao invés de 14 useState
   const { state, dispatch, startEditing, cancelEditing, toggleSelect, selectAll, clearSelection, setSelectionMode, setPage, setBatchIsland } = useTodoPanelState();
   

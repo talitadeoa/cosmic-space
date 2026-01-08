@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import { Card } from '@/components/shared/cosmos/Card';
 import TodoInput, { TodoItem as ParsedTodoItem } from '@/app/cosmos/components/TodoInput';
@@ -107,7 +107,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     };
 
     syncLunations();
-  }, [temporal.year]);
+  }, [temporal.year, lunations]);
 
   // Sincronizar contagem de tarefas com fases lunares
   useEffect(() => {
@@ -121,9 +121,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     };
 
     syncGalaxySuns();
-  }, [temporal.year]);
+  }, [temporal.year, galaxySunsSync]);
 
-  const handleTodoSubmit = (todo: ParsedTodoItem) => {
+  const handleTodoSubmit = useCallback((todo: ParsedTodoItem) => {
     const updatedAt = todo.updatedAt ?? nowIso();
     const resolvedTodo = {
       ...todo,
@@ -151,49 +151,49 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       };
       return updated;
     });
-  };
+  }, [filters.island, setSavedTodos]);
 
-  const handleToggleComplete = (todoId: string) => {
+  const handleToggleComplete = useCallback((todoId: string) => {
     setSavedTodos((prev) =>
       prev.map((todo) =>
         todo.id === todoId ? touchTodo(todo, { completed: !todo.completed }) : todo
       )
     );
-  };
+  }, [setSavedTodos]);
 
-  const handleUpdateTodo = (todoId: string, updates: Partial<SavedTodo>) => {
+  const handleUpdateTodo = useCallback((todoId: string, updates: Partial<SavedTodo>) => {
     setSavedTodos((prev) =>
       prev.map((todo) => (todo.id === todoId ? touchTodo(todo, updates) : todo))
     );
-  };
+  }, [setSavedTodos]);
 
-  const handleDeleteTodo = (todoId: string) => {
+  const handleDeleteTodo = useCallback((todoId: string) => {
     setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
     setShowDeleteConfirm(false);
     setDeletingTodoId(null);
-  };
+  }, [setSavedTodos]);
 
-  const handleDeleteTodos = (todoIds: string[]) => {
+  const handleDeleteTodos = useCallback((todoIds: string[]) => {
     const ids = new Set(todoIds);
     setSavedTodos((prev) => prev.filter((todo) => !ids.has(todo.id)));
     setShowDeleteConfirm(false);
     setBatchDeleteIds(null);
-  };
+  }, [setSavedTodos]);
 
-  const handleRequestDelete = (todoId: string) => {
+  const handleRequestDelete = useCallback((todoId: string) => {
     setDeletingTodoId(todoId);
     setBatchDeleteIds(null);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const handleRequestBatchDelete = (todoIds: string[]) => {
+  const handleRequestBatchDelete = useCallback((todoIds: string[]) => {
     if (todoIds.length === 0) return;
     setBatchDeleteIds(todoIds);
     setDeletingTodoId(null);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const assignTodosToPhase = (todoIds: string[], phase: MoonPhase) => {
+  const assignTodosToPhase = useCallback((todoIds: string[], phase: MoonPhase) => {
     const ids = new Set(todoIds);
     const targets = savedTodos.filter((todo) => ids.has(todo.id) && todo.phase !== phase);
     if (targets.length === 0) return;
@@ -221,9 +221,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         console.warn('Falha ao salvar tarefa na fase:', error);
       });
     });
-  };
+  }, [savedTodos, setSavedTodos, saveInput]);
 
-  const assignTodosToIsland = (todoIds: string[], islandId: IslandId) => {
+  const assignTodosToIsland = useCallback((todoIds: string[], islandId: IslandId) => {
     const ids = new Set(todoIds);
     const hasTargets = savedTodos.some((todo) => ids.has(todo.id) && todo.islandId !== islandId);
     if (!hasTargets) return;
@@ -231,22 +231,22 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setSavedTodos((prev) =>
       prev.map((todo) => (ids.has(todo.id) ? touchTodo(todo, { islandId }) : todo))
     );
-  };
+  }, [savedTodos, setSavedTodos]);
 
-  const handleDragStart = (todoId: string) => (e: React.DragEvent) => {
+  const handleDragStart = useCallback((todoId: string) => (e: React.DragEvent) => {
     e.dataTransfer.setData('text/todo-id', todoId);
     dropHandledRef.current = false;
     setIsDraggingTodo(true);
     setDraggingTodoId(todoId);
-  };
+  }, []);
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
     setDraggingTodoId(null);
     dropHandledRef.current = false;
-  };
+  }, []);
 
   const getDraggedTodoIds = (event: React.DragEvent) => {
     const rawTodoIds = event.dataTransfer.getData('text/todo-ids');

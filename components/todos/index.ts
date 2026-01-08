@@ -5,8 +5,16 @@
 // Types
 export * from './types';
 
-// Hooks
+// Context & Hooks
 export { useTodoPanelState } from './useTodoPanelState';
+export { 
+  TodoPanelProvider,
+  useTodoPanelContext,
+  useTodoSelection,
+  useTodoEditing,
+  useTodoPagination,
+  useTodoBatchActions,
+} from './TodoPanelContext';
 
 // Components
 export { TodoFilters } from './TodoFilters';

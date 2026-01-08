@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, memo } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
 
@@ -19,7 +19,7 @@ type MoonClusterProps = {
 
 const MOON_TYPES = ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'] as const;
 
-export const MoonCluster: React.FC<MoonClusterProps> = ({
+export const MoonCluster: React.FC<MoonClusterProps> = memo(function MoonCluster({
   activeDrop,
   moonCounts,
   isDraggingTodo,
@@ -30,7 +30,16 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
   onDrop,
   onDragOver,
   onDragLeave,
-}) => {
+}) {
+  // Handler estável para click nas luas
+  const handleMoonClick = useCallback(
+    (moonType: MoonPhase, isSelected: boolean) => {
+      if (isDraggingTodo) return;
+      onMoonFilter(isSelected ? null : moonType);
+    },
+    [isDraggingTodo, onMoonFilter]
+  );
+
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <div className="flex flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:flex-col lg:items-center">
@@ -58,14 +67,7 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
                 type={moonType}
                 size="sm"
                 interactive
-                onClick={() => {
-                  if (isDraggingTodo) return;
-                  if (isSelectedPhase) {
-                    onMoonFilter(null);
-                  } else {
-                    onMoonFilter(moonType);
-                  }
-                }}
+                onClick={() => handleMoonClick(moonType, isSelectedPhase)}
                 floatOffset={floatOffset}
                 onDrop={onDrop(moonType)}
                 onDragOver={onDragOver(moonType)}
@@ -84,4 +86,4 @@ export const MoonCluster: React.FC<MoonClusterProps> = ({
       </div>
     </div>
   );
-};
+});

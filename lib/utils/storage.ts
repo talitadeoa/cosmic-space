@@ -225,15 +225,18 @@ export function useStorage<T>(key: string, initialValue: T) {
     return storage.get(key, initialValue);
   });
 
-  const setValue = (value: T | ((val: T) => T)) => {
+  // Memoizar setValue para estabilizar referência e evitar re-renders
+  const setValue = React.useCallback((value: T | ((val: T) => T)) => {
     try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      storage.set(key, valueToStore);
+      setStoredValue(prev => {
+        const valueToStore = value instanceof Function ? value(prev) : value;
+        storage.set(key, valueToStore);
+        return valueToStore;
+      });
     } catch (error) {
       console.error(`[useStorage] Erro ao salvar "${key}":`, error);
     }
-  };
+  }, [key]);
 
   return [storedValue, setValue] as const;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 /**
  * Componente que sincroniza lunações do banco de dados
@@ -26,7 +26,8 @@ export function LunationSync({
   verbose = false,
 }: LunationSyncProps) {
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncedYears, setSyncedYears] = useState<Set<number>>(new Set());
+  // useRef para evitar re-execução do effect quando anos são sincronizados
+  const syncedYearsRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     if (!autoSync) return;
@@ -38,7 +39,7 @@ export function LunationSync({
 
     async function sync() {
       for (const year of yearsToSync) {
-        if (syncedYears.has(year)) {
+        if (syncedYearsRef.current.has(year)) {
           if (verbose) console.warn(`⏭️  Pulando ${year} (já sincronizado)`);
           continue;
         }
@@ -61,7 +62,7 @@ export function LunationSync({
           if (existingData?.days?.length > 0) {
             if (verbose)
               console.warn(`✅ ${year} já sincronizado (${existingData.days.length} dias)`);
-            setSyncedYears((prev) => new Set([...prev, year]));
+            syncedYearsRef.current.add(year);
             if (onSuccess) onSuccess(existingData.days.length);
             continue;
           }
@@ -100,7 +101,7 @@ export function LunationSync({
           const saveResult = await saveResponse.json();
           if (verbose) console.warn(`✅ ${saveResult.message}`);
 
-          setSyncedYears((prev) => new Set([...prev, year]));
+          syncedYearsRef.current.add(year);
           if (onSuccess) onSuccess(days.length);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -113,7 +114,8 @@ export function LunationSync({
     }
 
     sync();
-  }, [autoSync, years, onSuccess, onError, verbose, syncedYears]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks são estáveis, years é comparado por referência
+  }, [autoSync, years, verbose]);
 
   // Componente sem UI (só sincroniza em background)
   return null;
