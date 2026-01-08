@@ -1,6 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { useTodoPanelState } from '@/components/todos/useTodoPanelState';
+import { TodoList } from '@/components/todos/TodoList';
+import { TodoFilters } from '@/components/todos/TodoFilters';
+import { TodoBatchActions } from '@/components/todos/TodoBatchActions';
 import { EmptyState } from './EmptyState';
 import type { SavedTodo, MoonPhase, IslandId } from '../utils/todoStorage';
 import { phaseLabels } from '../utils/todoStorage';
@@ -34,14 +38,18 @@ interface SavedTodosPanelProps {
   islandIds?: IslandId[];
 }
 
+const ITEMS_PER_PAGE = 20;
+
 /**
- * SavedTodosPanel Component
+ * SavedTodosPanel Component (Refatorado)
  *
  * Exibe lista de tarefas salvass com:
  * - EmptyState quando não há tarefas
  * - Suporte a drag-and-drop
  * - Filtro opcional por fase lunar
  * - Estados visuais para conclusão
+ * 
+ * Utiliza useReducer para gerenciar 14+ estados anteriormente esparramados
  */
 export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   savedTodos,
@@ -68,33 +76,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   onBatchAssignIsland,
   islandIds,
 }) => {
+  // Usar novo hook ao invés de 14 useState
+  const { state, dispatch, startEditing, cancelEditing, toggleSelect, selectAll, clearSelection, setSelectionMode, setPage, setBatchIsland } = useTodoPanelState();
+  
   const panelRef = React.useRef<HTMLDivElement>(null);
-  const islandLabel = getIslandLabel(selectedIsland, islandNames);
-  const filterLabel =
-    inputTypeFilter === 'text' ? 'Texto' : inputTypeFilter === 'checkbox' ? 'To-dos' : null;
-  const statusLabel =
-    inputTypeFilter === 'checkbox' && todoStatusFilter !== 'all'
-      ? todoStatusFilter === 'completed'
-        ? 'Completas'
-        : 'Em aberto'
-      : null;
-  const canEdit = Boolean(onUpdateTodo);
-  const isTextFilter = inputTypeFilter === 'text';
-  const isTodoFilter = inputTypeFilter === 'checkbox';
-  const isOpenFilter = todoStatusFilter === 'open';
-  const isCompletedFilter = todoStatusFilter === 'completed';
-  const [isEditMode, setIsEditMode] = React.useState(false);
-  const [editingTodoId, setEditingTodoId] = React.useState<string | null>(null);
-  const [editingText, setEditingText] = React.useState('');
-  const [editingCategory, setEditingCategory] = React.useState('');
-  const [editingDueDate, setEditingDueDate] = React.useState('');
-  const [swipeDeleteId, setSwipeDeleteId] = React.useState<string | null>(null);
-  const [currentPage, setCurrentPage] = React.useState(0);
-  const [activeViewDrop, setActiveViewDrop] = React.useState<string | null>(null);
-  const [isSelectionMode, setIsSelectionMode] = React.useState(false);
-  const [selectedTodoIds, setSelectedTodoIds] = React.useState<string[]>([]);
-  const [batchIsland, setBatchIsland] = React.useState<IslandId | ''>('');
-  const ITEMS_PER_PAGE = 20;
   const selectionTouchActiveRef = React.useRef(false);
   const selectionTouchModeRef = React.useRef<'select' | 'deselect'>('select');
   const lastTouchedIdRef = React.useRef<string | null>(null);
@@ -104,56 +89,220 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const lastTapRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
   const doubleTapTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const handleTextFilter = () => {
-    const nextFilter = inputTypeFilter === 'text' ? 'all' : 'text';
-    onInputTypeFilterChange?.(nextFilter);
-  };
+  const islandLabel = getIslandLabel(selectedIsland, islandNames);
+  const canEdit = Boolean(onUpdateTodo);
 
-  const handleTodoFilter = () => {
-    const nextFilter = inputTypeFilter === 'checkbox' ? 'all' : 'checkbox';
-    onInputTypeFilterChange?.(nextFilter);
-  };
-  const handleTodoStatusFilter = (status: 'open' | 'completed') => {
-    const nextStatus = todoStatusFilter === status ? 'all' : status;
-    onTodoStatusFilterChange?.(nextStatus);
-  };
-  const handleViewChange = (
+  // === Handlers de Filtro ===
+  const handleViewChange = useCallback((
     nextView: 'todos' | 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo'
   ) => {
     onViewChange?.(nextView);
-  };
+    setPage(0);
+  }, [onViewChange, setPage]);
 
-  /**
-   * Calcula a data apropriada baseado na visão/cronologia
-   */
+  // === Lógica de Filtragem ===
   const getDateForView = (viewType: string): string | undefined => {
     const today = new Date();
 
     if (viewType === 'lua-atual') {
-      // Prazo até próxima fase (7 dias)
       const date = new Date(today);
       date.setDate(today.getDate() + 4);
       return date.toISOString().split('T')[0];
     } else if (viewType === 'proxima-fase') {
-      // Prazo para próxima fase (12 dias)
       const date = new Date(today);
       date.setDate(today.getDate() + 12);
       return date.toISOString().split('T')[0];
     } else if (viewType === 'proximo-ciclo') {
-      // Primeiro dia do próximo mês
       const date = new Date(today);
       date.setMonth(today.getMonth() + 1);
       date.setDate(1);
       return date.toISOString().split('T')[0];
     }
-
     return undefined;
   };
 
-  /**
-   * Handler para quando input é solto em uma visão
-   */
-  const handleDropOnView =
+  const getNextPhase = (phase: MoonPhase): MoonPhase => {
+    const phases: MoonPhase[] = ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'];
+    const currentIndex = phases.indexOf(phase);
+    const nextIndex = (currentIndex + 1) % phases.length;
+    return phases[nextIndex];
+  };
+
+  const getFilteredTodosByChronology = (
+    todos: SavedTodo[],
+    view: string | undefined,
+    currentPhase: MoonPhase | null | undefined
+  ): SavedTodo[] => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    if (view === 'todos') return todos;
+    if (view === 'em-aberto') {
+      return todos.filter((todo) => !todo.phase && !todo.dueDate && !todo.islandId);
+    }
+    if (view === 'lua-atual' && currentPhase) {
+      const nextPhaseDate = new Date(today);
+      nextPhaseDate.setDate(today.getDate() + 8);
+      const nextPhaseDateStr = nextPhaseDate.toISOString().split('T')[0];
+      return todos.filter(
+        (todo) => !todo.dueDate || (todo.dueDate >= todayStr && todo.dueDate <= nextPhaseDateStr)
+      );
+    } else if (view === 'proxima-fase' && currentPhase) {
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() + 8);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 8);
+
+      const startStr = startDate.toISOString().split('T')[0];
+      const endStr = endDate.toISOString().split('T')[0];
+
+      return todos.filter(
+        (todo) => !todo.dueDate || (todo.dueDate >= startStr && todo.dueDate <= endStr)
+      );
+    } else if (view === 'proximo-ciclo') {
+      const nextMonthStart = new Date(today);
+      nextMonthStart.setMonth(today.getMonth() + 1);
+      nextMonthStart.setDate(1);
+
+      const nextMonthEnd = new Date(nextMonthStart);
+      nextMonthEnd.setMonth(nextMonthStart.getMonth() + 1);
+      nextMonthEnd.setDate(0);
+
+      const startStr = nextMonthStart.toISOString().split('T')[0];
+      const endStr = nextMonthEnd.toISOString().split('T')[0];
+
+      return todos.filter(
+        (todo) => todo.dueDate && todo.dueDate >= startStr && todo.dueDate <= endStr
+      );
+    }
+
+    return todos;
+  };
+
+  // Filtrar tarefas
+  const phaseFilter = view === 'em-aberto' ? null : selectedPhase;
+  const islandFilter = view === 'em-aberto' ? null : selectedIsland;
+  let filteredTodos = savedTodos
+    .filter((todo) => (phaseFilter ? todo.phase === phaseFilter : true))
+    .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true));
+
+  filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase);
+
+  // Paginação
+  const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
+  const startIndex = state.currentPage * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const displayedTodos = filteredTodos.slice(startIndex, endIndex);
+
+  const selectedCount = state.selectedTodoIds.length;
+  const allDisplayedSelected =
+    displayedTodos.length > 0 && displayedTodos.every((todo) => state.selectedTodoIds.includes(todo.id));
+
+  // === Effects ===
+  useEffect(() => {
+    setPage(0);
+  }, [selectedPhase, selectedIsland, setPage]);
+
+  useEffect(() => {
+    dispatch({
+      type: 'SELECT_ALL',
+      payload: state.selectedTodoIds.filter((id) => savedTodos.some((todo) => todo.id === id)),
+    });
+  }, [savedTodos]);
+
+  // === Handlers de Edição ===
+  const handleToggleEditMode = useCallback(() => {
+    if (!canEdit) return;
+    dispatch({ type: 'SET_EDIT_MODE', payload: !state.isEditMode });
+  }, [canEdit, state.isEditMode]);
+
+  const handleStartEditing = useCallback((todo: SavedTodo) => {
+    if (!canEdit) return;
+    startEditing(todo.id, todo.text, todo.category, todo.dueDate);
+  }, [canEdit, startEditing]);
+
+  const handleSaveEditing = useCallback((todo: SavedTodo) => {
+    if (!onUpdateTodo) return;
+    const trimmedText = state.editingText.trim();
+    if (!trimmedText) return;
+    onUpdateTodo(todo.id, {
+      text: trimmedText,
+      category: state.editingCategory.trim() || undefined,
+      dueDate: state.editingDueDate || undefined,
+    });
+    cancelEditing();
+  }, [onUpdateTodo, state.editingText, state.editingCategory, state.editingDueDate, cancelEditing]);
+
+  const handleUpdateEditText = useCallback((text: string) => {
+    dispatch({ type: 'UPDATE_EDITING', payload: { text } });
+  }, []);
+
+  const handleUpdateEditCategory = useCallback((category: string) => {
+    dispatch({ type: 'UPDATE_EDITING', payload: { category } });
+  }, []);
+
+  const handleUpdateEditDueDate = useCallback((dueDate: string) => {
+    dispatch({ type: 'UPDATE_EDITING', payload: { dueDate } });
+  }, []);
+
+  // === Handlers de Seleção ===
+  const handleToggleSelectDisplayed = useCallback(() => {
+    if (displayedTodos.length === 0) return;
+    if (allDisplayedSelected) {
+      const newSelected = state.selectedTodoIds.filter(
+        (id) => !displayedTodos.some((todo) => todo.id === id)
+      );
+      dispatch({ type: 'SELECT_ALL', payload: newSelected });
+      return;
+    }
+    const displayedIds = displayedTodos.map((todo) => todo.id);
+    const newSelected = Array.from(new Set([...state.selectedTodoIds, ...displayedIds]));
+    dispatch({ type: 'SELECT_ALL', payload: newSelected });
+  }, [displayedTodos, state.selectedTodoIds]);
+
+  const handleBatchDelete = useCallback(() => {
+    if (selectedCount === 0 || !onBatchDelete) return;
+    onBatchDelete(state.selectedTodoIds);
+    clearSelection();
+  }, [selectedCount, onBatchDelete, state.selectedTodoIds, clearSelection]);
+
+  const handleBatchAssignPhase = useCallback((phase: MoonPhase) => {
+    if (selectedCount === 0 || !onBatchAssignPhase) return;
+    onBatchAssignPhase(state.selectedTodoIds, phase);
+  }, [selectedCount, onBatchAssignPhase, state.selectedTodoIds]);
+
+  const handleBatchAssignIsland = useCallback(() => {
+    if (!state.batchIsland || selectedCount === 0 || !onBatchAssignIsland) return;
+    onBatchAssignIsland(state.selectedTodoIds, state.batchIsland as IslandId);
+  }, [state.batchIsland, selectedCount, onBatchAssignIsland, state.selectedTodoIds]);
+
+  const handleBatchMoveToView = useCallback((
+    viewType: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo'
+  ) => {
+    if (selectedCount === 0 || !onUpdateTodo) return;
+    handleViewChange(viewType);
+    if (viewType === 'em-aberto') {
+      state.selectedTodoIds.forEach((id) => {
+        onUpdateTodo(id, { dueDate: undefined, phase: undefined, islandId: undefined });
+      });
+      return;
+    }
+    const dueDate = getDateForView(viewType);
+    if (!dueDate) return;
+    state.selectedTodoIds.forEach((id) => {
+      onUpdateTodo(id, { dueDate });
+    });
+  }, [selectedCount, onUpdateTodo, handleViewChange, state.selectedTodoIds]);
+
+  // === Handlers de Drag ===
+  const getDragTodoIds = useCallback((todoId: string) => {
+    if (state.isSelectionMode && state.selectedTodoIds.includes(todoId) && state.selectedTodoIds.length > 0) {
+      return state.selectedTodoIds;
+    }
+    return [todoId];
+  }, [state.isSelectionMode, state.selectedTodoIds]);
+
+  const handleDropOnView = useCallback(
     (viewType: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') =>
     (event: React.DragEvent) => {
       event.preventDefault();
@@ -179,10 +328,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
 
       if (todoIds.length === 0) return;
 
-      // Mudar a visão
       handleViewChange(viewType);
 
-      // Se não for em-aberto, atualizar a data do input
       if (viewType !== 'em-aberto' && onUpdateTodo) {
         const dueDate = getDateForView(viewType);
         if (dueDate) {
@@ -202,133 +349,17 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
         });
       }
 
-      setActiveViewDrop(null);
-    };
+      dispatch({ type: 'SET_VIEW_DROP', payload: null });
+    },
+    [savedTodos, handleViewChange, onUpdateTodo]
+  );
 
-  /**
-   * Handler para drag over em visão
-   */
   const handleDragOverView = (event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   };
 
-  /**
-   * Calcula a próxima fase lunar
-   */
-  const getNextPhase = (phase: MoonPhase): MoonPhase => {
-    const phases: MoonPhase[] = ['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'];
-    const currentIndex = phases.indexOf(phase);
-    const nextIndex = (currentIndex + 1) % phases.length;
-    return phases[nextIndex];
-  };
-
-  /**
-   * Filtra inputs por data de vencimento baseado na fase lunar atual
-   * - 'lua-atual': mostra inputs com prazo até a próxima fase lunar
-   * - 'proxima-fase': mostra inputs com prazo até o final da próxima fase lunar
-   * - 'proximo-ciclo': mostra inputs com prazo para o mês seguinte
-   */
-  const getFilteredTodosByChronology = (
-    todos: SavedTodo[],
-    view: string | undefined,
-    currentPhase: MoonPhase | null | undefined
-  ): SavedTodo[] => {
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-
-    if (view === 'todos') {
-      return todos;
-    }
-    if (view === 'em-aberto') {
-      return todos.filter((todo) => !todo.phase && !todo.dueDate && !todo.islandId);
-    }
-    if (view === 'lua-atual' && currentPhase) {
-      // Até próxima fase (aprox. 7-8 dias)
-      const nextPhaseDate = new Date(today);
-      nextPhaseDate.setDate(today.getDate() + 8);
-      const nextPhaseDateStr = nextPhaseDate.toISOString().split('T')[0];
-
-      return todos.filter(
-        (todo) => !todo.dueDate || (todo.dueDate >= todayStr && todo.dueDate <= nextPhaseDateStr)
-      );
-    } else if (view === 'proxima-fase' && currentPhase) {
-      // Próxima fase + fim dela (aprox. 8-16 dias)
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate() + 8);
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 8);
-
-      const startStr = startDate.toISOString().split('T')[0];
-      const endStr = endDate.toISOString().split('T')[0];
-
-      return todos.filter(
-        (todo) => !todo.dueDate || (todo.dueDate >= startStr && todo.dueDate <= endStr)
-      );
-    } else if (view === 'proximo-ciclo') {
-      // Mês seguinte
-      const nextMonthStart = new Date(today);
-      nextMonthStart.setMonth(today.getMonth() + 1);
-      nextMonthStart.setDate(1);
-
-      const nextMonthEnd = new Date(nextMonthStart);
-      nextMonthEnd.setMonth(nextMonthStart.getMonth() + 1);
-      nextMonthEnd.setDate(0);
-
-      const startStr = nextMonthStart.toISOString().split('T')[0];
-      const endStr = nextMonthEnd.toISOString().split('T')[0];
-
-      return todos.filter(
-        (todo) => todo.dueDate && todo.dueDate >= startStr && todo.dueDate <= endStr
-      );
-    }
-
-    return todos;
-  };
-
-  const resetEditingState = () => {
-    setEditingTodoId(null);
-    setEditingText('');
-    setEditingCategory('');
-    setEditingDueDate('');
-  };
-
-  const handleToggleEditMode = () => {
-    if (!canEdit) return;
-    setIsEditMode((prev) => {
-      const next = !prev;
-      if (!next) {
-        resetEditingState();
-      }
-      return next;
-    });
-  };
-
-  const handleStartEditing = (todo: SavedTodo) => {
-    if (!canEdit) return;
-    setEditingTodoId(todo.id);
-    setEditingText(todo.text);
-    setEditingCategory(todo.category ?? '');
-    setEditingDueDate(todo.dueDate ?? '');
-  };
-
-  const handleCancelEditing = () => {
-    resetEditingState();
-  };
-
-  const handleSaveEditing = (todo: SavedTodo) => {
-    if (!onUpdateTodo) return;
-    const trimmedText = editingText.trim();
-    if (!trimmedText) return;
-    onUpdateTodo(todo.id, {
-      text: trimmedText,
-      category: editingCategory.trim() || undefined,
-      dueDate: editingDueDate || undefined,
-    });
-    resetEditingState();
-  };
-
-  // Detectar gestos (swipes e double-tap) sem chamar hooks dentro do map
+  // === Handlers de Touch ===
   const handleItemTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     touchStartRef.current = {
@@ -347,21 +378,15 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     const distY = touch.clientY - touchStartRef.current.y;
     const distance = Math.sqrt(distX * distX + distY * distY);
 
-    // Detectar swipes: movement significativo e rápido (< 400ms)
     if (distance >= 40 && duration <= 400) {
-      // Swipe horizontal
       if (Math.abs(distX) > Math.abs(distY)) {
         if (distX > 0) {
-          // Swipe para direita: marcar como completo
           onToggleComplete(todoId);
         } else {
-          // Swipe para esquerda: mostrar botão de deletar
-          setSwipeDeleteId(todoId);
+          dispatch({ type: 'SET_SWIPE_DELETE', payload: todoId });
         }
       }
-    }
-    // Detectar double-tap: dois toques rápidos e próximos
-    else if (distance < 30 && duration < 300) {
+    } else if (distance < 30 && duration < 300) {
       const now = Date.now();
       if (lastTapRef.current) {
         const timeSinceLastTap = now - lastTapRef.current.time;
@@ -371,7 +396,6 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
         );
 
         if (timeSinceLastTap < 300 && distFromLastTap < 50) {
-          // Double-tap detectado: ativar modo edição
           if (doubleTapTimeoutRef.current) clearTimeout(doubleTapTimeoutRef.current);
           const todo = savedTodos.find((t) => t.id === todoId);
           if (todo) handleStartEditing(todo);
@@ -391,118 +415,26 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     touchStartRef.current = null;
   };
 
-  // Filtrar tarefas por fase e ilha se estiverem selecionadas
-  const phaseFilter = view === 'em-aberto' ? null : selectedPhase;
-  const islandFilter = view === 'em-aberto' ? null : selectedIsland;
-  let filteredTodos = savedTodos
-    .filter((todo) => (phaseFilter ? todo.phase === phaseFilter : true))
-    .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true));
-
-  // Aplicar filtro de cronologia (datas de vencimento)
-  filteredTodos = getFilteredTodosByChronology(filteredTodos, view, selectedPhase);
-
-  // Aplicar paginação
-  const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
-  const startIndex = currentPage * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const displayedTodos = filteredTodos.slice(startIndex, endIndex);
-  const selectedCount = selectedTodoIds.length;
-  const allDisplayedSelected =
-    displayedTodos.length > 0 && displayedTodos.every((todo) => selectedTodoIds.includes(todo.id));
-
-  // Reset página se mudar filtro
-  React.useEffect(() => {
-    setCurrentPage(0);
-  }, [selectedPhase, selectedIsland]);
-
-  React.useEffect(() => {
-    setSelectedTodoIds((prev) => prev.filter((id) => savedTodos.some((todo) => todo.id === id)));
-  }, [savedTodos]);
-
-  const toggleSelectionMode = () => {
-    setIsSelectionMode((prev) => {
-      const next = !prev;
-      if (!next) {
-        setSelectedTodoIds([]);
-        setBatchIsland('');
-      }
-      return next;
-    });
-  };
-
-  const toggleTodoSelection = (todoId: string) => {
-    setSelectedTodoIds((prev) =>
-      prev.includes(todoId) ? prev.filter((id) => id !== todoId) : [...prev, todoId]
-    );
-  };
-
-  const handleToggleSelectDisplayed = () => {
-    if (displayedTodos.length === 0) return;
-    if (allDisplayedSelected) {
-      setSelectedTodoIds((prev) => prev.filter((id) => !displayedTodos.some((todo) => todo.id === id)));
-      return;
-    }
-    const displayedIds = displayedTodos.map((todo) => todo.id);
-    setSelectedTodoIds((prev) => Array.from(new Set([...prev, ...displayedIds])));
-  };
-
-  const handleBatchDelete = () => {
-    if (selectedCount === 0 || !onBatchDelete) return;
-    onBatchDelete(selectedTodoIds);
-    setSelectedTodoIds([]);
-  };
-
-  const handleBatchAssignPhase = (phase: MoonPhase) => {
-    if (selectedCount === 0 || !onBatchAssignPhase) return;
-    onBatchAssignPhase(selectedTodoIds, phase);
-  };
-
-  const handleBatchAssignIsland = () => {
-    if (!batchIsland || selectedCount === 0 || !onBatchAssignIsland) return;
-    onBatchAssignIsland(selectedTodoIds, batchIsland);
-  };
-
-  const handleBatchMoveToView = (
-    viewType: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo'
-  ) => {
-    if (selectedCount === 0 || !onUpdateTodo) return;
-    handleViewChange(viewType);
-    if (viewType === 'em-aberto') {
-      selectedTodoIds.forEach((id) => {
-        onUpdateTodo(id, { dueDate: undefined, phase: undefined, islandId: undefined });
-      });
-      return;
-    }
-    const dueDate = getDateForView(viewType);
-    if (!dueDate) return;
-    selectedTodoIds.forEach((id) => {
-      onUpdateTodo(id, { dueDate });
-    });
-  };
-
-  const getDragTodoIds = (todoId: string) => {
-    if (isSelectionMode && selectedTodoIds.includes(todoId) && selectedTodoIds.length > 0) {
-      return selectedTodoIds;
-    }
-    return [todoId];
-  };
-
   const applySelectionForId = (todoId: string, mode: 'select' | 'deselect') => {
-    setSelectedTodoIds((prev) => {
-      const hasId = prev.includes(todoId);
-      if (mode === 'select') {
-        if (hasId) return prev;
-        return [...prev, todoId];
+    if (mode === 'select') {
+      if (!state.selectedTodoIds.includes(todoId)) {
+        dispatch({
+          type: 'SELECT_ALL',
+          payload: [...state.selectedTodoIds, todoId],
+        });
       }
-      if (!hasId) return prev;
-      return prev.filter((id) => id !== todoId);
-    });
+    } else {
+      dispatch({
+        type: 'SELECT_ALL',
+        payload: state.selectedTodoIds.filter((id) => id !== todoId),
+      });
+    }
   };
 
   const handleSelectionTouchStart = (todoId: string, event: React.TouchEvent) => {
-    if (!isSelectionMode) return;
+    if (!state.isSelectionMode) return;
     event.preventDefault();
-    const isSelected = selectedTodoIds.includes(todoId);
+    const isSelected = state.selectedTodoIds.includes(todoId);
     const mode: 'select' | 'deselect' = isSelected ? 'deselect' : 'select';
     selectionTouchActiveRef.current = true;
     selectionTouchModeRef.current = mode;
@@ -511,7 +443,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   };
 
   const handleSelectionTouchMove = (event: React.TouchEvent) => {
-    if (!isSelectionMode || !selectionTouchActiveRef.current) return;
+    if (!state.isSelectionMode || !selectionTouchActiveRef.current) return;
     event.preventDefault();
     const touch = event.touches[0];
     const element = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -526,6 +458,24 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
   const handleSelectionTouchEnd = () => {
     selectionTouchActiveRef.current = false;
     lastTouchedIdRef.current = null;
+  };
+
+  // === Render Props ===
+  const visibleIslandIds = islandIds && islandIds.length > 0 ? islandIds : ISLAND_IDS;
+
+  const getMoonEmoji = (phase: MoonPhase | null): string => {
+    switch (phase) {
+      case 'luaNova':
+        return '🌑';
+      case 'luaCrescente':
+        return '🌓';
+      case 'luaCheia':
+        return '🌕';
+      case 'luaMinguante':
+        return '🌗';
+      default:
+        return '';
+    }
   };
 
   const headerLabel = (() => {
@@ -578,23 +528,6 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
     return 'Adicione e arraste para a fase lunar desejada.';
   })();
 
-  const getMoonEmoji = (phase: MoonPhase | null): string => {
-    switch (phase) {
-      case 'luaNova':
-        return '🌑';
-      case 'luaCrescente':
-        return '🌓';
-      case 'luaCheia':
-        return '🌕';
-      case 'luaMinguante':
-        return '🌗';
-      default:
-        return '';
-    }
-  };
-
-  const visibleIslandIds = islandIds && islandIds.length > 0 ? islandIds : ISLAND_IDS;
-
   return (
     <div
       ref={panelRef}
@@ -607,6 +540,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
         onDropInside?.();
       }}
     >
+      {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2">
@@ -620,6 +554,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
             )}
           </div>
           <p className="text-[0.75rem] text-slate-400">{headerDescription}</p>
+
+          {/* View Buttons */}
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               type="button"
@@ -636,11 +572,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               type="button"
               onDragOver={handleDragOverView}
               onDrop={handleDropOnView('em-aberto')}
-              onDragLeave={() => setActiveViewDrop(null)}
-              onDragEnter={() => setActiveViewDrop('em-aberto')}
+              onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
+              onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'em-aberto' })}
               onClick={() => handleViewChange('em-aberto')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-                activeViewDrop === 'em-aberto'
+                state.activeViewDrop === 'em-aberto'
                   ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950'
                   : ''
               } ${
@@ -655,11 +591,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               type="button"
               onDragOver={handleDragOverView}
               onDrop={handleDropOnView('lua-atual')}
-              onDragLeave={() => setActiveViewDrop(null)}
-              onDragEnter={() => setActiveViewDrop('lua-atual')}
+              onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
+              onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'lua-atual' })}
               onClick={() => handleViewChange('lua-atual')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-                activeViewDrop === 'lua-atual'
+                state.activeViewDrop === 'lua-atual'
                   ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950'
                   : ''
               } ${
@@ -674,11 +610,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               type="button"
               onDragOver={handleDragOverView}
               onDrop={handleDropOnView('proxima-fase')}
-              onDragLeave={() => setActiveViewDrop(null)}
-              onDragEnter={() => setActiveViewDrop('proxima-fase')}
+              onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
+              onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'proxima-fase' })}
               onClick={() => handleViewChange('proxima-fase')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
-                activeViewDrop === 'proxima-fase'
+                state.activeViewDrop === 'proxima-fase'
                   ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950'
                   : ''
               } ${
@@ -701,11 +637,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               type="button"
               onDragOver={handleDragOverView}
               onDrop={handleDropOnView('proximo-ciclo')}
-              onDragLeave={() => setActiveViewDrop(null)}
-              onDragEnter={() => setActiveViewDrop('proximo-ciclo')}
+              onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
+              onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'proximo-ciclo' })}
               onClick={() => handleViewChange('proximo-ciclo')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
-                activeViewDrop === 'proximo-ciclo'
+                state.activeViewDrop === 'proximo-ciclo'
                   ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-slate-950'
                   : ''
               } ${
@@ -718,11 +654,13 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
               <span>Próximo ciclo</span>
             </button>
           </div>
+
+          {/* Moon Phase Indicator */}
           {selectedPhase && (
             <div className="mt-3 flex items-center gap-1.5 text-[0.65rem] text-slate-400">
               <span>Ciclo:</span>
               <div className="flex gap-1">
-                {['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'].map((phase) => (
+                {(['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'] as MoonPhase[]).map((phase) => (
                   <span
                     key={phase}
                     className={`transition ${
@@ -732,530 +670,129 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
                           ? 'text-amber-300 font-semibold'
                           : 'text-slate-500'
                     }`}
-                    title={phaseLabels[phase as MoonPhase]}
+                    title={phaseLabels[phase]}
                   >
-                    {getMoonEmoji(phase as MoonPhase)}
+                    {getMoonEmoji(phase)}
                   </span>
                 ))}
               </div>
             </div>
           )}
-          {(filterLabel || statusLabel) && (
-            <div className="mt-2 flex flex-wrap gap-2 text-[0.6rem] text-slate-300">
-              {filterLabel && (
-                <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                  {filterLabel}
-                </span>
-              )}
-              {statusLabel && (
-                <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                  {statusLabel}
-                </span>
-              )}
-            </div>
-          )}
         </div>
+
+        {/* Mode Buttons */}
         <div className="flex flex-col items-end gap-2">
           {canEdit && (
             <button
               type="button"
               onClick={handleToggleEditMode}
-              aria-pressed={isEditMode}
+              aria-pressed={state.isEditMode}
               className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
-                isEditMode
+                state.isEditMode
                   ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
                   : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-300/60'
               }`}
-              title={isEditMode ? 'Sair do modo edição' : 'Editar inputs'}
+              title={state.isEditMode ? 'Sair do modo edição' : 'Editar inputs'}
             >
               ✏️
             </button>
           )}
           <button
             type="button"
-            onClick={toggleSelectionMode}
-            aria-pressed={isSelectionMode}
+            onClick={() => setSelectionMode(!state.isSelectionMode)}
+            aria-pressed={state.isSelectionMode}
             className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
-              isSelectionMode
+              state.isSelectionMode
                 ? 'border border-emerald-300/80 bg-emerald-500/20 text-emerald-100'
                 : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-emerald-300/60'
             }`}
-            title={isSelectionMode ? 'Sair da seleção múltipla' : 'Selecionar múltiplos inputs'}
+            title={state.isSelectionMode ? 'Sair da seleção múltipla' : 'Selecionar múltiplos inputs'}
           >
             ⬚
           </button>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleTextFilter}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg font-bold transition ${
-                isTextFilter
-                  ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
-                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
-              }`}
-              title="Inputs de texto"
-            >
-              T
-            </button>
-            <button
-              type="button"
-              onClick={handleTodoFilter}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
-                isTodoFilter
-                  ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
-                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60'
-              }`}
-              title="To-dos (abertas e completas)"
-            >
-              ✔️
-            </button>
-          </div>
-          {isTodoFilter && (
-            <div className="flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900/70 px-1 py-1 text-[0.55rem] font-semibold uppercase tracking-[0.2em] text-slate-300">
-              <button
-                type="button"
-                onClick={() => handleTodoStatusFilter('open')}
-                className={`rounded-full px-2 py-1 transition ${
-                  isOpenFilter
-                    ? 'bg-indigo-500/30 text-indigo-100'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Mostrar tarefas em aberto"
-              >
-                Em aberto
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTodoStatusFilter('completed')}
-                className={`rounded-full px-2 py-1 transition ${
-                  isCompletedFilter
-                    ? 'bg-indigo-500/30 text-indigo-100'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Mostrar tarefas completas"
-              >
-                Completas
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      {isSelectionMode && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-[0.65rem] text-slate-300">
-          <span>{selectedCount === 0 ? 'Nenhum selecionado' : `${selectedCount} selecionado(s)`}</span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={handleToggleSelectDisplayed}
-              className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 font-semibold uppercase tracking-[0.16em] text-slate-200 transition hover:border-slate-500"
-            >
-              {allDisplayedSelected ? 'Limpar página' : 'Selecionar página'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedTodoIds([])}
-              className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 font-semibold uppercase tracking-[0.16em] text-slate-200 transition hover:border-slate-500"
-            >
-              Limpar seleção
-            </button>
-            <button
-              type="button"
-              onClick={handleBatchDelete}
-              disabled={selectedCount === 0 || !onBatchDelete}
-              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-                selectedCount === 0 || !onBatchDelete
-                  ? 'border-slate-700 bg-slate-900/60 text-slate-500'
-                  : 'border-red-400/60 bg-red-500/20 text-red-100 hover:bg-red-500/30'
-              }`}
-            >
-              Excluir selecionados
-            </button>
-          </div>
-        </div>
-      )}
-      {isSelectionMode && (
-        <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-[0.6rem] text-slate-300">
-          <span className="uppercase tracking-[0.18em] text-slate-400">Mover para</span>
-          <div className="flex flex-wrap gap-2">
-            {(['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'] as MoonPhase[]).map(
-              (phase) => (
-                <button
-                  key={phase}
-                  type="button"
-                  onClick={() => handleBatchAssignPhase(phase)}
-                  disabled={selectedCount === 0 || !onBatchAssignPhase}
-                  className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-                    selectedCount === 0 || !onBatchAssignPhase
-                      ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                      : 'border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
-                  }`}
-                  title={`Mover para ${phaseLabels[phase]}`}
-                >
-                  {phaseLabels[phase]}
-                </button>
-              )
-            )}
-          </div>
-          {visibleIslandIds.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={batchIsland}
-                onChange={(event) => setBatchIsland(event.target.value as IslandId | '')}
-                className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-slate-200 focus:border-indigo-400 focus:outline-none"
-              >
-                <option value="">Ilha</option>
-                {visibleIslandIds.map((islandId) => (
-                  <option key={islandId} value={islandId}>
-                    {getIslandLabel(islandId, islandNames) ?? islandId}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={handleBatchAssignIsland}
-                disabled={selectedCount === 0 || !batchIsland || !onBatchAssignIsland}
-                className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-                  selectedCount === 0 || !batchIsland || !onBatchAssignIsland
-                    ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                    : 'border-emerald-400/60 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30'
-                }`}
-              >
-                Aplicar ilha
-              </button>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => handleBatchMoveToView('em-aberto')}
-              disabled={selectedCount === 0 || !onUpdateTodo}
-              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-                selectedCount === 0 || !onUpdateTodo
-                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                  : 'border-slate-400/60 bg-slate-500/20 text-slate-100 hover:bg-slate-500/30'
-              }`}
-            >
-              Em aberto
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBatchMoveToView('lua-atual')}
-              disabled={selectedCount === 0 || !onUpdateTodo}
-              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-                selectedCount === 0 || !onUpdateTodo
-                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                  : 'border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
-              }`}
-            >
-              Lua atual
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBatchMoveToView('proxima-fase')}
-              disabled={selectedCount === 0 || !onUpdateTodo}
-              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-                selectedCount === 0 || !onUpdateTodo
-                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                  : 'border-amber-400/60 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30'
-              }`}
-            >
-              Próxima fase
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBatchMoveToView('proximo-ciclo')}
-              disabled={selectedCount === 0 || !onUpdateTodo}
-              className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-                selectedCount === 0 || !onUpdateTodo
-                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                  : 'border-rose-400/60 bg-rose-500/20 text-rose-100 hover:bg-rose-500/30'
-              }`}
-            >
-              Próximo ciclo
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div
-        className="mt-3 max-h-[60vh] space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20 sm:max-h-[70vh] lg:max-h-[75vh]"
-        onTouchMove={handleSelectionTouchMove}
-        onTouchEnd={handleSelectionTouchEnd}
-        onTouchCancel={handleSelectionTouchEnd}
-      >
-        {displayedTodos.length === 0 ? (
-          <EmptyState
-            title={
-              selectedPhase
-                ? 'Nada salvo nesta fase'
-                : islandLabel
-                  ? 'Nada salvo nesta ilha'
-                  : 'Nada salvo'
-            }
-            description={
-              selectedPhase
-                ? `Arraste um input para ${phaseLabels[selectedPhase]} ou crie um novo.`
-                : islandLabel
-                  ? `Arraste um input para ${islandLabel} ou crie um novo.`
-                  : 'Adcione ou selecione uma fase lunar.'
-            }
-            icon="✨"
+          <TodoFilters
+            inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
+            todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
+            onInputTypeFilterChange={onInputTypeFilterChange}
+            onTodoStatusFilterChange={onTodoStatusFilterChange}
           />
-        ) : (
-          displayedTodos.map((todo) => {
-            const islandLabel = getIslandLabel(todo.islandId, islandNames);
-            const isCheckbox = todo.inputType === 'checkbox';
-            const isCompleted = isCheckbox && todo.completed;
-            const showMeta =
-              todo.inputType === 'text' || todo.category || todo.dueDate || islandLabel;
-            const isEditing = editingTodoId === todo.id;
-            const canDrag = !isEditMode;
-            const isSaveDisabled = !editingText.trim();
-            const isSelected = selectedTodoIds.includes(todo.id);
-
-            return (
-              <div
-                key={todo.id}
-                data-todo-id={todo.id}
-                draggable={canDrag}
-                role="article"
-                aria-label={`Tarefa: ${todo.text}`}
-                onDragStart={
-                  canDrag
-                    ? (event) => {
-                        const dragIds = getDragTodoIds(todo.id);
-                        event.dataTransfer.setData('text/todo-ids', JSON.stringify(dragIds));
-                        onDragStart(todo.id)(event);
-                      }
-                    : undefined
-                }
-                onDragEnd={canDrag ? onDragEnd : undefined}
-                onTouchStart={(e) => {
-                  if (isSelectionMode) {
-                    handleSelectionTouchStart(todo.id, e);
-                    return;
-                  }
-                  handleItemTouchStart(e);
-                  canDrag && onTouchStart ? onTouchStart(todo.id)(e) : undefined;
-                }}
-                onTouchEnd={(e) => {
-                  if (isSelectionMode) {
-                    handleSelectionTouchEnd();
-                    return;
-                  }
-                  handleItemTouchEnd(todo.id)(e);
-                  canDrag && onTouchEnd ? onTouchEnd() : undefined;
-                }}
-                onTouchMove={
-                  isSelectionMode
-                    ? handleSelectionTouchMove
-                    : canDrag && onTouchMove
-                      ? onTouchMove
-                      : undefined
-                }
-                className={`group relative flex items-start justify-between gap-3 rounded-xl border px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/30 transition hover:border-indigo-500/60 hover:bg-slate-900/90 ${
-                  isSelected
-                    ? 'border-emerald-400/70 bg-emerald-500/10'
-                    : 'border-slate-700 bg-slate-900/80'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {isCheckbox ? (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onToggleComplete(todo.id);
-                      }}
-                      aria-pressed={todo.completed}
-                      aria-label={todo.completed ? 'Marcar como pendente' : 'Marcar como concluída'}
-                      className={`flex h-5 w-5 items-center justify-center rounded-full border text-[0.65rem] transition ${
-                        todo.completed
-                          ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200'
-                          : 'border-slate-500 bg-slate-900/80 text-slate-400 hover:border-emerald-400/70'
-                      }`}
-                    >
-                      {todo.completed && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
-                    </button>
-                  ) : (
-                    <span
-                      className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 text-[0.5rem] font-semibold uppercase text-slate-400"
-                      aria-label="Input de texto"
-                      title="Texto"
-                    >
-                      TXT
-                    </span>
-                  )}
-                  <div className="flex flex-col gap-1">
-                    {isEditing ? (
-                      <div className="flex flex-col gap-2">
-                        <input
-                          type="text"
-                          value={editingText}
-                          onChange={(event) => setEditingText(event.target.value)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                              event.preventDefault();
-                              handleSaveEditing(todo);
-                            }
-                            if (event.key === 'Escape') {
-                              event.preventDefault();
-                              handleCancelEditing();
-                            }
-                          }}
-                          className="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                          placeholder="Atualize o texto"
-                          autoFocus
-                        />
-                        {isCheckbox && (
-                          <div className="flex flex-wrap gap-2">
-                            <input
-                              type="text"
-                              value={editingCategory}
-                              onChange={(event) => setEditingCategory(event.target.value)}
-                              className="min-w-[140px] flex-1 rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-[0.7rem] text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none"
-                              placeholder="Categoria"
-                            />
-                            <input
-                              type="date"
-                              value={editingDueDate}
-                              onChange={(event) => setEditingDueDate(event.target.value)}
-                              className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-[0.7rem] text-slate-100 focus:border-indigo-400 focus:outline-none"
-                            />
-                          </div>
-                        )}
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleSaveEditing(todo)}
-                            disabled={isSaveDisabled}
-                            className={`rounded-lg border px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-                              isSaveDisabled
-                                ? 'border-slate-700 bg-slate-900/60 text-slate-500'
-                                : 'border-emerald-400/60 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30'
-                            }`}
-                          >
-                            Salvar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleCancelEditing}
-                            className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-slate-200 transition hover:bg-slate-900"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <span
-                          className={`${
-                            isCompleted ? 'text-slate-500 line-through' : 'text-slate-100'
-                          }`}
-                        >
-                          {todo.text}
-                        </span>
-                        {showMeta && (
-                          <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-400">
-                            {todo.inputType === 'text' && (
-                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                                Texto
-                              </span>
-                            )}
-                            {todo.category && (
-                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                                {todo.category}
-                              </span>
-                            )}
-                            {todo.dueDate && (
-                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                                {todo.dueDate}
-                              </span>
-                            )}
-                            {islandLabel && (
-                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5">
-                                {islandLabel}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isSelectionMode && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        toggleTodoSelection(todo.id);
-                      }}
-                      aria-pressed={isSelected}
-                      className={`flex h-6 w-6 items-center justify-center rounded-full border text-[0.6rem] transition ${
-                        isSelected
-                          ? 'border-emerald-300 bg-emerald-500/20 text-emerald-100'
-                          : 'border-slate-700 bg-slate-900/70 text-slate-400 hover:border-emerald-300/60'
-                      }`}
-                      title={isSelected ? 'Desmarcar' : 'Selecionar'}
-                    >
-                      {isSelected ? '✓' : ''}
-                    </button>
-                  )}
-                  {isEditMode && canEdit && (
-                    <button
-                      type="button"
-                      onClick={() => (isEditing ? handleCancelEditing() : handleStartEditing(todo))}
-                      className={`flex h-7 w-7 items-center justify-center rounded-full border text-[0.7rem] transition ${
-                        isEditing
-                          ? 'border-amber-300/70 bg-amber-500/20 text-amber-100'
-                          : 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-300/60'
-                      }`}
-                      title={isEditing ? 'Cancelar edição' : 'Editar input'}
-                    >
-                      ✏️
-                    </button>
-                  )}
-                  <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-                    {todo.phase ? phaseLabels[todo.phase] : 'Sem fase'}
-                  </span>
-                </div>
-                {swipeDeleteId === todo.id && (
-                  <div
-                    className="absolute inset-y-0 right-0 flex items-center justify-center gap-2 rounded-r-xl bg-red-500/20 border-l border-red-500/50 px-3 pl-4"
-                    role="region"
-                    aria-label="Ações de deleção"
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onDeleteTodo?.(todo.id);
-                        setSwipeDeleteId(null);
-                      }}
-                      className="flex h-6 w-6 items-center justify-center rounded-full border border-red-400 bg-red-500/30 text-[0.7rem] text-red-200 transition hover:bg-red-500/50"
-                      title="Deletar input"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
+        </div>
       </div>
 
-      {/* Controles de Paginação */}
+      {/* Selection Mode Toolbar */}
+      {state.isSelectionMode && (
+        <TodoBatchActions
+          isSelectionMode={state.isSelectionMode}
+          selectedCount={selectedCount}
+          allDisplayedSelected={allDisplayedSelected}
+          batchIsland={state.batchIsland as IslandId | ''}
+          visibleIslandIds={visibleIslandIds}
+          islandNames={islandNames}
+          onToggleSelectDisplayed={handleToggleSelectDisplayed}
+          onClearSelection={clearSelection}
+          onBatchDelete={handleBatchDelete}
+          onBatchAssignPhase={handleBatchAssignPhase}
+          onBatchAssignIsland={handleBatchAssignIsland}
+          onBatchMoveToView={handleBatchMoveToView}
+          onBatchIslandChange={setBatchIsland}
+        />
+      )}
+
+      {/* Todo List */}
+      <TodoList
+        todos={filteredTodos}
+        displayedTodos={displayedTodos}
+        isEditMode={state.isEditMode}
+        isSelectionMode={state.isSelectionMode}
+        editingTodoId={state.editingTodoId}
+        editingText={state.editingText}
+        editingCategory={state.editingCategory}
+        editingDueDate={state.editingDueDate}
+        swipeDeleteId={state.swipeDeleteId}
+        selectedTodoIds={state.selectedTodoIds}
+        islandNames={islandNames}
+        onToggleComplete={onToggleComplete}
+        onToggleSelect={toggleSelect}
+        onStartEdit={handleStartEditing}
+        onUpdateEditText={handleUpdateEditText}
+        onUpdateEditCategory={handleUpdateEditCategory}
+        onUpdateEditDueDate={handleUpdateEditDueDate}
+        onSaveEdit={handleSaveEditing}
+        onCancelEdit={cancelEditing}
+        onDelete={onDeleteTodo ?? (() => {})}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onTouchMove={onTouchMove}
+        onSelectionTouchStart={handleSelectionTouchStart}
+        onSelectionTouchMove={handleSelectionTouchMove}
+        onSelectionTouchEnd={handleSelectionTouchEnd}
+        emptyTitle={
+          selectedPhase
+            ? 'Nada salvo nesta fase'
+            : islandLabel
+              ? 'Nada salvo nesta ilha'
+              : 'Nada salvo'
+        }
+        emptyDescription={
+          selectedPhase
+            ? `Arraste um input para ${phaseLabels[selectedPhase]} ou crie um novo.`
+            : islandLabel
+              ? `Arraste um input para ${islandLabel} ou crie um novo.`
+              : 'Adcione ou selecione uma fase lunar.'
+        }
+      />
+
+      {/* Pagination */}
       {filteredTodos.length > ITEMS_PER_PAGE && (
         <div className="mt-3 flex items-center justify-between gap-2">
           <button
             type="button"
-            onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
-            disabled={currentPage === 0}
+            onClick={() => setPage(Math.max(0, state.currentPage - 1))}
+            disabled={state.currentPage === 0}
             className={`rounded-lg px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-              currentPage === 0
+              state.currentPage === 0
                 ? 'border border-slate-700 bg-slate-900/60 text-slate-500 cursor-not-allowed'
                 : 'border border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
             }`}
@@ -1266,7 +803,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
 
           <div className="flex items-center gap-2">
             <span className="text-[0.65rem] font-semibold text-slate-300">
-              {currentPage + 1} / {totalPages}
+              {state.currentPage + 1} / {totalPages}
             </span>
             <span className="text-[0.6rem] text-slate-400">
               ({startIndex + 1}-{Math.min(endIndex, filteredTodos.length)} de {filteredTodos.length}
@@ -1276,10 +813,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = ({
 
           <button
             type="button"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
-            disabled={currentPage >= totalPages - 1}
+            onClick={() => setPage(Math.min(totalPages - 1, state.currentPage + 1))}
+            disabled={state.currentPage >= totalPages - 1}
             className={`rounded-lg px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
-              currentPage >= totalPages - 1
+              state.currentPage >= totalPages - 1
                 ? 'border border-slate-700 bg-slate-900/60 text-slate-500 cursor-not-allowed'
                 : 'border border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
             }`}
