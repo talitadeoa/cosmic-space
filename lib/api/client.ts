@@ -8,22 +8,7 @@
 'use client';
 
 import { ApiError, type ApiResponse } from '@/types/api';
-
-/**
- * Obtém URL base dependendo do ambiente
- * Web: origem atual
- * Mobile (Capacitor): API_URL do env
- */
-function getBaseUrl(): string {
-  if (typeof window === 'undefined') return '';
-  
-  // TODO: Quando implementar Capacitor, adicionar:
-  // if (Capacitor.isNativePlatform()) {
-  //   return process.env.NEXT_PUBLIC_API_URL || 'https://api.flua.app';
-  // }
-  
-  return window.location.origin;
-}
+import { getBaseUrl } from '@/lib/utils/urls';
 
 /**
  * Cliente HTTP genérico

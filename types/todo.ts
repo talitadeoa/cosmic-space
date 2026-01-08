@@ -55,7 +55,7 @@ export function isValidIsland(value: unknown): value is IslandId {
   );
 }
 
-// isValidTodoInputType está em types/inputs.ts
+// isValidTodoInputType está em ./inputs.ts - usar de lá para evitar duplicação
 
 /**
  * Constantes

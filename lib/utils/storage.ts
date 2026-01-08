@@ -3,22 +3,54 @@
  * 
  * Abstração sobre localStorage que funciona em Web e Mobile.
  * Automaticamente usa Capacitor Preferences quando disponível.
+ * 
+ * USO:
+ * ```ts
+ * // Síncrono (Web - para inicialização de state)
+ * const value = storage.get('key', defaultValue);
+ * storage.set('key', value);
+ * 
+ * // Assíncrono (Capacitor-ready)
+ * const value = await storage.getAsync('key', defaultValue);
+ * await storage.setAsync('key', value);
+ * ```
  */
 
 'use client';
 
-import { useState } from 'react';
+// Detecta ambiente Capacitor
+const isCapacitor = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return !!(window as any).Capacitor?.isNativePlatform?.();
+};
+
+// Cache do módulo Preferences
+let PreferencesModule: any = null;
+
+const getPreferences = async (): Promise<any> => {
+  if (!PreferencesModule && isCapacitor()) {
+    try {
+      // @ts-ignore - Import dinâmico do Capacitor (só disponível quando instalado)
+      const mod = await import('@capacitor/preferences');
+      PreferencesModule = mod.Preferences;
+    } catch {
+      // Capacitor não instalado - usa localStorage como fallback
+      PreferencesModule = null;
+    }
+  }
+  return PreferencesModule;
+};
 
 /**
  * Storage class com fallback automático
  * Web: localStorage
- * Mobile: Capacitor Preferences (quando implementado)
+ * Mobile: Capacitor Preferences
  */
 class StorageManager {
   private isClient = typeof window !== 'undefined';
 
   /**
-   * Obtém valor do storage
+   * Obtém valor do storage (síncrono - localStorage)
    */
   get<T>(key: string, defaultValue: T): T {
     if (!this.isClient) return defaultValue;
@@ -35,7 +67,28 @@ class StorageManager {
   }
 
   /**
-   * Salva valor no storage
+   * Obtém valor do storage (assíncrono - Capacitor-ready)
+   */
+  async getAsync<T>(key: string, defaultValue: T): Promise<T> {
+    if (!this.isClient) return defaultValue;
+
+    const Preferences = await getPreferences();
+
+    if (Preferences) {
+      try {
+        const { value } = await Preferences.get({ key });
+        if (value === null) return defaultValue;
+        return JSON.parse(value) as T;
+      } catch {
+        return defaultValue;
+      }
+    }
+
+    return this.get(key, defaultValue);
+  }
+
+  /**
+   * Salva valor no storage (síncrono - localStorage)
    */
   set<T>(key: string, value: T): boolean {
     if (!this.isClient) return false;
@@ -51,7 +104,28 @@ class StorageManager {
   }
 
   /**
-   * Remove valor do storage
+   * Salva valor no storage (assíncrono - Capacitor-ready)
+   */
+  async setAsync<T>(key: string, value: T): Promise<boolean> {
+    if (!this.isClient) return false;
+
+    const Preferences = await getPreferences();
+
+    if (Preferences) {
+      try {
+        await Preferences.set({ key, value: JSON.stringify(value) });
+        return true;
+      } catch (error) {
+        console.error(`[Storage] Erro Capacitor ao salvar "${key}":`, error);
+        return false;
+      }
+    }
+
+    return this.set(key, value);
+  }
+
+  /**
+   * Remove valor do storage (síncrono)
    */
   remove(key: string): boolean {
     if (!this.isClient) return false;
@@ -63,6 +137,27 @@ class StorageManager {
       console.error(`[Storage] Erro ao remover "${key}":`, error);
       return false;
     }
+  }
+
+  /**
+   * Remove valor do storage (assíncrono - Capacitor-ready)
+   */
+  async removeAsync(key: string): Promise<boolean> {
+    if (!this.isClient) return false;
+
+    const Preferences = await getPreferences();
+
+    if (Preferences) {
+      try {
+        await Preferences.remove({ key });
+        return true;
+      } catch (error) {
+        console.error(`[Storage] Erro ao remover "${key}":`, error);
+        return false;
+      }
+    }
+
+    return this.remove(key);
   }
 
   /**
@@ -102,50 +197,31 @@ class StorageManager {
  */
 export const storage = new StorageManager();
 
-// ============================================
-// CAPACITOR-READY ASYNC STORAGE
-// (Use quando Capacitor for instalado)
-// ============================================
-
 /**
- * Storage assíncrono compatível com Capacitor Preferences
- * Placeholder até @capacitor/preferences ser instalado
+ * Chaves de storage usadas no app
+ * Centraliza nomes para evitar typos
  */
-export const asyncStorage = {
-  async get<T>(key: string, defaultValue: T): Promise<T> {
-    // TODO: Quando instalar @capacitor/preferences:
-    // import { Preferences } from '@capacitor/preferences';
-    // const { value } = await Preferences.get({ key });
-    // return value ? JSON.parse(value) : defaultValue;
-    
-    return storage.get(key, defaultValue);
-  },
+export const STORAGE_KEYS = {
+  AUTH_STATE: 'flua-auth-state',
+  TODOS: 'flua_todos_salvos',
+  PLANET_STATE: 'flua_planet_state',
+  PLANET_META: 'flua_planet_meta',
+  PHASE_INPUTS: 'flua_phase_inputs',
+  MENSTRUAL_RECORDS: 'menstrual_records',
+  EMOTIONS: 'flua_emotions',
+  DEVICE_ID: 'flua_device_id',
+  SFX_ENABLED: 'flua_sfx_enabled',
+  LUNATIONS_CACHE: 'flua_lunations_cache',
+} as const;
 
-  async set<T>(key: string, value: T): Promise<void> {
-    // TODO: Quando instalar @capacitor/preferences:
-    // await Preferences.set({ key, value: JSON.stringify(value) });
-    
-    storage.set(key, value);
-  },
-
-  async remove(key: string): Promise<void> {
-    // TODO: Quando instalar @capacitor/preferences:
-    // await Preferences.remove({ key });
-    
-    storage.remove(key);
-  },
-};
-
-// ============================================
-// REACT HOOK
-// ============================================
+export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
 
 /**
  * Hook para usar storage com React state
  * (compatível com useLocalStorage existente)
  */
 export function useStorage<T>(key: string, initialValue: T) {
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  const [storedValue, setStoredValue] = React.useState<T>(() => {
     return storage.get(key, initialValue);
   });
 
@@ -162,3 +238,5 @@ export function useStorage<T>(key: string, initialValue: T) {
   return [storedValue, setValue] as const;
 }
 
+// React import (apenas se usado)
+import React from 'react';

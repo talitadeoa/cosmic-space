@@ -53,7 +53,7 @@ export function useInsights<T extends GenericInsight>(config: InsightConfig) {
    */
   const fetch = useCallback(
     async (params?: Record<string, any>) => {
-      setState((prev: InsightState<T>) => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
         const data = await apiClient.post<T[]>(endpoint, params);
@@ -73,7 +73,7 @@ export function useInsights<T extends GenericInsight>(config: InsightConfig) {
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Erro ao buscar insights';
         
-        setState((prev: InsightState<T>) => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           error: message,
@@ -90,12 +90,12 @@ export function useInsights<T extends GenericInsight>(config: InsightConfig) {
    */
   const save = useCallback(
     async (insight: Omit<T, 'id' | 'createdAt' | 'updatedAt'>) => {
-      setState((prev: InsightState<T>) => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
         const saved = await apiClient.post<T>(`${endpoint}/save`, insight);
 
-        setState((prev: InsightState<T>) => {
+        setState((prev) => {
           const updated = [saved, ...prev.data];
           
           // Atualizar cache
@@ -114,7 +114,7 @@ export function useInsights<T extends GenericInsight>(config: InsightConfig) {
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Erro ao salvar insight';
         
-        setState((prev: InsightState<T>) => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           error: message,
@@ -131,13 +131,13 @@ export function useInsights<T extends GenericInsight>(config: InsightConfig) {
    */
   const remove = useCallback(
     async (id: string) => {
-      setState((prev: InsightState<T>) => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
         await apiClient.delete(`${endpoint}/${id}`);
 
-        setState((prev: InsightState<T>) => {
-          const updated = prev.data.filter((item: T) => item.id !== id);
+        setState((prev) => {
+          const updated = prev.data.filter((item) => item.id !== id);
           
           // Atualizar cache
           if (storageKey) {
@@ -153,7 +153,7 @@ export function useInsights<T extends GenericInsight>(config: InsightConfig) {
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Erro ao deletar insight';
         
-        setState((prev: InsightState<T>) => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           error: message,
@@ -169,7 +169,7 @@ export function useInsights<T extends GenericInsight>(config: InsightConfig) {
    * Limpar erro
    */
   const clearError = useCallback(() => {
-    setState((prev: InsightState<T>) => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   return {

@@ -2,9 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { RadioPlayer } from '@/components/audio';
 import { NavMenu } from '@/components/navigation';
-import { SfxProvider, AuthProvider } from '@/components/providers';
-import { AutoSyncLunar } from '@/components/sync';
-import { GalaxySunsSync } from '@/components/sync';
+import { AppProviders } from '@/components/providers';
+import { APP_URLS } from '@/lib/utils/urls';
 
 export const metadata: Metadata = {
   title: 'Flua',
@@ -21,13 +20,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
-    url: 'https://flua.vercel.app',
+    url: APP_URLS.PRODUCTION,
     siteName: 'Flua',
     title: 'Flua',
     description: 'Conecte-se com os ciclos lunares e menstruais.',
     images: [
       {
-        url: 'https://flua.vercel.app/og-image.png',
+        url: `${APP_URLS.PRODUCTION}${APP_URLS.OG_IMAGE}`,
         width: 1200,
         height: 630,
         alt: 'Flua',
@@ -38,13 +37,13 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Flua',
     description: 'Conecte-se com os ciclos lunares e menstruais.',
-    images: ['https://flua.vercel.app/og-image.png'],
+    images: [`${APP_URLS.PRODUCTION}${APP_URLS.OG_IMAGE}`],
   },
   icons: {
-    icon: '/fluafavicon.ico',
-    apple: '/flua-icon-192.jpeg',
+    icon: APP_URLS.FAVICON,
+    apple: APP_URLS.APPLE_ICON,
   },
-  manifest: '/manifest.json',
+  manifest: APP_URLS.MANIFEST,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -53,15 +52,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <body className="min-h-[100dvh] bg-space-dark bg-cosmic-gradient text-slate-100">
-        <AuthProvider>
-          <SfxProvider>
-            <NavMenu showDevRoutes={isDev} />
-            <AutoSyncLunar />
-            <GalaxySunsSync autoSync={true} />
-            {children}
-            <RadioPlayer />
-          </SfxProvider>
-        </AuthProvider>
+        <AppProviders>
+          <NavMenu showDevRoutes={isDev} />
+          {children}
+          <RadioPlayer />
+        </AppProviders>
       </body>
     </html>
   );

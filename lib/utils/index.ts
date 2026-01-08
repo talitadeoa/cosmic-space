@@ -1,31 +1,6 @@
 /**
- * 🛠️ Utils - Export Central
- * 
- * Utilitários centralizados em lib/utils
+ * 🧰 Lib Utils - Export Central
  */
 
-export { storage, asyncStorage, useStorage } from './storage';
-export { 
-  cn, 
-  formatRelativeTime, 
-  formatDate, 
-  formatDateTime,
-  truncate,
-  capitalize,
-  generateId,
-  debounce,
-  throttle,
-  getResolvedTimezone,
-  formatTimePtBr,
-  formatDateTimePtBr,
-  formatSavedAtLabel,
-} from './format';
-export {
-  isNativePlatform,
-  getPlatform,
-  isIOS,
-  isAndroid,
-  isWeb,
-  getBaseUrl,
-  convertFileSrc,
-} from './capacitor';
+export * from './storage';
+export * from './urls';

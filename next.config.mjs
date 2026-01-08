@@ -1,8 +1,24 @@
 // import path from 'path';
 
+/**
+ * Detecta se é build para mobile (Capacitor)
+ * Use: MOBILE_BUILD=true npm run build
+ */
+const isMobileBuild = process.env.MOBILE_BUILD === 'true';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // Para Capacitor, precisa de static export
+  // Ativar apenas para builds mobile para não afetar Vercel
+  ...(isMobileBuild && {
+    output: 'export',
+    trailingSlash: true,
+    images: {
+      unoptimized: true, // Image optimization não funciona em static
+    },
+  }),
 
   // SEO e Branding
   async headers() {

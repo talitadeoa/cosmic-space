@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CelestialObject } from '../components/CelestialObject';
-import { Card } from '../components/Card';
+import { Card } from '@/components/shared/cosmos/Card';
 import type { ScreenProps } from '../types';
 
 const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
-import { Card } from '@/app/cosmos/components/Card';
+import { Card } from '@/components/shared/cosmos/Card';
 import TodoInput, { TodoItem as ParsedTodoItem } from '@/app/cosmos/components/TodoInput';
 import { type MoonPhase, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
 import { PHASE_VIBES } from '@/app/cosmos/utils/phaseVibes';
