@@ -13,6 +13,9 @@ import {
   ErrorState,
   NewPostForm,
   StreamList,
+  CommunityStats,
+  TrendingTopics,
+  ActiveMembers,
 } from './components';
 
 // =============================================================================
@@ -424,7 +427,7 @@ const ComunidadePage = () => {
   // ---------------------------------------------------------------------------
   return (
     <SpacePageLayout className="min-h-screen">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-12 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-12 sm:px-6">
         {/* Header compacto */}
         <CommunityHeader
           profile={profile}
@@ -436,25 +439,31 @@ const ComunidadePage = () => {
           onSearchClear={clearSearch}
         />
 
+        {/* Community Stats - visão geral da comunidade */}
+        <section className="mt-6">
+          <CommunityStats />
+        </section>
+
         {/* Page intro */}
-        <section className="mt-6" aria-labelledby="page-title">
+        <section className="mt-8" aria-labelledby="page-title">
           <p className="text-xs uppercase tracking-widest text-slate-500">Comunidade</p>
           <h1
             id="page-title"
-            className="mt-1 text-xl font-semibold leading-tight text-white sm:text-2xl"
+            className="mt-1 text-2xl font-bold leading-tight text-white sm:text-3xl"
           >
             Conecte-se através de{' '}
             <span className="bg-gradient-to-r from-sky-300 via-indigo-300 to-rose-300 bg-clip-text text-transparent">
               histórias
             </span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-400">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base">
             Descubra um espaço onde cada publicação é uma oportunidade de conexão.
+            Compartilhe suas reflexões, acompanhe ciclos e cresça junto com a tripulação.
           </p>
         </section>
 
         {/* Filtros por tipo */}
-        <section className="mt-5" aria-label="Filtros de tipo">
+        <section className="mt-6" aria-label="Filtros de tipo">
           <CategoryChips<PostType>
             items={TYPE_FILTERS}
             activeItem={activeType}
@@ -495,13 +504,20 @@ const ComunidadePage = () => {
                 #{activeTag}
               </span>
             )}
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="rounded-full border border-slate-700/70 bg-slate-800/50 px-3 py-1 text-slate-300 transition-colors hover:bg-slate-700/50"
+            >
+              Limpar filtros
+            </button>
           </div>
         )}
 
         {/* Main content grid */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
           {/* Feed principal */}
-          <main className="space-y-5">
+          <main className="space-y-6">
             {/* Error state */}
             {loadingState === 'error' && (
               <ErrorState
@@ -564,7 +580,7 @@ const ComunidadePage = () => {
           </main>
 
           {/* Sidebar (desktop) / Stacked (mobile) */}
-          <aside className="space-y-5">
+          <aside className="space-y-6">
             {/* New Post Form */}
             <NewPostForm
               form={postForm}
@@ -572,6 +588,14 @@ const ComunidadePage = () => {
               error={postError}
               onChange={handlePostChange}
               onSubmit={submitPost}
+            />
+
+            {/* Active Members */}
+            <ActiveMembers />
+
+            {/* Trending Topics */}
+            <TrendingTopics
+              onTopicClick={(topic) => setActiveTag(topic.name)}
             />
 
             {/* Streams */}

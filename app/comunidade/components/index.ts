@@ -12,3 +12,6 @@ export * from './EmptyState';
 export * from './ErrorState';
 export * from './NewPostForm';
 export * from './StreamCard';
+export * from './CommunityStats';
+export * from './TrendingTopics';
+export * from './ActiveMembers';
