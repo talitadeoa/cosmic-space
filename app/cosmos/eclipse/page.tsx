@@ -13,7 +13,7 @@ const EclipsePage = () => {
     <AuthGate chatButtonSize="compact">
       <SpacePageLayout
         className="px-4 py-12 sm:px-6 lg:px-8"
-        onBackgroundClick={() => router.push('/cosmos/home')}
+        onBackgroundClick={() => router.push('/cosmos')}
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(79,70,229,0.25),transparent_60%),radial-gradient(circle_at_bottom,rgba(15,118,110,0.2),transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:26px_26px]" />

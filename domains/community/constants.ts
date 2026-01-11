@@ -1,1 +1,1 @@
-// Constantes do domínio community
+export {};

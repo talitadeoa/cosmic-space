@@ -176,7 +176,7 @@ export function usePlanetTodosV2(): UsePlanetTodosReturn {
             version: item.version,
             updatedAt: item.updatedAt,
           })) ?? [],
-          conflicts: result?.conflicts ?? [],
+          conflicts: result?.conflicts?.map((c) => c.id) ?? [],
         };
       } catch (error) {
         console.debug('Push todos falhou:', error);
@@ -185,7 +185,7 @@ export function usePlanetTodosV2(): UsePlanetTodosReturn {
     },
 
     // PULL: buscar mudanças do servidor
-    pull: async (_cursor: number | null): Promise<PullResult<SyncTodoItem[]>> => {
+    pull: async (_cursor: number | null): Promise<PullResult<SavedTodo[]>> => {
       if (!user?.userId) {
         return { data: null, cursor: null, version: 0 };
       }
@@ -193,10 +193,30 @@ export function usePlanetTodosV2(): UsePlanetTodosReturn {
       try {
         const result = await pullTodoChanges(user.userId);
         
+        // Converter SyncTodoItem[] para SavedTodo[]
+        const todos: SavedTodo[] = (result.items ?? []).map((item) => {
+          const payload = item.payload;
+          return {
+            id: item.id,
+            text: payload.content,
+            completed: payload.inputType === 'checkbox' ? Boolean(payload.completed) : false,
+            depth: Number.isFinite(payload.depth) ? Number(payload.depth) : 0,
+            inputType: payload.inputType === 'text' ? 'text' : 'checkbox',
+            category: payload.category ?? undefined,
+            dueDate: payload.dueDate ?? undefined,
+            islandId: isValidIsland(payload.islandId) ? payload.islandId : undefined,
+            phase: isValidPhase(payload.phase) ? payload.phase : undefined,
+            createdAt: payload.createdAt ?? new Date().toISOString(),
+            updatedAt: item.updatedAt,
+            deletedAt: item.deletedAt,
+            version: item.version,
+          };
+        });
+        
         return {
-          data: result.items ?? null,
+          data: todos.length > 0 ? todos : null,
           cursor: result.cursor ?? null,
-          version: result.version ?? 0,
+          version: result.cursor ?? 0,
         };
       } catch (error) {
         console.debug('Pull todos falhou:', error);
@@ -205,8 +225,11 @@ export function usePlanetTodosV2(): UsePlanetTodosReturn {
     },
 
     // MERGE: combinar local + servidor
-    merge: (local: SavedTodo[], remote: SyncTodoItem[] | null): SavedTodo[] => {
-      return mergeTodos(local, remote);
+    merge: (local: SavedTodo[], remote: SavedTodo[] | null): SavedTodo[] => {
+      if (!remote || remote.length === 0) {
+        return local;
+      }
+      return remote;
     },
 
     // STORAGE LOCAL

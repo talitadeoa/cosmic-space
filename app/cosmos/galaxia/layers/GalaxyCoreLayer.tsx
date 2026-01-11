@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/components/shared/cosmos/Card';
+import { Card } from '@/app/cosmos/components/Card';
 import { GalaxyInnerView } from '@/app/cosmos/components/GalaxyInnerView';
 
 type GalaxyCoreLayerProps = {

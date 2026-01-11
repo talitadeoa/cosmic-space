@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CelestialObject } from '../components/CelestialObject';
-import { Card } from '@/components/shared/cosmos/Card';
+import { Card } from '@/app/cosmos/components/Card';
 import type { ScreenProps } from '../types';
 
 const PlanetCardStandaloneScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {

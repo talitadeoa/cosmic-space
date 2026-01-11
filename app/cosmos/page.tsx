@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { SpaceBackground } from './components/SpaceBackground';
 import { CelestialObject } from './components/CelestialObject';
+import { HomeAlternativa } from './components/HomeAlternativa';
 import { YearProvider, useYear } from './context/YearContext';
 
 import type { ScreenId, FocusState, ScreenProps, CelestialType, CelestialSize } from './types';
@@ -50,6 +51,7 @@ const screens: Record<ScreenId, React.FC<ScreenProps>> = {
 const CosmosPageContent: React.FC = () => {
   const [screenStack, setScreenStack] = useState<ScreenId[]>(['home']);
   const [focusYear, setFocusYear] = useState<number | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<'interactive' | 'alternative'>('interactive');
   const currentScreen = screenStack[screenStack.length - 1];
 
   const [focus, setFocus] = useState<FocusState | null>(null);
@@ -119,6 +121,29 @@ const CosmosPageContent: React.FC = () => {
   const CurrentScreen = screens[currentScreen];
   const isSidePlanetCard = currentScreen === 'sidePlanetCard';
 
+  // Se está no modo alternativo e na tela home, mostrar alternativa
+  if (viewMode === 'alternative' && currentScreen === 'home') {
+    return (
+      <div className="relative min-h-[100dvh] overflow-hidden text-slate-50">
+        <SpaceBackground />
+
+        <div className="relative z-10">
+          {/* Toggle de visualização */}
+          <div className="absolute top-4 left-4 right-4 sm:left-6 sm:right-6 z-50 flex justify-center">
+            <button
+              onClick={() => setViewMode('interactive')}
+              className="flex items-center gap-2 rounded-full border border-indigo-300/40 bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/30"
+            >
+              ✨ Modo interativo
+            </button>
+          </div>
+
+          <HomeAlternativa onClose={() => setViewMode('interactive')} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="relative min-h-[100dvh] overflow-hidden text-slate-50"
@@ -165,8 +190,20 @@ const CosmosPageContent: React.FC = () => {
       </AnimatePresence>
 
       <div className="relative z-10 flex min-h-[100dvh] flex-col">
-        <div className="pointer-events-none absolute top-2 sm:top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-900/60 px-3 sm:px-4 py-1 text-[0.65rem] sm:text-xs text-slate-200/70">
-          Tela: <span className="font-semibold">{currentScreen}</span>
+        <div className="absolute top-2 sm:top-4 left-1/2 right-4 z-20 -translate-x-1/2 flex items-center justify-center gap-3">
+          <div className="pointer-events-none rounded-full bg-slate-900/60 px-3 sm:px-4 py-1 text-[0.65rem] sm:text-xs text-slate-200/70">
+            Tela: <span className="font-semibold">{currentScreen}</span>
+          </div>
+
+          {currentScreen === 'home' && (
+            <button
+              onClick={() => setViewMode(viewMode === 'interactive' ? 'alternative' : 'interactive')}
+              className="rounded-full border border-indigo-300/40 bg-indigo-500/20 px-3 py-1 text-[0.65rem] sm:text-xs font-semibold text-indigo-100 transition hover:bg-indigo-500/30"
+              title={viewMode === 'interactive' ? 'Mostrar visualização com hotspots' : 'Mostrar modo interativo'}
+            >
+              {viewMode === 'interactive' ? '🗺️ Alternativa' : '✨ Interativo'}
+            </button>
+          )}
         </div>
 
         <div

@@ -41,7 +41,7 @@ const SolPage = () => {
   const router = useRouter();
 
   const handleBackgroundClick = () => {
-    router.push('/cosmos/home');
+    router.push('/cosmos');
   };
 
   return (

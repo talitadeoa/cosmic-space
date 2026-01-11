@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/components/shared/cosmos/Card';
+import { Card } from '@/app/cosmos/components/Card';
 import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
 import type { PhaseStat } from '../../types';
 

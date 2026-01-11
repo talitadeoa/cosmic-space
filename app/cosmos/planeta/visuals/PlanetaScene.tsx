@@ -12,7 +12,7 @@ export const PlanetaScene: React.FC<PlanetaSceneProps> = ({ children }) => {
   const router = useRouter();
 
   return (
-    <SpacePageLayout onBackgroundClick={() => router.push('/cosmos/home')}>
+    <SpacePageLayout onBackgroundClick={() => router.push('/cosmos')}>
       {children}
     </SpacePageLayout>
   );

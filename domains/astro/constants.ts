@@ -1,1 +1,1 @@
-// Constantes do domínio astro
+export {};

@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -46,18 +48,23 @@ const HOTSPOTS = [
   },
 ];
 
-export default function HomeAlternativaPage() {
+interface HomeAlternativaProps {
+  onClose?: () => void;
+}
+
+export const HomeAlternativa: React.FC<HomeAlternativaProps> = ({ onClose }) => {
   return (
-    <main className="min-h-[100dvh] px-4 py-10">
+    <div className="min-h-[100dvh] px-4 py-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <header className="text-center">
-          <p className="text-xs uppercase tracking-[0.45em] text-slate-300">Home alternativa</p>
+          <p className="text-xs uppercase tracking-[0.45em] text-slate-300">
+            Visualização alternativa
+          </p>
           <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
             Explore os elementos do cosmos
           </h1>
           <p className="mt-3 text-sm text-slate-200/80 md:text-base">
-            Clique nos planetas, luas, sol, galáxia e eclipse para navegar pelas rotas já
-            existentes.
+            Clique nos planetas, luas, sol, galáxia e eclipse para navegar pelas rotas.
           </p>
         </header>
 
@@ -97,11 +104,23 @@ export default function HomeAlternativaPage() {
           </div>
         </div>
 
+        {onClose && (
+          <div className="text-center">
+            <button
+              onClick={onClose}
+              className="rounded-lg border border-indigo-300/40 bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/30"
+            >
+              Voltar para visualização interativa
+            </button>
+          </div>
+        )}
+
         <div className="text-center text-xs text-slate-400">
-          Dica: ajuste a posição dos hotspots no arquivo para alinhar perfeitamente com a sua
-          imagem.
+          Dica: você pode alternar entre visualizações usando o botão no topo da tela
         </div>
       </div>
-    </main>
+    </div>
   );
-}
+};
+
+export default HomeAlternativa;

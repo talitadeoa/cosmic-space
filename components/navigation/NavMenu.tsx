@@ -10,7 +10,6 @@ type NavMenuProps = {
 };
 
 const baseRoutes = [
-  { href: '/cosmos/home', label: 'Home' },
   { href: '/cosmos', label: 'Cosmos' },
 ];
 

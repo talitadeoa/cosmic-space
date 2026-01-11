@@ -8,7 +8,7 @@ const LuaPage = () => {
   const router = useRouter();
 
   return (
-    <SpacePageLayout onBackgroundClick={() => router.push('/cosmos/home')}>
+    <SpacePageLayout onBackgroundClick={() => router.push('/cosmos')}>
       <LuaScreen />
     </SpacePageLayout>
   );

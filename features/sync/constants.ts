@@ -1,1 +1,1 @@
-// Constantes da feature sync
+export {};

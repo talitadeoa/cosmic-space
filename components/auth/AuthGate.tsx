@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { SpaceBackground } from '@/app/cosmos/components/SpaceBackground';
-import InputWindow from '@/components/shared/cosmos/InputWindow';
+import InputWindow from '@/app/cosmos/components/InputWindow';
 import { useAuth } from '@/hooks/useAuth';
 import AuthChatFlow from './AuthChatFlow';
 

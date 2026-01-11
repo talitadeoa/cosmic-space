@@ -1,1 +1,1 @@
-// Constantes do domínio lunar-cycle
+export {};
