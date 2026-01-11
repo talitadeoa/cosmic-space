@@ -19,10 +19,10 @@ const GalaxyBackgroundLayer: React.FC = () => {
   }, []);
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28px]">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28px] w-full h-full min-h-[400px]" style={{ position: 'relative' }}>
       {/* Fundo base enquanto carrega */}
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 w-full h-full"
         style={{
           background: `
             radial-gradient(ellipse 120% 100% at 50% 50%, 
@@ -31,6 +31,11 @@ const GalaxyBackgroundLayer: React.FC = () => {
               rgba(3, 0, 20, 1) 100%
             )
           `,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
         }}
       />
 
@@ -38,16 +43,18 @@ const GalaxyBackgroundLayer: React.FC = () => {
       {mounted && (
         <Suspense
           fallback={
-            <div className="absolute inset-0 bg-gradient-to-b from-[#030014] via-[#0a0820] to-[#030014]" />
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-[#030014] via-[#0a0820] to-[#030014]" />
           }
         >
-          <Galaxy3D className="opacity-60" />
+          <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+            <Galaxy3D className="opacity-60" />
+          </div>
         </Suspense>
       )}
 
       {/* Overlay para integração suave com UI */}
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 w-full h-full"
         style={{
           background: `
             radial-gradient(ellipse 60% 50% at 50% 50%, 

@@ -302,15 +302,31 @@ const GalaxyScene: React.FC = () => {
 // Componente principal exportado
 const Galaxy3D: React.FC<{ className?: string }> = ({ className }) => {
   return (
-    <div className={`absolute inset-0 ${className ?? ''}`}>
+    <div 
+      className={`absolute inset-0 w-full h-full ${className ?? ''}`} 
+      style={{ 
+        display: 'block',
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 0,
+        left: 0,
+      }}
+    >
       <Canvas
         camera={{ position: [0, 4, 8], fov: 60 }}
         gl={{ 
           antialias: true, 
           alpha: true,
           powerPreference: 'high-performance',
+          toneMappingExposure: 0.8,
         }}
         dpr={[1, 2]}
+        style={{ 
+          display: 'block',
+          width: '100%',
+          height: '100%',
+        }}
       >
         <color attach="background" args={['#030014']} />
         <fog attach="fog" args={['#030014', 10, 50]} />
