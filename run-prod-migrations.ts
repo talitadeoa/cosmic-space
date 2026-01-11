@@ -16,6 +16,7 @@ async function runMigrations() {
     const script11 = readFileSync(join(dbPath, '11-island-sync-alter.sql'), 'utf8');
     const script12 = readFileSync(join(dbPath, '12-planet-todos-indexes.sql'), 'utf8');
     const script13 = readFileSync(join(dbPath, '13-island-version-fix.sql'), 'utf8');
+    const script14 = readFileSync(join(dbPath, '14-user-emotions.sql'), 'utf8');
 
     console.log('⏳ Executando script 09: sync-changes...');
     await sql.unsafe(script09);
@@ -36,6 +37,10 @@ async function runMigrations() {
     console.log('⏳ Executando script 13: island-version-fix...');
     await sql.unsafe(script13);
     console.log('✅ Script 13 concluído\n');
+
+    console.log('⏳ Executando script 14: user-emotions...');
+    await sql.unsafe(script14);
+    console.log('✅ Script 14 concluído\n');
 
     console.log('🎉 Todos os scripts executados com sucesso!');
     await sql.end();
