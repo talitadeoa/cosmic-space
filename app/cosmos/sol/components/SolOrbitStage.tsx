@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
+import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
 const MOON_RING_RADIUS_PERCENT = 28;
@@ -59,10 +60,10 @@ const DIAGONAL_MOONS: Array<{
   angleDeg: number;
   floatOffset: number;
 }> = [
-  { phase: 'luaNova', angleDeg: 270, floatOffset: 3 },
-  { phase: 'luaCrescente', angleDeg: 0, floatOffset: -2 },
-  { phase: 'luaCheia', angleDeg: 90, floatOffset: -1 },
-  { phase: 'luaMinguante', angleDeg: 180, floatOffset: 1 },
+  { phase: 'luaNova', angleDeg: 0, floatOffset: 3 },
+  { phase: 'luaCrescente', angleDeg: 270, floatOffset: -2 },
+  { phase: 'luaCheia', angleDeg: 180, floatOffset: -1 },
+  { phase: 'luaMinguante', angleDeg: 90, floatOffset: 1 },
 ];
 
 type SolOrbitStageProps = {
@@ -79,7 +80,14 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   onOutsideClick,
 }) => {
   const [hoveredMoon, setHoveredMoon] = useState<MoonPhase | null>(null);
+  const [autoHighlightedMoon, setAutoHighlightedMoon] = useState<MoonPhase | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const earthPosRef = useRef<{ x: number; y: number; angleE: number }>({ x: 0, y: 0, angleE: 0 });
+  const proximityDistanceRef = useRef(60); // Distância de ativação do destaque
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressDelay = 500; // 500ms para toque longo
   const handleSpaceClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget) return;
@@ -281,6 +289,8 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       drawStaticWaveRing();
 
       const earthPos = getEarthPosition(time);
+      earthPosRef.current = earthPos; // Armazenar posição para verificação de proximidade
+      
       const moonPos = getMoonPosition(time, earthPos);
       updateMoonTrail(moonPos);
       drawMoonTrail();
@@ -298,6 +308,74 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       window.removeEventListener('resize', resize);
     };
   }, []);
+
+  // Efeito para detectar proximidade entre Terra e Luas
+  useEffect(() => {
+    const checkProximity = () => {
+      const earthPos = earthPosRef.current;
+      if (!earthPos) return;
+
+      const proximityDistance = proximityDistanceRef.current;
+      let closestPhase: MoonPhase | null = null;
+      let closestDistance = proximityDistance;
+
+      DIAGONAL_MOONS.forEach(({ phase, angleDeg }) => {
+        const rad = (angleDeg * Math.PI) / 180;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const parentRect = canvas.parentElement?.getBoundingClientRect();
+        if (!parentRect) return;
+
+        const size = Math.min(parentRect.width, parentRect.height);
+        const moonX = parentRect.width / 2 + (MOON_RING_RADIUS_PERCENT / 100) * size * Math.cos(rad);
+        const moonY = parentRect.height / 2 + (MOON_RING_RADIUS_PERCENT / 100) * size * Math.sin(rad);
+
+        const distance = Math.sqrt((earthPos.x - moonX) ** 2 + (earthPos.y - moonY) ** 2);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestPhase = phase;
+        }
+      });
+
+      setAutoHighlightedMoon(closestPhase);
+    };
+
+    const interval = setInterval(checkProximity, 50); // Verificar a cada 50ms
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handler para duplo clique - abre chat modal
+  const handleDoubleClick = (phase: MoonPhase) => {
+    setSelectedMoonPhase(phase);
+    setIsChatOpen(true);
+  };
+
+  // Handler para toque longo (mobile) - abre chat modal
+  const handleLongPressStart = (phase: MoonPhase) => {
+    longPressTimerRef.current = setTimeout(() => {
+      setSelectedMoonPhase(phase);
+      setIsChatOpen(true);
+    }, longPressDelay);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleChatSubmit = async () => {
+    setIsChatOpen(false);
+    setSelectedMoonPhase(null);
+  };
+
+  const handleChatClose = () => {
+    setIsChatOpen(false);
+    setSelectedMoonPhase(null);
+  };
 
   return (
     <div className="flex min-h-[100svh] w-full items-center justify-center overflow-hidden py-6 sm:py-10">
@@ -323,16 +401,20 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
           const x = 50 + MOON_RING_RADIUS_PERCENT * Math.cos(rad);
           const y = 50 + MOON_RING_RADIUS_PERCENT * Math.sin(rad);
           const moonInfo = MOON_EVENTS[phase];
-          const isHovered = hoveredMoon === phase;
+          const isManualHover = hoveredMoon === phase;
+          const isAutoHighlight = autoHighlightedMoon === phase;
+          const showHover = isManualHover || isAutoHighlight;
 
           const handleTouchStart = (e: React.TouchEvent) => {
             e.preventDefault();
             setHoveredMoon(phase);
+            handleLongPressStart(phase);
           };
 
           const handleTouchEnd = (e: React.TouchEvent) => {
             e.preventDefault();
             setHoveredMoon(null);
+            handleLongPressEnd();
           };
 
           return (
@@ -342,9 +424,22 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
               style={{ left: `${x}%`, top: `${y}%` }}
               onMouseEnter={() => setHoveredMoon(phase)}
               onMouseLeave={() => setHoveredMoon(null)}
+              onDoubleClick={() => handleDoubleClick(phase)}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleLongPressEnd}
             >
+              {/* Destaque visual quando Terra está próxima */}
+              {isAutoHighlight && (
+                <div 
+                  className="absolute inset-0 -m-3 rounded-full animate-pulse"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(56,189,248,0.4) 0%, rgba(56,189,248,0) 70%)',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                  }}
+                />
+              )}
+              
               <CelestialObject
                 type={phase}
                 size="md"
@@ -353,8 +448,12 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
                 floatOffset={floatOffset}
               />
 
-              {isHovered && (
-                <div className="absolute top-full mt-2 sm:mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm">
+              {showHover && (
+                <div 
+                  className={`absolute top-full mt-2 sm:mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm transition-all duration-300 ${
+                    isAutoHighlight && !isManualHover ? 'opacity-90 scale-95' : 'opacity-100 scale-100'
+                  }`}
+                >
                   <div className="mb-1 text-sm sm:text-base">{moonInfo.emoji}</div>
                   <div className="text-white text-xs sm:text-sm">{moonInfo.name}</div>
                   <div className="mt-1 text-indigo-300 text-xs">{moonInfo.event}</div>
@@ -363,12 +462,33 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
                   <div className="mt-2 max-w-xs sm:max-w-sm whitespace-normal text-indigo-200/80 text-xs">
                     {moonInfo.description}
                   </div>
+                  {isAutoHighlight && !isManualHover && (
+                    <div className="mt-2 text-sky-400 text-[0.6rem] animate-pulse">🌍 Terra passando...</div>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Chat Modal */}
+      {selectedMoonPhase && (
+        <CosmosChatModal
+          isOpen={isChatOpen}
+          storageKey={`sol-orbit-${selectedMoonPhase}`}
+          title={MOON_EVENTS[selectedMoonPhase].name}
+          eyebrow={MOON_EVENTS[selectedMoonPhase].season}
+          subtitle={MOON_EVENTS[selectedMoonPhase].event}
+          badge={MOON_EVENTS[selectedMoonPhase].dates}
+          placeholder="Escreva suas reflexões sobre esta fase..."
+          systemGreeting={`${MOON_EVENTS[selectedMoonPhase].emoji} ${MOON_EVENTS[selectedMoonPhase].description}`}
+          systemQuestion="O que você gostaria de explorar sobre este momento do ciclo?"
+          tone="indigo"
+          onClose={handleChatClose}
+          onSubmit={handleChatSubmit}
+        />
+      )}
     </div>
   );
 };

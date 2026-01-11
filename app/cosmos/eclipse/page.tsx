@@ -24,12 +24,12 @@ const EclipsePage = () => {
               Estação Eclipse
             </p>
             <h1 className="text-3xl font-semibold text-white sm:text-4xl">
-              Controle sua produtividade lunar em tempo real
+              Sintonize o ritmo lunar em tempo real
             </h1>
             <p className="max-w-2xl text-sm text-slate-300">
               Acompanhe o cruzamento entre o SidePlanet e o ciclo de fases lunares. Visualize os
-              to-dos sincronizados, descubra as fases mais eficientes e mantenha tudo organizado em
-              um painel dedicado.
+              to-dos sincronizados, identifique onde o fluxo fica mais orgânico e mantenha tudo
+              alinhado em um painel dedicado.
             </p>
           </header>
 

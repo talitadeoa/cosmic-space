@@ -39,6 +39,7 @@ export default function AuthGate({ children, chatButtonSize = 'default' }: AuthG
         <div
           className="w-full max-w-2xl cursor-auto"
           onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
         >
           <InputWindow
             variant="glass"

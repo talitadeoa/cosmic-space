@@ -82,7 +82,7 @@ const EclipseProductivityView: React.FC<EclipseProductivityViewProps> = ({ navig
         .join(' ')
     : '';
 
-  const lastSyncLabel = lastSync ? `Sync ${lastSync}` : 'Sync inicial';
+  const lastSyncLabel = lastSync ? `Pulso ${lastSync}` : 'Pulso inicial';
 
   const handleOpenSidePlanet = useCallback(() => {
     navigateWithFocusOrFallback('sidePlanetCard', { type: 'planeta', size: 'md' });

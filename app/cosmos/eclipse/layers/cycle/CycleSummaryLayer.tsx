@@ -23,7 +23,7 @@ const CycleSummaryLayer: React.FC<CycleSummaryLayerProps> = ({
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
             Resumo do ciclo
           </p>
-          <h3 className="text-lg font-semibold text-white">Status das listas orbitais</h3>
+          <h3 className="text-lg font-semibold text-white">Ritmo das listas orbitais</h3>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
           <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-emerald-200">
