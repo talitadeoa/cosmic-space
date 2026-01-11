@@ -22,6 +22,8 @@ import { usePlanetTodos } from '@/hooks/usePlanetTodos';
 import { usePlanetState } from '@/hooks/usePlanetState';
 import { FiltersPanel } from './FiltersPanel';
 import { MoonCluster } from './MoonCluster';
+import { TreasureMapView } from './TreasureMapView';
+import { TreasureChartView } from './TreasureChartView';
 
 const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   // Contextos temporais
@@ -47,6 +49,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const [batchDeleteIds, setBatchDeleteIds] = useState<string[] | null>(null);
+  const [viewMode, setViewMode] = useState<'default' | 'treasure-map' | 'treasure-chart'>(
+    'default'
+  );
   const dropHandledRef = useRef(false);
   const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
@@ -380,6 +385,62 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     [displayedTodos]
   );
 
+  // Renderizar visualização do Mapa dos Tesouros
+  if (viewMode === 'treasure-chart') {
+    return (
+      <>
+        <TreasureChartView
+          todos={displayedTodos}
+          islandNames={islandNames}
+          islandIds={islandIds}
+          onSelectPhase={(phase) => setFilters((prev) => ({ ...prev, phase }))}
+          onSelectIsland={(island) => setFilters((prev) => ({ ...prev, island }))}
+          selectedPhase={filters.phase}
+          selectedIsland={filters.island}
+          onToggleComplete={handleToggleComplete}
+        />
+        <button
+          type="button"
+          onClick={() => setViewMode('default')}
+          className="fixed top-6 left-6 z-50 flex items-center gap-2 rounded-full
+            border border-amber-300/60 bg-amber-900/80 px-4 py-2 text-sm font-semibold text-amber-50
+            shadow-lg shadow-amber-900/40 transition-all duration-300 hover:scale-105"
+        >
+          <span className="text-lg">↩</span>
+          <span>Voltar ao Cosmos</span>
+        </button>
+      </>
+    );
+  }
+
+  if (viewMode === 'treasure-map') {
+    return (
+      <>
+        <TreasureMapView
+          todos={displayedTodos}
+          islandNames={islandNames}
+          islandIds={islandIds}
+          onSelectPhase={(phase) => setFilters((prev) => ({ ...prev, phase }))}
+          onSelectIsland={(island) => setFilters((prev) => ({ ...prev, island }))}
+          selectedPhase={filters.phase}
+          selectedIsland={filters.island}
+          onToggleComplete={handleToggleComplete}
+        />
+        {/* Botão flutuante para voltar à visualização padrão */}
+        <button
+          type="button"
+          onClick={() => setViewMode('default')}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full 
+            bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xl shadow-indigo-900/50
+            transition-all duration-300 hover:scale-105 border border-indigo-400/30"
+        >
+          <span className="text-xl">🌌</span>
+          <span>Voltar ao Cosmos</span>
+        </button>
+      </>
+    );
+  }
+
   return (
     <div
       className="relative flex w-full min-h-[100dvh] items-start justify-center px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10"
@@ -588,6 +649,30 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           </div>
         </div>
       )}
+
+      {/* Botões flutuantes para mapas */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={() => setViewMode('treasure-map')}
+          className="flex items-center gap-2 px-5 py-3 rounded-full
+            bg-amber-700 hover:bg-amber-600 text-amber-100 font-semibold shadow-xl shadow-amber-900/50
+            transition-all duration-300 hover:scale-105 border border-amber-500/30"
+        >
+          <span className="text-xl">🗺️</span>
+          <span>Mapa dos Tesouros</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('treasure-chart')}
+          className="flex items-center gap-2 px-5 py-3 rounded-full
+            bg-teal-700 hover:bg-teal-600 text-teal-50 font-semibold shadow-xl shadow-teal-900/50
+            transition-all duration-300 hover:scale-105 border border-teal-400/30"
+        >
+          <span className="text-xl">🧭</span>
+          <span>Carta Nautica</span>
+        </button>
+      </div>
     </div>
   );
 };
