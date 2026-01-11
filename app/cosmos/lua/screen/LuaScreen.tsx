@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { ScreenProps } from '@/app/cosmos/types';
@@ -42,6 +43,7 @@ type PhaseItem = {
 };
 
 const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>('luaNova');
@@ -394,9 +396,36 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleBackgroundClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // Navigate to home if clicking directly on the background, not on child elements
+      if (e.target === e.currentTarget) {
+        router.push('/');
+      }
+    },
+    [router]
+  );
+
   return (
     <>
-      <div className="relative flex min-h-screen w-full flex-col items-center py-10 sm:py-12 lg:py-14">
+      <div
+        className="relative flex min-h-screen w-full flex-col items-center py-10 sm:py-12 lg:py-14 cursor-pointer"
+        onClick={handleBackgroundClick}
+      >
+        {/* Botão discreto para abrir seleção de calendários */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsModalOpen(true);
+          }}
+          className="absolute top-4 right-4 z-40 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 p-2 transition text-white/60 hover:text-white/80"
+          title="Selecionar calendários"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+
         <LuminousTrail quadrant={visiblePeriod.quarterIndex as 0 | 1 | 2 | 3} />
         <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
 
