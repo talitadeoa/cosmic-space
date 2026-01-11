@@ -192,7 +192,7 @@ export function ExemploSwipe() {
  * EXEMPLO 5: Pinch (Zoom)
  * Aproximação e afastamento com 2 dedos
  */
-export function exemploPinch() {
+export function ExemploPinch() {
   const [scale, setScale] = React.useState(1);
   const [maxScale, setMaxScale] = React.useState(1);
 
@@ -231,7 +231,7 @@ export function exemploPinch() {
  * EXEMPLO 6: Combinação de Gestos
  * Múltiplos gestos em um só container
  */
-export function exemploCombinacaoGestos() {
+export function ExemploCombinacaoGestos() {
   const [eventos, setEventos] = React.useState<string[]>([]);
 
   const adicionarEvento = (tipo: string) => {
@@ -274,7 +274,7 @@ export function exemploCombinacaoGestos() {
  * EXEMPLO 7: Integração com Navegação
  * Usando gestos para navegar
  */
-export function exemploGestosNavegacao() {
+export function ExemploGestosNavegacao() {
   const { navigateTo } = useUniverseNavigation();
 
   const handleSwipe = (gesture: SwipeGesture) => {
@@ -316,7 +316,7 @@ export function exemploGestosNavegacao() {
  * EXEMPLO 8: Debug Mode
  * Mostra logs detalhados de gestos
  */
-export function exemploDebugMode() {
+export function ExemploDebugMode() {
   const [logs, setLogs] = React.useState<string[]>([]);
 
   // Para o debug, você deveria adicionar um callback que capture os logs
@@ -394,10 +394,10 @@ export function DemoModuloGestos() {
         {tabAtiva === 'tap' && <ExemploTapGestos />}
         {tabAtiva === 'long' && <ExemploLongPress />}
         {tabAtiva === 'swipe' && <ExemploSwipe />}
-        {tabAtiva === 'pinch' && <exemploPinch />}
-        {tabAtiva === 'combo' && <exemploCombinacaoGestos />}
-        {tabAtiva === 'nav' && <exemploGestosNavegacao />}
-        {tabAtiva === 'debug' && <exemploDebugMode />}
+        {tabAtiva === 'pinch' && <ExemploPinch />}
+        {tabAtiva === 'combo' && <ExemploCombinacaoGestos />}
+        {tabAtiva === 'nav' && <ExemploGestosNavegacao />}
+        {tabAtiva === 'debug' && <ExemploDebugMode />}
       </div>
     </div>
   );

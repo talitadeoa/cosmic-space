@@ -19,5 +19,10 @@ export { default as NavMenu } from '@/components/navigation/NavMenu';
 // Áudio
 export { default as RadioPlayer } from '@/components/audio/RadioPlayer';
 
-// Perfil
+// Ciclo - Experiência de autocuidado
+export { default as CycleJourney } from '@/components/ciclos/CycleJourney';
+export { default as CycleCareButton } from '@/components/ciclos/CycleCareButton';
+export { default as CycleInputCompact } from '@/components/ciclos/CycleInputCompact';
+
+// Perfil (legado - usar CycleJourney no lugar)
 export { default as MenstrualTracker } from '@/components/MenstrualTracker';

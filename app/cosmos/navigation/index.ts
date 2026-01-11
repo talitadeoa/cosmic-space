@@ -21,8 +21,8 @@ export type {
 } from '@/types/gestures';
 
 // Hooks
-export { useUniverseNavigation } from './hooks/useUniverseNavigation';
-export type { NavigationFocusContext } from './hooks/useUniverseNavigation';
+export { useUniverseNavigation } from '../hooks/useUniverseNavigation';
+export type { NavigationFocusContext } from '../hooks/useUniverseNavigation';
 
 // Componentes
-export { GestureDetector } from './components/GestureDetector';
+export { GestureDetector } from '../components/GestureDetector';
