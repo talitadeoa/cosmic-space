@@ -2,6 +2,7 @@
 
 import { SpacePageLayout } from '@/components/layouts';
 import MenstrualTracker from '@/components/MenstrualTracker';
+import { CycleCareButton } from '@/components';
 import Link from 'next/link';
 import { type FormEvent, useEffect, useState } from 'react';
 
@@ -221,7 +222,6 @@ const PerfilPage = () => {
             </p>
             <div className="mt-6">
               {/* Novo botão de jornada do ciclo */}
-              <import { CycleCareButton } from '@/components';>
               <CycleCareButton variant="full" />
             </div>
           </section>
