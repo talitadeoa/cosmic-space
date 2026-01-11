@@ -2,9 +2,10 @@
 
 import React from 'react';
 import RingGalaxyExperience from '@/app/cosmos/galaxia/RingGalaxyExperience';
-import type { ScreenProps } from '../types';
+import { useUniverseNavigation } from '../hooks/useUniverseNavigation';
 
-const RingGalaxyScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {
+const RingGalaxyScreen: React.FC = () => {
+  const { navigateTo, navigateWithFocus } = useUniverseNavigation();
   return (
     <RingGalaxyExperience
       onNavigateToColumn={() => navigateTo('columnSolLuaPlaneta')}

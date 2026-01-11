@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { CelestialObject } from '../components/CelestialObject';
-import type { ScreenProps } from '../types';
+import { useUniverseNavigation } from '../hooks/useUniverseNavigation';
 
-const ColumnSolLuaPlanetaScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+const ColumnSolLuaPlanetaScreen: React.FC = () => {
+  const { navigateWithFocus } = useUniverseNavigation();
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <div className="flex flex-col items-center gap-10">

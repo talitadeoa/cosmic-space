@@ -2,9 +2,10 @@
 
 import React from 'react';
 import GalaxySunsExperience from '@/app/cosmos/sol/visuals/GalaxySunsExperience';
-import type { ScreenProps } from '../types';
+import { useUniverseNavigation } from '../hooks/useUniverseNavigation';
 
-const GalaxySunsScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+const GalaxySunsScreen: React.FC = () => {
+  const { navigateWithFocus } = useUniverseNavigation();
   return (
     <GalaxySunsExperience
       onSunSelect={(year, event) =>

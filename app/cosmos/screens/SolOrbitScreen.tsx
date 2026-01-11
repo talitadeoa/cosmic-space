@@ -1,8 +1,7 @@
 import React from 'react';
 import SolOrbitExperience from '@/app/cosmos/sol/visuals/SolOrbitExperience';
-import type { ScreenProps } from '../types';
 
-const SolOrbitScreen: React.FC<ScreenProps> = () => {
+const SolOrbitScreen: React.FC = () => {
   return <SolOrbitExperience />;
 };
 

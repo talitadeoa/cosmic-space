@@ -3,7 +3,8 @@
 import React from 'react';
 import { CelestialObject } from '../components/CelestialObject';
 import MoonPhaseDisplay from '../components/MoonPhaseDisplay';
-import type { CelestialSize, CelestialType, ScreenId, ScreenProps } from '../types';
+import { useUniverseNavigation } from '../hooks/useUniverseNavigation';
+import type { CelestialSize, CelestialType, ScreenId } from '../types';
 
 type HomeCelestial = {
   id: string;
@@ -54,7 +55,8 @@ const HOME_OBJECTS: HomeCelestial[] = [
   },
 ];
 
-const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+const HomeScreen: React.FC = () => {
+  const { navigateWithFocus } = useUniverseNavigation();
   return (
     <div className="relative flex h-full w-full items-center justify-center px-4 sm:px-10">
       <MoonPhaseDisplay />

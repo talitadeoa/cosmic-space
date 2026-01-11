@@ -4,9 +4,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { CelestialObject } from '../components/CelestialObject';
 import { Card } from '@/app/cosmos/components/Card';
-import type { ScreenProps } from '../types';
+import { useUniverseNavigation } from '../hooks/useUniverseNavigation';
 
-const PlanetCardBelowSunScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {
+const PlanetCardBelowSunScreen: React.FC = () => {
+  const { navigateTo, navigateWithFocus } = useUniverseNavigation();
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-between py-10">
       <CelestialObject

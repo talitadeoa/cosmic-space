@@ -2,9 +2,10 @@
 
 import React from 'react';
 import LuaScreen from '@/app/cosmos/lua/screen/LuaScreen';
-import type { ScreenProps } from '../types';
+import { useUniverseNavigation } from '../hooks/useUniverseNavigation';
 
-const LuaListScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+const LuaListScreen: React.FC = () => {
+  const { navigateWithFocus } = useUniverseNavigation();
   return <LuaScreen navigateWithFocus={navigateWithFocus} />;
 };
 
