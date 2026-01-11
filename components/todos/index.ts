@@ -19,3 +19,6 @@ export {
 // Components
 export { TodoFilters } from './TodoFilters';
 export { TodoBatchActions } from './TodoBatchActions';
+export { TodoList } from './TodoList';
+export { TodoItem } from './TodoItem';
+export { PhaseGroupedTodoList } from './PhaseGroupedTodoList';

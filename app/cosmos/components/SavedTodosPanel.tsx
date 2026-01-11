@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTodoPanelState } from '@/components/todos/useTodoPanelState';
 import { TodoPanelProvider, type TodoPanelContextValue } from '@/components/todos/TodoPanelContext';
 import { TodoList } from '@/components/todos/TodoList';
+import { PhaseGroupedTodoList } from '@/components/todos/PhaseGroupedTodoList';
 import { TodoFilters } from '@/components/todos/TodoFilters';
 import { TodoBatchActions } from '@/components/todos/TodoBatchActions';
 import { EmptyState } from './EmptyState';
@@ -133,7 +134,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
   } = normalizeProps(rawProps);
 
   // Usar novo hook ao invés de 14 useState
-  const { state, dispatch, startEditing, cancelEditing, toggleSelect, selectAll, clearSelection, setSelectionMode, setPage, setBatchIsland } = useTodoPanelState();
+  const { state, dispatch, startEditing, cancelEditing, toggleSelect, selectAll, clearSelection, setSelectionMode, setPage, setBatchIsland, togglePhaseExpanded, setGroupByPhase } = useTodoPanelState();
   
   const panelRef = React.useRef<HTMLDivElement>(null);
   const selectionTouchActiveRef = React.useRef(false);
@@ -766,6 +767,19 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
           >
             ⬚
           </button>
+          <button
+            type="button"
+            onClick={() => setGroupByPhase(!state.groupByPhase)}
+            aria-pressed={state.groupByPhase}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
+              state.groupByPhase
+                ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
+                : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-300/60'
+            }`}
+            title={state.groupByPhase ? 'Ver lista simples' : 'Agrupar por fase lunar'}
+          >
+            🌙
+          </button>
           <TodoFilters
             inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
             todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
@@ -794,51 +808,99 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
         />
       )}
 
-      {/* Todo List */}
-      <TodoList
-        todos={filteredTodos}
-        displayedTodos={displayedTodos}
-        isEditMode={state.isEditMode}
-        isSelectionMode={state.isSelectionMode}
-        editingTodoId={state.editingTodoId}
-        editingText={state.editingText}
-        editingCategory={state.editingCategory}
-        editingDueDate={state.editingDueDate}
-        swipeDeleteId={state.swipeDeleteId}
-        selectedTodoIds={state.selectedTodoIds}
-        islandNames={islandNames}
-        onToggleComplete={onToggleComplete}
-        onToggleSelect={toggleSelect}
-        onStartEdit={handleStartEditing}
-        onUpdateEditText={handleUpdateEditText}
-        onUpdateEditCategory={handleUpdateEditCategory}
-        onUpdateEditDueDate={handleUpdateEditDueDate}
-        onSaveEdit={handleSaveEditing}
-        onCancelEdit={cancelEditing}
-        onDelete={onDeleteTodo ?? (() => {})}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        onTouchMove={onTouchMove}
-        onSelectionTouchStart={handleSelectionTouchStart}
-        onSelectionTouchMove={handleSelectionTouchMove}
-        onSelectionTouchEnd={handleSelectionTouchEnd}
-        emptyTitle={
-          selectedPhase
-            ? 'Nada salvo nesta fase'
-            : islandLabel
-              ? 'Nada salvo nesta ilha'
-              : 'Nada salvo'
-        }
-        emptyDescription={
-          selectedPhase
-            ? `Arraste um input para ${phaseLabels[selectedPhase]} ou crie um novo.`
-            : islandLabel
-              ? `Arraste um input para ${islandLabel} ou crie um novo.`
-              : 'Adcione ou selecione uma fase lunar.'
-        }
-      />
+      {/* Todo List - Agrupado por fase ou lista simples */}
+      {state.groupByPhase ? (
+        <PhaseGroupedTodoList
+          displayedTodos={displayedTodos}
+          isEditMode={state.isEditMode}
+          isSelectionMode={state.isSelectionMode}
+          editingTodoId={state.editingTodoId}
+          editingText={state.editingText}
+          editingCategory={state.editingCategory}
+          editingDueDate={state.editingDueDate}
+          swipeDeleteId={state.swipeDeleteId}
+          selectedTodoIds={state.selectedTodoIds}
+          islandNames={islandNames}
+          expandedPhases={state.expandedPhases}
+          onTogglePhase={togglePhaseExpanded}
+          onToggleComplete={onToggleComplete}
+          onToggleSelect={toggleSelect}
+          onStartEdit={handleStartEditing}
+          onUpdateEditText={handleUpdateEditText}
+          onUpdateEditCategory={handleUpdateEditCategory}
+          onUpdateEditDueDate={handleUpdateEditDueDate}
+          onSaveEdit={handleSaveEditing}
+          onCancelEdit={cancelEditing}
+          onDelete={onDeleteTodo ?? (() => {})}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          onTouchMove={onTouchMove}
+          onSelectionTouchStart={handleSelectionTouchStart}
+          onSelectionTouchMove={handleSelectionTouchMove}
+          onSelectionTouchEnd={handleSelectionTouchEnd}
+          emptyTitle={
+            selectedPhase
+              ? 'Nada salvo nesta fase'
+              : islandLabel
+                ? 'Nada salvo nesta ilha'
+                : 'Nada salvo'
+          }
+          emptyDescription={
+            selectedPhase
+              ? `Arraste um input para ${phaseLabels[selectedPhase]} ou crie um novo.`
+              : islandLabel
+                ? `Arraste um input para ${islandLabel} ou crie um novo.`
+                : 'Adicione ou selecione uma fase lunar.'
+          }
+        />
+      ) : (
+        <TodoList
+          todos={filteredTodos}
+          displayedTodos={displayedTodos}
+          isEditMode={state.isEditMode}
+          isSelectionMode={state.isSelectionMode}
+          editingTodoId={state.editingTodoId}
+          editingText={state.editingText}
+          editingCategory={state.editingCategory}
+          editingDueDate={state.editingDueDate}
+          swipeDeleteId={state.swipeDeleteId}
+          selectedTodoIds={state.selectedTodoIds}
+          islandNames={islandNames}
+          onToggleComplete={onToggleComplete}
+          onToggleSelect={toggleSelect}
+          onStartEdit={handleStartEditing}
+          onUpdateEditText={handleUpdateEditText}
+          onUpdateEditCategory={handleUpdateEditCategory}
+          onUpdateEditDueDate={handleUpdateEditDueDate}
+          onSaveEdit={handleSaveEditing}
+          onCancelEdit={cancelEditing}
+          onDelete={onDeleteTodo ?? (() => {})}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          onTouchMove={onTouchMove}
+          onSelectionTouchStart={handleSelectionTouchStart}
+          onSelectionTouchMove={handleSelectionTouchMove}
+          onSelectionTouchEnd={handleSelectionTouchEnd}
+          emptyTitle={
+            selectedPhase
+              ? 'Nada salvo nesta fase'
+              : islandLabel
+                ? 'Nada salvo nesta ilha'
+                : 'Nada salvo'
+          }
+          emptyDescription={
+            selectedPhase
+              ? `Arraste um input para ${phaseLabels[selectedPhase]} ou crie um novo.`
+              : islandLabel
+                ? `Arraste um input para ${islandLabel} ou crie um novo.`
+                : 'Adicione ou selecione uma fase lunar.'
+          }
+        />
+      )}
 
       {/* Pagination */}
       {filteredTodos.length > ITEMS_PER_PAGE && (

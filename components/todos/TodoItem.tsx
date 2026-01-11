@@ -300,10 +300,6 @@ export const TodoItem = memo(function TodoItem({
             ✏️
           </button>
         )}
-
-        <span className="rounded-full bg-slate-800 px-2 py-1 text-[0.65rem] text-slate-300">
-          {todo.phase ? phaseLabels[todo.phase] : 'Sem fase'}
-        </span>
       </div>
 
       {/* Swipe delete overlay */}

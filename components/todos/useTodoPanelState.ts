@@ -12,7 +12,7 @@ import type {
   InputTypeFilter, 
   TodoStatusFilter 
 } from './types';
-import type { IslandId } from '@/app/cosmos/utils/todoStorage';
+import type { MoonPhase, IslandId } from '@/app/cosmos/utils/todoStorage';
 
 /**
  * Estado inicial
@@ -29,6 +29,14 @@ const initialState: TodoPanelState = {
   swipeDeleteId: null,
   currentPage: 0,
   activeViewDrop: null,
+  expandedPhases: {
+    luaNova: true,
+    luaCrescente: true,
+    luaCheia: true,
+    luaMinguante: true,
+    'sem-fase': true,
+  },
+  groupByPhase: true,
 };
 
 /**
@@ -127,6 +135,23 @@ function todoPanelReducer(state: TodoPanelState, action: TodoPanelAction): TodoP
         activeViewDrop: action.payload,
       };
 
+    case 'TOGGLE_PHASE_EXPANDED': {
+      const phase = action.payload;
+      return {
+        ...state,
+        expandedPhases: {
+          ...state.expandedPhases,
+          [phase]: !state.expandedPhases[phase],
+        },
+      };
+    }
+
+    case 'SET_GROUP_BY_PHASE':
+      return {
+        ...state,
+        groupByPhase: action.payload,
+      };
+
     case 'RESET':
       return initialState;
 
@@ -174,6 +199,14 @@ export function useTodoPanelState() {
     dispatch({ type: 'SET_BATCH_ISLAND', payload: island });
   }, []);
 
+  const togglePhaseExpanded = useCallback((phase: MoonPhase | 'sem-fase') => {
+    dispatch({ type: 'TOGGLE_PHASE_EXPANDED', payload: phase });
+  }, []);
+
+  const setGroupByPhase = useCallback((enabled: boolean) => {
+    dispatch({ type: 'SET_GROUP_BY_PHASE', payload: enabled });
+  }, []);
+
   return {
     state,
     dispatch,
@@ -186,6 +219,8 @@ export function useTodoPanelState() {
     setSelectionMode,
     setPage,
     setBatchIsland,
+    togglePhaseExpanded,
+    setGroupByPhase,
   };
 }
 

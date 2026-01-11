@@ -140,6 +140,10 @@ export interface TodoPanelState {
   swipeDeleteId: string | null;
   currentPage: number;
   activeViewDrop: string | null;
+  
+  // Agrupamento por fases lunares
+  expandedPhases: Record<MoonPhase | 'sem-fase', boolean>;
+  groupByPhase: boolean;
 }
 
 /**
@@ -158,6 +162,8 @@ export type TodoPanelAction =
   | { type: 'SET_SWIPE_DELETE'; payload: string | null }
   | { type: 'SET_PAGE'; payload: number }
   | { type: 'SET_VIEW_DROP'; payload: string | null }
+  | { type: 'TOGGLE_PHASE_EXPANDED'; payload: MoonPhase | 'sem-fase' }
+  | { type: 'SET_GROUP_BY_PHASE'; payload: boolean }
   | { type: 'RESET' };
 
 /**
