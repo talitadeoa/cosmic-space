@@ -102,6 +102,8 @@ export default function EmotionalInputCompact({
 }: EmotionalInputCompactProps) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [loadedEmotion, setLoadedEmotion] = useState<Emotion | null>(selectedEmotion || null);
+  const [justSaved, setJustSaved] = useState(false);
+  const [savedEmoji, setSavedEmoji] = useState<string | null>(null);
 
   // Carregar emoção salva ao montar
   useEffect(() => {
@@ -148,6 +150,14 @@ export default function EmotionalInputCompact({
       // Atualizar emoção local
       setLoadedEmotion(emotion);
 
+      // Mostrar feedback visual
+      setSavedEmoji(emotion.emoji);
+      setJustSaved(true);
+      setTimeout(() => {
+        setJustSaved(false);
+        setSavedEmoji(null);
+      }, 2000);
+
       // Callback
       onEmotionSelect?.(emotion);
     }
@@ -157,15 +167,19 @@ export default function EmotionalInputCompact({
 
   return (
     <div className="w-full space-y-2">
-      {/* Label opcional */}
+      {/* Label com feedback de salvo */}
       {label && (
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-slate-300">{label}</span>
-          {showSelected && currentEmotion && (
+          {justSaved ? (
+            <span className="text-xs text-emerald-400 font-medium animate-in fade-in slide-in-from-right-2 duration-200 flex items-center gap-1">
+              ✓ {savedEmoji} Registrado!
+            </span>
+          ) : showSelected && currentEmotion ? (
             <span className="text-xs text-slate-400">
               {currentEmotion.emoji} {currentEmotion.label}
             </span>
-          )}
+          ) : null}
         </div>
       )}
 
@@ -173,6 +187,7 @@ export default function EmotionalInputCompact({
       <div className="flex flex-wrap gap-1.5 justify-center">
         {EMOTIONS.map((emotion) => {
           const isSelected = currentEmotion?.id === emotion.id;
+          const wasJustSaved = justSaved && savedEmoji === emotion.emoji;
           
           return (
             <button
@@ -184,18 +199,25 @@ export default function EmotionalInputCompact({
               className={`
                 relative w-9 h-9 flex items-center justify-center rounded-lg
                 text-xl transition-all duration-200 ease-out
-                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110'}
+                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110 active:scale-95'}
                 ${
                   isSelected
-                    ? `ring-2 ring-white/50 ring-offset-1 ring-offset-transparent shadow-lg bg-gradient-to-br ${emotion.color}`
+                    ? `ring-2 ring-offset-1 ring-offset-transparent shadow-lg bg-gradient-to-br ${emotion.color} ${wasJustSaved ? 'ring-emerald-400 animate-pulse' : 'ring-white/50'}`
                     : 'hover:bg-white/10'
                 }
                 focus:outline-none focus:ring-2 focus:ring-white/40
               `}
               title={`${emotion.label} - ${emotion.description}`}
-              aria-label={`${emotion.label} - ${emotion.description}`}
+              aria-label={`Selecionar ${emotion.label}`}
             >
               <span className="select-none">{emotion.emoji}</span>
+
+              {/* Checkmark quando acabou de salvar */}
+              {wasJustSaved && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center text-[10px] text-white font-bold animate-in zoom-in duration-200">
+                  ✓
+                </span>
+              )}
 
               {/* Tooltip compacto */}
               {hovered === emotion.id && !isSelected && (
@@ -208,6 +230,13 @@ export default function EmotionalInputCompact({
           );
         })}
       </div>
+
+      {/* Dica sutil */}
+      {!currentEmotion && !justSaved && (
+        <p className="text-[10px] text-slate-500 text-center">
+          Toque em um emoji para registrar
+        </p>
+      )}
     </div>
   );
 }
