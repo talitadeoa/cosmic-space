@@ -4,7 +4,7 @@ import { useCallback, useRef, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SpacePageLayout } from '@/components/layouts';
-import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
+import { CelestialObject, CosmosRouteHelper } from '@/app/cosmos/components';
 import HomeScreen from '@/app/cosmos/screens/HomeScreen';
 import type { ScreenId, ScreenProps, FocusState } from '@/app/cosmos/types';
 
@@ -160,6 +160,8 @@ const StandaloneHomePage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CosmosRouteHelper routeKey="home" position="bottom-right" />
     </SpacePageLayout>
   );
 };

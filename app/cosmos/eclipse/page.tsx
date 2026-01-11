@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthGate } from '@/components/auth';
 import { SpacePageLayout } from '@/components/layouts';
+import { CosmosRouteHelper } from '@/app/cosmos/components';
 import EclipseProductivityView from './EclipseProductivityView';
 
 const EclipsePage = () => {
@@ -35,6 +36,7 @@ const EclipsePage = () => {
 
           <EclipseProductivityView />
         </div>
+        <CosmosRouteHelper routeKey="eclipse" position="bottom-right" />
       </SpacePageLayout>
     </AuthGate>
   );

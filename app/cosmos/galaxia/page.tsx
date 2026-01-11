@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { SpacePageLayout } from '@/components/layouts';
+import { CosmosRouteHelper } from '@/app/cosmos/components';
 import RingGalaxyExperience from './RingGalaxyExperience';
 
 const GalaxiaPage = () => {
@@ -14,6 +15,7 @@ const GalaxiaPage = () => {
           <RingGalaxyExperience />
         </div>
       </div>
+      <CosmosRouteHelper routeKey="galaxia" position="bottom-right" />
     </SpacePageLayout>
   );
 };

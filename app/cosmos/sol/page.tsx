@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SpacePageLayout } from '@/components/layouts';
+import { CosmosRouteHelper } from '@/app/cosmos/components';
 import { YearProvider, useYear } from '@/app/cosmos/context/YearContext';
 import SolOrbitExperience from './visuals/SolOrbitExperience';
 import GalaxySunsExperience from './visuals/GalaxySunsExperience';
@@ -53,6 +54,7 @@ const SolPage = () => {
           onOutsideClick={() => router.push('/cosmos/home')}
           onSunSelect={() => setScreen('solorbit')}
         />
+        <CosmosRouteHelper routeKey="sol" position="bottom-right" />
       </SpacePageLayout>
     </YearProvider>
   );

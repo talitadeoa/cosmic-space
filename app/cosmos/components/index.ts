@@ -16,3 +16,5 @@ export { PhaseTag } from './PhaseTag';
 export { GalaxyInnerView } from './GalaxyInnerView';
 export { default as TodoInput } from './TodoInput';
 export { HomeAlternativa } from './HomeAlternativa';
+export { CosmosRouteHelper, useResetRouteHelper } from './CosmosRouteHelper';
+export type { RouteKey, RouteHelperConfig } from './CosmosRouteHelper';
