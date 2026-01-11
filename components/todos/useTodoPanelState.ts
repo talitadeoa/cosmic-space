@@ -12,7 +12,7 @@ import type {
   InputTypeFilter, 
   TodoStatusFilter 
 } from './types';
-import type { IslandId } from '@/types';
+import type { IslandId } from '@/app/cosmos/utils/todoStorage';
 
 /**
  * Estado inicial

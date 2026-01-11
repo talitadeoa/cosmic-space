@@ -26,7 +26,7 @@ interface LegacySavedTodosPanelProps {
   onDragStart: (todoId: string) => (event: React.DragEvent) => void;
   onDragEnd: () => void;
   onTouchStart?: (todoId: string) => (event: React.TouchEvent) => void;
-  onTouchEnd?: () => void;
+  onTouchEnd?: (todoId: string) => (event: React.TouchEvent) => void;
   onTouchMove?: (event: React.TouchEvent) => void;
   onToggleComplete: (todoId: string) => void;
   onDropInside?: () => void;

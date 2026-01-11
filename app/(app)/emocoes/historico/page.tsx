@@ -57,54 +57,59 @@ export default async function HistoricoEmocionalPage({ searchParams }: Historico
     error = 'Não autenticado';
   } else if (!userId) {
     error = 'Usuário não identificado';
-  } else {
-    const invalidTypes = typesParam
-      .split(',')
-      .filter((t: string) => t && !allowedTypes.includes(t as TimelineFiltersState['types'][number]));
+  }
 
-    if (invalidTypes.length > 0) {
-      typeError = `Tipos inválidos: ${invalidTypes.join(', ')}. Tipos válidos: ${allowedTypes.join(', ')}`;
-    }
+  if (typesParam && types.length === 0) {
+    typeError = 'Selecione ao menos um tipo.';
+  }
 
-    const response = await getTimelineEntries(userId, {
-      days: periodDays[period],
-      types,
+  if (!error && !typeError && userId) {
+    const end = new Date();
+    const start = new Date(end);
+    start.setUTCDate(start.getUTCDate() - periodDays[period]);
+
+    const { items, total } = await getTimelineEntries({
+      userId,
+      start,
+      end,
+      types: types.length ? types : allowedTypes,
       moonPhase,
       page,
       pageSize: resolvedPageSize,
     });
 
-    if ('error' in response) {
-      error = response.error;
-    } else {
-      meta = response;
-    }
+    const totalPages = Math.max(1, Math.ceil(total / resolvedPageSize));
+    meta = {
+      items,
+      page,
+      pageSize: resolvedPageSize,
+      totalItems: total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrevious: page > 1,
+      range: {
+        start: start.toISOString(),
+        end: end.toISOString(),
+      },
+    };
   }
 
-  const initialFilters: TimelineFiltersState = {
+  const filters: TimelineFiltersState = {
     period,
     types,
     moonPhase,
   };
 
-  const pagination = {
-    page,
-    pageSize: resolvedPageSize,
-  };
-
   return (
-    <AuthGate fallback={<div className="text-white p-8">Faça login para ver seu histórico</div>}>
-      <main className="min-h-screen">
-        <TimelineClient
-          initialEntries={meta?.entries || []}
-          initialFilters={initialFilters}
-          pagination={pagination}
-          totalPages={meta?.totalPages || 0}
-          total={meta?.total || 0}
-          error={error}
-          typeError={typeError}
-        />
-      </main>
+    <AuthGate>
+      <TimelineClient
+        filters={filters}
+        meta={meta}
+        page={page}
+        pageSize={resolvedPageSize}
+        error={error}
+        typeError={typeError}
+      />
     </AuthGate>
   );
 }

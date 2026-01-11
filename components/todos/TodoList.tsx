@@ -37,7 +37,7 @@ interface TodoListProps {
   
   // Touch
   onTouchStart?: (todoId: string) => (event: React.TouchEvent) => void;
-  onTouchEnd?: () => void;
+  onTouchEnd?: (todoId: string) => (event: React.TouchEvent) => void;
   onTouchMove?: (event: React.TouchEvent) => void;
   
   // Selection touch

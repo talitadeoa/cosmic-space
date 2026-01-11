@@ -49,7 +49,7 @@ export interface DragHandlers {
  */
 export interface TouchHandlers {
   onStart?: (todoId: string) => (event: React.TouchEvent) => void;
-  onEnd?: () => void;
+  onEnd?: (todoId: string) => (event: React.TouchEvent) => void;
   onMove?: (event: React.TouchEvent) => void;
 }
 

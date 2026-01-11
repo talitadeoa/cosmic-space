@@ -313,7 +313,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     dropHandledRef.current = false;
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (todoId: string) => (_e: React.TouchEvent) => {
     if (touchIdRef.current && isDraggingTodo) {
       // Verificar se houver um drop ativo e processar
       if (activeDrop) {

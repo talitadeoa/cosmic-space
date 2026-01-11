@@ -2,95 +2,79 @@
  * 🔗 URL Utilities - Capacitor-Ready
  *
  * Gerencia URLs base para funcionar tanto na web quanto no Capacitor WebView.
+ *
+ * @deprecated Use `import { platform, env } from '@/lib/platform'` para novas implementações.
+ * Este arquivo é mantido para retrocompatibilidade.
  */
+
+import { platform, env, deepLinks } from '@/lib/platform';
+
+// Re-export para retrocompatibilidade
+export { platform, env, deepLinks };
 
 /**
  * Detecta se está rodando em ambiente Capacitor (mobile app)
+ * @deprecated Use `platform.isNative` ao invés disso
  */
-export const isCapacitor = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return !!(window as any).Capacitor?.isNativePlatform?.();
-};
+export const isCapacitor = (): boolean => platform.isNative;
 
 /**
  * Detecta a plataforma atual
+ * @deprecated Use `platform.current` ao invés disso
  */
 export const getPlatform = (): 'ios' | 'android' | 'web' => {
-  if (typeof window === 'undefined') return 'web';
-
-  const capacitor = (window as any).Capacitor;
-  if (capacitor?.isNativePlatform?.()) {
-    return capacitor.getPlatform?.() || 'web';
-  }
-
-  return 'web';
+  const current = platform.current;
+  if (current === 'server') return 'web';
+  return current;
 };
 
 /**
  * Retorna a URL base para chamadas de API
- *
- * No Capacitor, precisa apontar para o servidor real (não localhost)
- * Na web, pode usar URLs relativas
+ * @deprecated Use `env.apiBaseUrl` ao invés disso
  */
-export const getBaseUrl = (): string => {
-  // Em ambiente de servidor (SSR), usa variável de ambiente
-  if (typeof window === 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || '';
-  }
-
-  // No Capacitor, SEMPRE usa URL absoluta do servidor
-  if (isCapacitor()) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      console.warn(
-        '[URLs] NEXT_PUBLIC_API_URL não configurada. Defina no .env para builds Capacitor.'
-      );
-      // Fallback para produção
-      return 'https://flua.vercel.app';
-    }
-    return apiUrl;
-  }
-
-  // Na web, pode usar URL relativa (vazia = mesma origem)
-  return '';
-};
+export const getBaseUrl = (): string => env.apiBaseUrl;
 
 /**
  * Constrói URL completa para endpoint de API
+ * @deprecated Use `env.apiUrl(endpoint)` ao invés disso
  */
-export const apiUrl = (endpoint: string): string => {
-  const base = getBaseUrl();
-  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return `${base}${normalizedEndpoint}`;
-};
+export const apiUrl = (endpoint: string): string => env.apiUrl(endpoint);
 
 /**
  * Converte caminho de asset para URL utilizável no Capacitor
- * No iOS/Android, arquivos locais precisam de conversão especial
+ * @deprecated Use `env.assetUrl(path)` ou `platform.convertFileSrc(path)` ao invés disso
  */
 export const assetUrl = (path: string): string => {
-  if (typeof window === 'undefined') return path;
-
-  const capacitor = (window as any).Capacitor;
-  if (capacitor?.convertFileSrc) {
-    return capacitor.convertFileSrc(path);
+  if (platform.isNative) {
+    return platform.convertFileSrc(path);
   }
-
   return path;
 };
 
 /**
- * URLs fixas do app (para substituir hardcoded)
+ * URLs fixas do app
+ *
+ * @deprecated Configure via variáveis de ambiente ao invés de hardcoding.
+ * Use:
+ * - NEXT_PUBLIC_APP_URL para URL de produção
+ * - NEXT_PUBLIC_APP_SCHEME para deep link scheme
+ * - NEXT_PUBLIC_SOCIAL_INSTAGRAM para redes sociais
  */
 export const APP_URLS = {
-  // Produção
-  PRODUCTION: 'https://flua.vercel.app',
+  // Produção - Use env.appUrl ao invés disso
+  get PRODUCTION() {
+    return env.appUrl || 'https://flua.vercel.app';
+  },
 
-  // Deep links
-  SCHEME: 'flua://',
+  // Deep links - Use deepLinks.scheme ao invés disso
+  get SCHEME() {
+    return deepLinks.scheme;
+  },
 
-  // Redes sociais (se houver)
-  INSTAGRAM: 'https://instagram.com/fluaapp',
+  // Redes sociais
+  get INSTAGRAM() {
+    return process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM || 'https://instagram.com/fluaapp';
+  },
 
   // Assets estáticos
   OG_IMAGE: '/og-image.png',

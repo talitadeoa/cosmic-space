@@ -17,7 +17,7 @@ import { useEmotionalInput } from '@/hooks/useEmotionalInput';
 export default function RegistroEmocionalPage() {
   const { currentEmotion, emotionHistory, setEmotion, getMostFrequentEmotion } =
     useEmotionalInput('daily_emotion_checkin');
-  const [showStats, setShowStats] = useState(true);
+  const [_showStats] = useState(true);
 
   const handleEmotionSelect = (emotion: Emotion) => {
     setEmotion(emotion);
@@ -56,7 +56,7 @@ export default function RegistroEmocionalPage() {
           </div>
 
           {/* Stats Section */}
-          {showStats && emotionHistory.length > 0 && (
+          {_showStats && emotionHistory.length > 0 && (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Suas Estatísticas</h3>
               <div className="grid gap-4 md:grid-cols-3">

@@ -58,6 +58,52 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      // ========================================
+      // 🔄 Redirects de migração de rotas
+      // @see /doc/CONVENCAO_ROTAS_BASEADA_EM_DOMINIO.md
+      // ========================================
+
+      // /ilha → /tarefas
+      {
+        source: '/ilha',
+        destination: '/tarefas',
+        permanent: true,
+      },
+
+      // /timeline → /emocoes/historico
+      {
+        source: '/timeline',
+        destination: '/emocoes/historico',
+        permanent: true,
+      },
+
+      // /perfil/emocoes → /emocoes/registro
+      {
+        source: '/perfil/emocoes',
+        destination: '/emocoes/registro',
+        permanent: true,
+      },
+
+      // /perfil/ciclos → /ciclos/menstrual
+      {
+        source: '/perfil/ciclos',
+        destination: '/ciclos/menstrual',
+        permanent: true,
+      },
+
+      // /cosmos/calendarioc → /ciclos/calendario
+      {
+        source: '/cosmos/calendarioc',
+        destination: '/ciclos/calendario',
+        permanent: true,
+      },
+
+      // /cosmos/lua → /ciclos/lunar
+      {
+        source: '/cosmos/lua',
+        destination: '/ciclos/lunar',
+        permanent: true,
+      },
     ];
   },
 };

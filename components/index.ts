@@ -18,3 +18,6 @@ export { default as NavMenu } from '@/components/navigation/NavMenu';
 
 // Áudio
 export { default as RadioPlayer } from '@/components/audio/RadioPlayer';
+
+// Perfil
+export { default as MenstrualTracker } from '@/components/perfil/MenstrualTracker';

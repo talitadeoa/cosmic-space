@@ -18,7 +18,7 @@ export default function CicloMenstrualPage() {
       </header>
 
       <div className="max-w-2xl mx-auto">
-        <MenstrualTracker />
+        <MenstrualTracker isEnabled={true} />
       </div>
     </main>
   );
