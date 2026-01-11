@@ -136,8 +136,8 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
     let animationId: number;
 
     const config = {
-      earthAngularSpeed: 0.0025,
-      moonAngularSpeed: 0.03,
+      earthAngularSpeed: -0.0025,
+      moonAngularSpeed: -0.03,
       moonTrailMaxPoints: 2200,
       lineWidthOrbits: 1.2,
       lineWidthTrail: 1.6,
