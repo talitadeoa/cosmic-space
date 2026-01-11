@@ -1,5 +1,8 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const BACKGROUND_IMAGE = '/home-alternativa.png';
 
@@ -47,10 +50,21 @@ const HOTSPOTS = [
 ];
 
 export default function HomeAlternativaPage() {
+  const router = useRouter();
+
   return (
     <main className="min-h-[100dvh] px-4 py-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <header className="text-center">
+        <header className="relative text-center">
+          {/* Botão voltar */}
+          <button
+            onClick={() => router.push('/cosmos/home')}
+            className="absolute left-0 top-0 flex items-center gap-2 rounded-full border border-indigo-300/40 bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/30"
+            title="Voltar para visualização interativa"
+          >
+            ✨ Modo Interativo
+          </button>
+
           <p className="text-xs uppercase tracking-[0.45em] text-slate-300">Home alternativa</p>
           <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
             Explore os elementos do cosmos

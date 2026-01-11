@@ -99,7 +99,18 @@ const StandaloneHomePage = () => {
 
   return (
     <SpacePageLayout>
-      <div className="flex min-h-[100dvh] items-center justify-center px-4 py-10">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10">
+        {/* Botão para alternar visualização */}
+        <div className="absolute top-4 left-4 right-4 sm:left-6 sm:right-6 z-50 flex justify-center">
+          <button
+            onClick={() => router.push('/cosmos/home/alternativa')}
+            className="flex items-center gap-2 rounded-full border border-indigo-300/40 bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/30"
+            title="Ver visualização alternativa com hotspots"
+          >
+            🗺️ Visualização Alternativa
+          </button>
+        </div>
+
         <div className="h-[70vh] w-full max-w-5xl">
           <HomeScreen navigateTo={navigateToRoute} navigateWithFocus={navigateWithFocus} />
         </div>
