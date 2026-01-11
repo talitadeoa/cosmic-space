@@ -211,14 +211,18 @@ const PerfilPage = () => {
         {/* Menstrual Tracker Section */}
         {profile.isWomen && (
           <section className="rounded-3xl border border-pink-800/70 bg-black/40 p-6 shadow-2xl shadow-pink-950/30 backdrop-blur-md">
-            <p className="text-sm uppercase tracking-[0.3em] text-pink-400">Saúde Menstrual</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Rastreador de Menstruação</h2>
+            <p className="text-sm uppercase tracking-[0.3em] text-pink-400">Cuidado do Ciclo</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Sua Jornada Cíclica</h2>
             <p className="mt-2 text-sm text-slate-400">
-              Registre sua menstruação e acompanhe como ela se relaciona com as fases lunares e seu
-              signo zodiacal.
+              Registre seu ritmo, sinais do corpo e lembretes pessoais de forma acolhedora.<br/>
+              <span className="inline-block mt-2">
+                <Link href="/cosmos/lua" className="text-pink-300 underline hover:text-pink-200 transition-colors">Ver calendário lunar & insights</Link>
+              </span>
             </p>
             <div className="mt-6">
-              <MenstrualTracker isEnabled={profile.isWomen || false} />
+              {/* Novo botão de jornada do ciclo */}
+              <import { CycleCareButton } from '@/components';>
+              <CycleCareButton variant="full" />
             </div>
           </section>
         )}
