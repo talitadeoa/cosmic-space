@@ -27,6 +27,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
   onSunClick,
   onGalaxyCoreClick,
 }) => {
+  const [hoveredSunId, setHoveredSunId] = useState<string | null>(null);
   const largestOrbit = orbitSizes[orbitSizes.length - 1] ?? 0;
   const stagePadding = Math.max(80, Math.round(largestOrbit * 0.28));
   const stageSize = largestOrbit + stagePadding;
@@ -102,17 +103,18 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
               const floatOffset = idx % 2 === 0 ? -2 : 2;
               const angle = idx * angleStep;
               const { x, y } = polarToCartesian(sun.orbitIndex, angle);
-              const [isHovered, setIsHovered] = useState(false);
+              const yearData = moonData[sun.year];
+              const isHovered = hoveredSunId === sun.id;
 
               return (
                 <motion.div
                   key={sun.id}
                   className="absolute left-1/2 top-1/2"
                   style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                  onTouchStart={() => setIsHovered(true)}
-                  onTouchEnd={() => setIsHovered(false)}
+                  onMouseEnter={() => setHoveredSunId(sun.id)}
+                  onMouseLeave={() => setHoveredSunId(null)}
+                  onTouchStart={() => setHoveredSunId(sun.id)}
+                  onTouchEnd={() => setHoveredSunId(null)}
                 >
                   <motion.div
                     className="flex flex-col items-center"
