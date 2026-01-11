@@ -9,7 +9,7 @@ import HomeScreen from '@/app/cosmos/screens/HomeScreen';
 import type { ScreenId, ScreenProps, FocusState } from '@/app/cosmos/types';
 
 const SCREEN_ROUTE_MAP: Partial<Record<ScreenId, string>> = {
-  home: '/cosmos',
+  home: '/cosmos/home',
   solOrbit: '/cosmos/sol',
   galaxySuns: '/cosmos/sol',
   luaList: '/cosmos/lua',
@@ -23,7 +23,7 @@ const SCREEN_ROUTE_MAP: Partial<Record<ScreenId, string>> = {
 
 const getRouteForScreen = (screen: ScreenId) => SCREEN_ROUTE_MAP[screen] ?? '/cosmos';
 
-const CosmosPage = () => {
+const StandaloneHomePage = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [focus, setFocus] = useState<FocusState | null>(null);
@@ -153,4 +153,4 @@ const CosmosPage = () => {
   );
 };
 
-export default CosmosPage;
+export default StandaloneHomePage;
