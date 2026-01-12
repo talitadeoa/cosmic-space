@@ -15,7 +15,7 @@ interface MenstrualRecord {
   recordedAt: string;
 }
 
-interface MenstrualTrackerProps {
+interface CycleTrackerProps {
   isEnabled: boolean; // true se women = true
   onRecordAdd?: (record: MenstrualRecord) => void;
   existingRecords?: MenstrualRecord[];
@@ -38,11 +38,11 @@ const COMMON_SYMPTOMS = [
   { id: 'anxiety', label: 'Ansiedade', emoji: '😰' },
 ];
 
-export default function MenstrualTracker({
+export default function CycleTracker({
   isEnabled,
   onRecordAdd,
   existingRecords = [],
-}: MenstrualTrackerProps) {
+}: CycleTrackerProps) {
   const [records, setRecords] = useState<MenstrualRecord[]>(existingRecords);
   const [showForm, setShowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);

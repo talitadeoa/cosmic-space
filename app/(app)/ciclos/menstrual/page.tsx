@@ -7,7 +7,7 @@
  * @see /doc/CONVENCAO_ROTAS_BASEADA_EM_DOMINIO.md
  */
 
-import { MenstrualTracker } from '@/components';
+import { CycleTracker } from '@/components';
 
 export default function CicloMenstrualPage() {
   return (
@@ -18,7 +18,7 @@ export default function CicloMenstrualPage() {
       </header>
 
       <div className="max-w-2xl mx-auto">
-        <MenstrualTracker isEnabled={true} />
+        <CycleTracker isEnabled={true} />
       </div>
     </main>
   );

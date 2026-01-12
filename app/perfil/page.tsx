@@ -2,7 +2,7 @@
 
 import { SpacePageLayout } from '@/components/layouts';
 import AuthGate from '@/components/auth/AuthGate';
-import MenstrualTracker from '@/components/MenstrualTracker';
+import CycleTracker from '@/components/CycleTracker';
 import { CycleCareButton } from '@/components';
 import Link from 'next/link';
 import { type FormEvent, useEffect, useState } from 'react';
