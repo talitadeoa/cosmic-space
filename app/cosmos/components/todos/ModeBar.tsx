@@ -4,9 +4,9 @@
 'use client';
 
 import React from 'react';
-import { TodoFilters } from './TodoFilters';
-import type { MoonPhase } from '../utils/todoStorage';
-import { phaseLabels } from '../utils/todoStorage';
+/**
+ * Mode bar para alternar entre edit, select, group
+ */
 
 interface ModeBarProps {
   isEditMode: boolean;

@@ -4,7 +4,7 @@
 'use client';
 
 import { useCallback, useRef } from 'react';
-import type { SavedTodo } from '../utils/todoStorage';
+import type { SavedTodo } from '@/types/community';
 
 export function useTodoGestures(
   savedTodos: SavedTodo[],

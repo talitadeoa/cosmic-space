@@ -4,8 +4,9 @@
 'use client';
 
 import React from 'react';
-import type { MoonPhase } from '../utils/todoStorage';
-import { phaseLabels } from '../utils/todoStorage';
+/**
+ * View filter buttons para TODO panel
+ */
 
 interface ViewButtonsProps {
   view: string | undefined;

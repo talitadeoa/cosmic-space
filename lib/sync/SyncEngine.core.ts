@@ -258,7 +258,9 @@ export class SyncEngine<T> {
       this.metadata.lastSyncAt = new Date().toISOString();
       this.state.lastSyncAt = this.metadata.lastSyncAt;
 
-      await Promise.resolve(this.callbacks.saveMeta(this.metadata));
+      if (this.callbacks.saveMeta) {
+        await Promise.resolve(this.callbacks.saveMeta(this.metadata));
+      }
 
       this.log('Ciclo de sync completo com sucesso');
     } catch (error) {
@@ -284,6 +286,7 @@ export class SyncEngine<T> {
 
   private async executePush(): Promise<void> {
     try {
+      if (!this.callbacks.push) return;
       const result = await this.callbacks.push(this.state.local);
 
       // Atualizar estado baseado no resultado
@@ -306,12 +309,14 @@ export class SyncEngine<T> {
 
   private async executePull(): Promise<void> {
     try {
+      if (!this.callbacks.pull) return;
       const result = await this.callbacks.pull(this.metadata.cursor);
 
       if (result.data) {
         this.log('Pull: dados recebidos, fazendo merge');
 
         // Fazer merge suprimindo outbox para evitar ciclos
+        if (!this.callbacks.merge) return;
         const merged = this.callbacks.merge(this.state.local, result.data);
         this.updateLocalSuppressed(() => merged);
 

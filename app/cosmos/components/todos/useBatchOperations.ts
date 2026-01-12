@@ -4,7 +4,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { MoonPhase, IslandId, SavedTodo } from '../utils/todoStorage';
+import type { SavedTodo } from '@/types/community';
 
 export function useBatchOperations(
   selectedTodoIds: string[],

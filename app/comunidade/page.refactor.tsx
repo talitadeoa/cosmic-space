@@ -98,7 +98,7 @@ export default function ComunidadePage() {
     truncate,
   } = useCommunityHelpers();
 
-  // Import classifyPost from filters
+  // Classifying helper
   const { classifyPost } = useCommunityFilters(posts);
 
   return (
@@ -114,7 +114,7 @@ export default function ComunidadePage() {
           activeTag={activeTag}
           onTagChange={setActiveTag}
           tagFilters={tagFilters}
-          typeFilters={TYPE_FILTERS}
+          typeFilters={TYPE_FILTERS as any}
           searchQuery={searchQuery}
           onResetFilters={resetFilters}
         />

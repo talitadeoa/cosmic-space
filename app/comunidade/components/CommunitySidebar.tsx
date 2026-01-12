@@ -7,7 +7,7 @@ import type { FormEvent } from 'react';
 import { NewPostForm, ActiveMembers, TrendingTopics, StreamList } from '../components';
 import type { PostFormState, PostStatus, CommunityProfile } from '../hooks';
 
-export interface Community Stream {
+export interface CommunityStream {
   id: string;
   title: string;
   description: string;
