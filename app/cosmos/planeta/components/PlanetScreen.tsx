@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import { Card } from '@/app/cosmos/components/Card';
 import TodoInput, { TodoItem as ParsedTodoItem } from '@/app/cosmos/components/TodoInput';
@@ -22,6 +22,8 @@ import { usePlanetTodos } from '@/hooks/usePlanetTodos';
 import { usePlanetState } from '@/hooks/usePlanetState';
 import { FiltersPanel } from './FiltersPanel';
 import { MoonCluster } from './MoonCluster';
+import { TreasureMapView } from './TreasureMapView';
+import { TreasureChartView } from './TreasureChartView';
 
 const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   // Contextos temporais
@@ -47,6 +49,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const [batchDeleteIds, setBatchDeleteIds] = useState<string[] | null>(null);
+  const [viewMode, setViewMode] = useState<'default' | 'treasure-map' | 'treasure-chart'>(
+    'default'
+  );
   const dropHandledRef = useRef(false);
   const touchIdRef = useRef<string | null>(null);
   const { saveInput } = usePhaseInputs();
@@ -107,7 +112,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     };
 
     syncLunations();
-  }, [temporal.year]);
+  }, [temporal.year, lunations]);
 
   // Sincronizar contagem de tarefas com fases lunares
   useEffect(() => {
@@ -121,9 +126,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     };
 
     syncGalaxySuns();
-  }, [temporal.year]);
+  }, [temporal.year, galaxySunsSync]);
 
-  const handleTodoSubmit = (todo: ParsedTodoItem) => {
+  const handleTodoSubmit = useCallback((todo: ParsedTodoItem) => {
     const updatedAt = todo.updatedAt ?? nowIso();
     const resolvedTodo = {
       ...todo,
@@ -151,49 +156,49 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       };
       return updated;
     });
-  };
+  }, [filters.island, setSavedTodos]);
 
-  const handleToggleComplete = (todoId: string) => {
+  const handleToggleComplete = useCallback((todoId: string) => {
     setSavedTodos((prev) =>
       prev.map((todo) =>
         todo.id === todoId ? touchTodo(todo, { completed: !todo.completed }) : todo
       )
     );
-  };
+  }, [setSavedTodos]);
 
-  const handleUpdateTodo = (todoId: string, updates: Partial<SavedTodo>) => {
+  const handleUpdateTodo = useCallback((todoId: string, updates: Partial<SavedTodo>) => {
     setSavedTodos((prev) =>
       prev.map((todo) => (todo.id === todoId ? touchTodo(todo, updates) : todo))
     );
-  };
+  }, [setSavedTodos]);
 
-  const handleDeleteTodo = (todoId: string) => {
+  const handleDeleteTodo = useCallback((todoId: string) => {
     setSavedTodos((prev) => prev.filter((todo) => todo.id !== todoId));
     setShowDeleteConfirm(false);
     setDeletingTodoId(null);
-  };
+  }, [setSavedTodos]);
 
-  const handleDeleteTodos = (todoIds: string[]) => {
+  const handleDeleteTodos = useCallback((todoIds: string[]) => {
     const ids = new Set(todoIds);
     setSavedTodos((prev) => prev.filter((todo) => !ids.has(todo.id)));
     setShowDeleteConfirm(false);
     setBatchDeleteIds(null);
-  };
+  }, [setSavedTodos]);
 
-  const handleRequestDelete = (todoId: string) => {
+  const handleRequestDelete = useCallback((todoId: string) => {
     setDeletingTodoId(todoId);
     setBatchDeleteIds(null);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const handleRequestBatchDelete = (todoIds: string[]) => {
+  const handleRequestBatchDelete = useCallback((todoIds: string[]) => {
     if (todoIds.length === 0) return;
     setBatchDeleteIds(todoIds);
     setDeletingTodoId(null);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const assignTodosToPhase = (todoIds: string[], phase: MoonPhase) => {
+  const assignTodosToPhase = useCallback((todoIds: string[], phase: MoonPhase) => {
     const ids = new Set(todoIds);
     const targets = savedTodos.filter((todo) => ids.has(todo.id) && todo.phase !== phase);
     if (targets.length === 0) return;
@@ -221,9 +226,9 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         console.warn('Falha ao salvar tarefa na fase:', error);
       });
     });
-  };
+  }, [savedTodos, setSavedTodos, saveInput]);
 
-  const assignTodosToIsland = (todoIds: string[], islandId: IslandId) => {
+  const assignTodosToIsland = useCallback((todoIds: string[], islandId: IslandId) => {
     const ids = new Set(todoIds);
     const hasTargets = savedTodos.some((todo) => ids.has(todo.id) && todo.islandId !== islandId);
     if (!hasTargets) return;
@@ -231,22 +236,22 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setSavedTodos((prev) =>
       prev.map((todo) => (ids.has(todo.id) ? touchTodo(todo, { islandId }) : todo))
     );
-  };
+  }, [savedTodos, setSavedTodos]);
 
-  const handleDragStart = (todoId: string) => (e: React.DragEvent) => {
+  const handleDragStart = useCallback((todoId: string) => (e: React.DragEvent) => {
     e.dataTransfer.setData('text/todo-id', todoId);
     dropHandledRef.current = false;
     setIsDraggingTodo(true);
     setDraggingTodoId(todoId);
-  };
+  }, []);
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
     setDraggingTodoId(null);
     dropHandledRef.current = false;
-  };
+  }, []);
 
   const getDraggedTodoIds = (event: React.DragEvent) => {
     const rawTodoIds = event.dataTransfer.getData('text/todo-ids');
@@ -313,7 +318,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     dropHandledRef.current = false;
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (todoId: string) => (_e: React.TouchEvent) => {
     if (touchIdRef.current && isDraggingTodo) {
       // Verificar se houver um drop ativo e processar
       if (activeDrop) {
@@ -380,15 +385,71 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     [displayedTodos]
   );
 
+  // Renderizar visualização do Mapa dos Tesouros
+  if (viewMode === 'treasure-chart') {
+    return (
+      <>
+        <TreasureChartView
+          todos={displayedTodos}
+          islandNames={islandNames}
+          islandIds={islandIds}
+          onSelectPhase={(phase) => setFilters((prev) => ({ ...prev, phase }))}
+          onSelectIsland={(island) => setFilters((prev) => ({ ...prev, island }))}
+          selectedPhase={filters.phase}
+          selectedIsland={filters.island}
+          onToggleComplete={handleToggleComplete}
+        />
+        <button
+          type="button"
+          onClick={() => setViewMode('default')}
+          className="fixed top-6 left-6 z-50 flex items-center gap-2 rounded-full
+            border border-amber-300/60 bg-amber-900/80 px-4 py-2 text-sm font-semibold text-amber-50
+            shadow-lg shadow-amber-900/40 transition-all duration-300 hover:scale-105"
+        >
+          <span className="text-lg">↩</span>
+          <span>Voltar ao Cosmos</span>
+        </button>
+      </>
+    );
+  }
+
+  if (viewMode === 'treasure-map') {
+    return (
+      <>
+        <TreasureMapView
+          todos={displayedTodos}
+          islandNames={islandNames}
+          islandIds={islandIds}
+          onSelectPhase={(phase) => setFilters((prev) => ({ ...prev, phase }))}
+          onSelectIsland={(island) => setFilters((prev) => ({ ...prev, island }))}
+          selectedPhase={filters.phase}
+          selectedIsland={filters.island}
+          onToggleComplete={handleToggleComplete}
+        />
+        {/* Botão flutuante para voltar à visualização padrão */}
+        <button
+          type="button"
+          onClick={() => setViewMode('default')}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full 
+            bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xl shadow-indigo-900/50
+            transition-all duration-300 hover:scale-105 border border-indigo-400/30"
+        >
+          <span className="text-xl">🌌</span>
+          <span>Voltar ao Cosmos</span>
+        </button>
+      </>
+    );
+  }
+
   return (
     <div
-      className="relative flex w-full min-h-[100dvh] items-start justify-center px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10"
+      className="relative flex w-full min-h-[100dvh] items-start justify-center px-3 sm:px-5 lg:px-8 pt-3 sm:pt-5 pb-28 sm:pb-32 safe-area-inset"
       onTouchMove={handleTouchMove}
       suppressHydrationWarning
     >
-      <div className="relative flex w-full max-w-7xl flex-col gap-6 sm:gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+      <div className="relative flex w-full max-w-7xl flex-col gap-5 sm:gap-7 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
-        <div className="order-4 flex w-full flex-col items-center gap-6 sm:gap-8 lg:order-1 lg:w-auto lg:max-w-xs">
+        <div className="order-4 flex w-full flex-col items-center gap-5 sm:gap-7 lg:order-1 lg:w-auto lg:max-w-xs">
           {/* Planeta */}
           <div className="flex justify-center">
             <CelestialObject
@@ -396,7 +457,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               size="lg"
               interactive
               onClick={() => setShowIslands((prev) => !prev)}
-              className="scale-75 transition-transform lg:scale-90 2xl:scale-100"
+              className="scale-[0.65] sm:scale-75 lg:scale-90 2xl:scale-100 transition-transform touch-manipulation"
             />
           </div>
 
@@ -422,8 +483,8 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
         {/* Coluna central: Card com To-dos (ordem 3 no mobile, 2 no desktop) */}
         <div className="order-3 relative w-full lg:order-2 lg:flex-1">
-          <Card className="relative z-10 w-full overflow-hidden border border-white/10 bg-transparent p-4 shadow-none backdrop-blur-0 sm:p-6 !bg-transparent !backdrop-blur-0 !shadow-none">
-            <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
+          <Card className="relative z-10 w-full overflow-hidden border border-white/10 bg-transparent p-3 shadow-none backdrop-blur-0 sm:p-5 md:p-6 !bg-transparent !backdrop-blur-0 !shadow-none">
+            <div className="flex flex-col gap-3 overflow-visible pr-1 sm:gap-4 md:gap-5">
               <div className="flex flex-col gap-4 flex-shrink-0">
                 <SavedTodosPanel
                   savedTodos={displayedTodos}
@@ -471,7 +532,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   <button
                     type="button"
                     onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
-                    className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
+                    className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-4 py-2 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30 active:bg-indigo-500/40 touch-manipulation"
                   >
                     {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
                   </button>
@@ -509,7 +570,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </div>
 
         {/* Coluna direita: Luas + Sol (ordem 2 e 1 no mobile, 3 no desktop) */}
-        <div className="order-1 flex w-full flex-col items-center justify-center gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
+        <div className="order-1 flex w-full flex-col items-center justify-center gap-5 sm:gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
           {/* Sol (ordem 1 no mobile) */}
           <div className="order-1 lg:order-2">
             <CelestialObject
@@ -521,7 +582,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 navigateWithFocus('planetCardBelowSun', { event, type: 'sol', size: 'md' });
               }}
               floatOffset={-2}
-              className="scale-90 sm:scale-100"
+              className="scale-75 sm:scale-90 md:scale-100 touch-manipulation"
             />
           </div>
 
@@ -588,6 +649,30 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           </div>
         </div>
       )}
+
+      {/* Botões flutuantes para mapas */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
+        <button
+          type="button"
+          onClick={() => setViewMode('treasure-map')}
+          className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full
+            bg-amber-700 hover:bg-amber-600 active:bg-amber-500 text-amber-100 font-semibold shadow-xl shadow-amber-900/50
+            transition-all duration-300 hover:scale-105 active:scale-95 border border-amber-500/30 touch-manipulation text-sm sm:text-base"
+        >
+          <span className="text-lg sm:text-xl">🗺️</span>
+          <span>Mapa dos Tesouros</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('treasure-chart')}
+          className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full
+            bg-teal-700 hover:bg-teal-600 active:bg-teal-500 text-teal-50 font-semibold shadow-xl shadow-teal-900/50
+            transition-all duration-300 hover:scale-105 active:scale-95 border border-teal-400/30 touch-manipulation text-sm sm:text-base"
+        >
+          <span className="text-lg sm:text-xl">🧭</span>
+          <span>Carta Nautica</span>
+        </button>
+      </div>
     </div>
   );
 };

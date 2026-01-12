@@ -13,7 +13,15 @@ type RingGalaxyExperienceProps = {
   onNavigateToLuaInsights?: (moon: MoonPhase) => void;
 };
 
-const ORBIT_RADIUS = 180;
+const getOrbitRadius = () => {
+  if (typeof window === 'undefined') return 180;
+  const minDimension = Math.min(window.innerWidth, window.innerHeight);
+  // Mobile: raio menor, Desktop: raio maior
+  if (minDimension < 400) return 120;
+  if (minDimension < 640) return 140;
+  if (minDimension < 768) return 160;
+  return 180;
+};
 
 const moonDescriptors: Array<{
   angle: number;
@@ -32,12 +40,21 @@ const RingGalaxyExperience: React.FC<RingGalaxyExperienceProps> = ({
   onNavigateToLuaInsights,
 }) => {
   const [selectedMoon, setSelectedMoon] = useState<MoonPhase | null>(null);
+  const [orbitRadius, setOrbitRadius] = useState(() => getOrbitRadius());
   const [energyNotes, setEnergyNotes] = useState<Record<MoonPhase, string>>({
     luaNova: '',
     luaCrescente: '',
     luaCheia: '',
     luaMinguante: '',
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setOrbitRadius(getOrbitRadius());
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const next: Record<MoonPhase, string> = {
@@ -53,8 +70,8 @@ const RingGalaxyExperience: React.FC<RingGalaxyExperienceProps> = ({
   const moons: OrbitingMoon[] = useMemo(() => {
     return moonDescriptors.map((moon) => {
       const angleRad = (moon.angle * Math.PI) / 180;
-      const x = Math.cos(angleRad) * ORBIT_RADIUS;
-      const y = Math.sin(angleRad) * ORBIT_RADIUS;
+      const x = Math.cos(angleRad) * orbitRadius;
+      const y = Math.sin(angleRad) * orbitRadius;
 
       return {
         label: moon.label,
@@ -63,7 +80,7 @@ const RingGalaxyExperience: React.FC<RingGalaxyExperienceProps> = ({
         position: { x, y },
       };
     });
-  }, []);
+  }, [orbitRadius]);
 
   const handleSubmit = useCallback((moon: MoonPhase, value: string) => {
     setEnergyNotes((prev) => ({ ...prev, [moon]: value }));

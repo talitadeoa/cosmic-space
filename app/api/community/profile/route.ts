@@ -25,7 +25,14 @@ export async function GET(request: NextRequest) {
         users.email,
         COALESCE(user_profiles.display_name, split_part(users.email, '@', 1)) AS display_name,
         user_profiles.avatar_url,
-        user_profiles.bio
+        user_profiles.bio,
+        user_profiles.lunar_sign,
+        COALESCE(user_profiles.cosmic_level, 'lua-nova') AS cosmic_level,
+        COALESCE(user_profiles.cosmic_points, 0) AS cosmic_points,
+        COALESCE(user_profiles.posts_count, 0) AS posts_count,
+        COALESCE(user_profiles.followers_count, 0) AS followers_count,
+        COALESCE(user_profiles.following_count, 0) AS following_count,
+        COALESCE(user_profiles.streak_days, 0) AS streak_days
       FROM users
       LEFT JOIN user_profiles ON user_profiles.user_id = users.id
       WHERE users.id = ${userId}
@@ -36,6 +43,13 @@ export async function GET(request: NextRequest) {
       display_name: string;
       avatar_url: string | null;
       bio: string | null;
+      lunar_sign: string | null;
+      cosmic_level: string;
+      cosmic_points: number;
+      posts_count: number;
+      followers_count: number;
+      following_count: number;
+      streak_days: number;
     }>;
 
     const profile = rows?.[0];
@@ -47,11 +61,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         profile: {
-          id: String(profile.id),
+          userId: String(profile.id),
           email: profile.email,
           displayName: profile.display_name,
           avatarUrl: profile.avatar_url,
           bio: profile.bio,
+          lunarSign: profile.lunar_sign,
+          cosmicLevel: profile.cosmic_level,
+          cosmicPoints: Number(profile.cosmic_points),
+          postsCount: Number(profile.posts_count),
+          followersCount: Number(profile.followers_count),
+          followingCount: Number(profile.following_count),
+          streakDays: Number(profile.streak_days),
         },
       },
       { status: 200 }

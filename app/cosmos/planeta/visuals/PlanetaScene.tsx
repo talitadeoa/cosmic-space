@@ -1,18 +1,18 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { SpacePageLayout } from '@/components/layouts';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 
 export type PlanetaSceneProps = {
   children: React.ReactNode;
 };
 
 export const PlanetaScene: React.FC<PlanetaSceneProps> = ({ children }) => {
-  const router = useRouter();
+  const { onBackgroundClick } = useBackToHome();
 
   return (
-    <SpacePageLayout onBackgroundClick={() => router.push('/cosmos/home')}>
+    <SpacePageLayout onBackgroundClick={onBackgroundClick}>
       {children}
     </SpacePageLayout>
   );

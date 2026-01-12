@@ -139,7 +139,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     [toggleIsland]
   );
 
-  const handleCreateIsland = () => {
+  const handleCreateIsland = useCallback(() => {
     const trimmed = newIslandName.trim();
     if (!trimmed) return;
     if (!onCreateIsland) return;
@@ -149,29 +149,29 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     }
     setNewIslandName('');
     setIsCreating(false);
-  };
+  }, [newIslandName, onCreateIsland, onSelectIsland]);
 
-  const handleStartEditing = (islandId: IslandId) => {
+  const handleStartEditing = useCallback((islandId: IslandId) => {
     if (!onRenameIsland || isDraggingTodo) return;
     setEditingIslandId(islandId);
     setEditingIslandName(getIslandLabel(islandId, islandNames) ?? '');
-  };
+  }, [onRenameIsland, isDraggingTodo, islandNames]);
 
-  const handleCancelEditing = () => {
+  const handleCancelEditing = useCallback(() => {
     setEditingIslandId(null);
     setEditingIslandName('');
-  };
+  }, []);
 
-  const handleSaveEditing = () => {
+  const handleSaveEditing = useCallback(() => {
     if (!editingIslandId || !onRenameIsland) return;
     const trimmed = editingIslandName.trim();
     if (!trimmed) return;
     onRenameIsland(editingIslandId, trimmed);
     setEditingIslandId(null);
     setEditingIslandName('');
-  };
+  }, [editingIslandId, editingIslandName, onRenameIsland]);
 
-  const handleRemoveIsland = () => {
+  const handleRemoveIsland = useCallback(() => {
     if (!editingIslandId || !onRemoveIsland || isDraggingTodo) return;
     const removed = onRemoveIsland(editingIslandId);
     if (removed === false) return;
@@ -180,7 +180,7 @@ export const IslandsList: React.FC<IslandsListProps> = ({
     }
     setEditingIslandId(null);
     setEditingIslandName('');
-  };
+  }, [editingIslandId, onRemoveIsland, isDraggingTodo, selectedIsland, onSelectIsland]);
 
   const visibleIslandIds = islandIds && islandIds.length > 0 ? islandIds : ISLAND_IDS;
   const canCreate =

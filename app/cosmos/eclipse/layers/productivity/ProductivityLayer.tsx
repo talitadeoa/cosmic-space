@@ -31,10 +31,10 @@ const ProductivityLayer: React.FC<ProductivityLayerProps> = ({
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
                 Curva de energia
               </p>
-              <h3 className="text-lg font-semibold text-white">Tendência de conclusão por fase</h3>
+              <h3 className="text-lg font-semibold text-white">Ritmo de avanço por fase</h3>
             </div>
             <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200">
-              {completedTodos}/{totalTodos} concluídas
+              {completedTodos}/{totalTodos} finalizadas
             </span>
           </div>
 
@@ -102,7 +102,7 @@ const ProductivityLayer: React.FC<ProductivityLayerProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
-                Itens fora de órbita
+                Itens fora do fluxo
               </p>
               <h4 className="text-sm font-semibold text-white">To-dos sem fase</h4>
             </div>
@@ -113,7 +113,7 @@ const ProductivityLayer: React.FC<ProductivityLayerProps> = ({
 
           {unassignedTodos.length === 0 ? (
             <p className="text-sm text-slate-400">
-              Tudo classificado! Continue arrastando tarefas para cada fase lunar no SidePlanet.
+              Tudo alinhado ao fluxo! Continue arrastando tarefas para cada fase lunar no SidePlanet.
             </p>
           ) : (
             <div className="space-y-2">

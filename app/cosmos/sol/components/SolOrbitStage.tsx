@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
+import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 
-const MOON_RING_RADIUS_PERCENT = 28;
+const MOON_RING_RADIUS_PERCENT = 36;
 const RING_HIT_BAND_PERCENT = 10;
 const INNER_SAFE_RADIUS_PERCENT = 22;
 
@@ -58,12 +59,21 @@ const DIAGONAL_MOONS: Array<{
   phase: MoonPhase;
   angleDeg: number;
   floatOffset: number;
+  tooltipPosition: 'top' | 'bottom' | 'left' | 'right';
 }> = [
-  { phase: 'luaNova', angleDeg: 270, floatOffset: 3 },
-  { phase: 'luaCrescente', angleDeg: 0, floatOffset: -2 },
-  { phase: 'luaCheia', angleDeg: 90, floatOffset: -1 },
-  { phase: 'luaMinguante', angleDeg: 180, floatOffset: 1 },
+  { phase: 'luaNova', angleDeg: 0, floatOffset: 3, tooltipPosition: 'right' }, // Direita
+  { phase: 'luaCrescente', angleDeg: 270, floatOffset: -2, tooltipPosition: 'top' }, // Topo
+  { phase: 'luaCheia', angleDeg: 180, floatOffset: -1, tooltipPosition: 'left' }, // Esquerda
+  { phase: 'luaMinguante', angleDeg: 90, floatOffset: 1, tooltipPosition: 'bottom' }, // Baixo
 ];
+
+// Classes de posicionamento para tooltips baseado na posição da lua
+const TOOLTIP_POSITION_CLASSES: Record<'top' | 'bottom' | 'left' | 'right', string> = {
+  top: 'bottom-full mb-2 left-1/2 -translate-x-1/2',
+  bottom: 'top-full mt-2 left-1/2 -translate-x-1/2',
+  left: 'right-full mr-2 top-1/2 -translate-y-1/2',
+  right: 'left-full ml-2 top-1/2 -translate-y-1/2',
+};
 
 type SolOrbitStageProps = {
   onSolClick: () => void;
@@ -79,7 +89,14 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   onOutsideClick,
 }) => {
   const [hoveredMoon, setHoveredMoon] = useState<MoonPhase | null>(null);
+  const [autoHighlightedMoon, setAutoHighlightedMoon] = useState<MoonPhase | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const earthPosRef = useRef<{ x: number; y: number; angleE: number }>({ x: 0, y: 0, angleE: 0 });
+  const proximityDistanceRef = useRef(60); // Distância de ativação do destaque
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressDelay = 500; // 500ms para toque longo
   const handleSpaceClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget) return;
@@ -132,12 +149,13 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
     let centerY = 0;
     let earthOrbitRadius = 0;
     let moonOrbitRadius = 0;
+    let minSide = 0;
     let time = 0;
     let animationId: number;
 
     const config = {
-      earthAngularSpeed: 0.0025,
-      moonAngularSpeed: 0.03,
+      earthAngularSpeed: -0.0025,
+      moonAngularSpeed: -0.03,
       moonTrailMaxPoints: 2200,
       lineWidthOrbits: 1.2,
       lineWidthTrail: 1.6,
@@ -161,7 +179,7 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       centerX = width / 2;
       centerY = height / 2;
 
-      const minSide = Math.min(width, height);
+      minSide = Math.min(width, height);
 
       earthOrbitRadius = Math.max(minSide * 0.28, 120);
       moonOrbitRadius = Math.max(earthOrbitRadius * 0.32, 32);
@@ -248,8 +266,14 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
 
     const drawStaticWaveRing = () => {
       const waveFrequency = 12;
-      const baseRadius = earthOrbitRadius + 42;
-      const waveAmplitude = 16;
+      // Usar valores proporcionais ao tamanho do container para evitar corte em mobile
+      const waveOffset = minSide * 0.08; // ~8% do tamanho (era fixo 42)
+      const waveAmplitude = minSide * 0.025; // ~2.5% do tamanho (era fixo 16)
+      const baseRadius = earthOrbitRadius + waveOffset;
+      
+      // Garantir que o raio máximo não exceda 48% do container
+      const maxAllowedRadius = minSide * 0.48;
+      const actualBaseRadius = Math.min(baseRadius, maxAllowedRadius - waveAmplitude);
 
       ctx.save();
       ctx.lineWidth = 1.1;
@@ -260,7 +284,7 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       for (let i = 0; i <= steps; i++) {
         const theta = (i / steps) * Math.PI * 2;
         const offset = Math.sin(theta * waveFrequency + Math.PI / 2) * waveAmplitude;
-        const r = baseRadius + offset;
+        const r = actualBaseRadius + offset;
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
 
@@ -281,6 +305,8 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
       drawStaticWaveRing();
 
       const earthPos = getEarthPosition(time);
+      earthPosRef.current = earthPos; // Armazenar posição para verificação de proximidade
+      
       const moonPos = getMoonPosition(time, earthPos);
       updateMoonTrail(moonPos);
       drawMoonTrail();
@@ -299,10 +325,78 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
     };
   }, []);
 
+  // Efeito para detectar proximidade entre Terra e Luas
+  useEffect(() => {
+    const checkProximity = () => {
+      const earthPos = earthPosRef.current;
+      if (!earthPos) return;
+
+      const proximityDistance = proximityDistanceRef.current;
+      let closestPhase: MoonPhase | null = null;
+      let closestDistance = proximityDistance;
+
+      DIAGONAL_MOONS.forEach(({ phase, angleDeg }) => {
+        const rad = (angleDeg * Math.PI) / 180;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const parentRect = canvas.parentElement?.getBoundingClientRect();
+        if (!parentRect) return;
+
+        const size = Math.min(parentRect.width, parentRect.height);
+        const moonX = parentRect.width / 2 + (MOON_RING_RADIUS_PERCENT / 100) * size * Math.cos(rad);
+        const moonY = parentRect.height / 2 + (MOON_RING_RADIUS_PERCENT / 100) * size * Math.sin(rad);
+
+        const distance = Math.sqrt((earthPos.x - moonX) ** 2 + (earthPos.y - moonY) ** 2);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestPhase = phase;
+        }
+      });
+
+      setAutoHighlightedMoon(closestPhase);
+    };
+
+    const interval = setInterval(checkProximity, 50); // Verificar a cada 50ms
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handler para duplo clique - abre chat modal
+  const handleDoubleClick = (phase: MoonPhase) => {
+    setSelectedMoonPhase(phase);
+    setIsChatOpen(true);
+  };
+
+  // Handler para toque longo (mobile) - abre chat modal
+  const handleLongPressStart = (phase: MoonPhase) => {
+    longPressTimerRef.current = setTimeout(() => {
+      setSelectedMoonPhase(phase);
+      setIsChatOpen(true);
+    }, longPressDelay);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleChatSubmit = async () => {
+    setIsChatOpen(false);
+    setSelectedMoonPhase(null);
+  };
+
+  const handleChatClose = () => {
+    setIsChatOpen(false);
+    setSelectedMoonPhase(null);
+  };
+
   return (
-    <div className="flex min-h-[100svh] w-full items-center justify-center overflow-hidden py-6 sm:py-10">
+    <div className="flex min-h-[100dvh] w-full items-center justify-center overflow-hidden px-1 py-2 sm:px-4 sm:py-8 safe-area-inset">
       <div
-        className="relative aspect-square h-[min(84svh,92vw)] w-[min(84svh,92vw)] max-h-[720px] max-w-[720px] sm:h-[min(90vh,90vw)] sm:w-[min(90vh,90vw)]"
+        className="relative aspect-square h-[min(68dvh,82vw)] w-[min(68dvh,82vw)] max-h-[520px] max-w-[520px] sm:h-[min(78vh,85vw)] sm:w-[min(78vh,85vw)] sm:max-h-[680px] sm:max-w-[680px] md:max-h-[720px] md:max-w-[720px]"
         onClick={handleSpaceClick}
       >
         {/* Canvas da órbita */}
@@ -318,21 +412,25 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
         </div>
 
         {/* Luas posicionadas na órbita */}
-        {DIAGONAL_MOONS.map(({ phase, angleDeg, floatOffset }) => {
+        {DIAGONAL_MOONS.map(({ phase, angleDeg, floatOffset, tooltipPosition }) => {
           const rad = (angleDeg * Math.PI) / 180;
           const x = 50 + MOON_RING_RADIUS_PERCENT * Math.cos(rad);
           const y = 50 + MOON_RING_RADIUS_PERCENT * Math.sin(rad);
           const moonInfo = MOON_EVENTS[phase];
-          const isHovered = hoveredMoon === phase;
+          const isManualHover = hoveredMoon === phase;
+          const isAutoHighlight = autoHighlightedMoon === phase;
+          const showHover = isManualHover || isAutoHighlight;
 
           const handleTouchStart = (e: React.TouchEvent) => {
             e.preventDefault();
             setHoveredMoon(phase);
+            handleLongPressStart(phase);
           };
 
           const handleTouchEnd = (e: React.TouchEvent) => {
             e.preventDefault();
             setHoveredMoon(null);
+            handleLongPressEnd();
           };
 
           return (
@@ -342,33 +440,67 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
               style={{ left: `${x}%`, top: `${y}%` }}
               onMouseEnter={() => setHoveredMoon(phase)}
               onMouseLeave={() => setHoveredMoon(null)}
+              onDoubleClick={() => handleDoubleClick(phase)}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleLongPressEnd}
             >
+              {/* Destaque visual quando Terra está próxima */}
+              {isAutoHighlight && (
+                <div 
+                  className="absolute inset-0 -m-2 rounded-full animate-pulse"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(56,189,248,0.35) 0%, rgba(56,189,248,0) 60%)',
+                  }}
+                />
+              )}
+              
               <CelestialObject
                 type={phase}
-                size="md"
+                size="sm"
                 interactive
                 onClick={() => onMoonClick(phase)}
                 floatOffset={floatOffset}
               />
 
-              {isHovered && (
-                <div className="absolute top-full mt-2 sm:mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm">
-                  <div className="mb-1 text-sm sm:text-base">{moonInfo.emoji}</div>
-                  <div className="text-white text-xs sm:text-sm">{moonInfo.name}</div>
-                  <div className="mt-1 text-indigo-300 text-xs">{moonInfo.event}</div>
-                  <div className="mt-1 text-yellow-300 text-xs">{moonInfo.season}</div>
-                  <div className="mt-1 text-sky-300 text-xs">{moonInfo.dates}</div>
-                  <div className="mt-2 max-w-xs sm:max-w-sm whitespace-normal text-indigo-200/80 text-xs">
-                    {moonInfo.description}
+              {showHover && (
+                <div 
+                  className={`absolute ${TOOLTIP_POSITION_CLASSES[tooltipPosition]} z-50 rounded-lg bg-slate-900/90 px-2 py-1.5 text-[0.65rem] font-medium text-indigo-100 ring-1 ring-white/15 shadow-lg backdrop-blur-sm transition-all duration-200 sm:px-2.5 sm:py-2 sm:text-xs ${
+                    isAutoHighlight && !isManualHover ? 'opacity-85 scale-95' : 'opacity-100 scale-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    <span className="text-sm">{moonInfo.emoji}</span>
+                    <span className="text-white font-semibold">{moonInfo.name}</span>
                   </div>
+                  <div className="mt-0.5 text-yellow-300/90 text-[0.6rem] sm:text-[0.65rem]">{moonInfo.season}</div>
+                  {isAutoHighlight && !isManualHover && (
+                    <div className="mt-0.5 text-sky-400 text-[0.55rem] animate-pulse">🌍 Terra próxima</div>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Chat Modal */}
+      {selectedMoonPhase && (
+        <CosmosChatModal
+          isOpen={isChatOpen}
+          storageKey={`sol-orbit-${selectedMoonPhase}`}
+          title={MOON_EVENTS[selectedMoonPhase].name}
+          eyebrow={MOON_EVENTS[selectedMoonPhase].season}
+          subtitle={MOON_EVENTS[selectedMoonPhase].event}
+          badge={MOON_EVENTS[selectedMoonPhase].dates}
+          placeholder="Escreva suas reflexões sobre esta fase..."
+          systemGreeting={`${MOON_EVENTS[selectedMoonPhase].emoji} ${MOON_EVENTS[selectedMoonPhase].description}`}
+          systemQuestion="O que você gostaria de explorar sobre este momento do ciclo?"
+          tone="indigo"
+          onClose={handleChatClose}
+          onSubmit={handleChatSubmit}
+        />
+      )}
     </div>
   );
 };

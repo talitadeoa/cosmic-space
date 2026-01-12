@@ -25,7 +25,7 @@ const PhaseBarsLayer: React.FC<PhaseBarsLayerProps> = ({
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
             Barras lunares
           </p>
-          <h3 className="text-lg font-semibold text-white">Produtividade por fase</h3>
+          <h3 className="text-lg font-semibold text-white">Fluxo por fase</h3>
         </div>
         {!hasPhaseData && (
           <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200">
@@ -48,12 +48,12 @@ const PhaseBarsLayer: React.FC<PhaseBarsLayerProps> = ({
                   </span>
                   {bestPhase?.phase === stat.phase && stat.total > 0 && (
                     <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-[0.7rem] font-semibold text-emerald-200 ring-1 ring-emerald-500/40">
-                      mais eficiente
+                      mais fluida
                     </span>
                   )}
                 </div>
                 <span className="text-xs text-slate-400">
-                  {stat.completed}/{stat.total} feitas
+                  {stat.completed}/{stat.total} concluídas
                 </span>
               </div>
               <div className="relative h-3 overflow-hidden rounded-full bg-slate-800/70 ring-1 ring-white/5">

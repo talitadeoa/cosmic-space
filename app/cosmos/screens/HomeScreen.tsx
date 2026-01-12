@@ -54,7 +54,9 @@ const HOME_OBJECTS: HomeCelestial[] = [
   },
 ];
 
-const HomeScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
+type HomeScreenProps = Pick<ScreenProps, 'navigateTo' | 'navigateWithFocus'>;
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ navigateWithFocus }) => {
   return (
     <div className="relative flex h-full w-full items-center justify-center px-4 sm:px-10">
       <MoonPhaseDisplay />

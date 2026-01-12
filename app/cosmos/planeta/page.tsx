@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { PlanetaProviders } from './state/PlanetaProviders';
-import { PlanetaScene } from './visuals/PlanetaScene';
+import { PlanetaProviders } from './state';
+import { PlanetaScene } from './visuals';
 import PlanetScreen from './components/PlanetScreen';
-import { usePlanetaNavigation } from './hooks/usePlanetaNavigation';
+import { usePlanetaNavigation } from './hooks';
 import { LunationSync } from '@/components/sync';
+import { CosmosRouteHelper } from '@/app/cosmos/components';
 
 /**
  * Página Planeta - Tela principal de organização de tarefas por fases lunares
@@ -27,6 +28,7 @@ const PlanetaPage: React.FC = () => {
 
       <PlanetaScene>
         <PlanetScreen navigateTo={navigateTo} navigateWithFocus={navigateWithFocus} />
+        <CosmosRouteHelper routeKey="planeta" position="bottom-right" />
       </PlanetaScene>
     </PlanetaProviders>
   );

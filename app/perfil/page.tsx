@@ -1,25 +1,42 @@
 'use client';
 
 import { SpacePageLayout } from '@/components/layouts';
-import MenstrualTracker from '@/components/MenstrualTracker';
+import AuthGate from '@/components/auth/AuthGate';
+import CycleTracker from '@/components/CycleTracker';
+import { CycleCareButton } from '@/components';
 import Link from 'next/link';
 import { type FormEvent, useEffect, useState } from 'react';
+import { CosmicLevelBadge, ProfileStats } from '@/app/comunidade/components/profile';
+
+type CosmicLevel = 'lua-nova' | 'quarto-crescente' | 'lua-cheia' | 'estrela-guia';
 
 type CommunityProfile = {
+  userId?: string;
   displayName: string;
   avatarUrl: string;
   bio: string;
   email: string;
   isWomen?: boolean;
+  cosmicLevel?: CosmicLevel;
+  cosmicPoints?: number;
+  postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
 };
 
 const PerfilPage = () => {
   const [profile, setProfile] = useState<CommunityProfile>({
+    userId: '',
     displayName: '',
     avatarUrl: '',
     bio: '',
     email: '',
     isWomen: false,
+    cosmicLevel: 'lua-nova',
+    cosmicPoints: 0,
+    postsCount: 0,
+    followersCount: 0,
+    followingCount: 0,
   });
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -35,11 +52,17 @@ const PerfilPage = () => {
         }
         if (isActive && data?.profile) {
           setProfile({
+            userId: data.profile.userId ?? '',
             displayName: data.profile.displayName ?? '',
             avatarUrl: data.profile.avatarUrl ?? '',
             bio: data.profile.bio ?? '',
             email: data.profile.email ?? '',
             isWomen: data.profile.isWomen ?? false,
+            cosmicLevel: data.profile.cosmicLevel ?? 'lua-nova',
+            cosmicPoints: data.profile.cosmicPoints ?? 0,
+            postsCount: data.profile.postsCount ?? 0,
+            followersCount: data.profile.followersCount ?? 0,
+            followingCount: data.profile.followingCount ?? 0,
           });
         }
       } catch (error) {
@@ -100,8 +123,9 @@ const PerfilPage = () => {
   };
 
   return (
-    <SpacePageLayout className="px-6 py-12 sm:px-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
+    <AuthGate>
+      <SpacePageLayout className="px-6 py-12 sm:px-10">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
         <header className="space-y-4">
           <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Perfil</p>
           <h1 className="text-3xl font-semibold text-white sm:text-4xl">
@@ -120,8 +144,37 @@ const PerfilPage = () => {
             >
               Voltar para Comunidade
             </Link>
+            {profile.userId && (
+              <Link
+                href={`/comunidade/perfil/${profile.userId}`}
+                className="rounded-full border border-indigo-400/70 bg-indigo-500/20 px-4 py-2 transition hover:bg-indigo-500/30 hover:text-white"
+              >
+                Ver perfil público
+              </Link>
+            )}
           </div>
         </header>
+
+        {/* Cosmic Level & Stats Section */}
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/70 bg-black/40 p-4">
+          <div className="flex items-center gap-4">
+            <CosmicLevelBadge
+              level={profile.cosmicLevel ?? 'lua-nova'}
+              points={profile.cosmicPoints ?? 0}
+              showProgress
+              size="lg"
+            />
+            <div className="text-sm text-slate-400">
+              <p>Continue participando para evoluir seu nível cósmico!</p>
+            </div>
+          </div>
+          <ProfileStats
+            userId={profile.userId ?? ''}
+            postsCount={profile.postsCount ?? 0}
+            followersCount={profile.followersCount ?? 0}
+            followingCount={profile.followingCount ?? 0}
+          />
+        </section>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
           <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
@@ -211,19 +264,23 @@ const PerfilPage = () => {
         {/* Menstrual Tracker Section */}
         {profile.isWomen && (
           <section className="rounded-3xl border border-pink-800/70 bg-black/40 p-6 shadow-2xl shadow-pink-950/30 backdrop-blur-md">
-            <p className="text-sm uppercase tracking-[0.3em] text-pink-400">Saúde Menstrual</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Rastreador de Menstruação</h2>
+            <p className="text-sm uppercase tracking-[0.3em] text-pink-400">Cuidado do Ciclo</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Sua Jornada Cíclica</h2>
             <p className="mt-2 text-sm text-slate-400">
-              Registre sua menstruação e acompanhe como ela se relaciona com as fases lunares e seu
-              signo zodiacal.
+              Registre seu ritmo, sinais do corpo e lembretes pessoais de forma acolhedora.<br/>
+              <span className="inline-block mt-2">
+                <Link href="/cosmos/lua" className="text-pink-300 underline hover:text-pink-200 transition-colors">Ver calendário lunar & insights</Link>
+              </span>
             </p>
             <div className="mt-6">
-              <MenstrualTracker isEnabled={profile.isWomen || false} />
+              {/* Novo botão de jornada do ciclo */}
+              <CycleCareButton variant="full" />
             </div>
           </section>
         )}
-      </div>
-    </SpacePageLayout>
+        </div>
+      </SpacePageLayout>
+    </AuthGate>
   );
 };
 

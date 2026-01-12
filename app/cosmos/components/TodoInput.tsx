@@ -186,6 +186,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
         resetOnSubmit
         closeOnSubmit={false}
         submitOnSend
+        enableBrainstorm
         windowClassName="bg-white/5 border-white/10 shadow-xl shadow-indigo-900/20 backdrop-blur-xl"
         headerExtra={headerExtra}
         suggestions={

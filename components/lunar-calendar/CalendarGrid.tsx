@@ -2,7 +2,7 @@
  * Componente com o grid mensal do calendário
  */
 
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { CalendarDay } from './types';
 import { MoonPhaseIcon } from './MoonPhaseIcon';
 import { getWeekDayInitials } from './utils';
@@ -24,6 +24,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   locale = 'pt-BR',
 }) => {
   const weekDayInitials = getWeekDayInitials(locale);
+  const buttonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const handleDayClick = (day: CalendarDay) => {
     if (onSelectDate) {
@@ -34,12 +35,72 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, day: CalendarDay) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleDayClick(day);
+  // Encontra todos os dias navegáveis (do mês atual)
+  const getAllDays = useCallback(() => {
+    return weeks.flat().filter(day => day.isCurrentMonth);
+  }, [weeks]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLButtonElement>, day: CalendarDay) => {
+    const allDays = getAllDays();
+    const currentIndex = allDays.findIndex(d => d.date.getTime() === day.date.getTime());
+    
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+    let handled = false;
+
+    switch (e.key) {
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        handleDayClick(day);
+        return;
+      case 'ArrowRight':
+        e.preventDefault();
+        nextIndex = Math.min(currentIndex + 1, allDays.length - 1);
+        handled = true;
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        nextIndex = Math.max(currentIndex - 1, 0);
+        handled = true;
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        nextIndex = Math.min(currentIndex + 7, allDays.length - 1);
+        handled = true;
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        nextIndex = Math.max(currentIndex - 7, 0);
+        handled = true;
+        break;
+      case 'Home':
+        e.preventDefault();
+        nextIndex = 0;
+        handled = true;
+        break;
+      case 'End':
+        e.preventDefault();
+        nextIndex = allDays.length - 1;
+        handled = true;
+        break;
+      default:
+        return;
     }
-  };
+
+    if (handled && nextIndex !== currentIndex) {
+      const nextDay = allDays[nextIndex];
+      const dateKey = nextDay.date.toISOString().split('T')[0];
+      const nextButton = buttonRefs.current.get(dateKey);
+      if (nextButton) {
+        nextButton.focus();
+        if (onSelectDate) {
+          onSelectDate(nextDay.date);
+        }
+      }
+    }
+  }, [getAllDays, handleDayClick, onSelectDate]);
 
   return (
     <div className={styles.calendarGrid} role="grid" aria-label="Calendário mensal">
@@ -60,44 +121,52 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       {/* Grid com semanas e dias */}
       {weeks.map((week, weekIndex) => (
         <div key={weekIndex} className={styles.week} role="row">
-          {week.map((day, dayIndex) => (
-            <div key={`${weekIndex}-${dayIndex}`} className={styles.dayCell} role="gridcell">
-              <button
-                className={`
-                  ${styles.dayButton}
-                  ${!day.isCurrentMonth ? styles.outsideMonth : ''}
-                  ${day.isToday ? styles.today : ''}
-                  ${day.isSelected ? styles.selected : ''}
-                  ${day.isWeekend ? styles.weekend : ''}
-                `}
-                onClick={() => handleDayClick(day)}
-                onKeyDown={(e) => handleKeyDown(e, day)}
-                aria-label={getAriaLabel(day, locale)}
-                aria-pressed={day.isSelected}
-                tabIndex={day.isSelected ? 0 : -1}
-                disabled={!day.isCurrentMonth}
-              >
-                {/* Fundo do dia selecionado (pill) */}
-                {day.isSelected && <span className={styles.selectionPill} />}
+          {week.map((day, dayIndex) => {
+            const dateKey = day.date.toISOString().split('T')[0];
+            return (
+              <div key={`${weekIndex}-${dayIndex}`} className={styles.dayCell} role="gridcell">
+                <button
+                  ref={(el) => {
+                    if (el && day.isCurrentMonth) {
+                      buttonRefs.current.set(dateKey, el);
+                    }
+                  }}
+                  className={`
+                    ${styles.dayButton}
+                    ${!day.isCurrentMonth ? styles.outsideMonth : ''}
+                    ${day.isToday ? styles.today : ''}
+                    ${day.isSelected ? styles.selected : ''}
+                    ${day.isWeekend ? styles.weekend : ''}
+                  `}
+                  onClick={() => handleDayClick(day)}
+                  onKeyDown={(e) => handleKeyDown(e, day)}
+                  aria-label={getAriaLabel(day, locale)}
+                  aria-pressed={day.isSelected}
+                  tabIndex={day.isSelected || (day.isToday && !selectedDate) ? 0 : -1}
+                  disabled={!day.isCurrentMonth}
+                >
+                  {/* Fundo do dia selecionado (pill) */}
+                  {day.isSelected && <span className={styles.selectionPill} />}
 
-                {/* Número do dia */}
-                <span className={styles.dayNumber}>{day.dayOfMonth}</span>
+                  {/* Número do dia */}
+                  <span className={styles.dayNumber}>{day.dayOfMonth}</span>
 
-                {/* Mini ícone de fase lunar */}
-                {day.isCurrentMonth && day.lunarData && (
-                  <div className={styles.lunarIndicator}>
-                    <MoonPhaseIcon
-                      phase={day.lunarData.phase}
-                      illumination={day.lunarData.illumination}
-                      size="small"
-                      variant="circle"
-                      aria-label={`${day.lunarData.phaseName}`}
-                    />
-                  </div>
-                )}
-              </button>
-            </div>
-          ))}
+                  {/* Mini ícone de fase lunar */}
+                  {day.isCurrentMonth && day.lunarData && (
+                    <div className={styles.lunarIndicator}>
+                      <MoonPhaseIcon
+                        phase={day.lunarData.phase}
+                        illumination={day.lunarData.illumination}
+                        size="small"
+                        variant="circle"
+                        aria-label={`${day.lunarData.phaseName}`}
+                      />
+                    </div>
+                  )}
+                </button>
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>

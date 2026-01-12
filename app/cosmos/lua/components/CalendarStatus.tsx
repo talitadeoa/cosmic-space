@@ -8,22 +8,22 @@ type CalendarStatusProps = {
 
 const CalendarStatus: React.FC<CalendarStatusProps> = ({ isLoading, error, onRetry }) => (
   <div
-    className="absolute right-4 top-4 flex items-center gap-3 rounded-full border border-white/5 bg-slate-900/60 px-4 py-2 text-[11px] text-slate-100 shadow-lg shadow-sky-900/30 backdrop-blur-md"
+    className="absolute right-2 top-8 flex items-center gap-2 rounded-full border border-white/5 bg-slate-900/60 px-2 py-1 text-[9px] text-slate-100 shadow-lg shadow-sky-900/30 backdrop-blur-md sm:right-4 sm:top-4 sm:gap-3 sm:px-4 sm:py-2 sm:text-[11px]"
     role="status"
     aria-live="polite"
   >
-    <span>
-      {isLoading && 'Sincronizando calendário lunar...'}
-      {!isLoading && error && `Erro ao sincronizar: ${error}`}
-      {!isLoading && !error && 'Calendário lunar sincronizado'}
+    <span className="max-w-[120px] truncate sm:max-w-none">
+      {isLoading && 'Sincronizando...'}
+      {!isLoading && error && `Erro: ${error}`}
+      {!isLoading && !error && 'Sincronizado'}
     </span>
     {error && (
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-full border border-sky-200/30 bg-sky-500/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-300/60"
+        className="rounded-full border border-sky-200/30 bg-sky-500/20 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-300/60 sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.18em]"
       >
-        Tentar novamente
+        Retry
       </button>
     )}
   </div>

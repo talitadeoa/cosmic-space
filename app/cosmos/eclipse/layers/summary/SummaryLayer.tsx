@@ -26,10 +26,10 @@ const SummaryLayer: React.FC<SummaryLayerProps> = ({
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-indigo-100/70">
-            Eclipse analítico
+            Eclipse orgânico
           </p>
           <h3 className="text-lg font-semibold text-white sm:text-xl">
-            Produtividade por fases da lua
+            Ritmo por fases da lua
           </h3>
         </div>
         <span className="rounded-full bg-slate-900/70 px-3 py-1 text-[0.7rem] text-slate-200 ring-1 ring-white/10">
@@ -52,8 +52,7 @@ const SummaryLayer: React.FC<SummaryLayerProps> = ({
             className="drop-shadow-[0_0_30px_rgba(99,102,241,0.45)]"
           />
           <p className="max-w-xs text-center text-sm text-slate-200">
-            Use o eclipse para visualizar a fusão entre os to-dos do planeta lateral e o ciclo
-            lunar.
+            Use o eclipse para sentir a fusão entre os to-dos do planeta lateral e o ciclo lunar.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -76,18 +75,18 @@ const SummaryLayer: React.FC<SummaryLayerProps> = ({
 
       <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 shadow-inner shadow-black/20">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
-          Fase mais produtiva
+          Fase mais fluida
         </p>
         {bestPhase ? (
           <div className="mt-2 flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-sm text-slate-200">{phaseLabels[bestPhase.phase]}</span>
               <span className="text-xs text-slate-400">
-                {bestPhase.completed} de {bestPhase.total} tarefas finalizadas
+                {bestPhase.completed} de {bestPhase.total} tarefas concluídas
               </span>
             </div>
             <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-200 ring-1 ring-emerald-400/40">
-              {bestPhase.productivity}% de conclusão
+              {bestPhase.productivity}% de avanço
             </span>
           </div>
         ) : (

@@ -16,7 +16,7 @@ interface InputWindowProps {
   accentClassName?: string;
 }
 
-const baseClasses = 'relative border overflow-hidden';
+const baseClasses = 'relative border';
 
 const variantClasses: Record<InputWindowVariant, string> = {
   glass: 'border-white/15 bg-white/10 shadow-2xl backdrop-blur-lg',

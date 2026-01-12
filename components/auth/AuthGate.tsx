@@ -2,16 +2,17 @@
 
 import { useRouter } from 'next/navigation';
 import { SpaceBackground } from '@/app/cosmos/components/SpaceBackground';
-import InputWindow from '@/components/shared/cosmos/InputWindow';
+import InputWindow from '@/app/cosmos/components/InputWindow';
 import { useAuth } from '@/hooks/useAuth';
 import AuthChatFlow from './AuthChatFlow';
 
 interface AuthGateProps {
   children: React.ReactNode;
   chatButtonSize?: 'default' | 'compact';
+  accessTarget?: string;
 }
 
-export default function AuthGate({ children, chatButtonSize = 'default' }: AuthGateProps) {
+export default function AuthGate({ children, chatButtonSize = 'default', accessTarget }: AuthGateProps) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -39,6 +40,7 @@ export default function AuthGate({ children, chatButtonSize = 'default' }: AuthG
         <div
           className="w-full max-w-2xl cursor-auto"
           onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
         >
           <InputWindow
             variant="glass"
@@ -50,6 +52,7 @@ export default function AuthGate({ children, chatButtonSize = 'default' }: AuthG
             <AuthChatFlow
               variant="page"
               sendButtonSize={chatButtonSize}
+              accessTarget={accessTarget}
               header={{
                 title: "Seja bem-vindo(a)",
               }}

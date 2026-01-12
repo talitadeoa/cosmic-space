@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputWindow from './InputWindow';
 import { ChatMessage, ChatMessageMeta, loadChatHistory, saveChatHistory } from '@/lib/chatHistory';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthChatFlow } from '@/components/auth/AuthChatFlow';
+import { useBrainstormSession } from '@/hooks/useBrainstormSession';
+import { BrainstormPanel } from '@/components/brainstorm';
 
 type SubmitStrategy = 'concat' | 'last';
 
@@ -38,6 +40,7 @@ interface CosmosChatModalProps {
   closeOnSubmit?: boolean;
   submitOnSend?: boolean;
   windowClassName?: string;
+  enableBrainstorm?: boolean;
   onClose: () => void;
   onSubmit: (value: string, messages: ChatMessage[], meta?: ChatMessageMeta) => Promise<void>;
   headerExtra?: React.ReactNode;
@@ -133,6 +136,9 @@ interface ChatHeaderProps {
   headerExtra?: React.ReactNode;
   inline: boolean;
   styles: ChatStyles;
+  enableBrainstorm?: boolean;
+  isBrainstormActive?: boolean;
+  onToggleBrainstorm?: () => void;
 }
 
 function ChatHeader({
@@ -143,22 +149,49 @@ function ChatHeader({
   headerExtra,
   inline,
   styles,
+  enableBrainstorm,
+  isBrainstormActive,
+  onToggleBrainstorm,
 }: ChatHeaderProps) {
   return (
     <div className={`border-b ${styles.headerBorder} ${inline ? 'pb-3' : 'pb-4'}`}>
-      {eyebrow && (
-        <div
-          className={`mb-2 font-semibold uppercase tracking-[0.24em] ${styles.eyebrowText} ${
-            inline ? 'text-[0.65rem]' : 'text-sm'
-          }`}
-        >
-          {eyebrow}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1">
+          {eyebrow && (
+            <div
+              className={`mb-2 font-semibold uppercase tracking-[0.24em] ${styles.eyebrowText} ${
+                inline ? 'text-[0.65rem]' : 'text-sm'
+              }`}
+            >
+              {eyebrow}
+            </div>
+          )}
+          <h2 className={`${inline ? 'text-lg' : 'text-2xl'} font-bold text-white`}>{title}</h2>
+          {subtitle && (
+            <p className={`${inline ? 'text-[0.7rem]' : 'text-xs'} text-slate-200/70`}>{subtitle}</p>
+          )}
         </div>
-      )}
-      <h2 className={`${inline ? 'text-lg' : 'text-2xl'} font-bold text-white`}>{title}</h2>
-      {subtitle && (
-        <p className={`${inline ? 'text-[0.7rem]' : 'text-xs'} text-slate-200/70`}>{subtitle}</p>
-      )}
+        
+        {enableBrainstorm && (
+          <button
+            onClick={onToggleBrainstorm}
+            className={`
+              flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all
+              ${isBrainstormActive
+                ? 'bg-violet-500/30 border border-violet-400/50 text-violet-100 shadow-lg shadow-violet-500/20'
+                : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20'
+              }
+            `}
+            title={isBrainstormActive ? 'Sair do modo brainstorm' : 'Ativar modo brainstorm'}
+          >
+            <svg className="w-4 h-4" fill={isBrainstormActive ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <span className="hidden sm:inline">{isBrainstormActive ? 'Brainstorm ativo' : 'Brainstorm'}</span>
+          </button>
+        )}
+      </div>
+      
       {badge && (
         <div
           className={`mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] ${styles.badge}`}
@@ -175,8 +208,8 @@ interface ChatMessagesProps {
   messages: ChatMessage[];
   styles: ChatStyles;
   inline: boolean;
-  containerRef: React.RefObject<HTMLDivElement>;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
 function ChatMessages({
@@ -187,44 +220,50 @@ function ChatMessages({
   messagesEndRef,
 }: ChatMessagesProps) {
   const messagesClassName = inline
-    ? 'flex-1 min-h-0 space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20'
-    : 'flex-1 space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20';
+    ? 'flex-1 min-h-[120px] space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20'
+    : 'flex-1 min-h-[200px] space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20';
 
   return (
     <div ref={containerRef} className={messagesClassName}>
-      {messages.map((message, index) => (
-        <motion.div
-          key={message.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.05 }}
-          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-        >
-          <div className="flex max-w-xs flex-col gap-1">
-            {message.meta && (message.meta.category || message.meta.date) && (
-              <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-200/80">
-                {message.meta.category && (
-                  <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
-                    {message.meta.category}
-                  </span>
-                )}
-                {message.meta.date && (
-                  <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
-                    {message.meta.date}
-                  </span>
-                )}
+      {messages.length === 0 ? (
+        <div className="flex items-center justify-center h-full text-slate-400/60 text-sm">
+          <span>💬 Digite algo para começar...</span>
+        </div>
+      ) : (
+        messages.map((message, index) => (
+          <motion.div
+            key={message.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div className="flex max-w-xs flex-col gap-1">
+              {message.meta && (message.meta.category || message.meta.date) && (
+                <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-200/80">
+                  {message.meta.category && (
+                    <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
+                      {message.meta.category}
+                    </span>
+                  )}
+                  {message.meta.date && (
+                    <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
+                      {message.meta.date}
+                    </span>
+                  )}
+                </div>
+              )}
+              <div
+                className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
+                  message.role === 'user' ? styles.userBubble : styles.systemBubble
+                }`}
+              >
+                {message.content}
               </div>
-            )}
-            <div
-              className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
-                message.role === 'user' ? styles.userBubble : styles.systemBubble
-              }`}
-            >
-              {message.content}
             </div>
-          </div>
-        </motion.div>
-      ))}
+          </motion.div>
+        ))
+      )}
       <div ref={messagesEndRef} />
     </div>
   );
@@ -417,6 +456,7 @@ export default function CosmosChatModal({
   allowUnauthedSubmit = false,
   authNudgeMessage = 'Se deseja salvar no servidor, entre ou crie sua conta.',
   authRedirectPath: _authRedirectPath = '/cosmos/auth',
+  enableBrainstorm = false,
   onClose,
   onSubmit,
   headerExtra,
@@ -437,6 +477,10 @@ export default function CosmosChatModal({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
   const authBypassRef = useRef(false);
+  
+  // Brainstorm state
+  const [showBrainstormPanel, setShowBrainstormPanel] = useState(false);
+  const brainstorm = useBrainstormSession(`${storageKey}-brainstorm`);
 
   const handleAuthComplete = () => {
     void verifyAuth({ silent: true });
@@ -476,14 +520,52 @@ export default function CosmosChatModal({
     [messages]
   );
 
-  const scrollToBottom = () => {
+  // Brainstorm handlers
+  const handleToggleBrainstorm = useCallback(() => {
+    if (brainstorm.isActive) {
+      // Se já está ativo, mostra/esconde o painel
+      setShowBrainstormPanel((prev) => !prev);
+    } else {
+      // Inicia nova sessão
+      brainstorm.startSession(title);
+      setShowBrainstormPanel(true);
+      
+      // Adiciona mensagem de boas-vindas do brainstorm ao chat
+      const welcomeResponse = brainstorm.consumePendingResponse();
+      if (welcomeResponse) {
+        const systemMessage = buildSystemMessage(`brainstorm-welcome-${Date.now()}`, welcomeResponse);
+        setMessages((prev) => {
+          const next = [...prev, systemMessage];
+          saveChatHistory(storageKey, next);
+          return next;
+        });
+      }
+    }
+  }, [brainstorm, title, storageKey]);
+
+  const handleEndBrainstorm = useCallback(() => {
+    const finalSession = brainstorm.endSession();
+    setShowBrainstormPanel(false);
+    
+    if (finalSession?.summary) {
+      // Adiciona resumo final ao chat
+      const summaryMessage = buildSystemMessage(`brainstorm-summary-${Date.now()}`, finalSession.summary);
+      setMessages((prev) => {
+        const next = [...prev, summaryMessage];
+        saveChatHistory(storageKey, next);
+        return next;
+      });
+    }
+  }, [brainstorm, storageKey]);
+
+  const scrollToBottom = useCallback(() => {
     const container = messagesContainerRef.current;
     if (container) {
       container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
       return;
     }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  };
+  }, []);
 
   const persistMessages = (next: ChatMessage[]) => {
     setMessages(next);
@@ -492,7 +574,7 @@ export default function CosmosChatModal({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, authMessages, showAuthPrompt]);
+  }, [messages, authMessages, showAuthPrompt, scrollToBottom]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -593,6 +675,25 @@ export default function CosmosChatModal({
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
     saveChatHistory(storageKey, nextMessages);
+
+    // Se está em modo brainstorm, adiciona a ideia e gera resposta
+    if (brainstorm.isActive && brainstorm.status === 'brainstorming') {
+      brainstorm.addIdea(trimmed);
+      
+      // Adiciona resposta do brainstorm ao chat
+      window.setTimeout(() => {
+        const brainstormResponse = brainstorm.consumePendingResponse();
+        if (brainstormResponse) {
+          const systemMessage = buildSystemMessage(`brainstorm-${Date.now()}`, brainstormResponse);
+          setMessages((prev) => {
+            const next = [...prev, systemMessage];
+            saveChatHistory(storageKey, next);
+            return next;
+          });
+        }
+      }, 500);
+      return; // Não executa o fluxo normal quando em brainstorm
+    }
 
     if (submitOnSend) {
       const value =
@@ -811,12 +912,12 @@ export default function CosmosChatModal({
       size={inline ? 'sm' : 'md'}
       radius="lg"
       showAccent
-      className={`flex flex-col ${inline ? 'w-full max-h-[420px] overflow-auto' : 'h-[600px]'} ${windowClassName}`}
+      className={`flex flex-col relative ${inline ? 'w-full max-h-[420px] overflow-auto' : 'h-[600px]'} ${brainstorm.isActive && showBrainstormPanel ? 'pr-80' : ''} ${windowClassName}`}
     >
       {!inline && (
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+          className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 transition hover:border-white/30 hover:bg-white/10 hover:text-white z-20"
           aria-label="Fechar"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -838,7 +939,48 @@ export default function CosmosChatModal({
         headerExtra={headerExtra}
         inline={inline}
         styles={styles}
+        enableBrainstorm={enableBrainstorm}
+        isBrainstormActive={brainstorm.isActive}
+        onToggleBrainstorm={handleToggleBrainstorm}
       />
+      
+      {/* Brainstorm Panel */}
+      {enableBrainstorm && (
+        <BrainstormPanel
+          isOpen={showBrainstormPanel && brainstorm.isActive}
+          status={brainstorm.status}
+          ideas={brainstorm.ideas}
+          clusters={brainstorm.clusters}
+          stats={brainstorm.stats}
+          onToggleKeyIdea={brainstorm.toggleKeyIdea}
+          onCreateCluster={brainstorm.createCluster}
+          onStartOrganizing={() => {
+            brainstorm.startOrganizing();
+            const response = brainstorm.consumePendingResponse();
+            if (response) {
+              const systemMessage = buildSystemMessage(`brainstorm-organize-${Date.now()}`, response);
+              setMessages((prev) => {
+                const next = [...prev, systemMessage];
+                saveChatHistory(storageKey, next);
+                return next;
+              });
+            }
+          }}
+          onGenerateSummary={() => {
+            const summary = brainstorm.generateSummary();
+            if (summary) {
+              const systemMessage = buildSystemMessage(`brainstorm-summary-${Date.now()}`, summary);
+              setMessages((prev) => {
+                const next = [...prev, systemMessage];
+                saveChatHistory(storageKey, next);
+                return next;
+              });
+            }
+          }}
+          onEndSession={handleEndBrainstorm}
+          onClose={() => setShowBrainstormPanel(false)}
+        />
+      )}
 
       {!showAuthPrompt && contextEntries.length > 0 && (
         <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-200/80 shadow-inner shadow-black/10">

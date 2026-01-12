@@ -290,3 +290,104 @@ export const ArrowPathIcon = (props: IconProps) => (
     />
   </svg>
 );
+
+export const UserGroupIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    width={20}
+    height={20}
+    aria-hidden="true"
+    {...props}
+  >
+    <path d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM1.49 15.326a.78.78 0 0 1-.358-.442 3 3 0 0 1 4.308-3.516 6.484 6.484 0 0 0-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 0 1-2.07-.655ZM16.44 15.98a4.97 4.97 0 0 0 2.07-.654.78.78 0 0 0 .357-.442 3 3 0 0 0-4.308-3.517 6.484 6.484 0 0 1 1.907 3.96 2.32 2.32 0 0 1-.026.654ZM18 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM5.304 16.19a.844.844 0 0 1-.277-.71 5 5 0 0 1 9.947 0 .843.843 0 0 1-.277.71A6.975 6.975 0 0 1 10 18a6.974 6.974 0 0 1-4.696-1.81Z" />
+  </svg>
+);
+
+export const GlobeIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    width={20}
+    height={20}
+    aria-hidden="true"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-1.503.204A6.5 6.5 0 1 1 7.95 3.83L6.927 5.62a1.453 1.453 0 0 0 1.91 2.02l.175-.087a.75.75 0 0 1 1.464.294l-.267 1.2c-.09.405.127.812.5.975l.358.157a.965.965 0 0 1 .232 1.59l-.958.958a.75.75 0 0 0-.16.818l.197.52a1.5 1.5 0 0 1-.986 1.967l-.26.073a1.5 1.5 0 0 0-1.073 1.216 6.476 6.476 0 0 0 8.438-1.318l-.18-.18a.75.75 0 0 1 .09-1.138 5.978 5.978 0 0 0 .11-3.481Z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+export const ArrowTrendingUpIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    width={20}
+    height={20}
+    aria-hidden="true"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M12.577 4.878a.75.75 0 0 1 .919-.53l4.78 1.281a.75.75 0 0 1 .531.919l-1.281 4.78a.75.75 0 0 1-1.449-.387l.81-3.022a19.407 19.407 0 0 0-5.594 5.203.75.75 0 0 1-1.139.093L7 10.06l-4.72 4.72a.75.75 0 0 1-1.06-1.061l5.25-5.25a.75.75 0 0 1 1.06 0l3.074 3.073a20.923 20.923 0 0 1 5.545-4.931l-3.042-.815a.75.75 0 0 1-.53-.919Z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+export const PhotoIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    width={20}
+    height={20}
+    aria-hidden="true"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 8.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+export const EyeIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    width={20}
+    height={20}
+    aria-hidden="true"
+    {...props}
+  >
+    <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+    <path
+      fillRule="evenodd"
+      d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+export const ShareIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    width={20}
+    height={20}
+    aria-hidden="true"
+    {...props}
+  >
+    <path d="M13 4.5a2.5 2.5 0 1 1 .702 1.737L6.97 9.604a2.518 2.518 0 0 1 0 .792l6.733 3.367a2.5 2.5 0 1 1-.671 1.341l-6.733-3.367a2.5 2.5 0 1 1 0-3.474l6.733-3.367A2.52 2.52 0 0 1 13 4.5Z" />
+  </svg>
+);

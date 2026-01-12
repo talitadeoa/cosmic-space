@@ -30,7 +30,11 @@ import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
 import HighlightBanner from '../components/HighlightBanner';
 import MoonCarousel from '../components/MoonCarousel';
 import CalendarStatus from '../components/CalendarStatus';
+import LuaCycleMenu from '../components/LuaCycleMenu';
 import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
+import { useRouter } from 'next/navigation';
+import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 
 type LuaScreenProps = {
   navigateWithFocus?: ScreenProps['navigateWithFocus'];
@@ -42,6 +46,7 @@ type PhaseItem = {
 };
 
 const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
+  const { navigateToHome } = useBackToHome();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>('luaNova');
@@ -394,9 +399,27 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleBackgroundClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // Navigate to home if clicking directly on the background, not on child elements
+      if (e.target === e.currentTarget) {
+        navigateToHome();
+      }
+    },
+    [navigateToHome]
+  );
+
   return (
     <>
-      <div className="relative flex min-h-screen w-full flex-col items-center py-10 sm:py-12 lg:py-14">
+      <div
+        className="relative flex min-h-[100dvh] w-full flex-col items-center px-3 py-4 sm:px-4 sm:py-8 md:py-10 lg:py-12 cursor-pointer safe-area-inset"
+        onClick={handleBackgroundClick}
+      >
+        {/* Menu de ciclos lunares */}
+        <div className="absolute top-3 left-3 z-40 sm:top-4 sm:left-4">
+          <LuaCycleMenu currentPath="/cosmos/lua" />
+        </div>
+
         <LuminousTrail quadrant={visiblePeriod.quarterIndex as 0 | 1 | 2 | 3} />
         <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
 
@@ -404,7 +427,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
           {!isInvertedLayout && (
             <CelestialObject
               type="sol"
-              size={isCompactLayout ? 'md' : 'lg'}
+              size={isCompactLayout ? 'sm' : 'md'}
               interactive
               onClick={(e) =>
                 navigateWithFocus?.('planetCardBelowSun', {
@@ -413,7 +436,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
                   size: 'lg',
                 })
               }
-              className="mb-4 sm:mb-5 lg:mb-4"
+              className="mb-2 sm:mb-4 md:mb-5 lg:mb-4"
               floatOffset={-3}
             />
           )}
@@ -421,7 +444,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
           {isInvertedLayout && (
             <CelestialObject
               type="planeta"
-              size={isCompactLayout ? 'md' : 'lg'}
+              size={isCompactLayout ? 'sm' : 'md'}
               interactive
               onClick={(e) =>
                 navigateWithFocus?.('planetCardStandalone', {
@@ -430,12 +453,12 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
                   size: 'lg',
                 })
               }
-              className="mb-4 sm:mb-5 lg:mb-4"
+              className="mb-2 sm:mb-4 md:mb-5 lg:mb-4"
               floatOffset={-3}
             />
           )}
 
-          <div className="relative w-full max-w-5xl px-3 sm:px-4">
+          <div className="relative w-full max-w-5xl px-2 sm:px-4 md:px-6">
             {highlightTarget && highlightedMoonInfo && (
               <HighlightBanner
                 info={highlightedMoonInfo}
@@ -468,18 +491,18 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
               />
             </div>
 
-            <div className="mt-4 flex w-full flex-col items-center gap-2 sm:mt-5">
-              <div className="rounded-full border border-white/10 bg-slate-900/70 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-sky-200/80 shadow-[0_12px_30px_rgba(8,47,73,0.45)]">
+            <div className="mt-4 flex w-full flex-col items-center gap-2 sm:mt-5 sm:gap-2.5 md:mt-6">
+              <div className="rounded-full border border-white/10 bg-slate-900/80 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200/90 shadow-[0_12px_30px_rgba(8,47,73,0.45)] sm:px-4 sm:py-1.5 sm:text-[11px] sm:tracking-[0.18em]">
                 {quarterLabel}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:gap-2.5">
                 {Array.from({ length: 4 }).map((_, idx) => (
                   <span
                     key={`quarter-dot-${idx}`}
-                    className={`h-2 w-2 rounded-full transition ${
+                    className={`h-2 w-2 rounded-full transition-all duration-200 sm:h-2.5 sm:w-2.5 ${
                       idx === visiblePeriod.quarterIndex
-                        ? 'bg-sky-300 shadow-[0_0_10px_rgba(56,189,248,0.8)]'
-                        : 'bg-white/25'
+                        ? 'bg-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.85)] scale-110'
+                        : 'bg-white/30'
                     }`}
                   />
                 ))}
@@ -488,11 +511,11 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
           </div>
         </div>
 
-        <div className="mt-auto flex w-full justify-center pt-4 pb-3 sm:pt-5 sm:pb-4 lg:pt-3 lg:pb-3">
+        <div className="mt-auto flex w-full justify-center pt-4 pb-4 sm:pt-5 sm:pb-4 md:pt-6 md:pb-5 lg:pt-4 lg:pb-4">
           {isInvertedLayout ? (
             <CelestialObject
               type="sol"
-              size={isCompactLayout ? 'md' : 'lg'}
+              size={isCompactLayout ? 'sm' : 'md'}
               interactive
               onClick={(e) =>
                 navigateWithFocus?.('planetCardBelowSun', {
@@ -501,13 +524,13 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
                   size: 'lg',
                 })
               }
-              className="mb-2"
+              className="mb-1 sm:mb-2"
               floatOffset={2}
             />
           ) : (
             <CelestialObject
               type="planeta"
-              size={isCompactLayout ? 'md' : 'lg'}
+              size={isCompactLayout ? 'sm' : 'md'}
               interactive
               onClick={(e) =>
                 navigateWithFocus?.('planetCardStandalone', {
@@ -516,7 +539,7 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
                   size: 'lg',
                 })
               }
-              className="mb-2"
+              className="mb-1 sm:mb-2"
               floatOffset={2}
             />
           )}

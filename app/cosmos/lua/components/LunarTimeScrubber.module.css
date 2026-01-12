@@ -30,8 +30,8 @@
 .glow {
   position: absolute;
   inset: auto;
-  width: 380px;
-  height: 380px;
+  width: clamp(240px, 45vw, 380px);
+  height: clamp(240px, 45vw, 380px);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(130, 170, 230, 0.2), transparent 70%);
   top: 15vh;
@@ -162,9 +162,15 @@
   .timeline {
     height: 64px;
   }
+}
 
-  .glow {
-    width: 280px;
-    height: 280px;
+@media (max-width: 480px) {
+  .timeline {
+    height: 56px;
+  }
+
+  .dayLabel {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
   }
 }

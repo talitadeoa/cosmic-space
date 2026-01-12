@@ -1,19 +1,22 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { AuthGate } from '@/components/auth';
 import { SpacePageLayout } from '@/components/layouts';
+import { CosmosRouteHelper } from '@/app/cosmos/components';
+import { useRouter } from 'next/navigation';
+import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import EclipseProductivityView from './EclipseProductivityView';
 
 const EclipsePage = () => {
-  const router = useRouter();
+  const { onBackgroundClick } = useBackToHome();
 
   return (
-    <AuthGate chatButtonSize="compact">
+    <AuthGate chatButtonSize="compact" accessTarget="seus ritmos">
       <SpacePageLayout
         className="px-4 py-12 sm:px-6 lg:px-8"
-        onBackgroundClick={() => router.push('/cosmos/home')}
+        onBackgroundClick={onBackgroundClick}
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(79,70,229,0.25),transparent_60%),radial-gradient(circle_at_bottom,rgba(15,118,110,0.2),transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:26px_26px]" />
@@ -24,17 +27,18 @@ const EclipsePage = () => {
               Estação Eclipse
             </p>
             <h1 className="text-3xl font-semibold text-white sm:text-4xl">
-              Controle sua produtividade lunar em tempo real
+              Sintonize o ritmo lunar em tempo real
             </h1>
             <p className="max-w-2xl text-sm text-slate-300">
               Acompanhe o cruzamento entre o SidePlanet e o ciclo de fases lunares. Visualize os
-              to-dos sincronizados, descubra as fases mais eficientes e mantenha tudo organizado em
-              um painel dedicado.
+              to-dos sincronizados, identifique onde o fluxo fica mais orgânico e mantenha tudo
+              alinhado em um painel dedicado.
             </p>
           </header>
 
           <EclipseProductivityView />
         </div>
+        <CosmosRouteHelper routeKey="eclipse" position="bottom-right" />
       </SpacePageLayout>
     </AuthGate>
   );

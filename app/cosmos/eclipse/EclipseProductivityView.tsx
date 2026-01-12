@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { formatTimePtBr } from '@/lib/utils/format';
 import { loadSavedTodos, phaseOrder, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import type { ScreenProps } from '@/app/cosmos/types';
 import SummaryLayer from './layers/summary/SummaryLayer';
 import CycleSummaryLayer from './layers/cycle/CycleSummaryLayer';
@@ -16,7 +16,7 @@ type EclipseProductivityViewProps = {
 };
 
 const EclipseProductivityView: React.FC<EclipseProductivityViewProps> = ({ navigateWithFocus }) => {
-  const router = useRouter();
+  const { navigateToHome } = useBackToHome();
   const [todos, setTodos] = useState<SavedTodo[]>([]);
   const [lastSync, setLastSync] = useState('');
 
@@ -26,9 +26,9 @@ const EclipseProductivityView: React.FC<EclipseProductivityViewProps> = ({ navig
         navigateWithFocus(nextScreen, params);
         return;
       }
-      router.push('/cosmos');
+      navigateToHome();
     },
-    [navigateWithFocus, router]
+    [navigateWithFocus, navigateToHome]
   );
 
   const syncTodos = useCallback(() => {
@@ -82,7 +82,7 @@ const EclipseProductivityView: React.FC<EclipseProductivityViewProps> = ({ navig
         .join(' ')
     : '';
 
-  const lastSyncLabel = lastSync ? `Sync ${lastSync}` : 'Sync inicial';
+  const lastSyncLabel = lastSync ? `Pulso ${lastSync}` : 'Pulso inicial';
 
   const handleOpenSidePlanet = useCallback(() => {
     navigateWithFocusOrFallback('sidePlanetCard', { type: 'planeta', size: 'md' });

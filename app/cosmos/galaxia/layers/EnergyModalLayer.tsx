@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
-import EmotionalInput, { Emotion } from '@/components/EmotionalInput';
+import EmotionalInputCompact from '@/components/emocoes/EmotionalInputCompact';
+import type { Emotion } from '@/components/EmotionalInput';
 import {
   RING_ENERGY_PROMPTS,
   RING_ENERGY_RESPONSES,
@@ -50,25 +51,16 @@ const EnergyModalLayer: React.FC<EnergyModalLayerProps> = ({
       submitStrategy="last"
       systemResponses={RING_ENERGY_RESPONSES}
       headerExtra={
-        <div className="mt-6 space-y-4">
-          {/* Emotional Input */}
-          <div>
-            <label className="block text-xs font-semibold text-violet-300 mb-3">
-              Qual é sua emoção?
-            </label>
-            <div className="rounded-lg bg-violet-950/30 p-3 border border-violet-500/20">
-              <EmotionalInput
-                onEmotionSelect={setSelectedEmotion}
-                selectedEmotion={selectedEmotion}
-                size="sm"
-                disabled={false}
-              />
-            </div>
-            {selectedEmotion && (
-              <p className="text-xs text-violet-300/70 mt-2">
-                Emoção selecionada: <span className="font-semibold">{selectedEmotion.label}</span>
-              </p>
-            )}
+        <div className="mt-4 space-y-3">
+          {/* Emotional Input Compacto */}
+          <div className="rounded-lg bg-violet-950/30 p-3 border border-violet-500/20">
+            <EmotionalInputCompact
+              onEmotionSelect={setSelectedEmotion}
+              selectedEmotion={selectedEmotion}
+              label="Qual é sua emoção?"
+              showSelected={true}
+              disabled={false}
+            />
           </div>
 
           {/* Navigation Link */}

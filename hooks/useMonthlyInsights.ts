@@ -1,11 +1,18 @@
-import { useState, useCallback } from 'react';
+/**
+ * 📅 useMonthlyInsights
+ * 
+ * Hook para gerenciar insights mensais.
+ * Refatorado para usar useInsights genérico.
+ */
 
-export interface MonthlyInsight {
-  moonPhase: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
+import { useCallback } from 'react';
+import { useInsights, type GenericInsight } from './useGenericInsights';
+import type { MoonPhase } from '@/types/moon';
+
+export interface MonthlyInsight extends GenericInsight {
+  moonPhase: MoonPhase;
   year: number;
   monthNumber: number;
-  insight: string;
-  timestamp: string;
 }
 
 export interface MonthlyInsightRecord {
@@ -18,82 +25,44 @@ export interface MonthlyInsightRecord {
   updatedAt: string | null;
 }
 
+/**
+ * Hook para insights mensais
+ * 
+ * @example
+ * const { saveInsight, loadInsight, isLoading } = useMonthlyInsights();
+ * 
+ * // Salvar
+ * await saveInsight('luaNova', 2025, 1, 'Meu insight...');
+ * 
+ * // Carregar
+ * const record = await loadInsight('luaNova', 2025, 1);
+ */
 export function useMonthlyInsights() {
-  const [insights, setInsights] = useState<MonthlyInsight[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const base = useInsights<MonthlyInsight>({ endpoint: 'monthly-insight' });
 
+  // Wrapper para manter API existente (moonPhase, year, month, insight)
   const saveInsight = useCallback(
     async (moonPhase: string, year: number, monthNumber: number, insight: string) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch('/api/form/monthly-insight', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ moonPhase, year, monthNumber, insight }),
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Erro ao salvar insight');
-        }
-
-        const newInsight: MonthlyInsight = {
-          moonPhase: moonPhase as any,
-          year,
-          monthNumber,
-          insight,
-          timestamp: new Date().toISOString(),
-        };
-
-        setInsights((prev) => [...prev, newInsight]);
-        return newInsight;
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-        setError(errorMessage);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
+      return base.saveInsight(insight, { moonPhase, year, monthNumber });
     },
-    []
+    [base]
   );
 
-  const loadInsight = useCallback(async (moonPhase: string, year: number, monthNumber: number) => {
-    setIsFetching(true);
-    setFetchError(null);
+  // Wrapper para manter API existente
+  const loadInsight = useCallback(
+    async (moonPhase: string, year: number, monthNumber: number) => {
+      return base.loadInsight({ moonPhase, year, monthNumber }) as Promise<MonthlyInsightRecord | null>;
+    },
+    [base]
+  );
 
-    try {
-      const params = new URLSearchParams({
-        moonPhase,
-        year: String(year),
-        monthNumber: String(monthNumber),
-      });
-      const response = await fetch(`/api/form/monthly-insight?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erro ao carregar insight');
-      }
-
-      const data = await response.json();
-      return (data.item as MonthlyInsightRecord | null) ?? null;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      setFetchError(errorMessage);
-      throw err;
-    } finally {
-      setIsFetching(false);
-    }
-  }, []);
-
-  return { insights, isLoading, error, saveInsight, loadInsight, isFetching, fetchError };
+  return {
+    insights: base.insights,
+    isLoading: base.isLoading,
+    isFetching: base.isFetching,
+    error: base.error,
+    fetchError: base.error, // Backward compat
+    saveInsight,
+    loadInsight,
+  };
 }

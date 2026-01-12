@@ -1,20 +1,27 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { getLunarPhaseAndSign } from '@/lib/astro';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
  * Sincroniza a fase lunar atual e signo solar automaticamente ao autenticar
  * Componente de efeito colateral (sem UI)
+ * 
+ * Usa useState para 'synced' pois:
+ * 1. Se a sincronização falhar, podemos mostrar feedback visual futuramente
+ * 2. O estado é semântico - representa o status do componente
+ * 3. Não há problema de performance (componente sem UI, monta uma vez)
  */
 export default function AutoSyncLunar() {
   const auth = useAuth();
-  const syncedRef = useRef(false);
+  const [hasSynced, setHasSynced] = useState(false);
 
   useEffect(() => {
     // Evitar sincronizar múltiplas vezes
-    if (syncedRef.current || !auth.isAuthenticated) return;
+    if (hasSynced || !auth.isAuthenticated) return;
+
+    let cancelled = false;
 
     async function sync() {
       const data = getLunarPhaseAndSign(new Date());
@@ -37,14 +44,20 @@ export default function AutoSyncLunar() {
           }),
           credentials: 'include',
         });
-        syncedRef.current = true;
-      } catch (e) {
-        // ignore
+        if (!cancelled) {
+          setHasSynced(true);
+        }
+      } catch {
+        // Silenciar erros - sincronização é best-effort
       }
     }
 
     sync();
-  }, [auth.isAuthenticated]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.isAuthenticated, hasSynced]);
 
   return null;
 }

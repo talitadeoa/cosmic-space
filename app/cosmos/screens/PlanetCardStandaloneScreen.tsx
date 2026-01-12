@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { CelestialObject } from '../components/CelestialObject';
-import { Card } from '../components/Card';
-import type { ScreenProps } from '../types';
+import { Card } from '@/app/cosmos/components/Card';
+import { useUniverseNavigation } from '../hooks/useUniverseNavigation';
 
-const PlanetCardStandaloneScreen: React.FC<ScreenProps> = ({ navigateTo, navigateWithFocus }) => {
+const PlanetCardStandaloneScreen: React.FC = () => {
+  const { navigateTo, navigateWithFocus } = useUniverseNavigation();
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <Card

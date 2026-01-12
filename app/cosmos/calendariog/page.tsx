@@ -1,6 +1,11 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { SpacePageLayout } from '@/components/layouts';
+import { useRouter } from 'next/navigation';
+import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
+import LuaCycleMenu from '@/app/cosmos/lua/components/LuaCycleMenu';
 import LunarCalendarWidget, { LunarDayData, LunarPhase } from './LunarCalendarWidget';
 
 const phaseCycle: LunarPhase[] = [
@@ -83,17 +88,24 @@ const CalendarPage = () => {
     }
   };
 
+  const { onBackgroundClick } = useBackToHome();
+
   return (
-    <main className="min-h-screen bg-[#080c12] p-[clamp(16px,4vw,36px)]">
-      <LunarCalendarWidget
-        month={viewMonth}
-        year={viewYear}
-        selectedDate={selectedDate}
-        onSelectDate={handleSelectDate}
-        onMonthChange={handleMonthChange}
-        lunarDataByDate={lunarDataByDate}
-      />
-    </main>
+    <SpacePageLayout onBackgroundClick={onBackgroundClick}>
+      <div className="absolute top-3 left-3 z-40 sm:top-4 sm:left-4">
+        <LuaCycleMenu currentPath="/cosmos/calendariog" />
+      </div>
+      <main className="min-h-screen p-[clamp(16px,4vw,36px)]">
+        <LunarCalendarWidget
+          month={viewMonth}
+          year={viewYear}
+          selectedDate={selectedDate}
+          onSelectDate={handleSelectDate}
+          onMonthChange={handleMonthChange}
+          lunarDataByDate={lunarDataByDate}
+        />
+      </main>
+    </SpacePageLayout>
   );
 };
 

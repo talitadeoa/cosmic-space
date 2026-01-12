@@ -8,6 +8,28 @@ body {
   min-height: 100dvh;
 }
 
+/* Prevent text selection on touch devices for better drag-and-drop support */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection only in specific elements where it makes sense */
+input,
+textarea,
+[contenteditable="true"],
+.selectable {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
 html {
   scroll-behavior: smooth;
   height: 100%;

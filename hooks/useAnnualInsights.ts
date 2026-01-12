@@ -1,50 +1,40 @@
-import { useState, useCallback } from 'react';
+/**
+ * 📆 useAnnualInsights
+ * 
+ * Hook para gerenciar insights anuais.
+ * Refatorado para usar useInsights genérico.
+ */
 
-export interface AnnualInsight {
+import { useCallback } from 'react';
+import { useInsights, type GenericInsight } from './useGenericInsights';
+
+export interface AnnualInsight extends GenericInsight {
   year: number;
-  insight: string;
-  timestamp: string;
 }
 
+/**
+ * Hook para insights anuais
+ * 
+ * @example
+ * const { saveInsight, isLoading } = useAnnualInsights();
+ * await saveInsight('Meu insight anual...', 2025);
+ */
 export function useAnnualInsights() {
-  const [insights, setInsights] = useState<AnnualInsight[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const base = useInsights<AnnualInsight>({ endpoint: 'annual-insight' });
 
-  const saveInsight = useCallback(async (insight: string, year?: number) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
+  // Wrapper para manter API existente (insight, year?)
+  const saveInsight = useCallback(
+    async (insight: string, year?: number) => {
       const selectedYear = year ?? new Date().getFullYear();
-      const response = await fetch('/api/form/annual-insight', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ insight, year: selectedYear }),
-        credentials: 'include',
-      });
+      return base.saveInsight(insight, { year: selectedYear });
+    },
+    [base]
+  );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erro ao salvar insight');
-      }
-
-      const newInsight: AnnualInsight = {
-        year: selectedYear,
-        insight,
-        timestamp: new Date().toISOString(),
-      };
-
-      setInsights((prev) => [...prev, newInsight]);
-      return newInsight;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  return { insights, isLoading, error, saveInsight };
+  return {
+    insights: base.insights,
+    isLoading: base.isLoading,
+    error: base.error,
+    saveInsight,
+  };
 }

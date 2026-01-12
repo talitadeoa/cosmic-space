@@ -1,0 +1,114 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
+
+const BACKGROUND_IMAGE_MOBILE = '/home-alternativa.png';
+const BACKGROUND_IMAGE_DESKTOP = '/home-panoramica.jpg';
+
+const HOTSPOTS = [
+  {
+    id: 'galaxia',
+    label: 'Galáxia',
+    href: '/cosmos/galaxia',
+    top: '28%',
+    left: '38%',
+    size: '14%',
+  },
+  {
+    id: 'eclipse',
+    label: 'Eclipse',
+    href: '/cosmos/eclipse',
+    top: '16%',
+    left: '50%',
+    size: '6%',
+  },
+  {
+    id: 'sol',
+    label: 'Sol',
+    href: '/cosmos/sol',
+    top: '50%',
+    left: '62%',
+    size: '10%',
+  },
+  {
+    id: 'luas',
+    label: 'Luas',
+    href: '/cosmos/lua',
+    top: '24%',
+    left: '16%',
+    size: '12%',
+  },
+  {
+    id: 'planeta',
+    label: 'Planeta',
+    href: '/cosmos/planeta',
+    top: '86%',
+    left: '82%',
+    size: '18%',
+  },
+];
+
+interface HomeAlternativaProps {
+  onClose?: () => void;
+}
+
+export const HomeAlternativa: React.FC<HomeAlternativaProps> = ({ onClose }) => {
+  const isMobile = useIsMobile();
+  const backgroundImage = isMobile ? BACKGROUND_IMAGE_MOBILE : BACKGROUND_IMAGE_DESKTOP;
+
+  return (
+    <div className="fixed inset-0 h-[100dvh] w-full overflow-hidden">
+      {/* Imagem de fundo em tela cheia */}
+      <Image
+        src={backgroundImage}
+        alt="Cenário espacial com planetas, luas, galáxia, sol e eclipse"
+        fill
+        priority
+        className="object-cover"
+      />
+      
+      {/* Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-950/70" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.2),transparent_45%)]" />
+
+      {/* Hotspots */}
+      <div className="absolute inset-0 z-10">
+        {HOTSPOTS.map((spot) => (
+          <Link
+            key={spot.id}
+            href={spot.href}
+            aria-label={`Abrir ${spot.label}`}
+            className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/30 bg-white/10 text-white shadow-[0_0_25px_rgba(255,255,255,0.25)] transition duration-300 hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80"
+            style={{
+              top: spot.top,
+              left: spot.left,
+              width: spot.size,
+              height: spot.size,
+            }}
+          >
+            <span className="absolute inset-0 rounded-full bg-white/10 opacity-70 animate-pulse-soft" />
+            <span className="absolute left-1/2 top-full mt-3 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-950/70 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-slate-100 opacity-0 transition duration-300 group-hover:opacity-100">
+              {spot.label}
+            </span>
+          </Link>
+        ))}
+      </div>
+
+      {/* Botão de voltar (posicionado de forma absoluta) */}
+      {onClose && (
+        <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-indigo-300/40 bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-100 backdrop-blur-sm transition hover:bg-indigo-500/30"
+          >
+            Voltar para visualização interativa
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HomeAlternativa;

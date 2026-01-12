@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget Strings -->
+    <string name="widget_name">Fase Lunar - Flua</string>
+    <string name="widget_description">Mostra a fase lunar atual</string>
+</resources>

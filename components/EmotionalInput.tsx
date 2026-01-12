@@ -123,6 +123,8 @@ export default function EmotionalInput({
   const [hovered, setHovered] = useState<string | null>(null);
   const [emotionHistory, setEmotionHistory] = useState<EmotionRecord[]>([]);
   const [loadedEmotion, setLoadedEmotion] = useState<Emotion | null>(selectedEmotion || null);
+  const [justSaved, setJustSaved] = useState(false);
+  const [savedEmoji, setSavedEmoji] = useState<string | null>(null);
 
   // Carregar emoção salva ao montar
   useEffect(() => {
@@ -167,6 +169,14 @@ export default function EmotionalInput({
       // Atualizar emoção local
       setLoadedEmotion(emotion);
 
+      // Mostrar feedback visual
+      setSavedEmoji(emotion.emoji);
+      setJustSaved(true);
+      setTimeout(() => {
+        setJustSaved(false);
+        setSavedEmoji(null);
+      }, 2500);
+
       // Callback
       onEmotionSelect?.(emotion);
     }
@@ -174,7 +184,17 @@ export default function EmotionalInput({
 
   return (
     <div className="w-full">
-      {(selectedEmotion || loadedEmotion) && (
+      {/* Feedback de salvo */}
+      {justSaved && (
+        <div className="mb-4 p-3 rounded-lg bg-emerald-500/20 border border-emerald-400/50 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center justify-center gap-2 text-emerald-300 font-medium">
+            <span className="text-2xl">{savedEmoji}</span>
+            <span>✓ Emoção registrada com sucesso!</span>
+          </div>
+        </div>
+      )}
+
+      {(selectedEmotion || loadedEmotion) && !justSaved && (
         <div
           className={`mb-4 p-4 rounded-lg bg-gradient-to-r ${(selectedEmotion || loadedEmotion)!.color} bg-opacity-20 border border-current border-opacity-20`}
         >
@@ -197,44 +217,61 @@ export default function EmotionalInput({
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Como você está se sentindo?
         </label>
+        {!loadedEmotion && !selectedEmotion && (
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Toque em um emoji para registrar sua emoção
+          </p>
+        )}
       </div>
 
       <div
         className={`flex flex-wrap ${sizeClasses[size]} rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 border border-gray-200 dark:border-gray-700`}
       >
-        {EMOTIONS.map((emotion) => (
-          <button
-            key={emotion.id}
-            onClick={() => handleSelect(emotion)}
-            onMouseEnter={() => setHovered(emotion.id)}
-            onMouseLeave={() => setHovered(null)}
-            disabled={disabled}
-            className={`
-              ${buttonSizeClasses[size]}
-              relative flex items-center justify-center rounded-xl
-              transition-all duration-300 ease-out
-              ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110'}
-              ${
-                (selectedEmotion?.id || loadedEmotion?.id) === emotion.id
-                  ? `ring-4 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-800 shadow-lg bg-gradient-to-br ${emotion.color}`
-                  : 'hover:shadow-lg hover:bg-white dark:hover:bg-gray-700'
-              }
-              focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2
-            `}
-            title={`${emotion.label} - ${emotion.description}`}
-            aria-label={`${emotion.label} - ${emotion.description}`}
-          >
-            <span className="select-none">{emotion.emoji}</span>
+        {EMOTIONS.map((emotion) => {
+          const isSelected = (selectedEmotion?.id || loadedEmotion?.id) === emotion.id;
+          const wasJustSaved = justSaved && savedEmoji === emotion.emoji;
+          
+          return (
+            <button
+              key={emotion.id}
+              onClick={() => handleSelect(emotion)}
+              onMouseEnter={() => setHovered(emotion.id)}
+              onMouseLeave={() => setHovered(null)}
+              disabled={disabled}
+              className={`
+                ${buttonSizeClasses[size]}
+                relative flex items-center justify-center rounded-xl
+                transition-all duration-300 ease-out
+                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110 active:scale-95'}
+                ${
+                  isSelected
+                    ? `ring-4 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-800 shadow-lg bg-gradient-to-br ${emotion.color} ${wasJustSaved ? 'ring-emerald-400' : ''}`
+                    : 'hover:shadow-lg hover:bg-white dark:hover:bg-gray-700'
+                }
+                focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2
+              `}
+              title={`${emotion.label} - ${emotion.description}`}
+              aria-label={`Selecionar ${emotion.label}`}
+            >
+              <span className="select-none">{emotion.emoji}</span>
 
-            {/* Tooltip */}
-            {hovered === emotion.id && (
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold rounded-lg whitespace-nowrap pointer-events-none z-10 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                {emotion.label}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
-              </div>
-            )}
-          </button>
-        ))}
+              {/* Checkmark quando acabou de salvar */}
+              {wasJustSaved && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-xs text-white font-bold animate-in zoom-in duration-200 shadow-lg">
+                  ✓
+                </span>
+              )}
+
+              {/* Tooltip */}
+              {hovered === emotion.id && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold rounded-lg whitespace-nowrap pointer-events-none z-10 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  {emotion.label}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {showLabels && (

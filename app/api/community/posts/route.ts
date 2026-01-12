@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
     const rows = (await db`
       SELECT
         community_posts.id,
+        community_posts.author_id,
         community_posts.title,
         community_posts.body,
         community_posts.created_at,
@@ -109,6 +110,7 @@ export async function GET(request: NextRequest) {
       OFFSET ${offset}
     `) as Array<{
       id: string;
+      author_id: string;
       title: string | null;
       body: string;
       created_at: string;
@@ -123,15 +125,13 @@ export async function GET(request: NextRequest) {
 
     const posts = rows.map((row) => ({
       id: String(row.id),
+      authorId: String(row.author_id),
       title: row.title,
       body: row.body,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      author: {
-        name: row.author_name,
-        email: row.author_email,
-        avatarUrl: row.author_avatar_url,
-      },
+      authorName: row.author_name,
+      authorAvatarUrl: row.author_avatar_url,
       tags: Array.isArray(row.tags) ? row.tags : [],
       images: Array.isArray(row.images) ? row.images : [],
       commentsCount: Number(row.comments_count ?? 0),

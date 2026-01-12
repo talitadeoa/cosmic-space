@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, ReactNode } from 'react';
 
 interface TemporalContextType {
   // Data e hora
@@ -126,7 +126,7 @@ export function TemporalProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(timer);
   }, []);
 
-  const getDateRange = (type: 'month' | 'week' | 'year') => {
+  const getDateRange = useCallback((type: 'month' | 'week' | 'year') => {
     const current = new Date(now);
 
     if (type === 'month') {
@@ -136,9 +136,9 @@ export function TemporalProvider({ children }: { children: ReactNode }) {
     }
 
     if (type === 'week') {
-      const current = new Date(now);
-      const first = current.getDate() - current.getDay();
-      const start = new Date(current.setDate(first));
+      const weekCurrent = new Date(now);
+      const first = weekCurrent.getDate() - weekCurrent.getDay();
+      const start = new Date(weekCurrent.setDate(first));
       const end = new Date(start);
       end.setDate(end.getDate() + 6);
       return { start, end };
@@ -148,29 +148,34 @@ export function TemporalProvider({ children }: { children: ReactNode }) {
     const start = new Date(current.getFullYear(), 0, 1);
     const end = new Date(current.getFullYear(), 11, 31);
     return { start, end };
-  };
+  }, [now]);
 
-  const isToday = (date: Date) => {
+  const isToday = useCallback((date: Date) => {
     const today = new Date();
     return (
       date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&
       date.getFullYear() === today.getFullYear()
     );
-  };
+  }, []);
 
-  const value: TemporalContextType = {
-    now,
+  // Valores derivados memoizados para evitar recálculos
+  const derivedValues = useMemo(() => ({
     year: now.getFullYear(),
     month: now.getMonth() + 1,
     day: now.getDate(),
     weekNumber: getWeekNumber(now),
     weekDay: now.getDay(),
+  }), [now]);
+
+  const value = useMemo<TemporalContextType>(() => ({
+    now,
+    ...derivedValues,
     currentMoonPhase,
     currentZodiacSign,
     getDateRange,
     isToday,
-  };
+  }), [now, derivedValues, currentMoonPhase, currentZodiacSign, getDateRange, isToday]);
 
   return <TemporalContext.Provider value={value}>{children}</TemporalContext.Provider>;
 }
