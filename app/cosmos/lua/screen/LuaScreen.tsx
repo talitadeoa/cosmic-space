@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { ScreenProps } from '@/app/cosmos/types';
@@ -31,7 +30,11 @@ import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
 import HighlightBanner from '../components/HighlightBanner';
 import MoonCarousel from '../components/MoonCarousel';
 import CalendarStatus from '../components/CalendarStatus';
+import LuaCycleMenu from '../components/LuaCycleMenu';
 import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
+import { useRouter } from 'next/navigation';
+import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 
 type LuaScreenProps = {
   navigateWithFocus?: ScreenProps['navigateWithFocus'];
@@ -43,7 +46,7 @@ type PhaseItem = {
 };
 
 const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
-  const router = useRouter();
+  const { navigateToHome } = useBackToHome();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthEntry | null>(null);
   const [selectedMoonPhase, setSelectedMoonPhase] = useState<MoonPhase>('luaNova');
@@ -400,10 +403,10 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     (e: React.MouseEvent<HTMLDivElement>) => {
       // Navigate to home if clicking directly on the background, not on child elements
       if (e.target === e.currentTarget) {
-        router.push('/');
+        navigateToHome();
       }
     },
-    [router]
+    [navigateToHome]
   );
 
   return (
@@ -412,19 +415,10 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
         className="relative flex min-h-[100dvh] w-full flex-col items-center px-3 py-4 sm:px-4 sm:py-8 md:py-10 lg:py-12 cursor-pointer safe-area-inset"
         onClick={handleBackgroundClick}
       >
-        {/* Botão discreto para abrir seleção de calendários */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsModalOpen(true);
-          }}
-          className="absolute top-3 right-3 z-40 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 p-2 transition text-white/60 hover:text-white/80 sm:top-4 sm:right-4 sm:p-2.5 touch-manipulation"
-          title="Selecionar calendários"
-        >
-          <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
+        {/* Menu de ciclos lunares */}
+        <div className="absolute top-3 left-3 z-40 sm:top-4 sm:left-4">
+          <LuaCycleMenu currentPath="/cosmos/lua" />
+        </div>
 
         <LuminousTrail quadrant={visiblePeriod.quarterIndex as 0 | 1 | 2 | 3} />
         <CalendarStatus isLoading={isCalendarLoading} error={calendarError} onRetry={handleRetry} />
