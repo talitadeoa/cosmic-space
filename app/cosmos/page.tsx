@@ -6,7 +6,7 @@ import { SpacePageLayout } from '@/components/layouts';
 import InputWindow from '@/app/cosmos/components/InputWindow';
 import { useCosmosNavigation } from '@/app/cosmos/context/CosmosNavigationContext';
 
-const COSMOS_TAG = process.env.NEXT_PUBLIC_GIT_TAG?.trim() || 'v0.1.3 alpha flow';
+const COSMOS_TAG = 'v0.1.3 alpha flow'; // Atualize manualmente aqui
 const TAG_STORAGE_KEY = 'cosmos:tag';
 const TRANSITION_STEPS = [900, 900, 700] as const;
 const TOTAL_DURATION_MS = TRANSITION_STEPS.reduce((sum, delayMs) => sum + delayMs, 0);
@@ -72,7 +72,7 @@ export default function CosmosPage() {
               Cosmos em modo experimental
             </h1>
             <p className="text-sm text-slate-300/80 sm:text-base">
-              Esta experiencia esta na versao {COSMOS_TAG} alpha flow em teste aberto.
+              Esta experiencia esta na versao {COSMOS_TAG} flow em teste aberto.
             </p>
           </div>
 
