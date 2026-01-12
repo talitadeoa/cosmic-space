@@ -3,6 +3,7 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { useNativeGestures } from '@/hooks/useNativeGestures';
+import { useGlobalKeyboardShortcut } from '@/hooks/useKeyboardNavigation';
 
 export interface BottomSheetProps {
   /** Controla se o sheet está aberto */
@@ -25,6 +26,10 @@ export interface BottomSheetProps {
   backdropBlur?: boolean;
   /** Classes CSS adicionais */
   className?: string;
+  /** Habilita navegação por teclado */
+  enableKeyboardNavigation?: boolean;
+  /** Aria label para acessibilidade */
+  ariaLabel?: string;
 }
 
 /**
@@ -50,6 +55,8 @@ export function BottomSheet({
   backgroundColor = 'rgba(10, 15, 30, 0.95)',
   backdropBlur = true,
   className = '',
+  enableKeyboardNavigation = true,
+  ariaLabel = 'Painel inferior',
 }: BottomSheetProps) {
   const [currentSnap, setCurrentSnap] = useState(initialHeight);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -57,6 +64,38 @@ export function BottomSheet({
   const startHeight = useRef(initialHeight);
 
   const { hapticPattern, triggerHaptic } = useNativeGestures({}, { hapticFeedback: true });
+
+  // Suporte a teclado: Escape para fechar
+  useGlobalKeyboardShortcut('Escape', () => {
+    if (isOpen && dismissible) {
+      onClose();
+    }
+  }, { enabled: isOpen && enableKeyboardNavigation && dismissible });
+
+  // Suporte a teclado: setas para ajustar altura
+  useGlobalKeyboardShortcut('ArrowUp', () => {
+    if (isOpen && enableKeyboardNavigation) {
+      const currentIndex = snapPoints.indexOf(currentSnap);
+      if (currentIndex < snapPoints.length - 1) {
+        const newSnap = snapPoints[currentIndex + 1] ?? snapPoints[snapPoints.length - 1];
+        setCurrentSnap(newSnap);
+        hapticPattern('selection');
+      }
+    }
+  }, { enabled: isOpen && enableKeyboardNavigation });
+
+  useGlobalKeyboardShortcut('ArrowDown', () => {
+    if (isOpen && enableKeyboardNavigation) {
+      const currentIndex = snapPoints.indexOf(currentSnap);
+      if (currentIndex > 0) {
+        const newSnap = snapPoints[currentIndex - 1] ?? snapPoints[0];
+        setCurrentSnap(newSnap);
+        hapticPattern('selection');
+      } else if (dismissible) {
+        onClose();
+      }
+    }
+  }, { enabled: isOpen && enableKeyboardNavigation });
 
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(
@@ -155,7 +194,16 @@ export function BottomSheet({
               height: '100%',
               maxHeight: `${Math.max(...snapPoints)}%`,
             }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={ariaLabel}
+            aria-describedby="bottomsheet-description"
           >
+            {/* Descrição para leitores de tela */}
+            <span id="bottomsheet-description" className="sr-only">
+              Use setas para cima e para baixo para ajustar a altura. Pressione Escape para fechar.
+            </span>
+            
             {/* Handle */}
             {showHandle && (
               <div
@@ -166,6 +214,12 @@ export function BottomSheet({
                 onMouseDown={handleDragStart}
                 onMouseMove={handleDrag}
                 onMouseUp={handleDragEnd}
+                role="slider"
+                aria-label="Arraste para ajustar a altura do painel"
+                aria-valuemin={Math.min(...snapPoints)}
+                aria-valuemax={Math.max(...snapPoints)}
+                aria-valuenow={currentSnap}
+                tabIndex={0}
               >
                 <div className="w-10 h-1 rounded-full bg-white/30" />
               </div>
@@ -206,6 +260,8 @@ export interface ActionSheetProps {
   options: ActionSheetOption[];
   /** Texto do botão cancelar */
   cancelText?: string;
+  /** Habilita navegação por teclado */
+  enableKeyboardNavigation?: boolean;
 }
 
 /**
@@ -229,8 +285,45 @@ export function ActionSheet({
   message,
   options,
   cancelText = 'Cancelar',
+  enableKeyboardNavigation = true,
 }: ActionSheetProps) {
   const { triggerHaptic } = useNativeGestures({}, { hapticFeedback: true });
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Suporte a teclado: Escape para fechar
+  useGlobalKeyboardShortcut('Escape', onClose, { 
+    enabled: isOpen && enableKeyboardNavigation 
+  });
+
+  // Navegação por setas
+  useGlobalKeyboardShortcut('ArrowDown', () => {
+    if (isOpen && enableKeyboardNavigation) {
+      const nextIndex = (focusedIndex + 1) % (options.length + 1); // +1 para o botão cancelar
+      setFocusedIndex(nextIndex);
+      if (nextIndex < options.length) {
+        optionRefs.current[nextIndex]?.focus();
+      }
+    }
+  }, { enabled: isOpen && enableKeyboardNavigation });
+
+  useGlobalKeyboardShortcut('ArrowUp', () => {
+    if (isOpen && enableKeyboardNavigation) {
+      const prevIndex = focusedIndex <= 0 ? options.length : focusedIndex - 1;
+      setFocusedIndex(prevIndex);
+      if (prevIndex < options.length) {
+        optionRefs.current[prevIndex]?.focus();
+      }
+    }
+  }, { enabled: isOpen && enableKeyboardNavigation });
+
+  // Reset focus quando abre
+  useEffect(() => {
+    if (isOpen) {
+      setFocusedIndex(0);
+      setTimeout(() => optionRefs.current[0]?.focus(), 100);
+    }
+  }, [isOpen]);
 
   const handleOptionPress = useCallback(async (option: ActionSheetOption) => {
     if (option.disabled) return;
@@ -256,6 +349,7 @@ export function ActionSheet({
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
+            aria-hidden="true"
           />
 
           {/* Sheet */}
@@ -265,9 +359,21 @@ export function ActionSheet({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-8"
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || 'Menu de ações'}
           >
+            {/* Descrição para leitores de tela */}
+            <span className="sr-only">
+              Use setas para cima e para baixo para navegar entre as opções. Pressione Enter para selecionar ou Escape para fechar.
+            </span>
+
             {/* Options container */}
-            <div className="bg-gray-900/95 rounded-2xl overflow-hidden mb-2">
+            <div 
+              className="bg-gray-900/95 rounded-2xl overflow-hidden mb-2"
+              role="menu"
+              aria-orientation="vertical"
+            >
               {/* Header */}
               {(title || message) && (
                 <div className="px-4 py-3 text-center border-b border-white/10">
@@ -284,17 +390,22 @@ export function ActionSheet({
               {options.map((option, index) => (
                 <motion.button
                   key={option.label}
+                  ref={(el) => { optionRefs.current[index] = el; }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleOptionPress(option)}
                   disabled={option.disabled}
+                  role="menuitem"
+                  aria-disabled={option.disabled}
+                  tabIndex={focusedIndex === index ? 0 : -1}
                   className={`
                     w-full px-4 py-4 flex items-center justify-center gap-3
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500
                     ${index > 0 ? 'border-t border-white/10' : ''}
                     ${option.disabled ? 'opacity-40 cursor-not-allowed' : 'active:bg-white/10'}
                     ${option.destructive ? 'text-red-400' : 'text-white'}
                   `}
                 >
-                  {option.icon && <span className="text-lg">{option.icon}</span>}
+                  {option.icon && <span className="text-lg" aria-hidden="true">{option.icon}</span>}
                   <span className="font-medium">{option.label}</span>
                 </motion.button>
               ))}
@@ -304,7 +415,7 @@ export function ActionSheet({
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={handleCancel}
-              className="w-full py-4 bg-gray-900/95 rounded-2xl text-white font-semibold active:bg-white/10"
+              className="w-full py-4 bg-gray-900/95 rounded-2xl text-white font-semibold active:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               {cancelText}
             </motion.button>

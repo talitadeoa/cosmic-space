@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useAnimation, PanInfo, AnimatePresence } from 'framer-motion';
 import { useNativeGestures } from '@/hooks/useNativeGestures';
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import type { SwipeGesture } from '@/types/gestures';
 
 export interface SwipeableViewProps {
@@ -27,6 +28,10 @@ export interface SwipeableViewProps {
   allowedDirections?: ('left' | 'right' | 'up' | 'down')[];
   /** Mostra indicadores de direção */
   showIndicators?: boolean;
+  /** Habilita navegação por teclado (setas) */
+  enableKeyboardNavigation?: boolean;
+  /** Aria label para acessibilidade */
+  ariaLabel?: string;
 }
 
 /**
@@ -53,6 +58,8 @@ export function SwipeableView({
   className = '',
   allowedDirections = ['left', 'right', 'up', 'down'],
   showIndicators = false,
+  enableKeyboardNavigation = true,
+  ariaLabel = 'Área navegável por gestos ou setas do teclado',
 }: SwipeableViewProps) {
   const controls = useAnimation();
   const [dragDirection, setDragDirection] = useState<string | null>(null);
@@ -63,6 +70,47 @@ export function SwipeableView({
     {},
     { hapticFeedback }
   );
+
+  /**
+   * Handler para navegação por teclado (setas)
+   */
+  const { handleKeyDown } = useKeyboardNavigation({
+    enableArrowKeys: enableKeyboardNavigation,
+    orientation: 'both',
+    onArrowKey: async (direction) => {
+      if (!enableKeyboardNavigation) return;
+      
+      switch (direction) {
+        case 'left':
+          if (allowedDirections.includes('left') && onSwipeLeft) {
+            if (hapticFeedback) await hapticPattern('swipe');
+            onSwipeLeft();
+          }
+          break;
+        case 'right':
+          if (allowedDirections.includes('right') && onSwipeRight) {
+            if (hapticFeedback) await hapticPattern('swipe');
+            onSwipeRight();
+          }
+          break;
+        case 'up':
+          if (allowedDirections.includes('up') && onSwipeUp) {
+            if (hapticFeedback) await hapticPattern('swipe');
+            onSwipeUp();
+          }
+          break;
+        case 'down':
+          if (allowedDirections.includes('down') && onSwipeDown) {
+            if (hapticFeedback) await hapticPattern('swipe');
+            onSwipeDown();
+          }
+          break;
+      }
+    },
+    enableEscape: false,
+    enableEnterSpace: false,
+    enableHomeEnd: false,
+  });
 
   /**
    * Handler para movimento de arrasto
@@ -136,7 +184,15 @@ export function SwipeableView({
   };
 
   return (
-    <div ref={containerRef} className={`relative overflow-hidden ${className}`}>
+    <div 
+      ref={containerRef} 
+      className={`relative overflow-hidden ${className}`}
+      onKeyDown={enableKeyboardNavigation ? handleKeyDown : undefined}
+      tabIndex={enableKeyboardNavigation ? 0 : undefined}
+      role="region"
+      aria-label={ariaLabel}
+      aria-roledescription="Navegue com gestos de deslizar ou use as setas do teclado"
+    >
       {/* Indicadores de direção */}
       {showIndicators && (
         <AnimatePresence>
