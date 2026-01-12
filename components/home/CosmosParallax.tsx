@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 
 // ============================================
 // CONFIGURAÇÃO DAS CAMADAS
@@ -29,11 +30,10 @@ const PARALLAX_LAYERS: Layer[] = [
   // { src: '/cosmos/layer-5-proximo.png', depth: 0.5 },
 ];
 
-// Imagem panorâmica fallback (quando não há camadas)
-const PANORAMA_IMAGE = '/home-panoramica.jpg'; // Arquivo PNG servido como JPG
+// Imagens panorâmicas - desktop e mobile
+const PANORAMA_IMAGE_DESKTOP = '/home-panoramica.jpg';
+const PANORAMA_IMAGE_MOBILE = '/home-alternativa.png';
 const PANORAMA_DEPTH = 0.15; // intensidade do movimento panorâmico
-const PANORAMA_WIDTH = 1366; // dimensões da imagem para otimização
-const PANORAMA_HEIGHT = 768;
 
 // ============================================
 // COMPONENTE PRINCIPAL
@@ -50,9 +50,13 @@ export function CosmosParallax({ children, className = '' }: CosmosParallaxProps
   const [isHovering, setIsHovering] = useState(false);
   const animationRef = useRef<number | undefined>(undefined);
   const targetPosition = useRef({ x: 0.5, y: 0.5 });
+  const isMobile = useIsMobile();
 
   // Modo: camadas ou panorama
   const hasLayers = PARALLAX_LAYERS.length > 0;
+  
+  // Imagem baseada no dispositivo
+  const panoramaImage = isMobile ? PANORAMA_IMAGE_MOBILE : PANORAMA_IMAGE_DESKTOP;
 
   // Smooth mouse tracking com lerp
   const updateMousePosition = useCallback(() => {
@@ -102,11 +106,11 @@ export function CosmosParallax({ children, className = '' }: CosmosParallaxProps
 
   // Transform para imagem panorâmica (movimento maior horizontal)
   const getPanoramaTransform = () => {
-    const maxOffsetX = 100; // movimento horizontal maior
-    const maxOffsetY = 40; // movimento vertical menor
+    const maxOffsetX = 80; // movimento horizontal
+    const maxOffsetY = 30; // movimento vertical menor
     const x = (mousePosition.x - 0.5) * maxOffsetX * PANORAMA_DEPTH * -1;
     const y = (mousePosition.y - 0.5) * maxOffsetY * PANORAMA_DEPTH * -1;
-    const scale = isHovering ? 1.05 : 1.02; // zoom sutil no hover
+    const scale = isHovering ? 1.02 : 1.0; // zoom reduzido para não cortar
     return `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
   };
 
@@ -159,33 +163,24 @@ export function CosmosParallax({ children, className = '' }: CosmosParallaxProps
         <div
           className="absolute inset-0 will-change-transform"
           style={{
-            transform: getPanoramaTransform(),
+            transform: isMobile ? undefined : getPanoramaTransform(),
             transition: 'transform 0.3s ease-out',
           }}
         >
-          <div className="absolute inset-[-10%]">
+          {/* Container com overflow para parallax - menor no mobile para não cortar */}
+          <div className={isMobile ? 'absolute inset-0' : 'absolute inset-[-5%]'}>
             <Image
-              src={PANORAMA_IMAGE}
+              src={panoramaImage}
               alt="Cenário espacial panorâmico"
               fill
               priority
-              className="object-cover"
+              quality={90}
+              sizes={isMobile ? '100vw' : '110vw'}
+              className={isMobile ? 'object-cover object-center' : 'object-cover object-top'}
             />
           </div>
         </div>
       )}
-
-      {/* Gradientes de profundidade */}
-      <div className="pointer-events-none absolute inset-0">
-        {/* Vinheta radial */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_40%,rgba(15,23,42,0.4)_70%,rgba(15,23,42,0.8)_100%)]" />
-        {/* Gradiente superior (para legibilidade do header) */}
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-slate-950/70 to-transparent" />
-        {/* Gradiente inferior */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/80 to-transparent" />
-        {/* Brilho atmosférico central */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(99,102,241,0.08)_0%,transparent_50%)]" />
-      </div>
 
       {/* Partículas flutuantes (estrelas) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

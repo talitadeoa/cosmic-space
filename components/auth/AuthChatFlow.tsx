@@ -22,6 +22,7 @@ interface AuthChatFlowProps {
   className?: string;
   tone?: AuthTone;
   sendButtonSize?: 'default' | 'compact';
+  accessTarget?: string;
 }
 
 const toneStyles: Record<
@@ -116,9 +117,11 @@ type AuthFlowSuggestion = {
 export function useAuthChatFlow({
   isActive = true,
   onAuthenticated,
+  accessTarget = 'plataforma',
 }: {
   isActive?: boolean;
   onAuthenticated?: () => void;
+  accessTarget?: string;
 }) {
   const { isAuthenticated, loading, error, errorReason, login, signup } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -148,8 +151,8 @@ export function useAuthChatFlow({
     }
 
     if (loading || messages.length > 0) return;
-    setMessages([buildSystemMessage('Você gostaria de  entrar ou criar conta?')]);
-  }, [isActive, loading, messages.length, resetAll]);
+    setMessages([buildSystemMessage(`Para acessar ${accessTarget}, é necessário entrar`)]);
+  }, [isActive, loading, messages.length, resetAll, accessTarget]);
 
   const stepSuggestions: AuthFlowSuggestion[] = useMemo(() => {
     if (step === 'mode') {
@@ -258,7 +261,7 @@ export function useAuthChatFlow({
           pushSystemMessage('Vamos criar sua conta. Como você se chama?');
           return true;
         }
-        pushSystemMessage('Não entendi. Você gostaria de entrar ou criar conta?');
+        pushSystemMessage(`Não entendi. Para acessar ${accessTarget}, é necessário entrar`);
         return true;
       }
 
@@ -373,9 +376,10 @@ export default function AuthChatFlow({
   className = '',
   tone = 'indigo',
   sendButtonSize = 'default',
+  accessTarget,
 }: AuthChatFlowProps) {
   const { messages, step, stepSuggestions, isSubmitting, isAuthenticated, loading, handleUserInput } =
-    useAuthChatFlow({ onAuthenticated });
+    useAuthChatFlow({ onAuthenticated, accessTarget });
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);

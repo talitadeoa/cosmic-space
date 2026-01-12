@@ -101,7 +101,7 @@ export default function ComunidadePage() {
   } = useCommunityHelpers();
 
   return (
-    <AuthGate>
+    <AuthGate accessTarget="comunidade">
       <SpacePageLayout>
         <div className="space-y-8">
         {/* Header */}

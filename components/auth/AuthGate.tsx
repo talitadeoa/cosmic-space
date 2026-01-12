@@ -9,9 +9,10 @@ import AuthChatFlow from './AuthChatFlow';
 interface AuthGateProps {
   children: React.ReactNode;
   chatButtonSize?: 'default' | 'compact';
+  accessTarget?: string;
 }
 
-export default function AuthGate({ children, chatButtonSize = 'default' }: AuthGateProps) {
+export default function AuthGate({ children, chatButtonSize = 'default', accessTarget }: AuthGateProps) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -51,6 +52,7 @@ export default function AuthGate({ children, chatButtonSize = 'default' }: AuthG
             <AuthChatFlow
               variant="page"
               sendButtonSize={chatButtonSize}
+              accessTarget={accessTarget}
               header={{
                 title: "Seja bem-vindo(a)",
               }}
