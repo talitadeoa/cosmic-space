@@ -1,7 +1,7 @@
 'use client';
 
 import { SpacePageLayout } from '@/components/layouts';
-import type { CommunityPost } from '@/types/community';
+import type { CommunityComment, CommunityPost } from '@/types/community';
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CommunityHeader,
@@ -12,6 +12,7 @@ import {
   EmptyState,
   ErrorState,
   NewPostForm,
+  QuickComposer,
   StreamList,
   CommunityStats,
   TrendingTopics,
@@ -30,6 +31,10 @@ type CommunityProfile = {
 
 type LoadingState = 'idle' | 'loading' | 'error' | 'success';
 type PostType = 'Todos' | 'Pulso' | 'Carta' | 'Evento';
+type CommentPreviewState = {
+  status: 'idle' | 'loading' | 'error' | 'success';
+  comments: CommunityComment[];
+};
 
 // =============================================================================
 // CONSTANTS
@@ -38,6 +43,7 @@ type PostType = 'Todos' | 'Pulso' | 'Carta' | 'Evento';
 const FALLBACK_POSTS: CommunityPost[] = [
   {
     id: '1',
+    authorId: 'system',
     authorName: 'Observatório Lunar',
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     title: 'Ritual da Lua Cheia',
@@ -47,6 +53,7 @@ const FALLBACK_POSTS: CommunityPost[] = [
   },
   {
     id: '2',
+    authorId: 'system',
     authorName: 'Tripulação Oráculo',
     createdAt: new Date(Date.now() - 28 * 60 * 60 * 1000).toISOString(),
     title: 'Mapa das órbitas de foco',
@@ -56,6 +63,7 @@ const FALLBACK_POSTS: CommunityPost[] = [
   },
   {
     id: '3',
+    authorId: 'system',
     authorName: 'Núcleo Galáctico',
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     title: 'Laboratório de gestos',
@@ -87,6 +95,14 @@ const COMMUNITY_STREAMS = [
 ];
 
 const TYPE_FILTERS: PostType[] = ['Todos', 'Pulso', 'Carta', 'Evento'];
+const QUICK_TAG_SUGGESTIONS = ['rituais', 'lua-cheia', 'reflexões', 'planejamento', 'autocuidado'];
+const DAILY_PROMPTS = [
+  'Qual pergunta você quer lançar para a comunidade hoje?',
+  'O que te deu clareza neste ciclo?',
+  'Quem merece um agradecimento nesta órbita?',
+  'Que convite você quer abrir para a tripulação?',
+  'Qual ritual está guiando seu foco?',
+];
 
 // =============================================================================
 // HELPERS
@@ -108,16 +124,36 @@ const truncate = (text: string, length = 140) => {
   return `${text.slice(0, length).trim()}…`;
 };
 
+const getPromptOfDay = (date = new Date()) => {
+  if (DAILY_PROMPTS.length === 0) return '';
+  const start = new Date(date.getFullYear(), 0, 0);
+  const diff = date.getTime() - start.getTime();
+  const dayOfYear = Math.max(0, Math.floor(diff / 86400000));
+  return DAILY_PROMPTS[dayOfYear % DAILY_PROMPTS.length];
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapApiPost = (post: any): CommunityPost => ({
   id: String(post.id),
-  authorName: post.author?.name ?? 'Tripulação',
-  authorAvatarUrl: post.author?.avatarUrl ?? null,
+  authorId: String(post.authorId ?? ''),
+  authorName: post.authorName ?? post.author?.name ?? 'Tripulação',
+  authorAvatarUrl: post.authorAvatarUrl ?? post.author?.avatarUrl ?? null,
   createdAt: post.createdAt ?? new Date().toISOString(),
   title: post.title ?? null,
   body: post.body ?? '',
   tags: Array.isArray(post.tags) ? post.tags : [],
+  images: Array.isArray(post.images) ? post.images : [],
   commentsCount: Number(post.commentsCount ?? 0),
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapApiComment = (comment: any): CommunityComment => ({
+  id: String(comment.id),
+  postId: String(comment.postId ?? ''),
+  authorName: comment.author?.name ?? 'Tripulação',
+  authorAvatarUrl: comment.author?.avatarUrl ?? null,
+  body: comment.body ?? '',
+  createdAt: comment.createdAt ?? new Date().toISOString(),
 });
 
 // =============================================================================
@@ -157,6 +193,9 @@ const ComunidadePage = () => {
   );
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [commentError, setCommentError] = useState<Record<string, string>>({});
+  const [commentPreviews, setCommentPreviews] = useState<Record<string, CommentPreviewState>>(
+    {}
+  );
 
   // ---------------------------------------------------------------------------
   // MEMOIZED VALUES
@@ -164,6 +203,8 @@ const ComunidadePage = () => {
   const relativeTime = useMemo(() => {
     return new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
   }, []);
+
+  const promptOfDay = useMemo(() => getPromptOfDay(), []);
 
   const formatRelativeTime = useCallback(
     (isoDate: string) => {
@@ -319,6 +360,21 @@ const ComunidadePage = () => {
     setPostError('');
   };
 
+  const handleAddTag = (tag: string) => {
+    setPostStatus('idle');
+    setPostError('');
+    setPostForm((prev) => {
+      const existing = prev.tags
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+      if (existing.some((item) => item.toLowerCase() === tag.toLowerCase())) {
+        return prev;
+      }
+      return { ...prev, tags: [...existing, tag].join(', ') };
+    });
+  };
+
   const submitPost = async (event: FormEvent) => {
     event.preventDefault();
     setPostStatus('saving');
@@ -406,6 +462,49 @@ const ComunidadePage = () => {
       }));
     }
   };
+
+  const loadCommentPreview = useCallback(async (postId: string) => {
+    setCommentPreviews((prev) => ({
+      ...prev,
+      [postId]: {
+        status: 'loading',
+        comments: prev[postId]?.comments ?? [],
+      },
+    }));
+
+    try {
+      const response = await fetch(`/api/community/posts/${postId}?commentsLimit=2`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error ?? 'Erro ao buscar comentários');
+      }
+      const comments = Array.isArray(data?.comments) ? data.comments.map(mapApiComment) : [];
+      setCommentPreviews((prev) => ({
+        ...prev,
+        [postId]: { status: 'success', comments },
+      }));
+    } catch {
+      setCommentPreviews((prev) => ({
+        ...prev,
+        [postId]: {
+          status: 'error',
+          comments: prev[postId]?.comments ?? [],
+        },
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    const candidates = feedPosts.slice(0, 2);
+
+    candidates.forEach((post) => {
+      if (post.commentsCount === 0) return;
+      const preview = commentPreviews[post.id];
+      if (!preview || preview.status === 'idle') {
+        loadCommentPreview(post.id);
+      }
+    });
+  }, [commentPreviews, feedPosts, loadCommentPreview]);
 
   const toggleSave = (postId: string) => {
     setSavedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
@@ -518,6 +617,21 @@ const ComunidadePage = () => {
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
           {/* Feed principal */}
           <main className="space-y-6">
+            <QuickComposer
+              profile={{
+                displayName: profile.displayName || 'Tripulação',
+                avatarUrl: profile.avatarUrl,
+              }}
+              prompt={promptOfDay}
+              form={{ body: postForm.body, tags: postForm.tags }}
+              status={postStatus}
+              error={postError}
+              suggestions={QUICK_TAG_SUGGESTIONS}
+              onChange={handlePostChange}
+              onSubmit={submitPost}
+              onAddTag={handleAddTag}
+            />
+
             {/* Error state */}
             {loadingState === 'error' && (
               <ErrorState
@@ -569,8 +683,11 @@ const ComunidadePage = () => {
                     commentValue={commentInputs[post.id] ?? ''}
                     commentStatus={commentStatus[post.id] ?? 'idle'}
                     commentError={commentError[post.id] ?? ''}
+                    commentPreview={commentPreviews[post.id]?.comments ?? []}
+                    commentPreviewStatus={commentPreviews[post.id]?.status ?? 'idle'}
                     onToggleSave={() => toggleSave(post.id)}
                     onReaction={(type) => addReaction(post.id, type)}
+                    onLoadCommentPreview={() => loadCommentPreview(post.id)}
                     onCommentChange={(value) => handleCommentChange(post.id, value)}
                     onCommentSubmit={(e) => submitComment(e, post.id)}
                   />

@@ -32,6 +32,8 @@ export const FeaturedCard = memo(function FeaturedCard({
   onToggleSave,
 }: FeaturedCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const heroImage = post.images?.[0];
+  const extraImages = Math.max(0, (post.images?.length ?? 0) - 1);
 
   return (
     <article
@@ -72,6 +74,23 @@ export const FeaturedCard = memo(function FeaturedCard({
           <span className="text-xs text-slate-400">Curador da comunidade</span>
         </div>
       </div>
+
+      {heroImage && (
+        <div className="relative mt-4 overflow-hidden rounded-xl border border-indigo-400/30">
+          <img
+            src={heroImage.url}
+            alt={heroImage.alt || post.title || 'Imagem do post'}
+            loading="lazy"
+            className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          {extraImages > 0 && (
+            <div className="absolute right-3 top-3 rounded-full border border-white/30 bg-black/50 px-2.5 py-1 text-xs font-semibold text-white">
+              +{extraImages}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Content */}
       <h3

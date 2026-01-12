@@ -5,22 +5,37 @@ import MenstrualTracker from '@/components/MenstrualTracker';
 import { CycleCareButton } from '@/components';
 import Link from 'next/link';
 import { type FormEvent, useEffect, useState } from 'react';
+import { CosmicLevelBadge, ProfileStats } from '@/app/comunidade/components/profile';
+
+type CosmicLevel = 'lua-nova' | 'quarto-crescente' | 'lua-cheia' | 'estrela-guia';
 
 type CommunityProfile = {
+  userId?: string;
   displayName: string;
   avatarUrl: string;
   bio: string;
   email: string;
   isWomen?: boolean;
+  cosmicLevel?: CosmicLevel;
+  cosmicPoints?: number;
+  postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
 };
 
 const PerfilPage = () => {
   const [profile, setProfile] = useState<CommunityProfile>({
+    userId: '',
     displayName: '',
     avatarUrl: '',
     bio: '',
     email: '',
     isWomen: false,
+    cosmicLevel: 'lua-nova',
+    cosmicPoints: 0,
+    postsCount: 0,
+    followersCount: 0,
+    followingCount: 0,
   });
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -36,11 +51,17 @@ const PerfilPage = () => {
         }
         if (isActive && data?.profile) {
           setProfile({
+            userId: data.profile.userId ?? '',
             displayName: data.profile.displayName ?? '',
             avatarUrl: data.profile.avatarUrl ?? '',
             bio: data.profile.bio ?? '',
             email: data.profile.email ?? '',
             isWomen: data.profile.isWomen ?? false,
+            cosmicLevel: data.profile.cosmicLevel ?? 'lua-nova',
+            cosmicPoints: data.profile.cosmicPoints ?? 0,
+            postsCount: data.profile.postsCount ?? 0,
+            followersCount: data.profile.followersCount ?? 0,
+            followingCount: data.profile.followingCount ?? 0,
           });
         }
       } catch (error) {
@@ -121,8 +142,37 @@ const PerfilPage = () => {
             >
               Voltar para Comunidade
             </Link>
+            {profile.userId && (
+              <Link
+                href={`/comunidade/perfil/${profile.userId}`}
+                className="rounded-full border border-indigo-400/70 bg-indigo-500/20 px-4 py-2 transition hover:bg-indigo-500/30 hover:text-white"
+              >
+                Ver perfil público
+              </Link>
+            )}
           </div>
         </header>
+
+        {/* Cosmic Level & Stats Section */}
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/70 bg-black/40 p-4">
+          <div className="flex items-center gap-4">
+            <CosmicLevelBadge
+              level={profile.cosmicLevel ?? 'lua-nova'}
+              points={profile.cosmicPoints ?? 0}
+              showProgress
+              size="lg"
+            />
+            <div className="text-sm text-slate-400">
+              <p>Continue participando para evoluir seu nível cósmico!</p>
+            </div>
+          </div>
+          <ProfileStats
+            userId={profile.userId ?? ''}
+            postsCount={profile.postsCount ?? 0}
+            followersCount={profile.followersCount ?? 0}
+            followingCount={profile.followingCount ?? 0}
+          />
+        </section>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
           <div className="rounded-3xl border border-slate-800/70 bg-black/40 p-6 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">

@@ -41,15 +41,78 @@ const GalaxyBackgroundLayer: React.FC = () => {
         />
       </div>
 
-      {/* Brilho central (galáxia) */}
+      {/* Opção 4: Braços da galáxia com conic-gradient + blur */}
+      <div 
+        className="absolute inset-0 w-full h-full animate-spin-slow"
+        style={{
+          background: `
+            conic-gradient(
+              from 0deg at 50% 50%,
+              transparent 0deg,
+              rgba(139, 92, 246, 0.18) 15deg,
+              rgba(168, 85, 247, 0.12) 35deg,
+              transparent 55deg,
+              transparent 90deg,
+              rgba(99, 102, 241, 0.14) 110deg,
+              rgba(129, 140, 248, 0.1) 130deg,
+              transparent 150deg,
+              transparent 180deg,
+              rgba(139, 92, 246, 0.16) 195deg,
+              rgba(167, 139, 250, 0.11) 215deg,
+              transparent 235deg,
+              transparent 270deg,
+              rgba(99, 102, 241, 0.13) 290deg,
+              rgba(129, 140, 248, 0.09) 310deg,
+              transparent 330deg,
+              transparent 360deg
+            )
+          `,
+          filter: 'blur(45px)',
+          transform: 'scale(1.4)',
+          animationDuration: '180s',
+        }}
+      />
+
+      {/* Opção 2: Imagem real de galáxia (NASA NGC 4414) */}
+      <div 
+        className="absolute inset-0 w-full h-full opacity-30 mix-blend-screen animate-spin-slower"
+        style={{
+          backgroundImage: 'url(/images/galaxy-spiral.webp)',
+          backgroundPosition: 'center',
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          filter: 'blur(3px) saturate(1.3) hue-rotate(-15deg)',
+        }}
+      />
+
+      {/* Camada de "poeira estelar" adicional */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 40% 35% at 50% 50%, 
-              rgba(147, 51, 234, 0.15) 0%,
-              rgba(124, 58, 237, 0.08) 40%,
-              transparent 70%
+            radial-gradient(ellipse 80% 70% at 40% 45%, 
+              rgba(139, 92, 246, 0.08) 0%,
+              transparent 50%
+            ),
+            radial-gradient(ellipse 60% 50% at 60% 55%, 
+              rgba(99, 102, 241, 0.06) 0%,
+              transparent 45%
+            )
+          `,
+        }}
+      />
+
+      {/* Brilho central (galáxia) - intensificado */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse 35% 30% at 50% 50%, 
+              rgba(253, 230, 138, 0.12) 0%,
+              rgba(251, 191, 36, 0.08) 20%,
+              rgba(147, 51, 234, 0.1) 40%,
+              rgba(124, 58, 237, 0.05) 60%,
+              transparent 80%
             )
           `,
         }}

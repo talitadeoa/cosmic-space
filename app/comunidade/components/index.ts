@@ -11,6 +11,7 @@ export * from './FeaturedCard';
 export * from './EmptyState';
 export * from './ErrorState';
 export * from './NewPostForm';
+export * from './QuickComposer';
 export * from './StreamCard';
 export * from './CommunityStats';
 export * from './TrendingTopics';
