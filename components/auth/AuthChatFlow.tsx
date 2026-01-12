@@ -148,7 +148,7 @@ export function useAuthChatFlow({
     }
 
     if (loading || messages.length > 0) return;
-    setMessages([buildSystemMessage('Você prefere entrar ou criar conta?')]);
+    setMessages([buildSystemMessage('Você gostaria de  entrar ou criar conta?')]);
   }, [isActive, loading, messages.length, resetAll]);
 
   const stepSuggestions: AuthFlowSuggestion[] = useMemo(() => {
@@ -258,7 +258,7 @@ export function useAuthChatFlow({
           pushSystemMessage('Vamos criar sua conta. Como você se chama?');
           return true;
         }
-        pushSystemMessage('Não entendi. Você prefere entrar ou criar conta?');
+        pushSystemMessage('Não entendi. Você gostaria de entrar ou criar conta?');
         return true;
       }
 
