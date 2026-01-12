@@ -13,7 +13,7 @@ type PhaseItem = {
 };
 
 type MoonCarouselProps = {
-  scrollerRef: React.RefObject<HTMLDivElement>;
+  scrollerRef: React.RefObject<HTMLDivElement | null>;
   scrollerMaxWidth: number;
   onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   layoutPadding: number;

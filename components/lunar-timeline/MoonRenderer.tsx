@@ -50,7 +50,7 @@ export function MoonRenderer({
   onRenderComplete,
 }: MoonRendererProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
 
   const config = { ...DEFAULT_CONFIG, ...userConfig };
 
@@ -282,7 +282,7 @@ export function MoonRenderer({
  * Hook para pré-carregar e otimizar renderização
  */
 export function useMoonRenderer(size: number = 300) {
-  const offscreenCanvas = useRef<HTMLCanvasElement>();
+  const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     // Criar canvas offscreen para pré-renderização

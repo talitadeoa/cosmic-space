@@ -175,8 +175,8 @@ interface ChatMessagesProps {
   messages: ChatMessage[];
   styles: ChatStyles;
   inline: boolean;
-  containerRef: React.RefObject<HTMLDivElement>;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
 function ChatMessages({

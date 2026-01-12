@@ -14,12 +14,12 @@ const SolRouteContent: React.FC<{
   screen: SolScreen;
   onOrbitClick: () => void;
   onOutsideClick: () => void;
-  onSunSelect: () => void;
+  onSunSelect: (year: number) => void;
 }> = ({ screen, onOrbitClick, onOutsideClick, onSunSelect }) => {
   const { setSelectedYear } = useYear();
   const handleSunSelect = (year: number) => {
     setSelectedYear(year);
-    onSunSelect();
+    onSunSelect(year);
   };
 
   return (
@@ -52,7 +52,7 @@ const SolPage = () => {
           screen={screen}
           onOrbitClick={() => setScreen('galaxysuns')}
           onOutsideClick={() => router.push('/cosmos/home')}
-          onSunSelect={() => setScreen('solorbit')}
+          onSunSelect={(year: number) => setScreen('solorbit')}
         />
         <CosmosRouteHelper routeKey="sol" position="bottom-right" />
       </SpacePageLayout>

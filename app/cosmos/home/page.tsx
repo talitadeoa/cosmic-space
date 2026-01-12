@@ -27,7 +27,7 @@ const StandaloneHomePage = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [focus, setFocus] = useState<FocusState | null>(null);
-  const focusTimeoutRef = useRef<NodeJS.Timeout>();
+  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prefetchedRef = useRef(new Set<string>());
 
   useEffect(() => {
