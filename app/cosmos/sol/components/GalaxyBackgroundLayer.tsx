@@ -4,21 +4,7 @@ import React from 'react';
 
 const GalaxyBackgroundLayer: React.FC = () => {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28px] w-full h-full min-h-[400px]">
-      {/* Fundo gradiente cósmico */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{
-          background: `
-            radial-gradient(ellipse 120% 100% at 50% 50%, 
-              rgba(15, 10, 40, 0.95) 0%, 
-              rgba(5, 5, 20, 1) 50%, 
-              rgba(3, 0, 20, 1) 100%
-            )
-          `,
-        }}
-      />
-
+    <div className="pointer-events-none absolute inset-0 overflow-visible w-full h-full min-h-[400px]">
       {/* Estrelas CSS */}
       <div className="absolute inset-0 overflow-hidden">
         <div 
@@ -113,20 +99,6 @@ const GalaxyBackgroundLayer: React.FC = () => {
               rgba(147, 51, 234, 0.1) 40%,
               rgba(124, 58, 237, 0.05) 60%,
               transparent 80%
-            )
-          `,
-        }}
-      />
-
-      {/* Overlay para integração suave com UI */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{
-          background: `
-            radial-gradient(ellipse 60% 50% at 50% 50%, 
-              transparent 0%, 
-              rgba(3, 0, 20, 0.3) 60%, 
-              rgba(3, 0, 20, 0.6) 100%
             )
           `,
         }}

@@ -25,4 +25,3 @@ public/build/
 .env.local
 .env.production
 .husky
-agents/

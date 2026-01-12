@@ -52,7 +52,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
           {orbitSizes.map((size, idx) => (
             <div
               key={`orbit-right-${size}`}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-300/15 shadow-[0_0_32px_rgba(79,70,229,0.12)]"
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-300/15 shadow-[0_0_32px_rgba(79,70,229,0.12)]"
               style={{
                 width: size,
                 height: size,
@@ -67,7 +67,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
           {orbitSizes.map((size, idx) => (
             <div
               key={`orbit-left-${size}`}
-              className="absolute top-1/2 rounded-full border border-indigo-300/15 shadow-[0_0_32px_rgba(79,70,229,0.12)]"
+              className="pointer-events-none absolute top-1/2 rounded-full border border-indigo-300/15 shadow-[0_0_32px_rgba(79,70,229,0.12)]"
               style={{
                 width: size,
                 height: size,
@@ -98,7 +98,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
             </div>
           </motion.div>
 
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
             {yearSuns.map((sun, idx) => {
               const floatOffset = idx % 2 === 0 ? -2 : 2;
               const angle = idx * angleStep;

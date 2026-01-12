@@ -26,7 +26,7 @@ const GalaxySunsExperience: React.FC<{
 
   return (
     <motion.div 
-      className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-2xl sm:rounded-[28px] px-2 py-4 sm:px-6 sm:py-5"
+      className="relative flex h-full w-full flex-col items-center justify-center overflow-visible px-2 py-4 sm:px-6 sm:py-5"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: 'easeOut' }}
