@@ -1,6 +1,7 @@
 'use client';
 
 import { SpacePageLayout } from '@/components/layouts';
+import AuthGate from '@/components/auth/AuthGate';
 import MenstrualTracker from '@/components/MenstrualTracker';
 import { CycleCareButton } from '@/components';
 import Link from 'next/link';
@@ -122,8 +123,9 @@ const PerfilPage = () => {
   };
 
   return (
-    <SpacePageLayout className="px-6 py-12 sm:px-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
+    <AuthGate>
+      <SpacePageLayout className="px-6 py-12 sm:px-10">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
         <header className="space-y-4">
           <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Perfil</p>
           <h1 className="text-3xl font-semibold text-white sm:text-4xl">
@@ -276,8 +278,9 @@ const PerfilPage = () => {
             </div>
           </section>
         )}
-      </div>
-    </SpacePageLayout>
+        </div>
+      </SpacePageLayout>
+    </AuthGate>
   );
 };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { SpacePageLayout } from '@/components/layouts';
+import AuthGate from '@/components/auth/AuthGate';
 import {
   useCommunityData,
   useCommunityFilters,
@@ -100,8 +101,9 @@ export default function ComunidadePage() {
   } = useCommunityHelpers();
 
   return (
-    <SpacePageLayout>
-      <div className="space-y-8">
+    <AuthGate>
+      <SpacePageLayout>
+        <div className="space-y-8">
         {/* Header */}
         <CommunityHeader
           profile={profile}
@@ -171,7 +173,8 @@ export default function ComunidadePage() {
             onTopicClick={(topic) => setActiveTag(topic.name)}
           />
         </div>
-      </div>
-    </SpacePageLayout>
+        </div>
+      </SpacePageLayout>
+    </AuthGate>
   );
 }

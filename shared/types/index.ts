@@ -1,22 +1,14 @@
 /**
- * Compatibilidade: Mapeamento de tipos legados
- * 
- * Este arquivo serve como ponte entre os imports antigos (@/types)
- * e os novos imports (@/domains/[domain]/types)
- * 
- * A medida que cada domínio é migrado, remover as re-exportações aqui
+ * Tipos compartilhados genéricos
+ * @module shared/types
  */
 
+// API Types (genéricos)
+export { ApiError, type ApiResponse, type RequestStatus, type FetchState } from './api';
+
 // Re-export de domains que já têm barrel exports
-export * from '@/domains/todo';
+export * from '@/domains/todo/types';
+export * from '@/domains/lunar-cycle/types';
 
-// Tipos temporários que ainda não foram criados
-export type MoonPhase = 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
+// Tipos temporários que ainda não foram criados nos domínios
 export type TimelineItemType = 'mensal' | 'trimestral' | 'anual' | 'energia';
-
-// TODO: Migrar para seus respectivos domínios
-// export * from '@/domains/astro';
-// export * from '@/domains/lunar-cycle';
-// export * from '@/domains/insights';
-// export * from '@/domains/community';
-// export * from '@/domains/auth';
