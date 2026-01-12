@@ -28,7 +28,7 @@ const PlanetaPage: React.FC = () => {
 
       <PlanetaScene>
         <PlanetScreen navigateTo={navigateTo} navigateWithFocus={navigateWithFocus} />
-        <CosmosRouteHelper routeKey="planeta" position="bottom-right" />
+        <CosmosRouteHelper routeKey="planeta" position="top-right" forceShow />
       </PlanetaScene>
     </PlanetaProviders>
   );

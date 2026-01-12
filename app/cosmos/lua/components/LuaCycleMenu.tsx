@@ -51,9 +51,9 @@ const CYCLE_OPTIONS: CycleOption[] = [
   // Grupo Menstrual
   {
     key: 'ciclo-menstrual',
-    label: 'Rastreador de Ciclo',
-    description: 'Rastreie seu ciclo menstrual',
-    icon: '🩸',
+    label: 'Jornada do Ciclo',
+    description: 'Experiência guiada e acolhedora',
+    icon: '🌸',
     href: '/ciclos/ciclo',
     group: 'menstrual',
   },
@@ -202,7 +202,7 @@ const LuaCycleMenu: React.FC<LuaCycleMenuProps> = ({ currentPath = '/cosmos/lua'
             {/* Grupo Menstrual */}
             <div className="border-t border-white/10 p-1">
               <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-pink-400/80 font-medium">
-                🩸 Ciclo Menstrual
+                🩸 Seu ciclo 
               </div>
               {CYCLE_OPTIONS.filter((opt) => opt.group === 'menstrual').map((option) => {
                 const isActive = isCurrentPath(option.href);

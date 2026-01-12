@@ -3,13 +3,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Simple inline SVG icons to avoid lucide-react dependency
-const XIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
-
 type RouteKey = 'home' | 'lua' | 'sol' | 'galaxia' | 'eclipse' | 'planeta';
 
 interface RouteHelperConfig {
@@ -118,10 +111,10 @@ interface CosmosRouteHelperProps {
   delay?: number;
   /** Posição do helper */
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  /** Permite alternar entre modo compacto (emoji) e cartão */
+  collapsible?: boolean;
   /** Forçar exibição mesmo se já visitou */
   forceShow?: boolean;
-  /** Callback quando o helper é fechado */
-  onDismiss?: () => void;
 }
 
 const accentStyles: Record<string, { text: string; bar: string; glow: string }> = {
@@ -153,26 +146,25 @@ const accentStyles: Record<string, { text: string; bar: string; glow: string }> 
 };
 
 const positionStyles: Record<string, string> = {
-  'bottom-right': 'bottom-4 right-4 sm:bottom-6 sm:right-6',
-  'bottom-left': 'bottom-4 left-4 sm:bottom-6 sm:left-6',
-  'top-right': 'top-20 right-4 sm:top-24 sm:right-6',
-  'top-left': 'top-20 left-4 sm:top-24 sm:left-6',
+  'bottom-right': 'bottom-6 right-4 sm:bottom-8 sm:right-8',
+  'bottom-left': 'bottom-6 left-4 sm:bottom-8 sm:left-8',
+  'top-right': 'top-24 right-4 sm:top-28 sm:right-8',
+  'top-left': 'top-24 left-4 sm:top-28 sm:left-8',
 };
 
 export const CosmosRouteHelper: React.FC<CosmosRouteHelperProps> = ({
   routeKey,
   delay = 800,
   position = 'bottom-right',
-  forceShow = false,
-  onDismiss,
+  collapsible = true,
+  forceShow = true,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [currentTip, setCurrentTip] = useState(0);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const config = ROUTE_HELPER_CONFIG[routeKey];
   const accent = accentStyles[config.accentColor] || accentStyles.indigo;
-  const progress = config.tips.length > 0 ? (currentTip + 1) / config.tips.length : 0;
+  const firstTip = config.tips[0] ?? 'Explore o cosmos tocando nos astros.';
 
   useEffect(() => {
     // Check if already visited
@@ -189,31 +181,16 @@ export const CosmosRouteHelper: React.FC<CosmosRouteHelperProps> = ({
     return () => clearTimeout(timer);
   }, [routeKey, delay, forceShow]);
 
-  const handleDismiss = useCallback(() => {
-    setIsVisible(false);
+  const handleExpand = useCallback(() => {
+    if (!collapsible) return;
+    setIsCollapsed(false);
+  }, [collapsible]);
+
+  const handleCollapse = useCallback(() => {
+    if (!collapsible) return;
+    setIsCollapsed(true);
     markRouteVisited(routeKey);
-    onDismiss?.();
-  }, [routeKey, onDismiss]);
-
-  const handleNextTip = useCallback(() => {
-    setHasInteracted(true);
-    if (currentTip < config.tips.length - 1) {
-      setCurrentTip((prev) => prev + 1);
-    } else {
-      handleDismiss();
-    }
-  }, [currentTip, config.tips.length, handleDismiss]);
-
-  // Auto-dismiss after 8 seconds if no interaction
-  useEffect(() => {
-    if (!isVisible || hasInteracted) return;
-
-    const autoDismiss = setTimeout(() => {
-      handleDismiss();
-    }, 8000);
-
-    return () => clearTimeout(autoDismiss);
-  }, [isVisible, hasInteracted, handleDismiss]);
+  }, [collapsible, routeKey]);
 
   return (
     <AnimatePresence>
@@ -223,78 +200,97 @@ export const CosmosRouteHelper: React.FC<CosmosRouteHelperProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.98 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
-          className={`fixed z-50 ${positionStyles[position]}`}
+          className={`pointer-events-none fixed z-[120] ${positionStyles[position]}`}
         >
-          <motion.div
-            className="relative max-w-xs overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-xl shadow-[0_12px_30px_rgba(2,6,23,0.45)]"
-            animate={{ y: [0, -2, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <motion.div
-              aria-hidden
-              className={`pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full blur-3xl ${accent.glow}`}
-              animate={{ opacity: [0.15, 0.3, 0.15], scale: [1, 1.1, 1] }}
-              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-            />
-
-            {/* Close button */}
-            <button
-              onClick={handleDismiss}
-              className="absolute right-2 top-2 rounded-full p-1.5 text-white/50 transition-colors hover:bg-white/5 hover:text-white/80"
-              aria-label="Fechar dica"
-            >
-              <XIcon />
-            </button>
-
-            {/* Content */}
-            <div className="p-4 pr-10">
-              {/* Header */}
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{config.icon}</span>
-                <h3 className="text-sm font-medium text-white/90">{config.title}</h3>
-              </div>
-
-              {/* Description */}
-              <p className="mt-1 text-xs leading-relaxed text-white/60">{config.description}</p>
-
-              {/* Tips carousel */}
-              <div className="mt-3 min-h-[32px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentTip}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="flex items-start gap-2 text-xs text-white/70"
-                  >
-                    <span className={`${accent.text} mt-0.5`}>💡</span>
-                    <span className="text-white/80">{config.tips[currentTip]}</span>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Progress & Navigation */}
-              <div className="mt-3 flex items-center gap-3">
-                <div className="h-0.5 flex-1 rounded-full bg-white/10">
-                  <motion.div
-                    className={`h-0.5 rounded-full ${accent.bar}`}
-                    initial={false}
-                    animate={{ width: `${progress * 100}%` }}
-                    transition={{ duration: 0.35, ease: 'easeOut' }}
-                  />
-                </div>
-
-                {/* Next button */}
-                <button
-                  onClick={handleNextTip}
-                  className={`text-[11px] font-semibold ${accent.text} transition-colors hover:text-white`}
+          <AnimatePresence mode="wait">
+            {isCollapsed ? (
+              <motion.button
+                key="collapsed"
+                type="button"
+                onClick={handleExpand}
+                initial={{ opacity: 0, scale: 0.94, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: 6 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="pointer-events-auto relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-slate-950/60 text-lg shadow-[0_8px_22px_rgba(2,6,23,0.4)] backdrop-blur-xl text-white/90"
+                aria-label={`Abrir dica do cosmos: ${firstTip}`}
+                aria-expanded={!isCollapsed}
+              >
+                <span>{config.icon}</span>
+                <span
+                  aria-hidden
+                  className={`pointer-events-none absolute inset-0 -z-10 rounded-full blur-2xl ${accent.glow}`}
+                />
+              </motion.button>
+            ) : (
+              <motion.div
+                key="expanded"
+                layout
+                className="relative max-w-xs overflow-hidden rounded-2xl border border-white/8 bg-slate-950/60 backdrop-blur-xl shadow-[0_8px_22px_rgba(2,6,23,0.4)]"
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: 8 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <motion.div
+                  layout
+                  className="relative"
+                  animate={{ y: [0, -1.5, 0] }}
+                  transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
                 >
-                  {currentTip < config.tips.length - 1 ? 'Próximo' : 'Entendi!'}
-                </button>
-              </div>
-            </div>
-          </motion.div>
+                  <motion.div
+                    aria-hidden
+                    className={`pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full blur-3xl ${accent.glow}`}
+                    animate={{ opacity: [0.15, 0.3, 0.15], scale: [1, 1.1, 1] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+
+                  {collapsible && (
+                    <button
+                      type="button"
+                      onClick={handleCollapse}
+                      className="absolute right-2 top-2 rounded-full p-1.5 text-white/40 transition-colors hover:bg-white/5 hover:text-white/80"
+                      aria-label="Recolher dica"
+                      aria-expanded={!isCollapsed}
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+                  )}
+
+                  <div className="p-3.5 pr-8">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{config.icon}</span>
+                      <h3 className="text-sm font-medium text-white/90">{config.title}</h3>
+                    </div>
+
+                    <p className="mt-1 text-xs leading-relaxed text-white/60">
+                      {config.description}
+                    </p>
+
+                    <div className="mt-3 min-h-[32px]">
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="flex items-start gap-2 text-xs text-white/70"
+                        >
+                          <span className={`${accent.text} mt-0.5`}>💡</span>
+                          <span className="text-white/80">{firstTip}</span>
+                        </motion.div>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

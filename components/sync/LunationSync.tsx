@@ -78,6 +78,9 @@ export function LunationSync({
           }
 
           const { days } = await generateResponse.json();
+          if (!Array.isArray(days) || days.length === 0) {
+            throw new Error(`Nenhum dia gerado para ${year}`);
+          }
           if (verbose) console.warn(`✨ ${days.length} dias gerados`);
 
           // 3. Salvar no banco
@@ -148,6 +151,9 @@ export function useSyncLunations() {
       }
 
       const { days } = await generateResponse.json();
+      if (!Array.isArray(days) || days.length === 0) {
+        throw new Error(`Nenhum dia gerado para ${year}`);
+      }
       if (verbose) console.warn(`✨ ${days.length} dias gerados`);
 
       // Salvar

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface YearMoonData {
   year: number;
@@ -26,8 +26,13 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
   const [data, setData] = useState<Record<number, YearMoonData>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dataRef = useRef<Record<number, YearMoonData>>({});
 
-  const fetchYearData = async (year: number) => {
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  const fetchYearData = useCallback(async (year: number) => {
     try {
       const startDate = `${year}-01-01`;
       const endDate = `${year}-12-31`;
@@ -101,7 +106,7 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
       setError(message);
       console.error(`❌ Erro ao sincronizar GalaxySuns ${year}:`, message);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const yearsToFetch =
@@ -131,19 +136,19 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
     sync();
   }, []);
 
-  const refresh = async (year?: number) => {
+  const refresh = useCallback(async (year?: number) => {
     setIsLoading(true);
     try {
       if (year) {
         await fetchYearData(year);
       } else {
-        const yearsToFetch = Object.keys(data).map(Number);
+        const yearsToFetch = Object.keys(dataRef.current).map(Number);
         await Promise.all(yearsToFetch.map(fetchYearData));
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [fetchYearData]);
 
   return { data, isLoading, error, refresh };
 }

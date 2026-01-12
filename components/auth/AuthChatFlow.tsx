@@ -151,7 +151,7 @@ export function useAuthChatFlow({
     }
 
     if (loading || messages.length > 0) return;
-    setMessages([buildSystemMessage(`Para acessar ${accessTarget}, é necessário entrar`)]);
+    setMessages([buildSystemMessage(`Para acessar ${accessTarget}, digite seu e-mail`)]);
   }, [isActive, loading, messages.length, resetAll, accessTarget]);
 
   const stepSuggestions: AuthFlowSuggestion[] = useMemo(() => {
@@ -175,6 +175,35 @@ export function useAuthChatFlow({
   const pushSystemMessage = useCallback((content: string) => {
     setMessages((prev) => [...prev, buildSystemMessage(content)]);
   }, []);
+
+  const checkEmailStatus = useCallback(
+    async (email: string) => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const response = await fetch('/api/auth/check-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) return null;
+        const data = await response.json();
+        return {
+          userExists: Boolean(data?.userExists),
+          subscribed: Boolean(data?.subscribed),
+        };
+      } catch (error) {
+        if ((error as any)?.name !== 'AbortError') {
+          console.warn('Erro ao checar status do email:', error);
+        }
+        return null;
+      }
+    },
+    []
+  );
 
   const buildAuthErrorMessage = useCallback(
     (reason?: string | null, fallback?: string | null) => {
@@ -261,7 +290,7 @@ export function useAuthChatFlow({
           pushSystemMessage('Vamos criar sua conta. Como você se chama?');
           return true;
         }
-        pushSystemMessage(`Não entendi. Para acessar ${accessTarget}, é necessário entrar`);
+        pushSystemMessage(`Não entendi. Para acessar ${accessTarget}, digite seu e-mail`);
         return true;
       }
 
@@ -319,8 +348,34 @@ export function useAuthChatFlow({
           return true;
         }
         setFormData((prev) => ({ ...prev, email: trimmed }));
+        const status = await checkEmailStatus(trimmed);
+
+        if (status?.userExists) {
+          setMode('login');
+          setStep('password');
+          pushSystemMessage('Encontrei sua conta. Digite sua senha para entrar.');
+          return true;
+        }
+
+        // Nenhum usuário. Se estava em login, migra para signup e reinicia coleta.
+        if (mode === 'login' || !mode) {
+          setMode('signup');
+          setStep('firstName');
+          pushSystemMessage(
+            status?.subscribed
+              ? 'Você já deixou seu e-mail com a gente. Vamos criar sua conta: como você se chama? Depois é só escolher uma senha.'
+              : 'Vi que é sua primeira vez por aqui. Vamos criar sua conta! Me diz seu nome e depois escolhemos uma senha.'
+          );
+          return true;
+        }
+
+        // Já está em signup: segue para senha com a mensagem adequada
         setStep('password');
-        pushSystemMessage('Agora digite sua senha.');
+        pushSystemMessage(
+          status?.subscribed
+            ? 'Ah, vi que você já se inscreveu por aqui. Vamos criar uma senha para continuar.'
+            : 'Primeira vez por aqui! Escolha uma senha para criar sua conta.'
+        );
         return true;
       }
 
@@ -353,6 +408,7 @@ export function useAuthChatFlow({
       resetFlow,
       step,
       submitAuth,
+      checkEmailStatus,
     ]
   );
 

@@ -219,7 +219,6 @@ const InteractiveView: React.FC<ViewProps> = ({
         <HomeScreen navigateTo={navigateTo} navigateWithFocus={navigateWithFocus} />
       </div>
     </div>
-    <CosmosRouteHelper routeKey="home" position="bottom-right" />
   </SpacePageLayout>
 );
 
@@ -532,6 +531,8 @@ export const HomeViewSwitcher: React.FC<HomeViewSwitcherProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CosmosRouteHelper routeKey="home" position="top-left" />
     </>
   );
 };

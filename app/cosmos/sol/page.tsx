@@ -17,7 +17,7 @@ const SolPage = () => {
     <YearProvider>
       <SpacePageLayout onBackgroundClick={onBackgroundClick}>
         <SolScreen />
-        <CosmosRouteHelper routeKey="sol" position="bottom-right" />
+        <CosmosRouteHelper routeKey="sol" position="top-left" />
       </SpacePageLayout>
     </YearProvider>
   );

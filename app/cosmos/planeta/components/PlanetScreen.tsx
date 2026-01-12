@@ -30,7 +30,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   const temporal = useTemporal();
 
   // Sincronização de lunações
-  const galaxySunsSync = useGalaxySunsSync([
+  const { refresh: refreshGalaxySuns } = useGalaxySunsSync([
     new Date().getFullYear() - 1,
     new Date().getFullYear(),
     new Date().getFullYear() + 1,
@@ -119,14 +119,14 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     const syncGalaxySuns = async () => {
       try {
         // Atualizar dados de estatísticas de fases lunares
-        await galaxySunsSync.refresh(temporal.year);
+        await refreshGalaxySuns(temporal.year);
       } catch (error) {
         console.warn('Erro ao sincronizar GalaxySuns:', error);
       }
     };
 
     syncGalaxySuns();
-  }, [temporal.year, galaxySunsSync]);
+  }, [temporal.year, refreshGalaxySuns]);
 
   const handleTodoSubmit = useCallback((todo: ParsedTodoItem) => {
     const updatedAt = todo.updatedAt ?? nowIso();

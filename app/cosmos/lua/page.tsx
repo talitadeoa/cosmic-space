@@ -11,7 +11,7 @@ const LuaPage = () => {
   return (
     <SpacePageLayout onBackgroundClick={onBackgroundClick}>
       <LuaScreen />
-      <CosmosRouteHelper routeKey="lua" position="bottom-right" />
+      <CosmosRouteHelper routeKey="lua" position="bottom-left" forceShow />
     </SpacePageLayout>
   );
 };

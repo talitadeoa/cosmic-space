@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import type { PlanetUiState } from '@/types/planetState';
+import { DEFAULT_PLANET_FILTERS, DEFAULT_PLANET_STATE, type PlanetUiState } from '@/types/planetState';
 import { loadPlanetStateSync, normalizePlanetState, savePlanetState } from '@/app/cosmos/utils/planetStateStorage';
 import { loadPlanetStateMeta, savePlanetStateMeta } from '@/app/cosmos/utils/planetStateMetaStorage';
 import { getDeviceId } from '@/app/cosmos/utils/deviceId';
@@ -27,7 +27,12 @@ const shouldApplyState = (incoming: SyncStateItem, localVersion: number | null) 
 };
 
 export const usePlanetState = () => {
-  const [state, setStateInternal] = useState<PlanetUiState>(() => loadPlanetStateSync());
+  // Start with deterministic defaults; load persisted state after hydration to avoid SSR mismatches
+  const [state, setStateInternal] = useState<PlanetUiState>(() => ({
+    ...DEFAULT_PLANET_STATE,
+    // Clone filters to avoid mutating the shared default reference
+    filters: { ...DEFAULT_PLANET_FILTERS },
+  }));
   const [hasLoaded, setHasLoaded] = useState(false);
   const { isAuthenticated, loading, user } = useAuth();
   const deviceId = useMemo(() => getDeviceId(), []);
