@@ -9,10 +9,8 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { SpacePageLayout } from '@/components/layouts';
-import { useRouter } from 'next/navigation';
-import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import { LunarCalendarWidget, generateMockLunarData } from '@/components/lunar-calendar';
 import type { LunarDataByDate } from '@/components/lunar-calendar';

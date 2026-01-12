@@ -17,7 +17,6 @@ import {
   SyncCallbacks,
   SyncConfig,
   SyncState,
-  createEmptyMetadata,
 } from './SyncEngine';
 
 // ============================================================================

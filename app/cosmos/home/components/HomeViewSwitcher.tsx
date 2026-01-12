@@ -9,7 +9,7 @@ import { useCosmosNavigationSafe, HomeViewType } from '@/app/cosmos/context/Cosm
 import { CosmosParallax } from '@/components/home/CosmosParallax';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import HomeScreen from '@/app/cosmos/screens/HomeScreen';
-import type { ScreenId, ScreenProps, FocusState, CelestialType, CelestialSize } from '@/app/cosmos/types';
+import type { ScreenId, ScreenProps, FocusState, CelestialType, } from '@/app/cosmos/types';
 
 // ============================================
 // CONFIGURAÇÃO COMPARTILHADA

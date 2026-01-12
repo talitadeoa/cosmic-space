@@ -14,11 +14,9 @@
 
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTodoPanelState } from '@/components/todos/useTodoPanelState';
-import { TodoPanelProvider, type TodoPanelContextValue } from '@/components/todos/TodoPanelContext';
 import { TodoList } from '@/components/todos/TodoList';
 import { PhaseGroupedTodoList } from '@/components/todos/PhaseGroupedTodoList';
 import { TodoBatchActions } from '@/components/todos/TodoBatchActions';
-import { EmptyState } from './EmptyState';
 import { ViewButtons } from './todos/ViewButtons';
 import { ModeBar } from './todos/ModeBar';
 import { useFilterAndView } from './todos/useFilterAndView';

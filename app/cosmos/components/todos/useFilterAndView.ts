@@ -89,7 +89,7 @@ export function useFilterAndView(
       const phaseFilter = view === 'em-aberto' ? null : selectedPhase;
       const islandFilter = view === 'em-aberto' ? null : selectedIsland;
 
-      let filtered = todos
+      const filtered = todos
         .filter((todo) => (phaseFilter ? todo.phase === phaseFilter : true))
         .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true));
 

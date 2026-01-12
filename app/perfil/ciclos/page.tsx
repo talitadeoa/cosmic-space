@@ -1,6 +1,4 @@
 'use client';
-
-import React from 'react';
 import { SpacePageLayout } from '@/components/layouts';
 import { useMenstrualCycle } from '@/hooks/useMenstrualCycle';
 import { useState, useEffect } from 'react';

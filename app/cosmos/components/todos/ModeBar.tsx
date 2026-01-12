@@ -2,8 +2,6 @@
  * Componente para exibir botões de modo (edit, select, group)
  */
 'use client';
-
-import React from 'react';
 import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
 import { TodoFilters } from '@/components/todos/TodoFilters';
 

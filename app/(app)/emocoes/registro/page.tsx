@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { SpacePageLayout } from '@/components/layouts';
 import EmotionalInput, { Emotion } from '@/components/EmotionalInput';
 import { useEmotionalInput } from '@/hooks/useEmotionalInput';

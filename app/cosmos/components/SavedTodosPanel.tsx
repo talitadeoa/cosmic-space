@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, } from 'react';
 import { useTodoPanelState } from '@/components/todos/useTodoPanelState';
-import { TodoPanelProvider, type TodoPanelContextValue } from '@/components/todos/TodoPanelContext';
 import { TodoList } from '@/components/todos/TodoList';
 import { PhaseGroupedTodoList } from '@/components/todos/PhaseGroupedTodoList';
 import { TodoFilters } from '@/components/todos/TodoFilters';
 import { TodoBatchActions } from '@/components/todos/TodoBatchActions';
-import { EmptyState } from './EmptyState';
 import type { SavedTodo, MoonPhase, IslandId } from '../utils/todoStorage';
 import { phaseLabels } from '../utils/todoStorage';
 import { getIslandLabel, ISLAND_IDS, type IslandNames } from '../utils/islandNames';

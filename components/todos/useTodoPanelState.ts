@@ -9,8 +9,6 @@ import { useReducer, useCallback } from 'react';
 import type { 
   TodoPanelState, 
   TodoPanelAction, 
-  InputTypeFilter, 
-  TodoStatusFilter 
 } from './types';
 import type { MoonPhase, IslandId } from '@/app/cosmos/utils/todoStorage';
 

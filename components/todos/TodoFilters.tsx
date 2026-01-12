@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { memo } from 'react';
+import { memo } from 'react';
 import type { InputTypeFilter, TodoStatusFilter } from './types';
 
 interface TodoFiltersProps {

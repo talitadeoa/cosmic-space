@@ -1,6 +1,4 @@
 'use client';
-
-import React from 'react';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 import { MOON_PHASE_EMOJI_LABELS } from '@/app/cosmos/utils/moonPhases';
 

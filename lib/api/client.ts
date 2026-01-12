@@ -7,7 +7,7 @@
 
 'use client';
 
-import { ApiError, type ApiResponse } from '@/types/api';
+import { ApiError, } from '@/types/api';
 import { getBaseUrl } from '@/lib/utils/urls';
 
 /**

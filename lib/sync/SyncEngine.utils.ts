@@ -2,7 +2,7 @@
  * Utilities e helpers para SyncEngine
  */
 
-import type { SyncConfig, SyncState, SyncMetadata } from './SyncEngine.types';
+import type { SyncState, SyncMetadata } from './SyncEngine.types';
 
 /**
  * Normalizar configuração com valores defaults

@@ -1,9 +1,5 @@
 'use client';
-
-import React from 'react';
 import { SpacePageLayout } from '@/components/layouts';
-import { useRouter } from 'next/navigation';
-import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import LunarTimeScrubber from '../components/LunarTimeScrubber';
 import LuaCycleMenu from '../components/LuaCycleMenu';

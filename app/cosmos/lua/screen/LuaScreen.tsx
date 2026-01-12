@@ -32,8 +32,6 @@ import MoonCarousel from '../components/MoonCarousel';
 import CalendarStatus from '../components/CalendarStatus';
 import LuaCycleMenu from '../components/LuaCycleMenu';
 import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
-import { useRouter } from 'next/navigation';
-import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 
 type LuaScreenProps = {

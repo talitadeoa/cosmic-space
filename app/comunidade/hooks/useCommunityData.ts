@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import type { CommunityComment, CommunityPost } from '@/types/community';
+import type { CommunityPost } from '@/types/community';
 
 export interface CommunityProfile {
   displayName: string;

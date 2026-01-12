@@ -18,7 +18,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, } from 'react';
 import { apiClient } from '@/lib/api/client';
 import { storage } from '@/lib/utils/storage';
 import type { GenericInsight, InsightConfig, InsightState } from '@/types/insights';

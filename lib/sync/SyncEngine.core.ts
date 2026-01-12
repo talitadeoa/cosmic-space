@@ -5,7 +5,7 @@ import {
   SyncCallbacks,
   InitializeOptions,
 } from './SyncEngine.types';
-import { normalizeConfig, createEmptyState, createEmptyMetadata, createLogger, delay, isSyncComplete } from './SyncEngine.utils';
+import { normalizeConfig, createEmptyState, createEmptyMetadata, createLogger, } from './SyncEngine.utils';
 
 /**
  * Generic push/pull sync engine com suporte a offline-first e retry automático.

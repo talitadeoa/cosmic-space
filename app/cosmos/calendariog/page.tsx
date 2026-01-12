@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { SpacePageLayout } from '@/components/layouts';
-import { useRouter } from 'next/navigation';
-import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import LuaCycleMenu from '@/app/cosmos/lua/components/LuaCycleMenu';
 import LunarCalendarWidget, { LunarDayData, LunarPhase } from './LunarCalendarWidget';

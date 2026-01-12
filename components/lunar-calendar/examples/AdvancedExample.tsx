@@ -10,10 +10,9 @@
 
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   LunarCalendarWidget,
-  MoonPhase,
   LunarDataByDate,
   formatDateKey,
 } from '@/components/lunar-calendar';

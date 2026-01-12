@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { motion, useAnimation, PanInfo, AnimatePresence } from 'framer-motion';
 import { useNativeGestures } from '@/hooks/useNativeGestures';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import type { SwipeGesture } from '@/types/gestures';
 
 export interface SwipeableViewProps {
   children: React.ReactNode;

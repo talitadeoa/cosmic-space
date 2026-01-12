@@ -2,7 +2,7 @@
  * Utilitários para cálculos de data e fase lunar
  */
 
-import { MoonPhase, LunarData, LunarDataByDate, CalendarDay } from './types';
+import { MoonPhase, LunarDataByDate, CalendarDay } from './types';
 
 /**
  * Gera o grid completo do mês incluindo dias dos meses adjacentes

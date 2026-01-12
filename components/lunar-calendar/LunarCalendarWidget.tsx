@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { LunarCalendarProps, LunarData } from './types';
+import { LunarCalendarProps, } from './types';
 import { generateCalendarGrid, enrichCalendarWithLunarData, getMonthName } from './utils';
 import { LunarHero } from './LunarHero';
 import { CalendarGrid } from './CalendarGrid';

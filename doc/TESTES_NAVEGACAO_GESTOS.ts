@@ -96,7 +96,7 @@ const validateNavigationHook = (): void => {
 // TESTE 3: Validar GestureDetector Component
 // ============================================================================
 
-import { render, screen } from '@testing-library/react';
+import { render, } from '@testing-library/react';
 import { GestureDetector } from '@/app/cosmos/components/GestureDetector';
 
 const validateGestureDetector = (): void => {

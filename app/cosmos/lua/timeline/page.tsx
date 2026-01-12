@@ -1,8 +1,6 @@
 'use client';
 
 import { SpacePageLayout } from '@/components/layouts';
-import { useRouter } from 'next/navigation';
-import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import LuaTimelineScreen from './LuaTimelineScreen';
 import LuaCycleMenu from '../components/LuaCycleMenu';
