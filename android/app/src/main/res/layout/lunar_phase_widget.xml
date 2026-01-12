@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  🌙 Layout do Widget de Fase Lunar
+  Flua/Cosmic Space
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Emoji da Fase Lunar -->
+    <TextView
+        android:id="@+id/widget_lunar_emoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🌙"
+        android:textSize="48sp"
+        android:gravity="center" />
+
+    <!-- Nome da Fase -->
+    <TextView
+        android:id="@+id/widget_lunar_phase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fase Lunar"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:gravity="center" />
+
+    <!-- Nome do App -->
+    <TextView
+        android:id="@+id/widget_app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Flua"
+        android:textColor="#9999CC"
+        android:textSize="10sp"
+        android:layout_marginTop="4dp"
+        android:gravity="center" />
+
+</LinearLayout>

@@ -443,13 +443,13 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   return (
     <div
-      className="relative flex w-full min-h-[100dvh] items-start justify-center px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10"
+      className="relative flex w-full min-h-[100dvh] items-start justify-center px-3 sm:px-5 lg:px-8 pt-3 sm:pt-5 pb-28 sm:pb-32 safe-area-inset"
       onTouchMove={handleTouchMove}
       suppressHydrationWarning
     >
-      <div className="relative flex w-full max-w-7xl flex-col gap-6 sm:gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+      <div className="relative flex w-full max-w-7xl flex-col gap-5 sm:gap-7 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
-        <div className="order-4 flex w-full flex-col items-center gap-6 sm:gap-8 lg:order-1 lg:w-auto lg:max-w-xs">
+        <div className="order-4 flex w-full flex-col items-center gap-5 sm:gap-7 lg:order-1 lg:w-auto lg:max-w-xs">
           {/* Planeta */}
           <div className="flex justify-center">
             <CelestialObject
@@ -457,7 +457,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               size="lg"
               interactive
               onClick={() => setShowIslands((prev) => !prev)}
-              className="scale-75 transition-transform lg:scale-90 2xl:scale-100"
+              className="scale-[0.65] sm:scale-75 lg:scale-90 2xl:scale-100 transition-transform touch-manipulation"
             />
           </div>
 
@@ -483,8 +483,8 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
         {/* Coluna central: Card com To-dos (ordem 3 no mobile, 2 no desktop) */}
         <div className="order-3 relative w-full lg:order-2 lg:flex-1">
-          <Card className="relative z-10 w-full overflow-hidden border border-white/10 bg-transparent p-4 shadow-none backdrop-blur-0 sm:p-6 !bg-transparent !backdrop-blur-0 !shadow-none">
-            <div className="flex flex-col gap-4 overflow-visible pr-1 sm:gap-5">
+          <Card className="relative z-10 w-full overflow-hidden border border-white/10 bg-transparent p-3 shadow-none backdrop-blur-0 sm:p-5 md:p-6 !bg-transparent !backdrop-blur-0 !shadow-none">
+            <div className="flex flex-col gap-3 overflow-visible pr-1 sm:gap-4 md:gap-5">
               <div className="flex flex-col gap-4 flex-shrink-0">
                 <SavedTodosPanel
                   savedTodos={displayedTodos}
@@ -532,7 +532,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   <button
                     type="button"
                     onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
-                    className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30"
+                    className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-4 py-2 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30 active:bg-indigo-500/40 touch-manipulation"
                   >
                     {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
                   </button>
@@ -570,7 +570,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </div>
 
         {/* Coluna direita: Luas + Sol (ordem 2 e 1 no mobile, 3 no desktop) */}
-        <div className="order-1 flex w-full flex-col items-center justify-center gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
+        <div className="order-1 flex w-full flex-col items-center justify-center gap-5 sm:gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
           {/* Sol (ordem 1 no mobile) */}
           <div className="order-1 lg:order-2">
             <CelestialObject
@@ -582,7 +582,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 navigateWithFocus('planetCardBelowSun', { event, type: 'sol', size: 'md' });
               }}
               floatOffset={-2}
-              className="scale-90 sm:scale-100"
+              className="scale-75 sm:scale-90 md:scale-100 touch-manipulation"
             />
           </div>
 
@@ -651,25 +651,25 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       )}
 
       {/* Botões flutuantes para mapas */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
         <button
           type="button"
           onClick={() => setViewMode('treasure-map')}
-          className="flex items-center gap-2 px-5 py-3 rounded-full
-            bg-amber-700 hover:bg-amber-600 text-amber-100 font-semibold shadow-xl shadow-amber-900/50
-            transition-all duration-300 hover:scale-105 border border-amber-500/30"
+          className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full
+            bg-amber-700 hover:bg-amber-600 active:bg-amber-500 text-amber-100 font-semibold shadow-xl shadow-amber-900/50
+            transition-all duration-300 hover:scale-105 active:scale-95 border border-amber-500/30 touch-manipulation text-sm sm:text-base"
         >
-          <span className="text-xl">🗺️</span>
+          <span className="text-lg sm:text-xl">🗺️</span>
           <span>Mapa dos Tesouros</span>
         </button>
         <button
           type="button"
           onClick={() => setViewMode('treasure-chart')}
-          className="flex items-center gap-2 px-5 py-3 rounded-full
-            bg-teal-700 hover:bg-teal-600 text-teal-50 font-semibold shadow-xl shadow-teal-900/50
-            transition-all duration-300 hover:scale-105 border border-teal-400/30"
+          className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full
+            bg-teal-700 hover:bg-teal-600 active:bg-teal-500 text-teal-50 font-semibold shadow-xl shadow-teal-900/50
+            transition-all duration-300 hover:scale-105 active:scale-95 border border-teal-400/30 touch-manipulation text-sm sm:text-base"
         >
-          <span className="text-xl">🧭</span>
+          <span className="text-lg sm:text-xl">🧭</span>
           <span>Carta Nautica</span>
         </button>
       </div>

@@ -45,7 +45,7 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
   };
 
   return (
-    <div className="relative mt-6 w-full max-w-[760px]" style={{ minHeight: stageSize }}>
+    <div className="relative mt-4 sm:mt-6 w-full max-w-[640px] sm:max-w-[760px]" style={{ minHeight: stageSize }}>
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative aspect-square w-full max-w-[720px]">
           {/* Espiral da direita */}
@@ -90,10 +90,10 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
               size="lg"
               interactive
               onClick={(event) => onGalaxyCoreClick?.(event)}
-              className="shadow-[0_0_45px_rgba(99,102,241,0.45)]"
+              className="shadow-[0_0_35px_rgba(99,102,241,0.4)] sm:shadow-[0_0_45px_rgba(99,102,241,0.45)] scale-90 sm:scale-100"
               floatOffset={0}
             />
-            <div className="absolute left-1/2 top-full mt-4 -translate-x-1/2 rounded-full bg-slate-900/80 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-indigo-100/80 ring-1 ring-white/10">
+            <div className="absolute left-1/2 top-full mt-3 sm:mt-4 -translate-x-1/2 rounded-full bg-slate-900/80 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[0.55rem] sm:text-[0.65rem] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.18em] text-indigo-100/80 ring-1 ring-white/10">
               Núcleo galáctico
             </div>
           </motion.div>
@@ -132,11 +132,11 @@ const GalaxySunsStage: React.FC<GalaxySunsStageProps> = ({
                       interactive
                       onClick={(event) => onSunClick?.(sun.year, event)}
                       floatOffset={floatOffset}
-                      className="shadow-[0_0_26px_rgba(251,191,36,0.35)]"
+                      className="shadow-[0_0_20px_rgba(251,191,36,0.3)] sm:shadow-[0_0_26px_rgba(251,191,36,0.35)] scale-75 sm:scale-90 md:scale-100 touch-manipulation"
                     />
                     {isHovered && (
-                      <div className="mt-2 flex flex-col items-center gap-1">
-                        <span className="rounded-full bg-slate-900/80 px-2 py-0.5 text-[0.65rem] font-semibold text-indigo-100 ring-1 ring-white/10">
+                      <div className="mt-1.5 sm:mt-2 flex flex-col items-center gap-1">
+                        <span className="rounded-full bg-slate-900/80 px-2 py-0.5 text-[0.55rem] sm:text-[0.65rem] font-semibold text-indigo-100 ring-1 ring-white/10">
                           {sun.year}
                         </span>
                       </div>

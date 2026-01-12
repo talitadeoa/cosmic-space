@@ -24,7 +24,7 @@ import {
 // TYPES
 // ============================================================================
 
-export interface UseSyncEngineOptions<T> extends SyncConfig {
+export interface UseSyncEngineOptions<T> extends SyncConfig<T> {
   /**
    * Se a sincronização está habilitada (ex: usuário autenticado).
    * Quando false, o engine funciona apenas localmente.
@@ -145,8 +145,9 @@ export function useSyncEngine<T>(
     }
 
     // Criar novo engine
-    const engine = new SyncEngine<T>(initialState, stableCallbacks, {
+    const engine = new SyncEngine<T>({
       ...config,
+      ...stableCallbacks,
       name: config.name ?? 'useSyncEngine',
     });
 
@@ -158,7 +159,7 @@ export function useSyncEngine<T>(
     });
 
     // Inicializar
-    void engine.initialize({
+    void engine.initialize(initialState, {
       startPolling: enabled,
       syncOnInit: enabled,
     });

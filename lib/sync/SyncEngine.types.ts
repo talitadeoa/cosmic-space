@@ -2,7 +2,7 @@
  * Tipos compartilhados para SyncEngine
  */
 
-export interface SyncConfig {
+export interface SyncConfig<T = unknown> {
   /** Intervalo de polling em ms (default: 10000) */
   syncIntervalMs?: number;
   /** Delay inicial antes do primeiro sync em ms (default: 100) */
@@ -20,11 +20,11 @@ export interface SyncConfig {
   /** Habilitar logs de debug (default: false) */
   debug?: boolean;
   /** Enviar mudanças locais para servidor */
-  push?: <T>(local: T) => Promise<PushResult>;
+  push?: (local: T) => Promise<PushResult>;
   /** Buscar mudanças do servidor */
-  pull?: <T>(cursor: number | null) => Promise<PullResult<T>>;
+  pull?: (cursor: number | null) => Promise<PullResult<T>>;
   /** Merge de dados locais com alterações do servidor */
-  merge?: <T>(local: T, remote: T | null) => T;
+  merge?: (local: T, remote: T | null) => T;
   /** Persistir metadados de sincronização */
   saveMeta?: (meta: SyncMetadata) => void | Promise<void>;
   /** Callback opcional chamado em erros de sync */

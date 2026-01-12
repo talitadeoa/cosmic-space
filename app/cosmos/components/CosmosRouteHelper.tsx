@@ -10,18 +10,6 @@ const XIcon = () => (
   </svg>
 );
 
-const SparklesIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-  </svg>
-);
-
-const ChevronRightIcon = () => (
-  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-  </svg>
-);
-
 type RouteKey = 'home' | 'lua' | 'sol' | 'galaxia' | 'eclipse' | 'planeta';
 
 interface RouteHelperConfig {
@@ -136,36 +124,31 @@ interface CosmosRouteHelperProps {
   onDismiss?: () => void;
 }
 
-const accentStyles: Record<string, { bg: string; border: string; glow: string; text: string }> = {
+const accentStyles: Record<string, { text: string; bar: string; glow: string }> = {
   indigo: {
-    bg: 'from-indigo-900/90 to-indigo-950/95',
-    border: 'border-indigo-400/30',
-    glow: 'shadow-indigo-500/20',
     text: 'text-indigo-200',
+    bar: 'bg-indigo-300/70',
+    glow: 'bg-indigo-500/25',
   },
   violet: {
-    bg: 'from-violet-900/90 to-violet-950/95',
-    border: 'border-violet-400/30',
-    glow: 'shadow-violet-500/20',
     text: 'text-violet-200',
+    bar: 'bg-violet-300/70',
+    glow: 'bg-violet-500/25',
   },
   amber: {
-    bg: 'from-amber-900/90 to-amber-950/95',
-    border: 'border-amber-400/30',
-    glow: 'shadow-amber-500/20',
     text: 'text-amber-200',
+    bar: 'bg-amber-300/70',
+    glow: 'bg-amber-500/25',
   },
   sky: {
-    bg: 'from-sky-900/90 to-sky-950/95',
-    border: 'border-sky-400/30',
-    glow: 'shadow-sky-500/20',
     text: 'text-sky-200',
+    bar: 'bg-sky-300/70',
+    glow: 'bg-sky-500/25',
   },
   teal: {
-    bg: 'from-teal-900/90 to-teal-950/95',
-    border: 'border-teal-400/30',
-    glow: 'shadow-teal-500/20',
     text: 'text-teal-200',
+    bar: 'bg-teal-300/70',
+    glow: 'bg-teal-500/25',
   },
 };
 
@@ -189,6 +172,7 @@ export const CosmosRouteHelper: React.FC<CosmosRouteHelperProps> = ({
 
   const config = ROUTE_HELPER_CONFIG[routeKey];
   const accent = accentStyles[config.accentColor] || accentStyles.indigo;
+  const progress = config.tips.length > 0 ? (currentTip + 1) / config.tips.length : 0;
 
   useEffect(() => {
     // Check if already visited
@@ -235,28 +219,28 @@ export const CosmosRouteHelper: React.FC<CosmosRouteHelperProps> = ({
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
+          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           className={`fixed z-50 ${positionStyles[position]}`}
         >
-          <div
-            className={`
-              relative max-w-xs overflow-hidden rounded-2xl border backdrop-blur-xl
-              bg-gradient-to-br ${accent.bg} ${accent.border}
-              shadow-xl ${accent.glow}
-            `}
+          <motion.div
+            className="relative max-w-xs overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-xl shadow-[0_12px_30px_rgba(2,6,23,0.45)]"
+            animate={{ y: [0, -2, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           >
-            {/* Decorative sparkle */}
-            <div className="absolute -right-2 -top-2 opacity-40">
-              <SparklesIcon className={`h-8 w-8 ${accent.text}`} />
-            </div>
+            <motion.div
+              aria-hidden
+              className={`pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full blur-3xl ${accent.glow}`}
+              animate={{ opacity: [0.15, 0.3, 0.15], scale: [1, 1.1, 1] }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            />
 
             {/* Close button */}
             <button
               onClick={handleDismiss}
-              className="absolute right-2 top-2 rounded-full p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white/80"
+              className="absolute right-2 top-2 rounded-full p-1.5 text-white/50 transition-colors hover:bg-white/5 hover:text-white/80"
               aria-label="Fechar dica"
             >
               <XIcon />
@@ -265,82 +249,52 @@ export const CosmosRouteHelper: React.FC<CosmosRouteHelperProps> = ({
             {/* Content */}
             <div className="p-4 pr-10">
               {/* Header */}
-              <div className="mb-2 flex items-center gap-2">
-                <span className="text-xl">{config.icon}</span>
-                <h3 className="text-sm font-semibold text-white">{config.title}</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{config.icon}</span>
+                <h3 className="text-sm font-medium text-white/90">{config.title}</h3>
               </div>
 
               {/* Description */}
-              <p className="mb-3 text-xs leading-relaxed text-white/70">{config.description}</p>
+              <p className="mt-1 text-xs leading-relaxed text-white/60">{config.description}</p>
 
               {/* Tips carousel */}
-              <div className="relative min-h-[40px]">
+              <div className="mt-3 min-h-[32px]">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentTip}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className={`flex items-start gap-2 rounded-lg bg-white/5 px-3 py-2 ${accent.border} border`}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="flex items-start gap-2 text-xs text-white/70"
                   >
-                    <span className={`text-xs ${accent.text}`}>💡</span>
-                    <span className="text-xs text-white/80">{config.tips[currentTip]}</span>
+                    <span className={`${accent.text} mt-0.5`}>💡</span>
+                    <span className="text-white/80">{config.tips[currentTip]}</span>
                   </motion.div>
                 </AnimatePresence>
               </div>
 
               {/* Progress & Navigation */}
-              <div className="mt-3 flex items-center justify-between">
-                {/* Dots */}
-                <div className="flex gap-1.5">
-                  {config.tips.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setHasInteracted(true);
-                        setCurrentTip(idx);
-                      }}
-                      className={`h-1.5 rounded-full transition-all ${
-                        idx === currentTip
-                          ? `w-4 ${accent.text.replace('text-', 'bg-')}`
-                          : 'w-1.5 bg-white/30 hover:bg-white/50'
-                      }`}
-                      aria-label={`Dica ${idx + 1}`}
-                    />
-                  ))}
+              <div className="mt-3 flex items-center gap-3">
+                <div className="h-0.5 flex-1 rounded-full bg-white/10">
+                  <motion.div
+                    className={`h-0.5 rounded-full ${accent.bar}`}
+                    initial={false}
+                    animate={{ width: `${progress * 100}%` }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                  />
                 </div>
 
                 {/* Next button */}
                 <button
                   onClick={handleNextTip}
-                  className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors ${accent.text} hover:bg-white/10`}
+                  className={`text-[11px] font-semibold ${accent.text} transition-colors hover:text-white`}
                 >
-                  {currentTip < config.tips.length - 1 ? (
-                    <>
-                      Próximo
-                      <ChevronRightIcon />
-                    </>
-                  ) : (
-                    'Entendi!'
-                  )}
+                  {currentTip < config.tips.length - 1 ? 'Próximo' : 'Entendi!'}
                 </button>
               </div>
             </div>
-
-            {/* Subtle animated border glow */}
-            <motion.div
-              className={`absolute inset-0 -z-10 rounded-2xl opacity-50 ${accent.glow}`}
-              animate={{
-                boxShadow: [
-                  '0 0 20px rgba(99, 102, 241, 0.15)',
-                  '0 0 30px rgba(99, 102, 241, 0.25)',
-                  '0 0 20px rgba(99, 102, 241, 0.15)',
-                ],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

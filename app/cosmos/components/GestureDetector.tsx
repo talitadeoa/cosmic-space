@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
+import { useHaptics, type HapticPattern } from '@/hooks/useHaptics';
 import type {
   GestureDetectorConfig,
   LongPressConfig,
@@ -40,22 +41,40 @@ interface TouchState {
   lastTapTime?: number;
 }
 
+interface ExtendedGestureDetectorConfig extends GestureDetectorConfig {
+  /** Habilita feedback háptico nativo (requer Capacitor) */
+  hapticFeedback?: boolean;
+  /** Padrão háptico customizado para cada gesto */
+  hapticPatterns?: {
+    tap?: HapticPattern;
+    doubleTap?: HapticPattern;
+    longPress?: HapticPattern;
+    swipe?: HapticPattern;
+    pinch?: HapticPattern;
+  };
+}
+
 /**
  * Componente wrapper que detecta e dispara eventos de gestos
  * Suporta: tap, doubleTap, longPress, swipe, pinch
+ * 
+ * Agora com integração nativa via Capacitor:
+ * - Feedback háptico automático
+ * - Performance otimizada para mobile
  *
  * @example
  * <GestureDetector
  *   onTap={(gesture) => console.log('Tap em', gesture.x, gesture.y)}
  *   onSwipe={(gesture) => console.log('Swipe para', gesture.direction)}
  *   onPinch={(gesture) => console.log('Pinch com escala', gesture.scale)}
+ *   hapticFeedback
  * >
  *   <div>Conteúdo interativo</div>
  * </GestureDetector>
  */
 export const GestureDetector = React.forwardRef<
   HTMLDivElement,
-  GestureDetectorConfig & { children: React.ReactNode; className?: string }
+  ExtendedGestureDetectorConfig & { children: React.ReactNode; className?: string }
 >(
   (
     {
@@ -71,12 +90,17 @@ export const GestureDetector = React.forwardRef<
       swipeConfig,
       pinchConfig,
       debug = false,
+      hapticFeedback = true,
+      hapticPatterns = {},
     },
     ref
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const touchStateRef = useRef<Partial<TouchState>>({});
     const touchDistanceRef = useRef<number | null>(null);
+    
+    // Hook de feedback háptico nativo
+    const { hapticPattern, triggerHaptic } = useHaptics();
 
     const longPressCfg = { ...DEFAULT_LONG_PRESS_CONFIG, ...longPressConfig };
     const swipeCfg = { ...DEFAULT_SWIPE_CONFIG, ...swipeConfig };
@@ -90,6 +114,37 @@ export const GestureDetector = React.forwardRef<
       },
       [debug]
     );
+    
+    /**
+     * Dispara feedback háptico se habilitado
+     */
+    const triggerFeedback = useCallback(async (gesture: 'tap' | 'doubleTap' | 'longPress' | 'swipe' | 'pinch') => {
+      if (!hapticFeedback) return;
+      
+      const pattern = hapticPatterns[gesture];
+      if (pattern) {
+        await hapticPattern(pattern);
+      } else {
+        // Padrões default
+        switch (gesture) {
+          case 'tap':
+            await triggerHaptic('light');
+            break;
+          case 'doubleTap':
+            await triggerHaptic('medium');
+            break;
+          case 'longPress':
+            await hapticPattern('longPress');
+            break;
+          case 'swipe':
+            await hapticPattern('swipe');
+            break;
+          case 'pinch':
+            await triggerHaptic('soft');
+            break;
+        }
+      }
+    }, [hapticFeedback, hapticPatterns, hapticPattern, triggerHaptic]);
 
     /**
      * Calcula direção do swipe baseado em distâncias X e Y
@@ -186,6 +241,7 @@ export const GestureDetector = React.forwardRef<
               };
 
               log('Long press detectado', gesture);
+              triggerFeedback('longPress');
               onLongPress(gesture);
             }
 
@@ -247,6 +303,7 @@ export const GestureDetector = React.forwardRef<
               };
 
               log('Pinch detectado', gesture);
+              triggerFeedback('pinch');
               onPinch(gesture);
 
               // Atualiza referência para próximo cálculo
@@ -308,6 +365,7 @@ export const GestureDetector = React.forwardRef<
             };
 
             log('Swipe detectado', gesture);
+            triggerFeedback('swipe');
             onSwipe(gesture);
           }
         }
@@ -328,6 +386,7 @@ export const GestureDetector = React.forwardRef<
             };
 
             log('Double tap detectado', gesture);
+            triggerFeedback('doubleTap');
             onDoubleTap(gesture);
             state.lastTapTime = undefined;
           } else {
@@ -340,6 +399,7 @@ export const GestureDetector = React.forwardRef<
             };
 
             log('Tap detectado', gesture);
+            triggerFeedback('tap');
             onTap(gesture);
             state.lastTapTime = now;
           }
@@ -360,6 +420,7 @@ export const GestureDetector = React.forwardRef<
         swipeCfg,
         getSwipeDirection,
         log,
+        triggerFeedback,
       ]
     );
 
@@ -383,6 +444,7 @@ export const GestureDetector = React.forwardRef<
           };
 
           log('Double click detectado', gesture);
+          triggerFeedback('doubleTap');
           onDoubleTap(gesture);
           touchStateRef.current.lastTapTime = undefined;
         } else {
@@ -395,11 +457,12 @@ export const GestureDetector = React.forwardRef<
           };
 
           log('Click detectado', gesture);
+          triggerFeedback('tap');
           onTap(gesture);
           touchStateRef.current.lastTapTime = now;
         }
       },
-      [enabled, onTap, onDoubleTap, log]
+      [enabled, onTap, onDoubleTap, log, triggerFeedback]
     );
 
     // Registra event listeners no mount

@@ -4,7 +4,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { SavedTodo } from '@/types/community';
+import type { SavedTodo, MoonPhase } from '@/app/cosmos/utils/todoStorage';
 
 const ITEMS_PER_PAGE = 20;
 

@@ -47,7 +47,7 @@ export class SyncEngine<T> {
   private isSyncInProgress = false;
   private isDisposed = false;
 
-  constructor(config: SyncConfig & SyncCallbacks<any>) {
+  constructor(config: SyncConfig<T> & SyncCallbacks<T>) {
     this.config = normalizeConfig(config as any);
     this.callbacks = {
       push: config.push,
@@ -67,7 +67,9 @@ export class SyncEngine<T> {
    * Inicializar com dados locais e metadados armazenados.
    * Dispara primeiro sync imediatamente + polling periódico.
    */
-  async initialize(local: T, meta: SyncMetadata = createEmptyMetadata()): Promise<void> {
+  async initialize(local: T, options: InitializeOptions = {}): Promise<void> {
+    const { startPolling: shouldStartPolling = true, syncOnInit = true } = options;
+    
     if (this.state.isLoaded) {
       console.warn(`[${this.config.name}] Já foi inicializado`);
       return;
@@ -75,16 +77,17 @@ export class SyncEngine<T> {
 
     this.state.local = local;
     this.state.isLoaded = true;
-    this.metadata = meta;
-    this.state.remote = meta.cursor ? null : local;
-    this.state.remoteVersion = meta.remoteVersion;
-    this.state.lastSyncAt = meta.lastSyncAt;
+    this.state.remote = null;
+    this.state.remoteVersion = this.metadata.remoteVersion;
+    this.state.lastSyncAt = this.metadata.lastSyncAt;
 
     this.emitStateChange();
     this.log('Inicializado com dados locais');
 
-    // Iniciar polling
-    this.startPolling(true);
+    // Iniciar polling se habilitado
+    if (shouldStartPolling) {
+      this.startPolling(syncOnInit);
+    }
   }
 
   /**

@@ -172,6 +172,21 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     onTouchMove
   );
 
+  // Wrappers para adaptar assinatura de handleItemTouchStart e handleItemTouchEnd
+  const wrappedItemTouchStart = useCallback(
+    (todoId: string) => (event: React.TouchEvent) => {
+      handleItemTouchStart(event);
+    },
+    [handleItemTouchStart]
+  );
+
+  const wrappedItemTouchEnd = useCallback(
+    (todoId: string) => (event: React.TouchEvent) => {
+      handleItemTouchEnd(todoId)(event);
+    },
+    [handleItemTouchEnd]
+  );
+
   const { 
     selectedCount,
     handleBatchDelete,
@@ -493,8 +508,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
           onDelete={onDeleteTodo ?? (() => {})}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
-          onTouchStart={handleItemTouchStart}
-          onTouchEnd={handleItemTouchEnd}
+          onTouchStart={wrappedItemTouchStart}
+          onTouchEnd={wrappedItemTouchEnd}
           onTouchMove={onTouchMove}
           onSelectionTouchStart={handleSelectionTouchStart}
           onSelectionTouchMove={handleSelectionTouchMove}
@@ -532,8 +547,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
           onDelete={onDeleteTodo ?? (() => {})}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
-          onTouchStart={handleItemTouchStart}
-          onTouchEnd={handleItemTouchEnd}
+          onTouchStart={wrappedItemTouchStart}
+          onTouchEnd={wrappedItemTouchEnd}
           onTouchMove={onTouchMove}
           onSelectionTouchStart={handleSelectionTouchStart}
           onSelectionTouchMove={handleSelectionTouchMove}

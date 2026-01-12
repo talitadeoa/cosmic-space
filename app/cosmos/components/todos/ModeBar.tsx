@@ -4,6 +4,9 @@
 'use client';
 
 import React from 'react';
+import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import { TodoFilters } from '@/components/todos/TodoFilters';
+
 /**
  * Mode bar para alternar entre edit, select, group
  */

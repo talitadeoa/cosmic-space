@@ -2,7 +2,7 @@
 export * from './ui';
 
 // Hooks genéricos
-// export * from './hooks';
+export * from './hooks';
 
 // Utils genéricos
 // export * from './utils';

@@ -378,9 +378,9 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
   };
 
   return (
-    <div className="flex min-h-[100svh] w-full items-center justify-center overflow-hidden py-6 sm:py-10">
+    <div className="flex min-h-[100dvh] w-full items-center justify-center overflow-hidden px-2 py-4 sm:px-4 sm:py-8 safe-area-inset">
       <div
-        className="relative aspect-square h-[min(84svh,92vw)] w-[min(84svh,92vw)] max-h-[720px] max-w-[720px] sm:h-[min(90vh,90vw)] sm:w-[min(90vh,90vw)]"
+        className="relative aspect-square h-[min(80dvh,88vw)] w-[min(80dvh,88vw)] max-h-[680px] max-w-[680px] sm:h-[min(85vh,90vw)] sm:w-[min(85vh,90vw)] sm:max-h-[720px] sm:max-w-[720px]"
         onClick={handleSpaceClick}
       >
         {/* Canvas da órbita */}
@@ -450,16 +450,16 @@ const SolOrbitStage: React.FC<SolOrbitStageProps> = ({
 
               {showHover && (
                 <div 
-                  className={`absolute top-full mt-2 sm:mt-3 z-50 whitespace-nowrap rounded-lg bg-slate-900/95 px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-100 ring-1 ring-white/20 shadow-lg backdrop-blur-sm transition-all duration-300 ${
+                  className={`absolute top-full mt-3 z-50 whitespace-nowrap rounded-xl bg-slate-900/95 px-3 py-2.5 text-xs font-semibold text-indigo-100 ring-1 ring-white/20 shadow-xl backdrop-blur-md transition-all duration-300 sm:mt-3 sm:px-4 sm:py-3 sm:text-sm ${
                     isAutoHighlight && !isManualHover ? 'opacity-90 scale-95' : 'opacity-100 scale-100'
                   }`}
                 >
-                  <div className="mb-1 text-sm sm:text-base">{moonInfo.emoji}</div>
-                  <div className="text-white text-xs sm:text-sm">{moonInfo.name}</div>
-                  <div className="mt-1 text-indigo-300 text-xs">{moonInfo.event}</div>
-                  <div className="mt-1 text-yellow-300 text-xs">{moonInfo.season}</div>
-                  <div className="mt-1 text-sky-300 text-xs">{moonInfo.dates}</div>
-                  <div className="mt-2 max-w-xs sm:max-w-sm whitespace-normal text-indigo-200/80 text-xs">
+                  <div className="mb-1.5 text-base sm:text-lg">{moonInfo.emoji}</div>
+                  <div className="text-white text-sm sm:text-base font-bold">{moonInfo.name}</div>
+                  <div className="mt-1.5 text-indigo-300 text-[0.7rem] sm:text-xs">{moonInfo.event}</div>
+                  <div className="mt-1 text-yellow-300 text-[0.7rem] sm:text-xs">{moonInfo.season}</div>
+                  <div className="mt-1 text-sky-300 text-[0.7rem] sm:text-xs">{moonInfo.dates}</div>
+                  <div className="mt-2 max-w-[200px] sm:max-w-xs whitespace-normal text-indigo-200/80 text-[0.65rem] sm:text-xs leading-relaxed">
                     {moonInfo.description}
                   </div>
                   {isAutoHighlight && !isManualHover && (

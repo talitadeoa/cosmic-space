@@ -22,7 +22,7 @@ const OrbitingMoonsLayer: React.FC<OrbitingMoonsLayerProps> = ({ moons, onSelect
       {moons.map((moon) => (
         <div
           key={moon.label}
-          className="absolute"
+          className="absolute touch-manipulation"
           style={{
             top: '50%',
             left: '50%',
@@ -35,6 +35,7 @@ const OrbitingMoonsLayer: React.FC<OrbitingMoonsLayerProps> = ({ moons, onSelect
             interactive={Boolean(onSelect)}
             onClick={() => onSelect?.(moon.type)}
             floatOffset={moon.floatOffset}
+            className="scale-90 sm:scale-100 transition-transform hover:scale-110 active:scale-105"
           />
         </div>
       ))}

@@ -4,6 +4,7 @@ import { SpacePageLayout } from '@/components/layouts';
 import {
   useCommunityData,
   useCommunityFilters,
+  classifyPost,
   useCommunityInteractions,
   usePostForm,
   useCommunityHelpers,
@@ -98,14 +99,19 @@ export default function ComunidadePage() {
     truncate,
   } = useCommunityHelpers();
 
-  // Classifying helper
-  const { classifyPost } = useCommunityFilters(posts);
-
   return (
     <SpacePageLayout>
       <div className="space-y-8">
         {/* Header */}
-        <CommunityHeader />
+        <CommunityHeader
+          profile={profile}
+          searchQuery={searchQuery}
+          searchStatus={loadingState === 'loading' ? 'searching' : loadingState === 'error' ? 'error' : 'idle'}
+          searchError={loadingState === 'error' ? 'Erro ao buscar posts' : ''}
+          onSearchChange={handleSearch}
+          onSearchSubmit={(e) => { e.preventDefault(); }}
+          onSearchClear={clearSearch}
+        />
 
         {/* Filters */}
         <CommunityFiltersBar

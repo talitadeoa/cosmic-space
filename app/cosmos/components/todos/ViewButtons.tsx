@@ -4,6 +4,9 @@
 'use client';
 
 import React from 'react';
+import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
+
 /**
  * View filter buttons para TODO panel
  */
