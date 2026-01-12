@@ -3,7 +3,7 @@
  * Coleta e envia métricas de Web Vitals para análise
  */
 
-import { getCLS, getFID, getFCP, getLCP, getTTFB, getINP } from 'web-vitals';
+import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
 
 export interface VitalMetric {
   name: string;
@@ -21,7 +21,7 @@ export function setupWebVitalsMonitoring() {
   if (typeof window === 'undefined') return;
 
   // LCP - Largest Contentful Paint
-  getLCP((metric) => {
+  onLCP((metric) => {
     logVital({
       name: 'LCP',
       value: metric.value,
@@ -30,18 +30,8 @@ export function setupWebVitalsMonitoring() {
     });
   });
 
-  // FID - First Input Delay
-  getFID((metric) => {
-    logVital({
-      name: 'FID',
-      value: metric.value,
-      rating: metric.rating as any,
-      id: metric.id,
-    });
-  });
-
   // CLS - Cumulative Layout Shift
-  getCLS((metric) => {
+  onCLS((metric) => {
     logVital({
       name: 'CLS',
       value: metric.value,
@@ -50,8 +40,8 @@ export function setupWebVitalsMonitoring() {
     });
   });
 
-  // INP - Interaction to Next Paint
-  getINP((metric) => {
+  // INP - Interaction to Next Paint (substituiu FID)
+  onINP((metric) => {
     logVital({
       name: 'INP',
       value: metric.value,
@@ -61,7 +51,7 @@ export function setupWebVitalsMonitoring() {
   });
 
   // FCP - First Contentful Paint
-  getFCP((metric) => {
+  onFCP((metric) => {
     logVital({
       name: 'FCP',
       value: metric.value,
@@ -71,7 +61,7 @@ export function setupWebVitalsMonitoring() {
   });
 
   // TTFB - Time to First Byte
-  getTTFB((metric) => {
+  onTTFB((metric) => {
     logVital({
       name: 'TTFB',
       value: metric.value,
