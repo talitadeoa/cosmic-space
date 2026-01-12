@@ -4,6 +4,8 @@ import { CosmosRouteHelper } from '@/app/cosmos/components';
 import { YearProvider } from '@/app/cosmos/context/YearContext';
 import { SpacePageLayout } from '@/components/layouts';
 import { useRouter } from 'next/navigation';
+import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import SolScreen from './screen/SolScreen';
 
 /**
@@ -11,11 +13,11 @@ import SolScreen from './screen/SolScreen';
  * Delegação completa de lógica para SolScreen
  */
 const SolPage = () => {
-  const router = useRouter();
+  const { onBackgroundClick } = useBackToHome();
 
   return (
     <YearProvider>
-      <SpacePageLayout onBackgroundClick={() => router.push('/cosmos')}>
+      <SpacePageLayout onBackgroundClick={onBackgroundClick}>
         <SolScreen />
         <CosmosRouteHelper routeKey="sol" position="bottom-right" />
       </SpacePageLayout>
