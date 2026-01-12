@@ -45,20 +45,29 @@
 
 ---
 
-## Refatorações Propostas (Próximas)
+### 3. ✅ SyncEngine.ts (705 → 633 linhas)
+**Redução: 10%** | Commits: 1
 
-### 3. SyncEngine.ts (704 linhas)
-**Objetivo**: Dividir por responsabilidade
+**Arquivos Criados:**
+- `SyncEngine.types.ts` (93 linhas) - Tipos e interfaces compartilhadas
+- `SyncEngine.strategies.ts` (85 linhas) - Estratégias de retry e merge
+- `SyncEngine.utils.ts` (95 linhas) - Funções utilitárias e helpers
+- `SyncEngine.core.ts` (360 linhas) - Classe principal SyncEngine
+- `SyncEngine.refactor.ts` (25 linhas) - Exports consolidados + presets
+- `SyncEngine.ts` → Re-export legado para compatibilidade
 
-**Proposta:**
-- `SyncEngine.core.ts` (350 linhas) - Classe SyncEngine
-- `SyncEngine.strategies.ts` (150 linhas) - Retry, backoff, merge strategies
-- `SyncEngine.utils.ts` (150 linhas) - Helpers e validators
-- `SyncEngine.types.ts` (54 linhas) - Tipos compartilhados
+**Benefícios:**
+- Tipos isolados e documentados
+- Estratégias reutilizáveis em outros sync engines
+- Utilitários podem ser usados em testes
+- Classe principal focada em orquestração
+- Presets para configurações comuns (mobile, desktop, spa, debug)
 
-**Por quê:** Arquivo gigante com múltiplas responsabilidades. Difícil testar isoladamente.
+**Nota:** Redução menor pois a classe mantém toda lógica. Benefício principal é modularização para testabilidade e reutilização.
 
 ---
+
+## Refatorações Propostas (Próximas)
 
 ### 4. comunidade/page.tsx (704 linhas)
 **Objetivo**: Dividir por domínio
@@ -75,15 +84,16 @@
 
 ## Métricas & Impacto
 
-| Arquivo | Antes | Depois | Redução |
-|---------|-------|--------|---------|
-| CosmosChatModal | 1100 | 400 | 60% |
-| SavedTodosPanel | 950 | 320 | 66% |
-| SyncEngine | 704 | 350 | 50% |
-| comunidade/page | 704 | 200 | 72% |
-| **TOTAL** | **3458** | **1270** | **63%** |
+| Arquivo | Antes | Depois | Redução | Status |
+|---------|-------|--------|---------|--------|
+| CosmosChatModal | 1100 | 400 | 60% | ✅ Completo |
+| SavedTodosPanel | 950 | 320 | 66% | ✅ Completo |
+| SyncEngine | 705 | 633 | 10% | ✅ Completo |
+| comunidade/page | 704 | 200 | 72% | ⏳ Próximo |
+| **TOTAL** | **3459** | **1553** | **55%** | **⏳ 75%** |
 
-**Benefício Total:** Redução de 2.188 linhas em 4 arquivos problemáticos (IMPLEMENTADO: 2.630 linhas em 2 arquivos)
+**Benefício Total:** Redução esperada de 1.906 linhas em 4 arquivos problemáticos
+**Implementado até agora:** 2.263 linhas refatoradas em 3 arquivos (3 arquivos completos)
 
 ---
 
