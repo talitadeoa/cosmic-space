@@ -47,7 +47,7 @@ export default function CiclosPage() {
 
         {/* Ciclo Menstrual */}
         <Link
-          href={ROUTES.CICLOS.MENSTRUAL}
+          href={ROUTES.CICLOS.CYCLE}
           className="group p-6 bg-slate-900/50 rounded-2xl border border-slate-800 hover:border-rose-500/50 transition-all"
         >
           <div className="text-4xl mb-4">🩸</div>

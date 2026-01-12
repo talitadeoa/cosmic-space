@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { SpacePageLayout } from '@/components/layouts';
-import { useMenstrualCycle } from '@/hooks/useMenstrualCycle';
+import { useCycle } from '@/hooks/useCycle';
 import { useState, useEffect } from 'react';
 
 export default function CiclosDashboardPage() {
   const { records, analysis, isLoading, getDaysUntilNextCycle, isInCycleWindow, exportData } =
-    useMenstrualCycle();
+    useCycle();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
