@@ -9,16 +9,21 @@
 
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { SpacePageLayout } from '@/components/layouts';
+import { useRouter } from 'next/navigation';
+import { useCosmosNavigationSafe } from '@/app/cosmos/context/CosmosNavigationContext';
+import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import LuaScreen from '@/app/cosmos/lua/screen/LuaScreen';
-import { ROUTES } from '@/lib/routes';
+import LuaCycleMenu from '@/app/cosmos/lua/components/LuaCycleMenu';
 
 export default function CicloLunarPage() {
-  const router = useRouter();
+  const { onBackgroundClick } = useBackToHome();
 
   return (
-    <SpacePageLayout onBackgroundClick={() => router.push(ROUTES.CICLOS.HOME)}>
+    <SpacePageLayout onBackgroundClick={onBackgroundClick}>
+      <div className="absolute top-3 left-3 z-40 sm:top-4 sm:left-4">
+        <LuaCycleMenu currentPath="/ciclos/lunar" />
+      </div>
       <LuaScreen />
     </SpacePageLayout>
   );
