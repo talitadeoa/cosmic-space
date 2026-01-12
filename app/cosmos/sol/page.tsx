@@ -1,59 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { SpacePageLayout } from '@/components/layouts';
 import { CosmosRouteHelper } from '@/app/cosmos/components';
-import { YearProvider, useYear } from '@/app/cosmos/context/YearContext';
-import SolOrbitExperience from './visuals/SolOrbitExperience';
-import GalaxySunsExperience from './visuals/GalaxySunsExperience';
+import { YearProvider } from '@/app/cosmos/context/YearContext';
+import { SpacePageLayout } from '@/components/layouts';
+import { useRouter } from 'next/navigation';
+import SolScreen from './screen/SolScreen';
 
-type SolScreen = 'solorbit' | 'galaxysuns';
-
-const SolRouteContent: React.FC<{
-  screen: SolScreen;
-  onOrbitClick: () => void;
-  onOutsideClick: () => void;
-  onSunSelect: (year: number) => void;
-}> = ({ screen, onOrbitClick, onOutsideClick, onSunSelect }) => {
-  const { setSelectedYear } = useYear();
-  const handleSunSelect = (year: number) => {
-    setSelectedYear(year);
-    onSunSelect(year);
-  };
-
-  return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4 py-6 sm:px-6 sm:py-10">
-      {screen === 'solorbit' ? (
-        <section className="mx-auto w-full max-w-5xl">
-          <SolOrbitExperience onOrbitClick={onOrbitClick} onOutsideClick={onOutsideClick} />
-        </section>
-      ) : (
-        <section className="mx-auto w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
-          <GalaxySunsExperience onSunSelect={(year) => handleSunSelect(year)} />
-        </section>
-      )}
-    </div>
-  );
-};
-
+/**
+ * SolPage - Página da entidade Sol
+ * Delegação completa de lógica para SolScreen
+ */
 const SolPage = () => {
-  const [screen, setScreen] = useState<SolScreen>('solorbit');
   const router = useRouter();
-
-  const handleBackgroundClick = () => {
-    router.push('/cosmos');
-  };
 
   return (
     <YearProvider>
-      <SpacePageLayout onBackgroundClick={handleBackgroundClick}>
-        <SolRouteContent
-          screen={screen}
-          onOrbitClick={() => setScreen('galaxysuns')}
-          onOutsideClick={() => router.push('/cosmos/home')}
-          onSunSelect={(year: number) => setScreen('solorbit')}
-        />
+      <SpacePageLayout onBackgroundClick={() => router.push('/cosmos')}>
+        <SolScreen />
         <CosmosRouteHelper routeKey="sol" position="bottom-right" />
       </SpacePageLayout>
     </YearProvider>
