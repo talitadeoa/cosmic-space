@@ -1,1 +1,1 @@
-export { default as MenstrualTracker } from '@/components/MenstrualTracker';
+export { default as CycleTracker } from '@/components/CycleTracker';

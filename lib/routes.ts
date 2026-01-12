@@ -65,8 +65,8 @@ export const CICLOS_ROUTES = {
   HOME: '/ciclos',
   /** Ciclo lunar */
   LUNAR: '/ciclos/lunar',
-  /** Ciclo menstrual */
-  MENSTRUAL: '/ciclos/menstrual',
+  /** Ciclo */
+  CYCLE: '/ciclos/ciclo',
   /** Calendário geral */
   CALENDARIO: '/ciclos/calendario',
   /** Calendário por mês (dinâmico) */

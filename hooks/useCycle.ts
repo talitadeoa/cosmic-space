@@ -1,226 +1,217 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface CycleRecord {
-  id?: string;
+  id: string;
   date: string;
+  cycleDate: string;
+  moonPhase: string;
+  zodiacSign: string;
   flowIntensity: 'light' | 'moderate' | 'heavy';
   symptoms: string[];
-  notes?: string;
-  moonPhase?: string;
-  recordedAt?: string;
-  updatedAt?: string;
+  notes: string;
+  recordedAt: string;
 }
 
-interface UseCycleOptions {
-  autoSync?: boolean;
+export interface CycleAnalysis {
+  totalRecords: number;
+  averageCycleDays: number;
+  lastMenstruationDate: string | null;
+  nextEstimatedDate: string | null;
+  mostCommonSymptoms: string[];
+  mostCommonFlowIntensity: 'light' | 'moderate' | 'heavy';
+  moonPhaseDistribution: Record<string, number>;
+  zodiacDistribution: Record<string, number>;
+  cycleHistory: Array<{
+    startDate: string;
+    endDate: string;
+    durationDays: number;
+  }>;
 }
 
-interface UseCycleReturn {
-  cycles: CycleRecord[];
-  isLoading: boolean;
-  isSyncing: boolean;
-  lastSyncedAt: Date | null;
-  error: string | null;
-  addCycle: (record: Omit<CycleRecord, 'id' | 'recordedAt' | 'updatedAt'>) => Promise<boolean>;
-  removeCycle: (date: string) => Promise<boolean>;
-  getCycleByDate: (date: string) => CycleRecord | undefined;
-  syncFromServer: () => Promise<void>;
-  hasCycleToday: boolean;
-  lastCycle: CycleRecord | null;
-}
+const AVERAGE_CYCLE_LENGTH = 28; // dias
 
-const STORAGE_KEY = 'cosmic-cycles';
-
-export function useCycle(options: UseCycleOptions = {}): UseCycleReturn {
-  const { autoSync = true } = options;
-  
-  const [cycles, setCycles] = useState<CycleRecord[]>([]);
+/**
+ * Hook para gerenciar registros de ciclo
+ * Salva automaticamente no localStorage
+ */
+export function useCycle(storageKey: string = 'cycle_records') {
+  const [records, setRecords] = useState<CycleRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<CycleAnalysis | null>(null);
 
-  // Carregar do localStorage na inicialização
+  // Carregar registros ao montar
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as CycleRecord[];
-        setCycles(parsed);
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setRecords(parsed);
+        calculateAnalysis(parsed);
+      } catch (e) {
+        console.error('Erro ao carregar ciclos:', e);
       }
-    } catch (err) {
-      console.error('Erro ao carregar ciclos do localStorage:', err);
     }
     setIsLoading(false);
-  }, []);
+  }, [storageKey]);
 
-  // Salvar no localStorage quando mudar
-  useEffect(() => {
-    if (!isLoading && cycles.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cycles));
-    }
-  }, [cycles, isLoading]);
-
-  // Sincronizar do servidor
-  const syncFromServer = useCallback(async () => {
-    try {
-      setIsSyncing(true);
-      setError(null);
-
-      const response = await fetch('/api/cycle-sync', {
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      if (response.status === 401) {
-        // Usuário não autenticado, usar apenas localStorage
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error('Falha ao sincronizar ciclos');
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.cycles) {
-        setCycles(data.cycles);
-        setLastSyncedAt(new Date());
-      }
-    } catch (err) {
-      console.error('Erro ao sincronizar ciclos:', err);
-      setError('Falha ao sincronizar com o servidor');
-    } finally {
-      setIsSyncing(false);
-    }
-  }, []);
-
-  // Auto-sync na montagem
-  useEffect(() => {
-    if (autoSync && !isLoading) {
-      syncFromServer();
-    }
-  }, [autoSync, isLoading, syncFromServer]);
-
-  // Adicionar novo registro de ciclo
-  const addCycle = useCallback(async (record: Omit<CycleRecord, 'id' | 'recordedAt' | 'updatedAt'>): Promise<boolean> => {
-    try {
-      setError(null);
-
-      const newRecord: CycleRecord = {
-        ...record,
-        recordedAt: new Date().toISOString()
+  const calculateAnalysis = (recordList: CycleRecord[]): CycleAnalysis => {
+    if (recordList.length === 0) {
+      return {
+        totalRecords: 0,
+        averageCycleDays: AVERAGE_CYCLE_LENGTH,
+        lastMenstruationDate: null,
+        nextEstimatedDate: null,
+        mostCommonSymptoms: [],
+        mostCommonFlowIntensity: 'moderate',
+        moonPhaseDistribution: {},
+        zodiacDistribution: {},
+        cycleHistory: [],
       };
+    }
 
-      // Atualiza localmente primeiro (otimista)
-      setCycles(prev => {
-        const filtered = prev.filter(c => c.date !== record.date);
-        return [newRecord, ...filtered].sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-      });
+    // Ordenar por data
+    const sorted = [...recordList].sort(
+      (a, b) => new Date(b.cycleDate).getTime() - new Date(a.cycleDate).getTime()
+    );
 
-      // Sincroniza com o servidor
-      const response = await fetch('/api/cycle-sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          date: record.date,
-          flow_intensity: record.flowIntensity,
-          symptoms: record.symptoms,
-          notes: record.notes,
-          moon_phase: record.moonPhase
-        })
-      });
+    const lastDate = sorted[0]?.cycleDate;
 
-      if (response.status === 401) {
-        // Não autenticado, mantém apenas local
-        return true;
-      }
-
-      if (!response.ok) {
-        throw new Error('Falha ao salvar ciclo');
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.cycle) {
-        // Atualiza com dados do servidor (inclui ID)
-        setCycles(prev => {
-          const filtered = prev.filter(c => c.date !== data.cycle.date);
-          return [data.cycle, ...filtered].sort((a, b) => 
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
+    // Calcular ciclos
+    const cycleHistory = [];
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const current = new Date(sorted[i].menstruationDate);
+      const next = new Date(sorted[i + 1].menstruationDate);
+      const diff = Math.round((current.getTime() - next.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff > 0 && diff < 100) {
+        cycleHistory.push({
+          startDate: sorted[i + 1].menstruationDate,
+          endDate: sorted[i].menstruationDate,
+          durationDays: diff,
         });
       }
-
-      return true;
-    } catch (err) {
-      console.error('Erro ao adicionar ciclo:', err);
-      setError('Falha ao salvar registro');
-      return false;
     }
-  }, []);
 
-  // Remover registro de ciclo
-  const removeCycle = useCallback(async (date: string): Promise<boolean> => {
-    try {
-      setError(null);
+    // Média de ciclos
+    const avgCycle =
+      cycleHistory.length > 0
+        ? Math.round(cycleHistory.reduce((sum, c) => sum + c.durationDays, 0) / cycleHistory.length)
+        : AVERAGE_CYCLE_LENGTH;
 
-      // Remove localmente primeiro
-      setCycles(prev => prev.filter(c => c.date !== date));
+    // Próxima menstruação estimada
+    let nextEstimated = null;
+    if (lastDate) {
+      const lastDateObj = new Date(lastDate);
+      const nextDateObj = new Date(lastDateObj.getTime() + avgCycle * 24 * 60 * 60 * 1000);
+      nextEstimated = nextDateObj.toISOString().split('T')[0];
+    }
 
-      // Remove do servidor
-      const response = await fetch(`/api/cycle-sync?date=${date}`, {
-        method: 'DELETE',
-        credentials: 'include'
+    // Sintomas mais comuns
+    const symptomCount = new Map<string, number>();
+    recordList.forEach((record) => {
+      record.symptoms.forEach((symptom) => {
+        symptomCount.set(symptom, (symptomCount.get(symptom) || 0) + 1);
       });
+    });
+    const mostCommonSymptoms = Array.from(symptomCount.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map((e) => e[0]);
 
-      if (response.status === 401) {
-        // Não autenticado, só remove local
-        return true;
-      }
+    // Intensidade mais comum
+    const flowCount = new Map<'light' | 'moderate' | 'heavy', number>();
+    recordList.forEach((record) => {
+      flowCount.set(record.flowIntensity, (flowCount.get(record.flowIntensity) || 0) + 1);
+    });
+    const mostCommonFlow =
+      Array.from(flowCount.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'moderate';
 
-      if (!response.ok && response.status !== 404) {
-        throw new Error('Falha ao remover ciclo');
-      }
+    // Distribuição de fases lunares
+    const moonPhases = new Map<string, number>();
+    recordList.forEach((record) => {
+      moonPhases.set(record.moonPhase, (moonPhases.get(record.moonPhase) || 0) + 1);
+    });
+    const moonPhaseDistribution = Object.fromEntries(moonPhases);
 
-      return true;
-    } catch (err) {
-      console.error('Erro ao remover ciclo:', err);
-      setError('Falha ao remover registro');
-      return false;
-    }
-  }, []);
+    // Distribuição de signos
+    const zodiacSigns = new Map<string, number>();
+    recordList.forEach((record) => {
+      zodiacSigns.set(record.zodiacSign, (zodiacSigns.get(record.zodiacSign) || 0) + 1);
+    });
+    const zodiacDistribution = Object.fromEntries(zodiacSigns);
 
-  // Buscar ciclo por data
-  const getCycleByDate = useCallback((date: string): CycleRecord | undefined => {
-    return cycles.find(c => c.date === date);
-  }, [cycles]);
+    const result: CycleAnalysis = {
+      totalRecords: recordList.length,
+      averageCycleDays: avgCycle,
+      lastMenstruationDate: lastDate,
+      nextEstimatedDate: nextEstimated,
+      mostCommonSymptoms,
+      mostCommonFlowIntensity: mostCommonFlow,
+      moonPhaseDistribution,
+      zodiacDistribution,
+      cycleHistory,
+    };
 
-  // Verifica se há ciclo registrado hoje
-  const today = new Date().toISOString().split('T')[0];
-  const hasCycleToday = cycles.some(c => c.date === today);
+    setAnalysis(result);
+    return result;
+  };
 
-  // Último ciclo registrado
-  const lastCycle = cycles.length > 0 ? cycles[0] : null;
+  const addRecord = (record: CycleRecord) => {
+    const updated = [record, ...records];
+    setRecords(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    calculateAnalysis(updated);
+  };
+
+  const updateRecord = (id: string, updates: Partial<MenstrualRecord>) => {
+    const updated = records.map((r) => (r.id === id ? { ...r, ...updates } : r));
+    setRecords(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    calculateAnalysis(updated);
+  };
+
+  const deleteRecord = (id: string) => {
+    const updated = records.filter((r) => r.id !== id);
+    setRecords(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    calculateAnalysis(updated);
+  };
+
+  const exportData = () => {
+    const dataStr = JSON.stringify(records, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ciclos_menstruais_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getDaysUntilNextCycle = (): number | null => {
+    if (!analysis?.nextEstimatedDate) return null;
+    const next = new Date(analysis.nextEstimatedDate);
+    const today = new Date();
+    const diff = Math.round((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return diff;
+  };
+
+  const isInCycleWindow = (): boolean => {
+    const daysUntil = getDaysUntilNextCycle();
+    if (!daysUntil) return false;
+    return daysUntil >= -2 && daysUntil <= 2; // ±2 dias da data estimada
+  };
 
   return {
-    cycles,
+    records,
+    analysis,
     isLoading,
-    isSyncing,
-    lastSyncedAt,
-    error,
-    addCycle,
-    removeCycle,
-    getCycleByDate,
-    syncFromServer,
-    hasCycleToday,
-    lastCycle
+    addRecord,
+    updateRecord,
+    deleteRecord,
+    exportData,
+    getDaysUntilNextCycle,
+    isInCycleWindow,
   };
 }
-
-export default useCycle;

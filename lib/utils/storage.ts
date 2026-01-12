@@ -207,7 +207,7 @@ export const STORAGE_KEYS = {
   PLANET_STATE: 'flua_planet_state',
   PLANET_META: 'flua_planet_meta',
   PHASE_INPUTS: 'flua_phase_inputs',
-  MENSTRUAL_RECORDS: 'menstrual_records',
+  CYCLE_RECORDS: 'cycle_records',
   EMOTIONS: 'flua_emotions',
   DEVICE_ID: 'flua_device_id',
   SFX_ENABLED: 'flua_sfx_enabled',

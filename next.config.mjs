@@ -117,10 +117,10 @@ const nextConfig = {
         permanent: true,
       },
 
-      // /perfil/ciclos → /ciclos/menstrual
+      // /perfil/ciclos → /ciclos/ciclo
       {
         source: '/perfil/ciclos',
-        destination: '/ciclos/menstrual',
+        destination: '/ciclos/ciclo',
         permanent: true,
       },
 

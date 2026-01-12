@@ -25,4 +25,4 @@ export { default as CycleCareButton } from '@/components/ciclos/CycleCareButton'
 export { default as CycleInputCompact } from '@/components/ciclos/CycleInputCompact';
 
 // Perfil (legado - usar CycleJourney no lugar)
-export { default as MenstrualTracker } from '@/components/MenstrualTracker';
+export { default as CycleTracker } from '@/components/CycleTracker';
