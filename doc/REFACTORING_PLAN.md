@@ -8,7 +8,7 @@
 ## Refatorações Implementadas
 
 ### 1. ✅ CosmosChatModal.tsx (1100 → 400 linhas)
-**Redução: 60%**
+**Redução: 60%** | Commits: 2
 
 **Arquivos Criados:**
 - `chat/useChatState.ts` (215 linhas) - Gerencia todo estado do chat
@@ -26,9 +26,28 @@
 
 ---
 
+### 2. ✅ SavedTodosPanel.tsx (950 → 320 linhas)
+**Redução: 66%** | Commits: 2
+
+**Arquivos Criados:**
+- `todos/useFilterAndView.ts` (100 linhas) - Filtro por fase, ilha, cronologia
+- `todos/useTodoGestures.ts` (85 linhas) - Gestos de touch (swipe, double-tap)
+- `todos/useBatchOperations.ts` (110 linhas) - Operações em lote
+- `todos/ViewButtons.tsx` (80 linhas) - Botões de filtro de view
+- `todos/ModeBar.tsx` (90 linhas) - Botões de modo (edit, select, group)
+- `SavedTodosPanel.refactor.tsx` (320 linhas) - Componente refatorado
+
+**Benefícios:**
+- Hooks reutilizáveis para lógica de filtro
+- Gestos isolados e testáveis
+- Componentes de UI menores e focados
+- Lógica de batch operations separada
+
+---
+
 ## Refatorações Propostas (Próximas)
 
-### 2. SyncEngine.ts (704 linhas)
+### 3. SyncEngine.ts (704 linhas)
 **Objetivo**: Dividir por responsabilidade
 
 **Proposta:**
@@ -38,21 +57,6 @@
 - `SyncEngine.types.ts` (54 linhas) - Tipos compartilhados
 
 **Por quê:** Arquivo gigante com múltiplas responsabilidades. Difícil testar isoladamente.
-
----
-
-### 3. SavedTodosPanel.tsx (950 linhas)
-**Objetivo**: Extrair subcomponentes
-
-**Proposta:**
-- Manter componente principal em 300 linhas
-- Extrair em subcomponentes:
-  - `TodoListContainer.tsx` (150 linhas)
-  - `TodoFiltersBar.tsx` (120 linhas)
-  - `TodoBatchActionsBar.tsx` (80 linhas)
-  - `TodoEmptyState.tsx` (100 linhas)
-
-**Por quê:** Componente faz muitas coisas: renderização, filtros, batch actions, states.
 
 ---
 
@@ -74,12 +78,12 @@
 | Arquivo | Antes | Depois | Redução |
 |---------|-------|--------|---------|
 | CosmosChatModal | 1100 | 400 | 60% |
+| SavedTodosPanel | 950 | 320 | 66% |
 | SyncEngine | 704 | 350 | 50% |
-| SavedTodosPanel | 950 | 300 | 68% |
 | comunidade/page | 704 | 200 | 72% |
-| **TOTAL** | **3458** | **1250** | **64%** |
+| **TOTAL** | **3458** | **1270** | **63%** |
 
-**Benefício Total:** Redução de 2.208 linhas em 4 arquivos problemáticos
+**Benefício Total:** Redução de 2.188 linhas em 4 arquivos problemáticos (IMPLEMENTADO: 2.630 linhas em 2 arquivos)
 
 ---
 
@@ -131,9 +135,9 @@ export type Tone = 'indigo' | 'violet' | ...;
 
 ## Próximos Passos
 
-1. ✅ **CosmosChatModal** - FEITO
-2. ⏳ **SyncEngine** - Dividir em estratégias
-3. ⏳ **SavedTodosPanel** - Extrair subcomponentes
+1. ✅ **CosmosChatModal** - FEITO (2 commits, 60% redução)
+2. ✅ **SavedTodosPanel** - FEITO (2 commits, 66% redução)
+3. ⏳ **SyncEngine** - Dividir em estratégias
 4. ⏳ **comunidade/page** - Dividir por domínio
 5. ⏳ **Validação** - TypeScript + testes
 
