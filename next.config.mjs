@@ -1,7 +1,37 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const resolveGitTag = () => {
+  try {
+    return execSync('git describe --tags --abbrev=0', {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return null;
+  }
+};
+
+const resolvePackageVersion = () => {
+  try {
+    const raw = readFileSync(path.join(__dirname, 'package.json'), 'utf8');
+    const { version } = JSON.parse(raw);
+    if (typeof version === 'string' && version.trim()) {
+      return version.trim();
+    }
+  } catch {}
+  return null;
+};
+
+const gitTag = resolveGitTag();
+const packageVersion = resolvePackageVersion();
+const envGitTag = process.env.NEXT_PUBLIC_GIT_TAG?.trim();
+const publicGitTag = envGitTag || gitTag || packageVersion || 'v0.1.3 alpha flow';
 
 /**
  * Detecta se é build para mobile (Capacitor)
@@ -12,6 +42,9 @@ const isMobileBuild = process.env.MOBILE_BUILD === 'true';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_GIT_TAG: publicGitTag,
+  },
 
   // Transpile React Three Fiber packages para evitar erros de SSR
   transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
