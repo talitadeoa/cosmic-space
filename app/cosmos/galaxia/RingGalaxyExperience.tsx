@@ -29,10 +29,10 @@ const moonDescriptors: Array<{
   label: string;
   floatOffset: number;
 }> = [
-  { angle: 270, type: 'luaNova', label: 'Top', floatOffset: -2 },
-  { angle: 0, type: 'luaCrescente', label: 'Right', floatOffset: 1 },
-  { angle: 90, type: 'luaCheia', label: 'Bottom', floatOffset: 2 },
-  { angle: 180, type: 'luaMinguante', label: 'Left', floatOffset: -1 },
+  { angle: 0, type: 'luaNova', label: 'Right', floatOffset: 1 },
+  { angle: 90, type: 'luaCrescente', label: 'Bottom', floatOffset: 2 },
+  { angle: 180, type: 'luaCheia', label: 'Left', floatOffset: -1 },
+  { angle: 270, type: 'luaMinguante', label: 'Top', floatOffset: -2 },
 ];
 
 const RingGalaxyExperience: React.FC<RingGalaxyExperienceProps> = ({
