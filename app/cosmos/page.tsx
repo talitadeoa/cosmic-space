@@ -72,7 +72,7 @@ export default function CosmosPage() {
               Cosmos em modo experimental
             </h1>
             <p className="text-sm text-slate-300/80 sm:text-base">
-              Esta experiencia esta na versao {COSMOS_TAG} flow em teste aberto.
+              Esta experiencia esta na versao {COSMOS_TAG} em teste aberto.
             </p>
           </div>
 
