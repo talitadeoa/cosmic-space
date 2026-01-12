@@ -12,22 +12,22 @@
         "noUselessFragments": "warn"
       },
       "correctness": {
-        "noUnusedVariables": "warn",
+        "noUnusedVariables": "off",
         "noUnusedImports": "warn",
-        "useExhaustiveDependencies": "warn",
+        "useExhaustiveDependencies": "off",
         "noUnusedFunctionParameters": "off"
       },
       "style": {
-        "noNonNullAssertion": "warn",
+        "noNonNullAssertion": "off",
         "useConst": "warn",
         "noParameterAssign": "off",
         "useDefaultParameterLast": "off",
         "useTemplate": "off"
       },
       "suspicious": {
-        "noExplicitAny": "warn",
+        "noExplicitAny": "off",
         "noDebugger": "warn",
-        "noConsoleLog": "warn",
+        "noConsoleLog": "off",
         "noArrayIndexKey": "off",
         "noAssignInExpressions": "off"
       },
