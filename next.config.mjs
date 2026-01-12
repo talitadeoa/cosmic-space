@@ -43,14 +43,24 @@ const nextConfig = {
     return config;
   },
 
+  // Configuração de imagens
+  images: {
+    // Apenas para builds mobile onde temos static export
+    ...(isMobileBuild && { unoptimized: true }),
+    // Otimização padrão para web/vercel
+    ...(!isMobileBuild && {
+      remotePatterns: [],
+      formats: ['image/avif', 'image/webp'],
+      deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+      imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    }),
+  },
+
   // Para Capacitor, precisa de static export
   // Ativar apenas para builds mobile para não afetar Vercel
   ...(isMobileBuild && {
     output: 'export',
     trailingSlash: true,
-    images: {
-      unoptimized: true, // Image optimization não funciona em static
-    },
   }),
 
   // SEO e Branding
