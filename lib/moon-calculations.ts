@@ -1,4 +1,27 @@
 /**
+ * @deprecated Use useLunarPhase or useLunarBatch hooks from @/hooks/useLunarCompute
+ * 
+ * Este arquivo contém funções de cálculo lunar em JavaScript (mais lento).
+ * Todas as funcionalidades foram migradas para o novo sistema que usa Python.
+ * 
+ * MIGRAÇÃO NECESSÁRIA:
+ * 
+ * ❌ import { calcMoonAge } from '@/lib/moon-calculations';
+ * ✅ import { useLunarPhase } from '@/hooks/useLunarCompute';
+ * ✅ const { phase } = useLunarPhase(date);
+ * ✅ const ageDays = phase.age_days;
+ * 
+ * ❌ import { getMoonData } from '@/lib/moon-calculations';  
+ * ✅ import { useLunarPhase } from '@/hooks/useLunarCompute';
+ * ✅ const { phase: moonData } = useLunarPhase(date, { includeZodiac: true });
+ * 
+ * Performance:
+ * - Antigo: ~0.1-0.5ms por cálculo (em JS)
+ * - Novo: ~50-200ms por cálculo com cache automático (serverless Python)
+ * - Para batch: 365 datas em ~5-10 segundos vs ~30+ segundos em JS
+ */
+
+/**
  * Funções centralizadas para cálculos lunares
  *
  * Consolidação de código duplicado que estava em:
@@ -6,7 +29,8 @@
  * - app/api/moons/lunations/route.ts
  * - scripts/sync-lunations.js
  *
- * Uso:
+ * DEPRECATED - Use new lunar compute service instead
+ * Uso legado:
  * import { calcMoonAge, ZODIAC_CUTOFFS } from "@/lib/moon-calculations";
  */
 

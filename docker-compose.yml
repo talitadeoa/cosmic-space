@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+  # Microserviço Python - Cálculos Astronômicos
+  lunar-compute:
+    build:
+      context: ./services/lunar-compute
+      dockerfile: Dockerfile
+    container_name: cosmic-lunar-compute
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+    volumes:
+      - ./services/lunar-compute/main.py:/app/main.py:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cosmic-network
+
+  # Opcional: PostgreSQL para cache de cálculos
+  postgres:
+    image: postgres:16-alpine
+    container_name: cosmic-postgres
+    environment:
+      POSTGRES_DB: cosmic_db
+      POSTGRES_USER: cosmic_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cosmic_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - cosmic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cosmic_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Opcional: Redis para cache em tempo real
+  redis:
+    image: redis:7-alpine
+    container_name: cosmic-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - cosmic-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  cosmic-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

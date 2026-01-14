@@ -8,9 +8,28 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { MoonRenderer } from './MoonRenderer';
 import { Timeline } from './Timeline';
-import { getMoonData } from './utils/moonPhase';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
 import type { LunarTimelineProps, MoonData } from './types';
 import styles from './styles/LunarTimeline.module.css';
+
+// Função auxiliar para converter dados do hook para MoonData completo
+function createMoonData(phaseData: any, date: Date): MoonData {
+  const illumination = phaseData?.illumination || 0.5;
+  const ageDays = phaseData?.age_days || 14.76;
+  const phaseFraction = ageDays / 29.53058867;
+  
+  return {
+    illumination,
+    phaseFraction,
+    isWaxing: phaseData?.is_waxing ?? true,
+    phaseName: phaseData?.phase || 'N/A',
+    terminatorAngle: (phaseFraction * 360) % 360,
+    date,
+    daysSinceNew: ageDays,
+    lunarAge: ageDays,
+    zodiacSign: phaseData?.zodiac_sign,
+  };
+}
 
 export function LunarTimeline({
   initialDate,
@@ -23,25 +42,8 @@ export function LunarTimeline({
   // Estado: data selecionada atual
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
 
-  // Estado: dados lunares calculados
-  const [moonData, setMoonData] = useState<MoonData>(() =>
-    getMoonData(selectedDate, location, timezone)
-  );
-
-  /**
-   * Atualizar dados lunares quando data mudar
-   * Usa useMemo para evitar recálculos desnecessários
-   */
-  const currentMoonData = useMemo(() => {
-    return getMoonData(selectedDate, location, timezone);
-  }, [selectedDate, location, timezone]);
-
-  /**
-   * Sincronizar moonData com currentMoonData
-   */
-  useEffect(() => {
-    setMoonData(currentMoonData);
-  }, [currentMoonData]);
+  // Hook para dados lunares
+  const { phase: phaseData, loading } = useLunarPhase(selectedDate, { includeZodiac: true });
 
   /**
    * Handler de mudança de data da timeline
@@ -52,12 +54,17 @@ export function LunarTimeline({
       setSelectedDate(newDate);
 
       // Chamar callback externo se fornecido
-      if (onDateChange) {
-        const newMoonData = getMoonData(newDate, location, timezone);
-        onDateChange(newDate, newMoonData);
+      if (onDateChange && phaseData) {
+        onDateChange(newDate, {
+          phaseName: phaseData.phase,
+          illumination: phaseData.illumination,
+          lunarAge: phaseData.age_days,
+          isWaxing: phaseData.is_waxing,
+          zodiacSign: phaseData.zodiac_sign,
+        });
       }
     },
-    [onDateChange, location, timezone]
+    [onDateChange, phaseData]
   );
 
   /**
@@ -81,7 +88,31 @@ export function LunarTimeline({
   /**
    * Formatar iluminação como percentual
    */
-  const illuminationPercentage = Math.round(moonData.illumination * 100);
+  const illuminationPercentage = phaseData ? Math.round(phaseData.illumination * 100) : 0;
+
+  if (loading) {
+    return (
+      <div className={`${styles.lunarTimelineContainer} ${className}`}>
+        <div className={styles.moonSection}>
+          <div className={styles.moonRenderer}>
+            <div className="text-center text-gray-400">⏳ Carregando dados lunares...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!phaseData) {
+    return (
+      <div className={`${styles.lunarTimelineContainer} ${className}`}>
+        <div className={styles.moonSection}>
+          <div className={styles.moonRenderer}>
+            <div className="text-center text-red-400">❌ Erro ao carregar dados</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles.lunarTimelineContainer} ${className}`}>
@@ -90,7 +121,16 @@ export function LunarTimeline({
         {/* Renderizador da Lua */}
         <div className={styles.moonRenderer}>
           <MoonRenderer
-            moonData={moonData}
+            moonData={phaseData ? createMoonData(phaseData, selectedDate) : {
+              illumination: 0.5,
+              phaseFraction: 0.5,
+              isWaxing: true,
+              phaseName: 'N/A',
+              terminatorAngle: 180,
+              date: selectedDate,
+              daysSinceNew: 14.76,
+              lunarAge: 14.76,
+            }}
             size={320}
             config={{
               showCraters: true,
@@ -104,7 +144,7 @@ export function LunarTimeline({
         {/* Informações textuais */}
         <div className={styles.moonInfo}>
           {/* Nome da fase */}
-          <div className={styles.phaseName}>{moonData.phaseName}</div>
+          <div className={styles.phaseName}>{phaseData.phase}</div>
 
           {/* Data e hora */}
           <div className={styles.dateTime}>{formatDateTime(selectedDate)}</div>
@@ -119,15 +159,22 @@ export function LunarTimeline({
 
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Idade</span>
-                <span className={styles.detailValue}>{moonData.lunarAge.toFixed(1)} dias</span>
+                <span className={styles.detailValue}>{phaseData.age_days.toFixed(1)} dias</span>
               </div>
 
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Tendência</span>
                 <span className={styles.detailValue}>
-                  {moonData.isWaxing ? '↑ Crescente' : '↓ Minguante'}
+                  {phaseData.is_waxing ? '↑ Crescente' : '↓ Minguante'}
                 </span>
               </div>
+              
+              {phaseData.zodiac_sign && (
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Signo</span>
+                  <span className={styles.detailValue}>{phaseData.zodiac_sign}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

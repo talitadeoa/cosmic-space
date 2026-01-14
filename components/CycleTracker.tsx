@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getLunarPhaseAndSign } from '@/lib/astro';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
 
 interface CycleRecord {
   id: string;
@@ -64,12 +64,17 @@ export default function CycleTracker({
     }
   }, []);
 
+  const selectedDate = new Date(cycleDate + 'T00:00:00');
+  const { phase: moonData, loading: moonLoading } = useLunarPhase(selectedDate, { includeZodiac: true });
+
   useEffect(() => {
-    // Obter dados lunares e zodiacais da data selecionada
-    const selectedDateObj = new Date(cycleDate + 'T00:00:00');
-    const moonData = getLunarPhaseAndSign(selectedDateObj);
-    setCurrentMoonData(moonData);
-  }, [cycleDate]);
+    if (moonData) {
+      setCurrentMoonData({
+        faseLua: moonData.phase || 'N/A',
+        signo: moonData.zodiac_sign || 'N/A',
+      });
+    }
+  }, [moonData]);
 
   const handleSymptomToggle = (symptomId: string) => {
     setSelectedSymptoms((prev) =>
@@ -150,18 +155,20 @@ export default function CycleTracker({
             </div>
 
             {/* Fase Lunar e Signo */}
-            {currentMoonData && (
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-pink-900/20 border border-pink-500/20">
-                <div>
-                  <p className="text-xs text-pink-300/70 font-medium">🌙 Fase Lunar</p>
-                  <p className="text-sm font-semibold text-pink-200">{currentMoonData.faseLua}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-pink-300/70 font-medium">♈ Signo</p>
-                  <p className="text-sm font-semibold text-pink-200">{currentMoonData.signo}</p>
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-pink-300/70 font-medium">🌙 Fase Lunar</p>
+                <p className="text-sm font-semibold text-pink-200">
+                  {moonLoading ? '⏳ Carregando...' : currentMoonData?.faseLua || 'N/A'}
+                </p>
               </div>
-            )}
+              <div>
+                <p className="text-xs text-pink-300/70 font-medium">♈ Signo</p>
+                <p className="text-sm font-semibold text-pink-200">
+                  {moonLoading ? '⏳ Carregando...' : currentMoonData?.signo || 'N/A'}
+                </p>
+              </div>
+            </div>
 
             {/* Intensidade do fluxo */}
             <div>

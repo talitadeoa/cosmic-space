@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getLunarPhaseAndSign } from '@/lib/astro';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -16,24 +16,25 @@ import { useAuth } from '@/hooks/useAuth';
 export default function AutoSyncLunar() {
   const auth = useAuth();
   const [hasSynced, setHasSynced] = useState(false);
+  const { phase: moonData } = useLunarPhase(new Date(), { includeZodiac: true, enabled: auth.isAuthenticated });
 
   useEffect(() => {
     // Evitar sincronizar múltiplas vezes
-    if (hasSynced || !auth.isAuthenticated) return;
+    if (hasSynced || !auth.isAuthenticated || !moonData) return;
 
     let cancelled = false;
 
     async function sync() {
-      const data = getLunarPhaseAndSign(new Date());
+      if (!moonData) return;
 
       try {
         await fetch('/api/form/lunar-phase', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            data: data.data,
-            faseLua: data.faseLua,
-            signo: data.signo,
+            data: moonData.date,
+            faseLua: moonData.phase,
+            signo: moonData.zodiac_sign,
             energia: '',
             checks: '',
             observacoes: '',
@@ -57,7 +58,7 @@ export default function AutoSyncLunar() {
     return () => {
       cancelled = true;
     };
-  }, [auth.isAuthenticated, hasSynced]);
+  }, [auth.isAuthenticated, hasSynced, moonData]);
 
   return null;
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getMoonData, type MoonTimeData } from '@/lib/moon-calculations';
+import { useLunarBatch } from '@/hooks/useLunarCompute';
+import { MoonTimeData } from '@/lib/moon-calculations';
 import styles from './LunarTimeScrubber.module.css';
 
 const DAY_LABELS = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
@@ -69,20 +70,36 @@ const LunarTimeScrubber: React.FC<LunarTimeScrubberProps> = ({
     return base;
   }, [initialDate, rangeDays]);
 
-  const getCachedMoonData = (date: Date) => {
-    const key = `${date.getTime()}`;
-    const cached = cachedDataRef.current.get(key);
-    if (cached) return cached;
-    const fresh = getMoonData(date);
-    cachedDataRef.current.set(key, fresh);
-    if (cachedDataRef.current.size > 500) {
-      const firstKey = cachedDataRef.current.keys().next().value as string | undefined;
-      if (firstKey) cachedDataRef.current.delete(firstKey);
+  // Gerar datas para batch processing
+  const datesToFetch = useMemo(() => {
+    return Array.from({ length: totalHours + 1 }, (_, hour) => 
+      addHours(timelineStart, hour)
+    );
+  }, [timelineStart, totalHours]);
+
+  // Buscar múltiplas fases em batch
+  const { phases } = useLunarBatch(datesToFetch, { enabled: true });
+
+  const getCachedMoonData = (date: Date): MoonTimeData => {
+    const phaseData = phases.get(date.toISOString());
+    if (!phaseData) {
+      // Fallback para valores padrão
+      return {
+        phaseName: 'N/A',
+        illumination: 0.5,
+        phaseFraction: 0.5,
+        isWaxing: true,
+      };
     }
-    return fresh;
+    return {
+      phaseName: phaseData.phase,
+      illumination: phaseData.illumination,
+      phaseFraction: (phaseData.age_days || 14.76) / 29.53,
+      isWaxing: phaseData.is_waxing,
+    };
   };
 
-  const selectedMoonData = useMemo(() => getCachedMoonData(selectedDate), [selectedDate]);
+  const selectedMoonData = useMemo(() => getCachedMoonData(selectedDate), [selectedDate, phases]);
 
   const updateSelectedFromScroll = () => {
     if (!scrollRef.current || containerWidth === 0) return;

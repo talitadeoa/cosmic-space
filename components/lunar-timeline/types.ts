@@ -28,6 +28,9 @@ export interface MoonData {
   /** Dias desde a última lua nova */
   daysSinceNew: number;
 
+  /** Signo zodiacal */
+  zodiacSign?: string;
+
   /** Idade da lua em dias (0-29.53) */
   lunarAge: number;
 }
@@ -138,12 +141,27 @@ export interface TimelineTick {
 /**
  * Propriedades do componente principal
  */
+/**
+ * Dados lunares simplificados para callbacks
+ */
+export type MoonDataCallback = {
+  phaseName: string;
+  illumination: number;
+  isWaxing: boolean;
+  zodiacSign?: string;
+  lunarAge?: number;
+  phaseFraction?: number;
+  terminatorAngle?: number;
+  date?: Date;
+  daysSinceNew?: number;
+};
+
 export interface LunarTimelineProps {
   /** Data inicial (padrão: agora) */
   initialDate?: Date;
 
   /** Callback quando a data mudar */
-  onDateChange?: (date: Date, moonData: MoonData) => void;
+  onDateChange?: (date: Date, moonData: MoonDataCallback) => void;
 
   /** Timezone (padrão: local) */
   timezone?: string;

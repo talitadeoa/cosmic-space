@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getLunarPhaseAndSign } from '@/lib/astro';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
 import { useCycle, type CycleRecord } from '@/hooks/useCycle';
 
 // Re-exportar tipo para compatibilidade
@@ -40,9 +40,11 @@ export default function CycleInputCompact({
 }: CycleInputCompactProps) {
   // Hook com sincronização
   const { cycles, addCycle, isSyncing, lastCycle } = useCycle();
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const dateObj = new Date(selectedDate + 'T12:00:00');
+  const { phase: lunarData, loading: lunarLoading } = useLunarPhase(dateObj, { includeZodiac: true });
   
   const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [flowIntensity, setFlowIntensity] = useState<'light' | 'moderate' | 'heavy'>('moderate');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
@@ -50,12 +52,15 @@ export default function CycleInputCompact({
   const [justSaved, setJustSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Atualizar dados lunares quando data muda
+  // Atualizar dados lunares quando dados chegam
   useEffect(() => {
-    const dateObj = new Date(selectedDate + 'T12:00:00');
-    const data = getLunarPhaseAndSign(dateObj);
-    setMoonData(data);
-  }, [selectedDate]);
+    if (lunarData) {
+      setMoonData({
+        faseLua: lunarData.phase || 'N/A',
+        signo: lunarData.zodiac_sign || 'N/A',
+      });
+    }
+  }, [lunarData]);
 
   const handleSymptomToggle = (symptomId: string) => {
     setSelectedSymptoms((prev) =>
