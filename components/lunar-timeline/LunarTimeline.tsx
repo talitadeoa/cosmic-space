@@ -8,7 +8,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { MoonRenderer } from './MoonRenderer';
 import { Timeline } from './Timeline';
-import { useLunarPhase } from '@/hooks/useLunationCache';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
 import type { LunarTimelineProps, MoonData } from './types';
 import styles from './styles/LunarTimeline.module.css';
 
@@ -43,7 +43,7 @@ export function LunarTimeline({
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
 
   // Hook para dados lunares com novo cache deduplica
-  const { data: phaseData, isLoading: loading } = useLunarPhase(selectedDate, { includeZodiac: true });
+  const { phase: phaseData, loading } = useLunarPhase(selectedDate, { includeZodiac: true });
 
   /**
    * Handler de mudança de data da timeline

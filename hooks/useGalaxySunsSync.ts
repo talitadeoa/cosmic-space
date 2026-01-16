@@ -108,8 +108,8 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
       if (hook.error) {
         hasError = true;
         setError(`Erro ao carregar ano ${year}: ${hook.error.message}`);
-      } else if (hook.data?.days) {
-        newData[year] = processYearData(year, hook.data.days);
+      } else if (hook.data) {
+        newData[year] = processYearData(year, hook.data);
       }
     });
 

@@ -7,7 +7,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useLunarPhase, useLunarBatch } from '@/hooks/useLunationCache';
+import { useLunarPhase, useLunarBatch } from '@/hooks/useLunarCompute';
 import {
   findNearestNewMoon,
   findCycleDay,
@@ -24,9 +24,8 @@ import {
  * Usa deduplica de requisições para a mesma data
  */
 export function useLunarCycle(date: Date = new Date()) {
-  const { data: lunarPhaseData, isLoading: loading } = useLunarPhase(date, {
+  const { phase: lunarPhaseData, loading } = useLunarPhase(date, {
     includeZodiac: true,
-    ttl: 86400000, // 24 horas
   });
 
   const cycleData = useMemo(() => {
@@ -60,21 +59,13 @@ export function useMoonCalendarMonth(year: number, month: number) {
   }, [year, month]);
 
   // Buscar todas as fases em batch com cache deduplica
-  const { data: batchData, isLoading: loading } = useLunarBatch(dates, {
+  const { phases: batchData, loading } = useLunarBatch(dates, {
     includeZodiac: true,
-    ttl: 86400000,
   });
 
   const lunarData = useMemo(() => {
-    if (!batchData?.phases) return new Map();
-    const map = new Map();
-    batchData.phases.forEach((phase: any, index: number) => {
-      const dateKey = dates[index]?.toISOString().split('T')[0];
-      if (dateKey) {
-        map.set(dateKey, phase);
-      }
-    });
-    return map;
+    if (!batchData) return new Map();
+    return batchData;
   }, [batchData, dates]);
 
   // Fallback para cálculo local se Python não disponível

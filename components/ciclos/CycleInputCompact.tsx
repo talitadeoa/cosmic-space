@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useLunarPhase } from '@/hooks/useLunationCache';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
 import { useCycle, type CycleRecord } from '@/hooks/useCycle';
 
 // Re-exportar tipo para compatibilidade
@@ -43,7 +43,7 @@ export default function CycleInputCompact({
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const dateObj = new Date(selectedDate + 'T12:00:00');
   // Novo cache com deduplica automática
-  const { data: lunarData, isLoading: lunarLoading } = useLunarPhase(dateObj, { includeZodiac: true });
+  const { phase: lunarData, loading: lunarLoading } = useLunarPhase(dateObj, { includeZodiac: true });
   
   const [isExpanded, setIsExpanded] = useState(false);
   const [flowIntensity, setFlowIntensity] = useState<'light' | 'moderate' | 'heavy'>('moderate');

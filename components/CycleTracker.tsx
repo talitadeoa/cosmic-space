@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useLunarPhase } from '@/hooks/useLunationCache';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
 
 interface CycleRecord {
   id: string;
@@ -66,7 +66,7 @@ export default function CycleTracker({
 
   const selectedDate = new Date(cycleDate + 'T00:00:00');
   // Usar novo cache com deduplica
-  const { data: moonData, isLoading: moonLoading } = useLunarPhase(selectedDate, { includeZodiac: true });
+  const { phase: moonData, loading: moonLoading } = useLunarPhase(selectedDate, { includeZodiac: true });
 
   useEffect(() => {
     if (moonData) {
