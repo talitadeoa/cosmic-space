@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useYearMoonData } from './useLunationCache';
+import { useLunations } from './useLunationCache';
 
 export interface YearMoonData {
   year: number;
@@ -93,7 +93,7 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
     () =>
       yearsToFetch.map((year) =>
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        useYearMoonData(year, { autoFetch: true, ttl: 86400000 })
+        useLunations(`${year}-01-01`, `${year}-12-31`, { autoFetch: true, ttl: 86400000 })
       ),
     [yearsToFetch]
   );

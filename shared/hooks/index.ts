@@ -3,4 +3,5 @@
  * @module shared/hooks
  */
 
-export { useSfx } from './useSfx';
+// TODO: Add hooks here when needed
+export const sharedHooks = {};

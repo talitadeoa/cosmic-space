@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { saveLunations, deleteLunations } from '@/lib/forms';
 
-export const dynamic = 'force-dynamic';
+// CSV de lunações é estático: cache por 1 hora
+export const revalidate = 3600; // 1 hora
 
 const CSV_FILE_NAME = 'Calendario - Lunações.csv';
 const MAX_DAYS = 550;

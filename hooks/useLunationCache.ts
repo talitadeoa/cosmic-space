@@ -214,31 +214,7 @@ export function useLunationCache<T>(
 }
 
 /**
- * Hook para buscar fases lunares de um intervalo
- */
-export function useMoonPhaseRange(
-  startDate: Date | string,
-  endDate: Date | string,
-  options: UseLunationCacheOptions = {}
-) {
-  const start = typeof startDate === 'string' ? startDate : startDate.toISOString().split('T')[0];
-  const end = typeof endDate === 'string' ? endDate : endDate.toISOString().split('T')[0];
-
-  const cacheKey = `moon-phase-range:${start}:${end}`;
-
-  return useLunationCache(
-    cacheKey,
-    async () => {
-      const response = await fetch(`/api/moons?start=${start}&end=${end}&tz=UTC`);
-      if (!response.ok) throw new Error(`Failed to fetch moon phases: ${response.statusText}`);
-      return response.json();
-    },
-    { ttl: 86400000, ...options } // 24 horas por padrão
-  );
-}
-
-/**
- * Hook para buscar lunações de um período
+ * Hook para buscar lunações de um período (via CSV)
  */
 export function useLunations(
   startDate: Date | string,
@@ -258,81 +234,6 @@ export function useLunations(
       return response.json();
     },
     { ttl: 86400000, ...options } // 24 horas por padrão
-  );
-}
-
-/**
- * Hook para buscar dados lunares do ano (GalaxySuns)
- */
-export function useYearMoonData(
-  year: number,
-  options: UseLunationCacheOptions = {}
-) {
-  const cacheKey = `moon-year:${year}`;
-
-  return useLunationCache(
-    cacheKey,
-    async () => {
-      const startDate = `${year}-01-01`;
-      const endDate = `${year}-12-31`;
-      const response = await fetch(`/api/moons?start=${startDate}&end=${endDate}&tz=UTC`);
-      if (!response.ok) throw new Error(`Failed to fetch year ${year}: ${response.statusText}`);
-      return response.json();
-    },
-    { ttl: 86400000, ...options } // 24 horas por padrão
-  );
-}
-
-/**
- * Hook para buscar fase lunar de uma data específica
- */
-export function useLunarPhase(
-  date: Date,
-  options: UseLunationCacheOptions & { includeZodiac?: boolean } = {}
-) {
-  const { includeZodiac = false, ...cacheOptions } = options;
-  const dateStr = date.toISOString().split('T')[0];
-  const cacheKey = `lunar-phase:${dateStr}:${includeZodiac ? 'zodiac' : 'no-zodiac'}`;
-
-  return useLunationCache(
-    cacheKey,
-    async () => {
-      const response = await fetch(
-        `/api/lunar/phase?date=${date.toISOString()}${includeZodiac ? '&zodiac=true' : ''}`
-      );
-      if (!response.ok) throw new Error(`Failed to fetch lunar phase: ${response.statusText}`);
-      return response.json();
-    },
-    { ttl: 86400000, autoFetch: true, ...cacheOptions } // 24 horas
-  );
-}
-
-/**
- * Hook para buscar múltiplas fases lunares em batch
- */
-export function useLunarBatch(
-  dates: Date[],
-  options: UseLunationCacheOptions & { includeZodiac?: boolean } = {}
-) {
-  const { includeZodiac = false, ...cacheOptions } = options;
-  const dateStrs = dates.map((d) => d.toISOString().split('T')[0]).join(',');
-  const cacheKey = `lunar-batch:${dateStrs}:${includeZodiac ? 'zodiac' : 'no-zodiac'}`;
-
-  return useLunationCache(
-    cacheKey,
-    async () => {
-      const response = await fetch('/api/lunar/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dates: dates.map((d) => d.toISOString()),
-          includeZodiac,
-        }),
-      });
-      if (!response.ok) throw new Error(`Failed to fetch lunar batch: ${response.statusText}`);
-      return response.json();
-    },
-    { ttl: 86400000, autoFetch: true, ...cacheOptions } // 24 horas
   );
 }
 
