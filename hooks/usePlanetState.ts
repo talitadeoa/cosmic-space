@@ -14,7 +14,7 @@ import {
 } from '@/app/cosmos/utils/planetSync';
 import { listOutboxChanges } from '@/app/cosmos/utils/syncOutbox';
 
-const SYNC_INTERVAL_MS = 10000;
+const SYNC_INTERVAL_MS = 30000; // Aumentado de 10s para 30s para reduzir requisições
 
 const createChangeId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto

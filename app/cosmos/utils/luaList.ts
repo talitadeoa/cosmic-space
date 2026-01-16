@@ -43,8 +43,8 @@ export const getResponsiveLayout = (viewportWidth?: number | null): LuaListLayou
 // Configurações de animação
 export const ANIMATION_CONFIG = {
   spring: { type: 'spring' as const, stiffness: 260, damping: 18 },
-  float: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
-  glow: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
+  float: { duration: 6, ease: 'easeInOut' },
+  glow: { duration: 2.2, ease: 'easeInOut' },
 } as const;
 
 export type MonthEntry = {

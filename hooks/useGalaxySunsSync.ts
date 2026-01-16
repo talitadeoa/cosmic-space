@@ -109,22 +109,15 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
   }, []);
 
   useEffect(() => {
-    const yearsToFetch =
-      years.length > 0
-        ? years
-        : [
-            new Date().getFullYear() - 1,
-            new Date().getFullYear(),
-            new Date().getFullYear() + 1,
-            new Date().getFullYear() + 2,
-          ];
+    // Skip if no years provided
+    if (years.length === 0) return;
 
     async function sync() {
       setIsLoading(true);
       setError(null);
 
       try {
-        await Promise.all(yearsToFetch.map(fetchYearData));
+        await Promise.all(years.map(fetchYearData));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro desconhecido';
         setError(message);
@@ -134,7 +127,7 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
     }
 
     sync();
-  }, []);
+  }, [years, fetchYearData]);
 
   const refresh = useCallback(async (year?: number) => {
     setIsLoading(true);

@@ -6,14 +6,12 @@ import type { CelestialSize, CelestialType } from '../types';
 
 const motionFloat: Transition = {
   duration: 4,
-  repeat: Infinity,
   repeatType: 'reverse',
   ease: 'easeInOut',
 };
 
 const motionBreathing: Transition = {
   duration: 1.8,
-  repeat: Infinity,
   repeatType: 'reverse',
   ease: 'easeInOut',
 };

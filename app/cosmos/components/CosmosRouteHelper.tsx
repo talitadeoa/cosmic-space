@@ -235,14 +235,10 @@ export const CosmosRouteHelper: React.FC<CosmosRouteHelperProps> = ({
                 <motion.div
                   layout
                   className="relative"
-                  animate={{ y: [0, -1.5, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
                 >
                   <motion.div
                     aria-hidden
                     className={`pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full blur-3xl ${accent.glow}`}
-                    animate={{ opacity: [0.15, 0.3, 0.15], scale: [1, 1.1, 1] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
                   />
 
                   {collapsible && (

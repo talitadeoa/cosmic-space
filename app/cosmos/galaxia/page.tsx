@@ -118,14 +118,10 @@ const GalaxiaPage = () => {
           >
             <motion.div
               className="pointer-events-none absolute -left-32 -top-28 h-72 w-72 rounded-full bg-sky-500/20 blur-3xl"
-              animate={{ opacity: [0.4, 0.65, 0.4], scale: [1, 1.08, 1] }}
-              transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
               aria-hidden
             />
             <motion.div
               className="pointer-events-none absolute -right-24 bottom-0 h-64 w-64 rounded-full bg-fuchsia-500/20 blur-3xl"
-              animate={{ opacity: [0.3, 0.55, 0.3], scale: [1.05, 0.95, 1.05] }}
-              transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
               aria-hidden
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 opacity-40" aria-hidden />
@@ -138,14 +134,10 @@ const GalaxiaPage = () => {
                     background:
                       'radial-gradient(circle at 20% 20%, rgba(56,189,248,0.2), transparent 40%), radial-gradient(circle at 80% 60%, rgba(236,72,153,0.2), transparent 42%)',
                   }}
-                  animate={{ opacity: [0.55, 0.9, 0.55] }}
-                  transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
                   aria-hidden
                 />
                 <motion.div
                   className="pointer-events-none absolute -inset-6 -z-10 rounded-[36px] border border-sky-200/10"
-                  animate={{ rotate: [0, 2, -2, 0] }}
-                  transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
                   aria-hidden
                 />
                 <div
@@ -170,14 +162,10 @@ const GalaxiaPage = () => {
 
                   <motion.div
                     className="pointer-events-none absolute inset-8 rounded-full border border-white/10"
-                    animate={{ rotate: [0, 12, 0] }}
-                    transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
                     aria-hidden
                   />
                   <motion.div
                     className="pointer-events-none absolute inset-14 rounded-full border border-white/5"
-                    animate={{ rotate: [0, -18, 0] }}
-                    transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
                     aria-hidden
                   />
 
@@ -199,8 +187,6 @@ const GalaxiaPage = () => {
 
         <motion.div
           className="pointer-events-none fixed top-16 right-3 h-24 w-24 rounded-full bg-sky-500/10 blur-3xl"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.55, 0.3] }}
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
           aria-hidden
         />
       </div>

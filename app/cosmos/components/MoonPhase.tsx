@@ -24,7 +24,6 @@ export interface MoonPhaseProps {
 
 const floatTransition: Transition = {
   duration: 4.5,
-  repeat: Infinity,
   repeatType: 'reverse',
   ease: 'easeInOut',
 };

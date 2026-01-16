@@ -23,8 +23,8 @@ const PlanetaPage: React.FC = () => {
 
   return (
     <PlanetaProviders>
-      {/* Sincronizar lunações do banco automaticamente */}
-      <LunationSync autoSync={true} verbose={false} />
+      {/* Sincronização desabilitada para evitar requisições em cascata */}
+      {/* <LunationSync autoSync={true} verbose={false} /> */}
 
       <PlanetaScene>
         <PlanetScreen navigateTo={navigateTo} navigateWithFocus={navigateWithFocus} />
