@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useSfxContext } from '@/components/providers/SfxProvider';
 import { useAuth } from '@/hooks/useAuth';
 
 type NavMenuProps = {
@@ -35,7 +34,6 @@ const devRoutes = [
 
 export default function NavMenu({ showDevRoutes = false }: NavMenuProps) {
   const [open, setOpen] = useState(false);
-  const sfx = useSfxContext();
   const auth = useAuth();
   const routes = showDevRoutes
     ? [...baseRoutes, ...cosmosRoutes, ...appRoutes, ...devRoutes]
@@ -112,16 +110,6 @@ export default function NavMenu({ showDevRoutes = false }: NavMenuProps) {
           </nav>
 
           <div className="mt-3 border-t border-slate-800 pt-3">
-            <div className="flex items-center justify-between">
-              <small className="text-xs text-slate-400">SFX</small>
-              <button
-                onClick={() => sfx.toggle()}
-                className="px-2 py-1 rounded bg-slate-800 text-xs sm:text-sm hover:bg-slate-700 transition-colors"
-              >
-                {sfx.enabled ? 'On' : 'Off'}
-              </button>
-            </div>
-
             <div className="mt-2">
               {!auth.loading && auth.isAuthenticated ? (
                 <button

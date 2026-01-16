@@ -6,16 +6,14 @@
  * 
  * Ordem dos providers (de fora para dentro):
  * 1. AuthProvider - Estado de autenticação
- * 2. SfxProvider - Efeitos sonoros
- * 3. AutoSyncLunar - Sincronização lunar (efeito colateral, sem UI)
- * 4. GalaxySunsSync - Sincronização de dados (efeito colateral, sem UI)
+ * 2. AutoSyncLunar - Sincronização lunar (efeito colateral, sem UI)
+ * 3. GalaxySunsSync - Sincronização de dados (efeito colateral, sem UI)
  */
 
 'use client';
 
 import { type ReactNode } from 'react';
 import { AuthProvider } from './AuthProvider';
-import SfxProvider from './SfxProvider';
 import { AutoSyncLunar, GalaxySunsSync } from '@/components/sync';
 
 interface AppProvidersProps {
@@ -46,12 +44,10 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <AuthProvider>
-      <SfxProvider>
-        {/* Componentes de efeito colateral (sem UI) */}
-        <AutoSyncLunar />
-        <GalaxySunsSync autoSync={true} />
-        {children}
-      </SfxProvider>
+      {/* Componentes de efeito colateral (sem UI) */}
+      <AutoSyncLunar />
+      <GalaxySunsSync autoSync={true} />
+      {children}
     </AuthProvider>
   );
 }

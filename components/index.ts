@@ -3,7 +3,7 @@
 export { default as AuthGate } from '@/components/auth/AuthGate';
 
 // Providers
-export { default as SfxProvider, useSfxContext } from '@/components/providers/SfxProvider';
+export { AppProviders } from '@/components/providers';
 
 // Layouts
 export * from '@/components/layouts/SpacePageLayout';
@@ -15,9 +15,6 @@ export { GalaxySunsSync } from '@/components/sync/GalaxySunsSync';
 
 // Navegação
 export { default as NavMenu } from '@/components/navigation/NavMenu';
-
-// Áudio
-export { default as RadioPlayer } from '@/components/audio/RadioPlayer';
 
 // Ciclo - Experiência de autocuidado
 export { default as CycleJourney } from '@/components/ciclos/CycleJourney';

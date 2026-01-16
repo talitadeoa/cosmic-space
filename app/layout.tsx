@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { RadioPlayer } from '@/components/audio';
 import { NavMenu } from '@/components/navigation';
 import { AppProviders } from '@/components/providers';
 import { APP_URLS } from '@/lib/utils/urls';
@@ -55,7 +54,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppProviders>
           <NavMenu showDevRoutes={isDev} />
           {children}
-          <RadioPlayer />
         </AppProviders>
       </body>
     </html>
