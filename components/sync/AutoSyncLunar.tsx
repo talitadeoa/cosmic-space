@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useLunarPhase } from '@/hooks/useLunarCompute';
+import { useLunarPhase } from '@/hooks/useLunationCache';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -16,7 +16,8 @@ import { useAuth } from '@/hooks/useAuth';
 export default function AutoSyncLunar() {
   const auth = useAuth();
   const [hasSynced, setHasSynced] = useState(false);
-  const { phase: moonData } = useLunarPhase(new Date(), { includeZodiac: true, enabled: auth.isAuthenticated });
+  // Novo cache com deduplica automática
+  const { data: moonData } = useLunarPhase(new Date(), { includeZodiac: true });
 
   useEffect(() => {
     // Evitar sincronizar múltiplas vezes

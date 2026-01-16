@@ -1,12 +1,13 @@
 /**
  * 📆 useAnnualInsights
  * 
- * Hook para gerenciar insights anuais.
- * Refatorado para usar useInsights genérico.
+ * Hook para gerenciar insights anuais com cache.
+ * Refatorado para usar useInsights genérico + useAnnualInsightQuery (com deduplicação)
  */
 
 import { useCallback } from 'react';
 import { useInsights, type GenericInsight } from './useGenericInsights';
+import { useAnnualInsightQuery } from './useInsightsCache';
 
 export interface AnnualInsight extends GenericInsight {
   year: number;

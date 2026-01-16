@@ -19,14 +19,14 @@ export const classifyPost = (post: CommunityPost): PostType => {
   return 'Pulso';
 };
 
-export const useCommunityFilters = (posts: CommunityPost[]) => {
+export const useCommunityFilters = (posts: CommunityPost[] | null) => {
   const [activeTag, setActiveTag] = useState('Todos');
   const [activeType, setActiveType] = useState<PostType>('Todos');
 
   // Gerar lista de tags disponíveis
   const tagFilters = useMemo(() => {
     const tagSet = new Set<string>();
-    posts.forEach((post) => {
+    posts?.forEach((post) => {
       post.tags.forEach((tag) => tagSet.add(tag));
     });
     return ['Todos', ...Array.from(tagSet)];
@@ -34,7 +34,7 @@ export const useCommunityFilters = (posts: CommunityPost[]) => {
 
   // Filtrar posts baseado em tags e tipos
   const visiblePosts = useMemo(() => {
-    let filtered = posts;
+    let filtered = posts || [];
     if (activeType !== 'Todos') {
       filtered = filtered.filter((post) => classifyPost(post) === activeType);
     }

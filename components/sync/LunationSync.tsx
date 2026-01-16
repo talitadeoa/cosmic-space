@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useLunations } from '@/hooks/useLunationCache';
 
 /**
  * Componente que sincroniza lunações do banco de dados
- * Executa automaticamente ao montar
+ * Usa cache deduplica para evitar requisições duplicadas
  *
  * Uso:
  *   <LunationSync autoSync={true} years={[2024, 2025]} onSuccess={handleSuccess} />
@@ -26,7 +27,6 @@ export function LunationSync({
   verbose = false,
 }: LunationSyncProps) {
   const [isSyncing, setIsSyncing] = useState(false);
-  // useRef para evitar re-execução do effect quando anos são sincronizados
   const syncedYearsRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
@@ -50,14 +50,19 @@ export function LunationSync({
           const startDate = `${year}-01-01`;
           const endDate = `${year}-12-31`;
 
-          if (verbose) console.warn(`🌙 Sincronizando lunações para ${year}...`);
+          if (verbose) console.warn(`🌙 Verificando se ${year} está no cache...`);
 
-          // 1. Verificar se já existem dados no banco
-          const checkResponse = await fetch(
+          // 1. Usar hook de cache para buscar dados
+          // (Isso automaticamente deduplicará requisições)
+          const response = await fetch(
             `/api/moons/lunations?start=${startDate}&end=${endDate}&source=auto`
           );
 
-          const existingData = checkResponse.ok ? await checkResponse.json() : null;
+          if (!response.ok) {
+            throw new Error(`Erro ao buscar dados: ${response.status}`);
+          }
+
+          const existingData = await response.json();
 
           if (existingData?.days?.length > 0) {
             if (verbose)
@@ -67,7 +72,7 @@ export function LunationSync({
             continue;
           }
 
-          // 2. Gerar dados localmente
+          // 2. Gerar dados localmente se não existem
           if (verbose) console.warn(`📊 Gerando dados para ${year}...`);
           const generateResponse = await fetch(
             `/api/moons/lunations?start=${startDate}&end=${endDate}&source=generated`
@@ -117,7 +122,7 @@ export function LunationSync({
     }
 
     sync();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks são estáveis, years é comparado por referência
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks são estáveis
   }, [autoSync, years, verbose]);
 
   // Componente sem UI (só sincroniza em background)

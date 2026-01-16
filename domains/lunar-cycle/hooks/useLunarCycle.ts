@@ -1,13 +1,13 @@
 /**
  * Hook React para utilidades do ciclo lunar
- * Refatorado para usar o novo Lunar Compute Service (Python)
+ * Refatorado para usar o novo Lunar Compute Service (Python) com cache
  * @module domains/lunar-cycle/hooks/useLunarCycle
  */
 
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
-import { lunarComputeClient } from '@/lib/lunar-compute-client';
+import { useMemo } from 'react';
+import { useLunarPhase, useLunarBatch } from '@/hooks/useLunationCache';
 import {
   findNearestNewMoon,
   findCycleDay,
@@ -20,40 +20,23 @@ import {
 } from '../services/lunar-cycle-utils';
 
 /**
- * Hook para obter informações do ciclo lunar com dados do serviço Python
+ * Hook para obter informações do ciclo lunar com dados em cache
+ * Usa deduplica de requisições para a mesma data
  */
 export function useLunarCycle(date: Date = new Date()) {
-  const [lunarPhaseData, setLunarPhaseData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const data = await lunarComputeClient.getLunarPhase(date, {
-          includeZodiac: true,
-        });
-        setLunarPhaseData(data);
-      } catch (error) {
-        console.error('Erro ao buscar fase lunar:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetch();
-  }, [date]);
+  const { data: lunarPhaseData, isLoading: loading } = useLunarPhase(date, {
+    includeZodiac: true,
+    ttl: 86400000, // 24 horas
+  });
 
   const cycleData = useMemo(() => {
-    // Nota: Dados de ciclo baseados no hook de fase lunar
-    // findNearestNewMoon é async e não pode ser chamada em useMemo
-    // Dados dinâmicos virão do lunarPhaseData do serviço Python
     return {
-      cycleStart: new Date(), // Placeholder
+      cycleStart: new Date(),
       keyDates: {},
       summary: {},
       findPhaseDay: () => undefined,
       findCycleDay: () => undefined,
-      // Dados do serviço Python
+      // Dados do serviço Python com cache
       lunarPhaseData,
       loading,
     };
@@ -63,44 +46,36 @@ export function useLunarCycle(date: Date = new Date()) {
 }
 
 /**
- * Hook para gerar calendário lunar de um mês com dados do serviço
+ * Hook para gerar calendário lunar de um mês com dados em cache
  */
 export function useMoonCalendarMonth(year: number, month: number) {
-  const [lunarData, setLunarData] = useState<Map<string, any>>(new Map());
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        // Gerar todas as datas do mês
-        const daysInMonth = new Date(year, month, 0).getDate();
-        const dates = Array.from({ length: daysInMonth }, (_, i) => {
-          const date = new Date(year, month - 1, i + 1);
-          date.setHours(12, 0, 0, 0); // Noon UTC
-          return date;
-        });
-
-        // Buscar dados em batch
-        const phases = await lunarComputeClient.getLunarBatch(dates, {
-          includeZodiac: true,
-        });
-
-        // Converter para Map indexado por data
-        const phaseMap = new Map<string, any>();
-        phases.forEach((phase) => {
-          phaseMap.set(phase.date, phase);
-        });
-
-        setLunarData(phaseMap);
-      } catch (error) {
-        console.error('Erro ao buscar calendário lunar:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetch();
+  // Gerar todas as datas do mês
+  const dates = useMemo(() => {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    return Array.from({ length: daysInMonth }, (_, i) => {
+      const date = new Date(year, month - 1, i + 1);
+      date.setHours(12, 0, 0, 0); // Noon UTC
+      return date;
+    });
   }, [year, month]);
+
+  // Buscar todas as fases em batch com cache deduplica
+  const { data: batchData, isLoading: loading } = useLunarBatch(dates, {
+    includeZodiac: true,
+    ttl: 86400000,
+  });
+
+  const lunarData = useMemo(() => {
+    if (!batchData?.phases) return new Map();
+    const map = new Map();
+    batchData.phases.forEach((phase: any, index: number) => {
+      const dateKey = dates[index]?.toISOString().split('T')[0];
+      if (dateKey) {
+        map.set(dateKey, phase);
+      }
+    });
+    return map;
+  }, [batchData, dates]);
 
   // Fallback para cálculo local se Python não disponível
   const calendar = useMemo(() => generateMoonCycleCalendar(year, month), [year, month]);

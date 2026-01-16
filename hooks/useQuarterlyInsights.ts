@@ -1,12 +1,13 @@
 /**
  * 📊 useQuarterlyInsights
  * 
- * Hook para gerenciar insights trimestrais.
- * Refatorado para usar useInsights genérico.
+ * Hook para gerenciar insights trimestrais com cache.
+ * Refatorado para usar useInsights genérico + useQuarterlyInsightQuery (com deduplicação)
  */
 
 import { useCallback } from 'react';
 import { useInsights, type GenericInsight } from './useGenericInsights';
+import { useQuarterlyInsightQuery } from './useInsightsCache';
 import type { MoonPhase } from '@/types/moon';
 
 export interface QuarterlyInsight extends GenericInsight {

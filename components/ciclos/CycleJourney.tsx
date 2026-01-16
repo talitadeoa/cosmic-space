@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLunarPhase } from '@/hooks/useLunarCompute';
+import { useLunarPhase } from '@/hooks/useLunationCache';
 import { useCycle } from '@/hooks/useCycle';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -108,7 +108,8 @@ export default function CycleJourney({ onComplete, onClose }: CycleJourneyProps)
   const [bodySignals, setBodySignals] = useState<string[]>([]);
   const [heartNote, setHeartNote] = useState('');
   const dateObj = new Date(selectedDate + 'T12:00:00');
-  const { phase: lunarData, loading: lunarLoading } = useLunarPhase(dateObj, { includeZodiac: true });
+  // Novo cache com deduplica automática
+  const { data: lunarData, isLoading: lunarLoading } = useLunarPhase(dateObj, { includeZodiac: true });
   const [moonData, setMoonData] = useState<{ faseLua: string; signo: string } | null>(null);
   const [welcomePhrase, setWelcomePhrase] = useState('');
   const [isSaving, setIsSaving] = useState(false);

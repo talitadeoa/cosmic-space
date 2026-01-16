@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useYearMoonData } from './useLunationCache';
 
 export interface YearMoonData {
   year: number;
@@ -18,137 +19,119 @@ interface UseGalaxySunsSyncReturn {
 }
 
 /**
+ * Processa dados crus da API e calcula estatísticas
+ */
+function processYearData(year: number, days: any[]): YearMoonData {
+  const phaseCount: Record<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante', number> = {
+    luaNova: 0,
+    luaCrescente: 0,
+    luaCheia: 0,
+    luaMinguante: 0,
+  };
+
+  const signCount: Record<string, number> = {};
+
+  days.forEach((day: any) => {
+    if (day.normalizedPhase && day.normalizedPhase in phaseCount) {
+      const phase = day.normalizedPhase as keyof typeof phaseCount;
+      phaseCount[phase] = (phaseCount[phase] || 0) + 1;
+    }
+    if (day.sign) {
+      signCount[day.sign] = (signCount[day.sign] || 0) + 1;
+    }
+  });
+
+  let dominantPhaseKey: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' = 'luaNova';
+  let maxPhaseCount = 0;
+
+  Object.entries(phaseCount).forEach(([phase, count]) => {
+    if (count > maxPhaseCount) {
+      maxPhaseCount = count;
+      dominantPhaseKey = phase as 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
+    }
+  });
+
+  let dominantSign = '';
+  let maxSignCount = 0;
+
+  Object.entries(signCount).forEach(([sign, count]) => {
+    if (count > maxSignCount) {
+      maxSignCount = count;
+      dominantSign = sign;
+    }
+  });
+
+  return {
+    year,
+    totalLunations: days.length,
+    dominantPhase: dominantPhaseKey || null,
+    dominantSign: dominantSign || null,
+    moonPhases: phaseCount,
+    signs: signCount,
+    syncedAt: new Date().toISOString(),
+  };
+}
+
+/**
  * Hook para sincronizar dados lunares do calendário com GalaxySunsScreen
- * Busca fases lunares do ano anterior via API /api/moons
+ * Usa cache compartilhado para evitar requisições duplicadas
  * (Backend entende que referencia 1 ano atrás, UI não mostra isso)
  */
 export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn {
-  const [data, setData] = useState<Record<number, YearMoonData>>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [processedData, setProcessedData] = useState<Record<number, YearMoonData>>({});
   const [error, setError] = useState<string | null>(null);
-  const dataRef = useRef<Record<number, YearMoonData>>({});
 
+  // Determinar quais anos buscar
+  const yearsToFetch = useMemo(() => {
+    if (years.length > 0) return years;
+    const now = new Date().getFullYear();
+    return [now - 1, now, now + 1, now + 2];
+  }, [years]);
+
+  // Buscar cada ano com cache deduplica
+  const yearHooks = useMemo(
+    () =>
+      yearsToFetch.map((year) =>
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        useYearMoonData(year, { autoFetch: true, ttl: 86400000 })
+      ),
+    [yearsToFetch]
+  );
+
+  // Processar dados conforme chegam
   useEffect(() => {
-    dataRef.current = data;
-  }, [data]);
+    const newData: Record<number, YearMoonData> = {};
+    let hasError = false;
 
-  const fetchYearData = useCallback(async (year: number) => {
-    try {
-      const startDate = `${year}-01-01`;
-      const endDate = `${year}-12-31`;
-
-      const response = await fetch(`/api/moons?start=${startDate}&end=${endDate}&tz=UTC`);
-
-      if (!response.ok) {
-        throw new Error(`Erro ao carregar dados lunares para ${year}`);
+    yearsToFetch.forEach((year, index) => {
+      const hook = yearHooks[index];
+      if (hook.error) {
+        hasError = true;
+        setError(`Erro ao carregar ano ${year}: ${hook.error.message}`);
+      } else if (hook.data?.days) {
+        newData[year] = processYearData(year, hook.data.days);
       }
+    });
 
-      const { days } = await response.json();
-
-      // Processar estatísticas
-      const phaseCount: Record<'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante', number> = {
-        luaNova: 0,
-        luaCrescente: 0,
-        luaCheia: 0,
-        luaMinguante: 0,
-      };
-
-      const signCount: Record<string, number> = {};
-
-      days.forEach((day: any) => {
-        if (day.normalizedPhase && day.normalizedPhase in phaseCount) {
-          const phase = day.normalizedPhase as keyof typeof phaseCount;
-          phaseCount[phase] = (phaseCount[phase] || 0) + 1;
-        }
-        if (day.sign) {
-          signCount[day.sign] = (signCount[day.sign] || 0) + 1;
-        }
-      });
-
-      // Encontrar fase dominante (mais dias durante o ano)
-      let dominantPhaseKey: 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante' = 'luaNova';
-      let maxPhaseCount = 0;
-
-      Object.entries(phaseCount).forEach(([phase, count]) => {
-        if (count > maxPhaseCount) {
-          maxPhaseCount = count;
-          dominantPhaseKey = phase as 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
-        }
-      });
-
-      // Encontrar signo dominante
-      let dominantSign = '';
-      let maxSignCount = 0;
-
-      Object.entries(signCount).forEach(([sign, count]) => {
-        if (count > maxSignCount) {
-          maxSignCount = count;
-          dominantSign = sign;
-        }
-      });
-
-      const yearData: YearMoonData = {
-        year,
-        totalLunations: days.length,
-        dominantPhase: dominantPhaseKey || null,
-        dominantSign: dominantSign || null,
-        moonPhases: phaseCount,
-        signs: signCount,
-        syncedAt: new Date().toISOString(),
-      };
-
-      setData((prev) => ({
-        ...prev,
-        [year]: yearData,
-      }));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro desconhecido';
-      setError(message);
-      console.error(`❌ Erro ao sincronizar GalaxySuns ${year}:`, message);
-    }
-  }, []);
-
-  useEffect(() => {
-    const yearsToFetch =
-      years.length > 0
-        ? years
-        : [
-            new Date().getFullYear() - 1,
-            new Date().getFullYear(),
-            new Date().getFullYear() + 1,
-            new Date().getFullYear() + 2,
-          ];
-
-    async function sync() {
-      setIsLoading(true);
+    if (!hasError) {
       setError(null);
-
-      try {
-        await Promise.all(yearsToFetch.map(fetchYearData));
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro desconhecido';
-        setError(message);
-      } finally {
-        setIsLoading(false);
-      }
     }
 
-    sync();
-  }, []);
+    setProcessedData(newData);
+  }, [yearHooks, yearsToFetch]);
 
-  const refresh = useCallback(async (year?: number) => {
-    setIsLoading(true);
-    try {
-      if (year) {
-        await fetchYearData(year);
-      } else {
-        const yearsToFetch = Object.keys(dataRef.current).map(Number);
-        await Promise.all(yearsToFetch.map(fetchYearData));
+  const isLoading = yearHooks.some((h) => h.isLoading);
+
+  const refresh = async (year?: number) => {
+    if (year) {
+      const index = yearsToFetch.indexOf(year);
+      if (index >= 0) {
+        await yearHooks[index].mutate();
       }
-    } finally {
-      setIsLoading(false);
+    } else {
+      await Promise.all(yearHooks.map((h) => h.mutate()));
     }
-  }, [fetchYearData]);
+  };
 
-  return { data, isLoading, error, refresh };
+  return { data: processedData, isLoading, error, refresh };
 }
