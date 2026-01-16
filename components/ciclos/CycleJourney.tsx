@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getLunarPhaseAndSign } from '@/lib/astro';
+import { useLunarPhase } from '@/hooks/useLunationCache';
 import { useCycle } from '@/hooks/useCycle';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -107,6 +107,9 @@ export default function CycleJourney({ onComplete, onClose }: CycleJourneyProps)
   const [rhythm, setRhythm] = useState<'light' | 'moderate' | 'heavy' | null>(null);
   const [bodySignals, setBodySignals] = useState<string[]>([]);
   const [heartNote, setHeartNote] = useState('');
+  const dateObj = new Date(selectedDate + 'T12:00:00');
+  // Novo cache com deduplica automática
+  const { data: lunarData, isLoading: lunarLoading } = useLunarPhase(dateObj, { includeZodiac: true });
   const [moonData, setMoonData] = useState<{ faseLua: string; signo: string } | null>(null);
   const [welcomePhrase, setWelcomePhrase] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -119,10 +122,13 @@ export default function CycleJourney({ onComplete, onClose }: CycleJourneyProps)
 
   // Dados lunares
   useEffect(() => {
-    const dateObj = new Date(selectedDate + 'T12:00:00');
-    const data = getLunarPhaseAndSign(dateObj);
-    setMoonData(data);
-  }, [selectedDate]);
+    if (lunarData) {
+      setMoonData({
+        faseLua: lunarData.phase || 'N/A',
+        signo: lunarData.zodiac_sign || 'N/A',
+      });
+    }
+  }, [lunarData]);
 
   const toggleSignal = useCallback((signalId: string) => {
     setBodySignals(prev => 

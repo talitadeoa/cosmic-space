@@ -1,12 +1,15 @@
 /**
  * 📅 useMonthlyInsights
  * 
- * Hook para gerenciar insights mensais.
- * Refatorado para usar useInsights genérico.
+ * Hook para gerenciar insights mensais com cache.
+ * Refatorado para usar useInsights genérico + useMonthlyInsightQuery (com deduplicação)
+ * 
+ * Nota: Para carregar com cache automático, use useMonthlyInsightQuery() em componentes
  */
 
 import { useCallback } from 'react';
 import { useInsights, type GenericInsight } from './useGenericInsights';
+import { useMonthlyInsightQuery } from './useInsightsCache';
 import type { MoonPhase } from '@/types/moon';
 
 export interface MonthlyInsight extends GenericInsight {

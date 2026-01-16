@@ -1,3 +1,16 @@
+/**
+ * @deprecated Use useLunarPhase hook from @/hooks/useLunarCompute instead
+ * Este arquivo contém funções aproximadas de fase lunar.
+ * Para cálculos precisos, use o novo sistema que chama o serviço Python.
+ * 
+ * Migração:
+ * ❌ import { getLunarPhaseAndSign } from '@/lib/astro';
+ * ✅ import { useLunarPhase } from '@/hooks/useLunarCompute';
+ * 
+ * ❌ const data = getLunarPhaseAndSign(date);
+ * ✅ const { phase } = useLunarPhase(date, { includeZodiac: true });
+ */
+
 // utilitário simples para calcular fase lunar e signo (aproximação)
 
 export const SIGN_EMOJIS: Record<string, string> = {

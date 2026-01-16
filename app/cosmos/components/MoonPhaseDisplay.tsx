@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getSignEmoji } from '@/lib/astro';
-import { fetchLunations } from '@/hooks/useLunations';
+import { useLunarPhase } from '@/hooks/useLunarCompute';
+import { fetchLunations } from '@/lib/lunar-api';
 
 type MoonPhaseData = {
   faseLua: string;
@@ -144,6 +144,24 @@ const MoonPhaseDisplay: React.FC = () => {
       default:
         return '🌙';
     }
+  };
+
+  const getSignEmoji = (sign: string): string => {
+    const signMap: Record<string, string> = {
+      'Aries': '♈',
+      'Taurus': '♉',
+      'Gemini': '♊',
+      'Cancer': '♋',
+      'Leo': '♌',
+      'Virgo': '♍',
+      'Libra': '♎',
+      'Scorpio': '♏',
+      'Sagittarius': '♐',
+      'Capricorn': '♑',
+      'Aquarius': '♒',
+      'Pisces': '♓',
+    };
+    return signMap[sign] || '♈';
   };
 
   const getPhaseColor = (phase: string): string => {
