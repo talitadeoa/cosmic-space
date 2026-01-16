@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLunations } from './useLunationCache';
 import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
 
 export type LunationData = {
@@ -70,135 +71,132 @@ const getLunaDateKey = (luna: any) => {
 export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhaseData | null {
   const [data, setData] = useState<CurrentWeekPhaseData | null>(null);
 
+  // Buscar lunações do ano inteiro com cache
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const end = new Date(now.getFullYear(), 11, 31);
+
+  const { data: cachedLunations, isLoading } = useLunations(start, end, {
+    autoFetch: !lunations, // Só buscar se não foram passadas
+    ttl: 86400000, // 24 horas
+  });
+
   useEffect(() => {
-    const fetchAndProcess = async () => {
-      try {
-        let lunas = lunations;
+    try {
+      // Usar lunações passadas como parâmetro ou as do cache
+      let lunas = lunations;
 
-        // Se não foram passadas lunações, buscar da API
-        if (!lunas) {
-          const now = new Date();
-          const start = new Date(now.getFullYear(), 0, 1);
-          const end = new Date(now.getFullYear(), 11, 31);
-
-          const startStr = start.toISOString().split('T')[0];
-          const endStr = end.toISOString().split('T')[0];
-
-          const response = await fetch(`/api/moons/lunations?start=${startStr}&end=${endStr}`);
-          const result = await response.json();
-          lunas = result.days || [];
-        }
-
-        if (!lunas || lunas.length === 0) {
-          console.warn('Nenhuma lunação disponível');
-          return;
-        }
-
-        const now = new Date();
-
-        // Calcular semana (domingo a sábado)
-        const dayOfWeek = now.getDay(); // 0 = domingo
-        const weekStart = new Date(now);
-        weekStart.setDate(now.getDate() - dayOfWeek);
-        weekStart.setHours(0, 0, 0, 0);
-
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        weekEnd.setHours(23, 59, 59, 999);
-
-        // Filtrar lunações da semana
-        const weekLunations = lunas.filter((luna: any) => {
-          const lunaDate = parseLunaDate(luna.lunation_date || luna.date);
-          if (!lunaDate) return false;
-          return lunaDate >= weekStart && lunaDate <= weekEnd;
-        });
-
-        // Encontrar fase de hoje
-        const todayKey = toDateKey(now);
-        const todayLuna = lunas.find((luna: any) => getLunaDateKey(luna) === todayKey);
-
-        const currentPhaseCandidate = todayLuna
-          ? normalizePhaseName(todayLuna?.moon_phase || todayLuna?.moonPhase)
-          : null;
-
-        const nextWeekStart = new Date(weekEnd);
-        nextWeekStart.setDate(weekEnd.getDate() + 1);
-        nextWeekStart.setHours(0, 0, 0, 0);
-
-        const nextWeekEnd = new Date(nextWeekStart);
-        nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
-        nextWeekEnd.setHours(23, 59, 59, 999);
-
-        const nextWeekLunations = lunas.filter((luna: any) => {
-          const lunaDate = parseLunaDate(luna.lunation_date || luna.date);
-          if (!lunaDate) return false;
-          return lunaDate >= nextWeekStart && lunaDate <= nextWeekEnd;
-        });
-
-        const nextWeekPhaseFreq = new Map<MoonPhase, number>();
-        nextWeekLunations.forEach((l: any) => {
-          const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
-          nextWeekPhaseFreq.set(phase, (nextWeekPhaseFreq.get(phase) || 0) + 1);
-        });
-
-        const nextWeekDominantPhase =
-          nextWeekPhaseFreq.size > 0
-            ? Array.from(nextWeekPhaseFreq.entries()).sort((a, b) => b[1] - a[1])[0][0]
-            : currentPhaseCandidate ?? 'luaCrescente';
-
-        // Fases únicas na semana
-        const phasesInWeekSet = new Set<MoonPhase>();
-        weekLunations.forEach((l: any) => {
-          const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
-          phasesInWeekSet.add(phase);
-        });
-        const phasesInWeek = Array.from(phasesInWeekSet);
-
-        // Calcular fase dominante
-        const phaseFreq = new Map<MoonPhase, number>();
-        weekLunations.forEach((l: any) => {
-          const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
-          phaseFreq.set(phase, (phaseFreq.get(phase) || 0) + 1);
-        });
-
-        const dominantPhase =
-          phaseFreq.size > 0
-            ? Array.from(phaseFreq.entries()).sort((a, b) => b[1] - a[1])[0][0]
-            : currentPhaseCandidate ?? 'luaCrescente';
-
-        const currentPhase = currentPhaseCandidate ?? dominantPhase;
-
-        // Timeline de fases
-        const phaseTimeline = weekLunations.map((l: any) => {
-          const date = parseLunaDate(l.lunation_date || l.date) ?? new Date();
-          return {
-            phase: normalizePhaseName(l.moon_phase || l.moonPhase),
-            startDate: date,
-            endDate: date,
-          };
-        });
-
-        setData({
-          weekStart,
-          weekEnd,
-          currentDate: now,
-          currentPhase,
-          phasesInWeek,
-          dominantPhase,
-          nextWeekDominantPhase,
-          illumination: todayLuna?.illumination || 50,
-          phaseTimeline,
-          isWeekBeforePhaseChange: phasesInWeek.length > 1,
-          nextPhaseChangeDate: null,
-        });
-      } catch (error) {
-        console.error('Erro ao processar semana lunar:', error);
-        setData(null);
+      if (!lunas && cachedLunations?.days) {
+        lunas = cachedLunations.days;
       }
-    };
 
-    fetchAndProcess();
-  }, [lunations]);
+      if (!lunas || lunas.length === 0) {
+        console.warn('Nenhuma lunação disponível');
+        return;
+      }
+
+      const now = new Date();
+
+      // Calcular semana (domingo a sábado)
+      const dayOfWeek = now.getDay(); // 0 = domingo
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - dayOfWeek);
+      weekStart.setHours(0, 0, 0, 0);
+
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      // Filtrar lunações da semana
+      const weekLunations = lunas.filter((luna: any) => {
+        const lunaDate = parseLunaDate(luna.lunation_date || luna.date);
+        if (!lunaDate) return false;
+        return lunaDate >= weekStart && lunaDate <= weekEnd;
+      });
+
+      // Encontrar fase de hoje
+      const todayKey = toDateKey(now);
+      const todayLuna = lunas.find((luna: any) => getLunaDateKey(luna) === todayKey);
+
+      const currentPhaseCandidate = todayLuna
+        ? normalizePhaseName(todayLuna?.moon_phase || todayLuna?.moonPhase)
+        : null;
+
+      const nextWeekStart = new Date(weekEnd);
+      nextWeekStart.setDate(weekEnd.getDate() + 1);
+      nextWeekStart.setHours(0, 0, 0, 0);
+
+      const nextWeekEnd = new Date(nextWeekStart);
+      nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+      nextWeekEnd.setHours(23, 59, 59, 999);
+
+      const nextWeekLunations = lunas.filter((luna: any) => {
+        const lunaDate = parseLunaDate(luna.lunation_date || luna.date);
+        if (!lunaDate) return false;
+        return lunaDate >= nextWeekStart && lunaDate <= nextWeekEnd;
+      });
+
+      const nextWeekPhaseFreq = new Map<MoonPhase, number>();
+      nextWeekLunations.forEach((l: any) => {
+        const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
+        nextWeekPhaseFreq.set(phase, (nextWeekPhaseFreq.get(phase) || 0) + 1);
+      });
+
+      const nextWeekDominantPhase =
+        nextWeekPhaseFreq.size > 0
+          ? Array.from(nextWeekPhaseFreq.entries()).sort((a, b) => b[1] - a[1])[0][0]
+          : currentPhaseCandidate ?? 'luaCrescente';
+
+      // Fases únicas na semana
+      const phasesInWeekSet = new Set<MoonPhase>();
+      weekLunations.forEach((l: any) => {
+        const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
+        phasesInWeekSet.add(phase);
+      });
+      const phasesInWeek = Array.from(phasesInWeekSet);
+
+      // Calcular fase dominante
+      const phaseFreq = new Map<MoonPhase, number>();
+      weekLunations.forEach((l: any) => {
+        const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
+        phaseFreq.set(phase, (phaseFreq.get(phase) || 0) + 1);
+      });
+
+      const dominantPhase =
+        phaseFreq.size > 0
+          ? Array.from(phaseFreq.entries()).sort((a, b) => b[1] - a[1])[0][0]
+          : currentPhaseCandidate ?? 'luaCrescente';
+
+      const currentPhase = currentPhaseCandidate ?? dominantPhase;
+
+      // Timeline de fases
+      const phaseTimeline = weekLunations.map((l: any) => {
+        const date = parseLunaDate(l.lunation_date || l.date) ?? new Date();
+        return {
+          phase: normalizePhaseName(l.moon_phase || l.moonPhase),
+          startDate: date,
+          endDate: date,
+        };
+      });
+
+      setData({
+        weekStart,
+        weekEnd,
+        currentDate: now,
+        currentPhase,
+        phasesInWeek,
+        dominantPhase,
+        nextWeekDominantPhase,
+        illumination: todayLuna?.illumination || 50,
+        phaseTimeline,
+        isWeekBeforePhaseChange: phasesInWeek.length > 1,
+        nextPhaseChangeDate: null,
+      });
+    } catch (error) {
+      console.error('Erro ao processar semana lunar:', error);
+      setData(null);
+    }
+  }, [lunations, cachedLunations, isLoading]);
 
   return data;
 }

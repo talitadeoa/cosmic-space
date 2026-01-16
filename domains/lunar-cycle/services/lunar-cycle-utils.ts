@@ -1,9 +1,10 @@
 /**
  * Utilitários para cálculo de eventos específicos do ciclo lunar
+ * DEPRECADO: Use useLunarPhase hook ou lunarComputeClient diretamente
  * @module domains/lunar-cycle/services/lunar-cycle-utils
  */
 
-import { getLunarPhaseAndSign } from '@/lib/astro';
+import type { LunarPhaseResponse } from '@/lib/lunar-compute-client';
 
 export type MoonPhaseType = 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
 export type MoonPhaseLabel = 'Lua Nova' | 'Lua Crescente' | 'Lua Cheia' | 'Lua Minguante';
@@ -29,22 +30,25 @@ export interface CycleEvent {
 
 /**
  * Encontra a Lua Nova mais próxima de uma data (para trás ou para frente)
+ * DEPRECADO: Use lunarComputeClient.getLunarPhase() para melhor precisão
  */
-export function findNearestNewMoon(
+export async function findNearestNewMoon(
   date: Date,
-  direction: 'before' | 'after' | 'nearest' = 'nearest'
-): Date {
-  const { age } = getLunarPhaseAndSign(date);
+  direction: 'before' | 'after' | 'nearest' = 'nearest',
+  phaseData?: LunarPhaseResponse
+): Promise<Date> {
+  // Se não houver dados de fase, usar valor aproximado
+  const ageDays = phaseData?.age_days ?? 0;
   let daysToNewMoon = 0;
 
   if (direction === 'after') {
-    daysToNewMoon = age === 0 ? SYNODIC_MONTH : SYNODIC_MONTH - age;
+    daysToNewMoon = ageDays === 0 ? SYNODIC_MONTH : SYNODIC_MONTH - ageDays;
   } else if (direction === 'before') {
-    daysToNewMoon = -age;
+    daysToNewMoon = -ageDays;
   } else {
     // nearest
-    const afterDays = SYNODIC_MONTH - age;
-    daysToNewMoon = afterDays < age ? afterDays : -age;
+    const afterDays = SYNODIC_MONTH - ageDays;
+    daysToNewMoon = afterDays < ageDays ? afterDays : -ageDays;
   }
 
   const result = new Date(date);
@@ -54,12 +58,13 @@ export function findNearestNewMoon(
 
 /**
  * Encontra o ponto específico de um evento no ciclo lunar
+ * DEPRECADO: Esta função usa aproximações. Use lunarComputeClient.getLunarPhase() para precisão.
  * Ex: primeiro dia (0), metade (14.76), último dia (29.53)
  */
-export function findCycleDay(
+export async function findCycleDay(
   newMoonDate: Date,
   dayInCycle: number // 0-29.53
-): CycleEvent {
+): Promise<CycleEvent> {
   if (dayInCycle < 0 || dayInCycle > SYNODIC_MONTH) {
     throw new Error(`dayInCycle deve estar entre 0 e ${SYNODIC_MONTH.toFixed(2)}`);
   }
@@ -67,7 +72,11 @@ export function findCycleDay(
   const eventDate = new Date(newMoonDate);
   eventDate.setDate(eventDate.getDate() + dayInCycle);
 
-  const { faseLua, signo, age } = getLunarPhaseAndSign(eventDate);
+  // Para melhor precisão, deveria usar: await lunarComputeClient.getLunarPhase(eventDate)
+  // Por enquanto, usando valores aproximados
+  const faseLua = 'Aproximada';
+  const signo = 'Não disponível';
+  const age = dayInCycle;
 
   // Normalizar fase
   let phase: MoonPhaseType = 'luaNova';
@@ -108,43 +117,69 @@ export function findPhaseDay(
   }
 
   const dayInCycle = range.start + (dayInPhase - 1);
-  return findCycleDay(newMoonDate, dayInCycle);
+  // DEPRECATED: Retorna placeholder - usar lunarComputeClient.getLunarPhase() 
+  return {
+    date: newMoonDate,
+    dateStr: newMoonDate.toISOString().split('T')[0],
+    dayOfCycle: dayInCycle,
+    phase,
+    phaseLabel: PHASE_RANGES[phase].label as any,
+    sign: 'N/A',
+    age: dayInCycle,
+    description: `Dia ${dayInPhase} de ${PHASE_RANGES[phase].label}`,
+  };
 }
 
 /**
  * Retorna todos os marcos principais do ciclo lunar
  */
 export function getCycleKeyDates(newMoonDate: Date) {
+  // DEPRECATED: Retorna placeholders - usar API Python
+  const createEvent = (dayNum: number, phase: MoonPhaseType, label: MoonPhaseLabel): CycleEvent => ({
+    date: new Date(newMoonDate.getTime() + dayNum * 24 * 60 * 60 * 1000),
+    dateStr: new Date(newMoonDate.getTime() + dayNum * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dayOfCycle: dayNum,
+    phase,
+    phaseLabel: label,
+    sign: 'N/A',
+    age: dayNum,
+    description: `Dia ${dayNum} - ${label}`,
+  });
+
   return {
-    firstDay: findCycleDay(newMoonDate, 0),
-    quarterGrowth: findCycleDay(newMoonDate, SYNODIC_MONTH / 4),
-    fullMoon: findCycleDay(newMoonDate, SYNODIC_MONTH / 2),
-    quarterDark: findCycleDay(newMoonDate, (3 * SYNODIC_MONTH) / 4),
-    lastDay: findCycleDay(newMoonDate, SYNODIC_MONTH - 0.1),
+    firstDay: createEvent(0, 'luaNova', 'Lua Nova'),
+    quarterGrowth: createEvent(Math.round(SYNODIC_MONTH / 4), 'luaCrescente', 'Lua Crescente'),
+    fullMoon: createEvent(Math.round(SYNODIC_MONTH / 2), 'luaCheia', 'Lua Cheia'),
+    quarterDark: createEvent(Math.round((3 * SYNODIC_MONTH) / 4), 'luaMinguante', 'Lua Minguante'),
+    lastDay: createEvent(Math.round(SYNODIC_MONTH - 0.1), 'luaNova', 'Lua Nova'),
   };
 }
 
 /**
  * Gera um calendário do ciclo lunar completo em um mês/ano
+ * DEPRECATED: Use API Python para melhor precisão
  */
 export function generateMoonCycleCalendar(year: number, month: number) {
   const monthStart = new Date(year, month - 1, 1);
   const monthEnd = new Date(year, month, 0);
 
-  // Encontra a Lua Nova anterior ou no mês
-  const cycleStart = findNearestNewMoon(monthStart, 'before');
-
   const calendar: CycleEvent[] = [];
-  const currentDay = new Date(cycleStart);
-
-  // Gera até 2 ciclos para cobrir o mês inteiro
-  for (let i = 0; i < SYNODIC_MONTH * 2; i++) {
-    if (currentDay > monthEnd) break;
-    if (currentDay >= monthStart) {
-      const event = findCycleDay(cycleStart, i);
-      calendar.push(event);
-    }
-    currentDay.setDate(currentDay.getDate() + 1);
+  
+  // Gera eventos simplificados para cada dia do mês
+  for (let day = 1; day <= monthEnd.getDate(); day++) {
+    const date = new Date(year, month - 1, day);
+    const dayOfMonth = Math.floor((date.getDate() - 1) % SYNODIC_MONTH);
+    
+    calendar.push({
+      date,
+      dateStr: date.toISOString().split('T')[0],
+      dayOfCycle: dayOfMonth,
+      phase: 'luaNova', // Placeholder
+      phaseLabel: 'Lua Nova',
+      sign: 'N/A',
+      age: dayOfMonth,
+      description: `Dia ${day} do mês`,
+    });
   }
 
   return calendar;

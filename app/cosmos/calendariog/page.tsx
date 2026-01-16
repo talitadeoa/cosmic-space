@@ -1,31 +1,22 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, Suspense } from 'react';
 import { SpacePageLayout } from '@/components/layouts';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import LuaCycleMenu from '@/app/cosmos/lua/components/LuaCycleMenu';
 import LunarCalendarWidget, { LunarDayData, LunarPhase } from './LunarCalendarWidget';
+import { useLunarBatch, useMonthDates } from '@/hooks/useLunarCompute';
 
-const phaseCycle: LunarPhase[] = [
-  'new',
-  'waxing-crescent',
-  'first-quarter',
-  'waxing-gibbous',
-  'full',
-  'waning-gibbous',
-  'last-quarter',
-  'waning-crescent',
-];
-
-const phaseIllumination: Record<LunarPhase, number> = {
-  new: 0,
-  'waxing-crescent': 0.25,
-  'first-quarter': 0.5,
-  'waxing-gibbous': 0.75,
-  full: 1,
-  'waning-gibbous': 0.75,
-  'last-quarter': 0.5,
-  'waning-crescent': 0.25,
+// Mapa de fases Python para nomes em português
+const phaseNameMap: Record<string, LunarPhase> = {
+  'new': 'new',
+  'waxing_crescent': 'waxing-crescent',
+  'first_quarter': 'first-quarter',
+  'waxing_gibbous': 'waxing-gibbous',
+  'full': 'full',
+  'waning_gibbous': 'waning-gibbous',
+  'last_quarter': 'last-quarter',
+  'waning_crescent': 'waning-crescent',
 };
 
 const pad = (value: number) => value.toString().padStart(2, '0');
@@ -38,34 +29,48 @@ const getDaysInMonth = (year: number, month: number) => {
   return new Date(year, month, 0).getDate();
 };
 
-const buildSampleLunarData = (year: number, month: number): Record<string, LunarDayData> => {
-  const daysInMonth = getDaysInMonth(year, month);
-  const data: Record<string, LunarDayData> = {};
-
-  for (let day = 1; day <= daysInMonth; day += 3) {
-    const phase = phaseCycle[(Math.floor(day / 3) + month) % phaseCycle.length];
-    const date = new Date(year, month - 1, day);
-    data[toDateKey(date)] = {
-      phase,
-      illumination: phaseIllumination[phase],
-      showIcon: true,
-      hasEvent: day % 10 === 0,
-    };
-  }
-
-  return data;
-};
-
 const CalendarPage = () => {
   const now = new Date();
   const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
 
-  const lunarDataByDate = useMemo(
-    () => buildSampleLunarData(viewYear, viewMonth),
-    [viewYear, viewMonth]
-  );
+  // Obter datas do mês
+  const monthDates = useMonthDates(viewYear, viewMonth);
+
+  // Carregar fases lunares do serviço Python
+  const { phases, loading, error } = useLunarBatch(monthDates, {
+    includeZodiac: true,
+  });
+
+  // Converter para formato esperado pelo widget
+  const lunarDataByDate = useMemo(() => {
+    const data: Record<string, LunarDayData> = {};
+
+    monthDates.forEach((date) => {
+      const key = toDateKey(date);
+      const phase = phases.get(date.toISOString());
+
+      if (phase) {
+        data[key] = {
+          phase: (phaseNameMap[phase.phase] || phase.phase) as LunarPhase,
+          illumination: phase.illumination,
+          showIcon: true,
+          hasEvent: false,
+        };
+      } else if (!loading && error) {
+        // Fallback se erro
+        data[key] = {
+          phase: 'new',
+          illumination: 0,
+          showIcon: false,
+          hasEvent: false,
+        };
+      }
+    });
+
+    return data;
+  }, [phases, monthDates, loading, error]);
 
   const handleMonthChange = (nextYear: number, nextMonth: number) => {
     setViewYear(nextYear);
@@ -88,12 +93,32 @@ const CalendarPage = () => {
 
   const { onBackgroundClick } = useBackToHome();
 
+  if (loading) {
+    return (
+      <SpacePageLayout onBackgroundClick={onBackgroundClick}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin text-4xl mb-4">🌙</div>
+            <p className="text-gray-500">Carregando calendário lunar...</p>
+          </div>
+        </div>
+      </SpacePageLayout>
+    );
+  }
+
   return (
     <SpacePageLayout onBackgroundClick={onBackgroundClick}>
       <div className="absolute top-3 left-3 z-40 sm:top-4 sm:left-4">
         <LuaCycleMenu currentPath="/cosmos/calendariog" />
       </div>
       <main className="min-h-screen p-[clamp(16px,4vw,36px)]">
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">
+              ⚠️ Erro ao carregar dados lunares. Usando dados de fallback.
+            </p>
+          </div>
+        )}
         <LunarCalendarWidget
           month={viewMonth}
           year={viewYear}

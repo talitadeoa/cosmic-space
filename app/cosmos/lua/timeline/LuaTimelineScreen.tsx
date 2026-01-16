@@ -7,12 +7,12 @@
 
 import React, { useCallback, useState } from 'react';
 import { LunarTimeline } from '@/components/lunar-timeline';
-import type { MoonData } from '@/components/lunar-timeline';
+import type { MoonDataCallback } from '@/components/lunar-timeline';
 
 const LuaTimelineScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
-  const handleDateChange = useCallback((date: Date, moonData: MoonData) => {
+  const handleDateChange = useCallback((date: Date, moonData: MoonDataCallback) => {
     setCurrentDate(date);
 
     if (process.env.NODE_ENV === 'development') {
