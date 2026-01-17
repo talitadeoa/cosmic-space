@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import type { IslandId } from '../types/screen';
+import type { IslandId } from '@/app/cosmos/types/screen';
 import {
   DEFAULT_ISLAND_NAMES,
   ISLAND_IDS,
   getIslandLabel,
   type IslandNames,
-} from '../utils/islandNames';
+} from '@/app/cosmos/utils/islandNames';
 
 interface IslandsListProps {
   /**

@@ -24,13 +24,13 @@ import {
 } from '@/app/cosmos/utils/luaList';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 import { useMonthlyInsights } from '@/hooks/useMonthlyInsights';
-import { getMoonPhases, type LunarPhase } from '@/lib/usno-client';
+import { getMoonPhases, } from '@/lib/usno-client';
 import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
 import HighlightBanner from '../components/HighlightBanner';
 import MoonCarousel from '../components/MoonCarousel';
 import CalendarStatus from '../components/CalendarStatus';
 import LuaCycleMenu from '../components/LuaCycleMenu';
-import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
+import { LuminousTrail } from '@/app/cosmos/lua/screen/LuminousTrail';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 
 // Tipo para dados de calendário lunar

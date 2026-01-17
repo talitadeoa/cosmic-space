@@ -10,15 +10,9 @@ import type { SavedTodo, MoonPhase, IslandId } from '@/types/todo';
 import {
   isInCurrentCycle,
   isInNextCycle,
-  isPhaseOnlyNoDeadline,
-  getCurrentCycleStart,
-  getCurrentCycleEnd,
-  getNextCycleStart,
-  getNextCycleEnd,
-  toIsoString,
 } from '@/lib/phase-cycle-utils';
-import { phaseLabels } from '../utils/todoStorage';
-import { getIslandLabel, ISLAND_IDS, type IslandNames } from '../utils/islandNames';
+import { phaseLabels } from '../../utils/todoStorage';
+import { getIslandLabel, ISLAND_IDS, type IslandNames } from '../../utils/islandNames';
 import type { 
   SavedTodosPanelProps as GroupedProps,
   TodoView,
@@ -405,10 +399,19 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
           todoIds.forEach((id) => {
             const todo = savedTodos.find((t) => t.id === id);
             if (todo) {
-              onUpdateTodo(id, { 
+              // BUG FIX: Preservar a phase ao arrastar para próximo ciclo
+              // Sem phase, o todo não fica visível no filtro getFilteredTodosByChronology
+              const updates: Partial<SavedTodo> = {
                 dueDate,
                 phaseCycle: phaseCycleValue,
-              });
+              };
+              
+              // Se não tem phase, usa a fase selecionada atualmente
+              if (!todo.phase && selectedPhase) {
+                updates.phase = selectedPhase;
+              }
+              
+              onUpdateTodo(id, updates);
             }
           });
         }
@@ -421,9 +424,15 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
         });
       }
 
+      // Reset de seleção em lote e estado de drop
       dispatch({ type: 'SET_VIEW_DROP', payload: null });
+      clearSelection();
+      
+      // Garantir que o estado de dragging seja limpo também
+      // (o onDragEnd do PlanetScreen pode não ser chamado em todos os cenários)
+      onDropInside?.();
     },
-    [savedTodos, handleViewChange, onUpdateTodo]
+    [savedTodos, handleViewChange, onUpdateTodo, selectedPhase, clearSelection, onDropInside]
   );
 
   const handleDragOverView = (event: React.DragEvent) => {
@@ -646,6 +655,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
               onDrop={handleDropOnView('em-aberto')}
               onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'em-aberto' })}
+              onDragEnd={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onClick={() => handleViewChange('em-aberto')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
                 state.activeViewDrop === 'em-aberto'
@@ -665,6 +675,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
               onDrop={handleDropOnView('lua-atual')}
               onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'lua-atual' })}
+              onDragEnd={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onClick={() => handleViewChange('lua-atual')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition ${
                 state.activeViewDrop === 'lua-atual'
@@ -684,6 +695,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
               onDrop={handleDropOnView('proxima-fase')}
               onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'proxima-fase' })}
+              onDragEnd={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onClick={() => handleViewChange('proxima-fase')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
                 state.activeViewDrop === 'proxima-fase'
@@ -711,6 +723,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
               onDrop={handleDropOnView('proximo-ciclo')}
               onDragLeave={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onDragEnter={() => dispatch({ type: 'SET_VIEW_DROP', payload: 'proximo-ciclo' })}
+              onDragEnd={() => dispatch({ type: 'SET_VIEW_DROP', payload: null })}
               onClick={() => handleViewChange('proximo-ciclo')}
               className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
                 state.activeViewDrop === 'proximo-ciclo'

@@ -1,6 +1,6 @@
 export { FiltersPanel } from './FiltersPanel';
-export { IslandsList } from '@/app/cosmos/components/IslandsList';
+export { IslandsList } from './IslandsList';
 export { MoonCluster } from './MoonCluster';
 export { default as PlanetScreen } from './PlanetScreen';
-export { SavedTodosPanel } from '@/app/cosmos/components/SavedTodosPanel';
+export { SavedTodosPanel } from '@/app/cosmos/planeta/components/SavedTodosPanel';
 export { default as TodoInput } from '@/app/cosmos/components/TodoInput';

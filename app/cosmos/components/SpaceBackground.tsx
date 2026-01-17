@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { StarfieldBackground } from './StarfieldBackground';
-import { LuminousTrail } from './LuminousTrail';
+import { LuminousTrail } from '../lua/screen/LuminousTrail';
 
 export const SpaceBackground: React.FC<{ showTrail?: boolean }> = React.memo(
   ({ showTrail = false }) => (

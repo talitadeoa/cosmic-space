@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { MOON_PHASE_LABELS, MOON_PHASE_EMOJI_LABELS, MOON_PHASES } from '../utils/moonPhases';
-import type { MoonPhase } from '../utils/moonPhases';
+import { MOON_PHASE_LABELS, MOON_PHASE_EMOJI_LABELS, MOON_PHASES } from '../../utils/moonPhases';
+import type { MoonPhase } from '../../utils/moonPhases';
 
 interface MoonPhasesRailProps {
   /**

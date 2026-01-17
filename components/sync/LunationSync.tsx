@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useState, } from 'react';
 
 /**
  * Componente que sincroniza lunações do banco de dados

@@ -12,7 +12,6 @@
 
 import { FALLBACK_LUNAR_PHASES } from './fallback-lunar-phases';
 import {
-  getCacheKey,
   getCachedPhases,
   setCachedPhases,
   getPendingRequest,

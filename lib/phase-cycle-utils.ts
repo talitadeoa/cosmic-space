@@ -3,7 +3,7 @@
  * Determina se um salvo está no ciclo atual, próximo ou sem prazo
  */
 
-import type { MoonPhase, PhaseCycleType } from '@/types/todo';
+import type { PhaseCycleType } from '@/types/todo';
 import type { SavedTodo } from '@/types/todo';
 
 /**

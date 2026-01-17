@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CelestialObject } from '../components/CelestialObject';
-import MoonPhaseDisplay from '../components/MoonPhaseDisplay';
+import MoonPhaseDisplay from '../lua/components/MoonPhaseDisplay';
 import type { CelestialSize, CelestialType, ScreenId, ScreenProps } from '../types';
 
 type HomeCelestial = {

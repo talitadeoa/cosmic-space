@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/app/cosmos/components/Card';
-import { GalaxyInnerView } from '@/app/cosmos/components/GalaxyInnerView';
+import { GalaxyInnerView } from '@/app/cosmos/galaxia/components/GalaxyInnerView';
 
 type GalaxyCoreLayerProps = {
   onNavigate?: () => void;
