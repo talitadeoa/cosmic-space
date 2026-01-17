@@ -6,7 +6,7 @@ import { TodoList } from '@/components/todos/TodoList';
 import { PhaseGroupedTodoList } from '@/components/todos/PhaseGroupedTodoList';
 import { TodoFilters } from '@/components/todos/TodoFilters';
 import { TodoBatchActions } from '@/components/todos/TodoBatchActions';
-import type { SavedTodo, MoonPhase, IslandId } from '../utils/todoStorage';
+import type { SavedTodo, MoonPhase, IslandId } from '@/types/todo';
 import {
   isInCurrentCycle,
   isInNextCycle,
@@ -393,11 +393,22 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
 
       if (viewType !== 'em-aberto' && onUpdateTodo) {
         const dueDate = getDateForView(viewType);
+        let phaseCycleValue: 'current' | 'next' | undefined;
+        
+        if (viewType === 'lua-atual') {
+          phaseCycleValue = 'current';
+        } else if (viewType === 'proxima-fase' || viewType === 'proximo-ciclo') {
+          phaseCycleValue = 'next';
+        }
+        
         if (dueDate) {
           todoIds.forEach((id) => {
             const todo = savedTodos.find((t) => t.id === id);
             if (todo) {
-              onUpdateTodo(id, { dueDate });
+              onUpdateTodo(id, { 
+                dueDate,
+                phaseCycle: phaseCycleValue,
+              });
             }
           });
         }
@@ -405,7 +416,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
         todoIds.forEach((id) => {
           const todo = savedTodos.find((t) => t.id === id);
           if (todo) {
-            onUpdateTodo(id, { dueDate: undefined, phase: undefined, islandId: undefined });
+            onUpdateTodo(id, { dueDate: undefined, phase: undefined, islandId: undefined, phaseCycle: undefined });
           }
         });
       }

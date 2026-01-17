@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import NavMenu from '@/components/navigation/NavMenu';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import { Card } from '@/app/cosmos/components/Card';
 import TodoInput, { TodoItem as ParsedTodoItem } from '@/app/cosmos/components/TodoInput';
@@ -67,6 +68,17 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     updatedAt: nowIso(),
   });
 
+  // Ler query param para definir viewMode inicial
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view');
+      if (view === 'treasure-map' || view === 'treasure-chart') {
+        setViewMode(view as 'treasure-map' | 'treasure-chart');
+      }
+    }
+  }, []);
+
   const setFilters = (next: FilterState | ((prev: FilterState) => FilterState)) => {
     setPlanetState((prev) => ({
       ...prev,
@@ -115,7 +127,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     if (temporal.year) {
       syncLunations();
     }
-  }, [temporal.year, lunations]);
+  }, [temporal.year]); // Remover lunations do dependency array
 
   const handleTodoSubmit = useCallback((todo: ParsedTodoItem) => {
     const updatedAt = todo.updatedAt ?? nowIso();
@@ -436,6 +448,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       onTouchMove={handleTouchMove}
       suppressHydrationWarning
     >
+      <NavMenu showDevRoutes={true} />
       <div className="relative flex w-full max-w-7xl flex-col gap-5 sm:gap-7 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
         <div className="order-4 flex w-full flex-col items-center gap-5 sm:gap-7 lg:order-1 lg:w-auto lg:max-w-xs">
@@ -639,29 +652,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </div>
       )}
 
-      {/* Botões flutuantes para mapas */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
-        <button
-          type="button"
-          onClick={() => setViewMode('treasure-map')}
-          className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full
-            bg-amber-700 hover:bg-amber-600 active:bg-amber-500 text-amber-100 font-semibold shadow-xl shadow-amber-900/50
-            transition-all duration-300 hover:scale-105 active:scale-95 border border-amber-500/30 touch-manipulation text-sm sm:text-base"
-        >
-          <span className="text-lg sm:text-xl">🗺️</span>
-          <span>Mapa dos Tesouros</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setViewMode('treasure-chart')}
-          className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full
-            bg-teal-700 hover:bg-teal-600 active:bg-teal-500 text-teal-50 font-semibold shadow-xl shadow-teal-900/50
-            transition-all duration-300 hover:scale-105 active:scale-95 border border-teal-400/30 touch-manipulation text-sm sm:text-base"
-        >
-          <span className="text-lg sm:text-xl">🧭</span>
-          <span>Carta Nautica</span>
-        </button>
-      </div>
+
     </div>
   );
 };

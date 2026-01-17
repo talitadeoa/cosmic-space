@@ -3,9 +3,25 @@
  * Fonte oficial de dados astronômicos dos EUA
  * 
  * API Docs: https://api.usno.navy.mil/
+ * 
+ * Nota: Requisições são feitas através de /api/moons/phases (proxy no servidor)
+ * para evitar problemas de CORS que podem bloquear requisições do navegador.
+ * 
+ * Cache: Requisições são automaticamente cacheadas para evitar duplicação
  */
 
-const USNO_API_URL = 'https://api.usno.navy.mil';
+import { FALLBACK_LUNAR_PHASES } from './fallback-lunar-phases';
+import {
+  getCacheKey,
+  getCachedPhases,
+  setCachedPhases,
+  getPendingRequest,
+  setPendingRequest,
+  getPendingRequestKey,
+} from './lunar-cache';
+
+// API local que faz proxy para USNO
+const USNO_API_PROXY = '/api/moons/phases';
 
 export interface LunarPhase {
   date: string; // YYYY-MM-DD
@@ -36,41 +52,74 @@ export interface MoonPhaseResponse {
 
 /**
  * Busca dados de fases lunares para um período
+ * Com cache automático e deduplicação de requisições
  * Documentação: https://api.usno.navy.mil/moon/phases
  */
 export async function getMoonPhases(year: number, month?: number): Promise<LunarPhase[]> {
   try {
+    // 1. Verificar cache
+    const cached = getCachedPhases(year, month);
+    if (cached) {
+      return cached;
+    }
+
+    // 2. Verificar se já há requisição pendente (deduplicação)
+    const requestKey = getPendingRequestKey(year, month);
+    const pendingRequest = getPendingRequest(requestKey);
+    if (pendingRequest) {
+      console.log(`[Dedup] Aguardando requisição pendente para ${year}/${month || 'todos'}`);
+      return pendingRequest;
+    }
+
+    // 3. Fazer a requisição
     const params = new URLSearchParams();
     params.append('year', String(year));
     if (month) {
       params.append('month', String(month).padStart(2, '0'));
     }
 
-    const url = `${USNO_API_URL}/moon/phases?${params.toString()}`;
+    const url = `${USNO_API_PROXY}?${params.toString()}`;
     
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+    const requestPromise = (async () => {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`USNO API error: ${response.status}`);
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
 
-    const data: MoonPhaseResponse = await response.json();
-    
-    // Transformar resposta da USNO
-    return data.properties.data.map((day: MoonPhaseData) => ({
-      date: `${String(day.month).padStart(2, '0')}/${String(day.day).padStart(2, '0')}/${year}`,
-      day: day.day,
-      phase: day.phase,
-      illumination: day.illumination || 0,
-      time: day.time,
-    }));
+      const data: MoonPhaseResponse = await response.json();
+      
+      // Validar estrutura da resposta
+      if (!data?.properties?.data || !Array.isArray(data.properties.data)) {
+        throw new Error('Invalid response structure from USNO API');
+      }
+      
+      // Transformar resposta da USNO
+      const phases = data.properties.data.map((day: MoonPhaseData) => ({
+        date: `${String(day.month).padStart(2, '0')}/${String(day.day).padStart(2, '0')}/${year}`,
+        day: day.day,
+        phase: day.phase,
+        illumination: day.illumination || 0,
+        time: day.time,
+      }));
+
+      // 4. Armazenar em cache
+      setCachedPhases(year, phases, month);
+      return phases;
+    })();
+
+    // Armazenar como requisição pendente
+    setPendingRequest(requestKey, requestPromise);
+
+    return await requestPromise;
   } catch (error) {
-    console.error('Erro ao buscar fases lunares da USNO:', error);
+    console.error('Erro ao buscar fases lunares:', error);
     throw error;
   }
 }
@@ -85,13 +134,17 @@ export async function getMoonPhaseForDate(date: Date): Promise<LunarPhase | null
 
     const phases = await getMoonPhases(year, month);
     
+    if (!phases || phases.length === 0) {
+      return null;
+    }
+    
     // Procurar a fase mais próxima
     const targetDay = date.getDate();
     const closest = phases.reduce((prev, curr) => 
       Math.abs(curr.day - targetDay) < Math.abs(prev.day - targetDay) ? curr : prev
     );
 
-    return closest;
+    return closest || null;
   } catch (error) {
     console.error('Erro ao buscar fase lunar para data:', error);
     return null;
@@ -100,6 +153,7 @@ export async function getMoonPhaseForDate(date: Date): Promise<LunarPhase | null
 
 /**
  * Busca fases lunares para múltiplas datas
+ * Com fallback para dados aproximados em caso de erro
  */
 export async function getMoonPhasesForDates(dates: Date[]): Promise<Map<string, LunarPhase>> {
   const result = new Map<string, LunarPhase>();
@@ -116,8 +170,9 @@ export async function getMoonPhasesForDates(dates: Date[]): Promise<Map<string, 
   });
 
   // Buscar fases para cada mês
-  try {
-    for (const [yearMonth, monthDates] of groupedByYearMonth) {
+  let hasError = false;
+  for (const [yearMonth, monthDates] of groupedByYearMonth) {
+    try {
       const [year, month] = yearMonth.split('-');
       const phases = await getMoonPhases(Number(year), Number(month));
 
@@ -130,9 +185,31 @@ export async function getMoonPhasesForDates(dates: Date[]): Promise<Map<string, 
           result.set(dateKey, closest);
         }
       });
+    } catch (error) {
+      console.warn(`Erro ao buscar fases lunares para ${yearMonth}, usando fallback:`, error);
+      hasError = true;
+      
+      // Usar dados fallback aproximados
+      const [year, month] = yearMonth.split('-');
+      monthDates.forEach(date => {
+        const targetDay = date.getDate();
+        const fallbackPhase = FALLBACK_LUNAR_PHASES.find(p => p.day === targetDay);
+
+        if (fallbackPhase) {
+          const dateKey = date.toISOString().split('T')[0];
+          result.set(dateKey, {
+            date: dateKey,
+            day: fallbackPhase.day,
+            phase: fallbackPhase.phase,
+            illumination: fallbackPhase.illumination,
+          });
+        }
+      });
     }
-  } catch (error) {
-    console.error('Erro ao buscar fases lunares para múltiplas datas:', error);
+  }
+
+  if (hasError && result.size > 0) {
+    console.warn('Usando dados fallback para algumas datas. A API pode estar indisponível.');
   }
 
   return result;

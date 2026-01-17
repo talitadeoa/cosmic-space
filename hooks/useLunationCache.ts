@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface CacheEntry<T> {
   data: T;
@@ -134,31 +134,49 @@ export function useLunationCache<T>(
   const [error, setError] = useState<Error | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+  const fetcherRef = useRef(fetcher);
+
+  // Atualizar ref quando fetcher muda, sem disparar useEffect
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+  }, [fetcher]);
+
+  // Função de carregamento estável
+  const load = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
+    setIsLoading(true);
+    try {
+      const result = await cacheStore.fetch(key, fetcherRef.current, ttl);
+      if (isMountedRef.current) {
+        setData(result);
+        setError(null);
+      }
+    } catch (err) {
+      if (isMountedRef.current) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [key, ttl]); // Usar ref para não adicionar fetcher ao dependency
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     // Subscribe to cache updates
     unsubscribeRef.current = cacheStore.subscribe(key, () => {
       const cached = cacheStore.get<T>(key);
-      if (cached) {
+      if (cached && isMountedRef.current) {
         setData(cached);
         setError(null);
       }
     });
 
     if (autoFetch) {
-      const load = async () => {
-        setIsLoading(true);
-        try {
-          const result = await cacheStore.fetch(key, fetcher, ttl);
-          setData(result);
-          setError(null);
-        } catch (err) {
-          setError(err instanceof Error ? err : new Error(String(err)));
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
       load();
 
       // Setup revalidation interval
@@ -170,6 +188,7 @@ export function useLunationCache<T>(
     }
 
     return () => {
+      isMountedRef.current = false;
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
       }
@@ -177,7 +196,7 @@ export function useLunationCache<T>(
         clearInterval(intervalRef.current);
       }
     };
-  }, [key, ttl, autoFetch, revalidateInterval, fetcher]);
+  }, [key, autoFetch, revalidateInterval]); // load NÃO deve estar aqui pois causa loop
 
   const mutate = async (newData?: T | Promise<T>) => {
     if (newData instanceof Promise) {
@@ -194,7 +213,7 @@ export function useLunationCache<T>(
       // Revalidar
       setIsLoading(true);
       try {
-        const result = await cacheStore.fetch(key, fetcher, ttl);
+        const result = await cacheStore.fetch(key, fetcherRef.current, ttl);
         setData(result);
         setError(null);
       } catch (err) {
@@ -226,30 +245,33 @@ export function useLunations(
 
   const cacheKey = `lunations:${start}:${end}`;
 
+  // Memoizar a função fetcher para evitar recriações desnecessárias
+  const fetcher = useCallback(async () => {
+    // Importar dinamicamente para evitar SSR issues
+    const { getMoonPhases } = await import('@/lib/usno-client');
+    
+    const startYear = Number(start.slice(0, 4));
+    const endYear = Number(end.slice(0, 4));
+    const allPhases = [];
+
+    for (let year = startYear; year <= endYear; year++) {
+      const phases = await getMoonPhases(year);
+      allPhases.push(...phases);
+    }
+
+    // Filtrar por data
+    const filtered = allPhases.filter(p => p.date >= start && p.date <= end);
+
+    return {
+      days: filtered,
+      source: 'usno',
+      timestamp: new Date().toISOString(),
+    };
+  }, [start, end]);
+
   return useLunationCache(
     cacheKey,
-    async () => {
-      // Importar dinamicamente para evitar SSR issues
-      const { getMoonPhases } = await import('@/lib/usno-client');
-      
-      const startYear = Number(start.slice(0, 4));
-      const endYear = Number(end.slice(0, 4));
-      const allPhases = [];
-
-      for (let year = startYear; year <= endYear; year++) {
-        const phases = await getMoonPhases(year);
-        allPhases.push(...phases);
-      }
-
-      // Filtrar por data
-      const filtered = allPhases.filter(p => p.date >= start && p.date <= end);
-
-      return {
-        days: filtered,
-        source: 'usno',
-        timestamp: new Date().toISOString(),
-      };
-    },
+    fetcher,
     { ttl: 86400000, ...options } // 24 horas por padrão
   );
 }

@@ -46,15 +46,25 @@ export async function fetchLunations(options: FetchOptions): Promise<LunationsRe
     allPhases.push(...phases);
   }
 
-  // Filtrar por data
-  const days = allPhases.filter(p => p.date >= start && p.date <= end);
+  // Filtrar por data e mapear para LunationDay
+  const days: LunationDay[] = allPhases
+    .filter(p => p.date >= start && p.date <= end)
+    .map(phase => ({
+      date: phase.date,
+      moonPhase: phase.phase,
+      sign: '', // USNO não fornece signo
+      illumination: phase.illumination,
+      ageDays: phase.age_days,
+      description: phase.phase,
+      source: 'usno',
+    }));
 
   return {
     days,
     source: 'usno',
     generatedAt: new Date().toISOString(),
     range: { start, end },
-  } as LunationsResponse;
+  };
 }
 
 export function useLunations() {

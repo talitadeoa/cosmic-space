@@ -9,10 +9,10 @@ export const StarfieldBackground: React.FC = () => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: false });
     if (!ctx) return;
 
-    const STAR_COUNT = 250;
+    const STAR_COUNT = 180; // Reduzido de 250
     const stars: Array<{
       x: number;
       y: number;
@@ -23,31 +23,33 @@ export const StarfieldBackground: React.FC = () => {
     }> = [];
 
     const getCanvasSize = () => {
-      const parent = canvas.parentElement;
-      if (!parent) {
-        return { width: window.innerWidth, height: window.innerHeight };
-      }
-      const width = parent.clientWidth || window.innerWidth;
-      const height = Math.max(parent.clientHeight, parent.scrollHeight, window.innerHeight);
-      return { width, height };
+      // Limitar ao viewport, não ao scrollHeight
+      return { width: window.innerWidth, height: window.innerHeight };
     };
 
     function resizeCanvas() {
       const { width, height } = getCanvasSize();
-      canvas.width = Math.max(1, Math.round(width));
-      canvas.height = Math.max(1, Math.round(height));
+      // Aplicar pixel ratio para melhor qualidade
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.round(width * pixelRatio));
+      canvas.height = Math.max(1, Math.round(height * pixelRatio));
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      if (ctx) {
+        ctx.scale(pixelRatio, pixelRatio);
+      }
     }
 
     function normToPixelX(nx: number) {
-      return nx * canvas.width;
+      return nx * window.innerWidth;
     }
 
     function normToPixelY(ny: number) {
-      return ny * canvas.height;
+      return ny * window.innerHeight;
     }
 
     function normRadiusToPixels(nr: number) {
-      return nr * Math.min(canvas.width, canvas.height);
+      return nr * Math.min(window.innerWidth, window.innerHeight);
     }
 
     function createStars() {
@@ -88,31 +90,49 @@ export const StarfieldBackground: React.FC = () => {
     }
 
     let frameId: number | null = null;
+    let lastTime = 0;
+    const FRAME_TIME = 1000 / 30; // 30 FPS ao invés de 60
 
     function render(timestamp: number) {
+      // Throttle: renderizar a cada ~33ms (30 FPS)
+      if (timestamp - lastTime < FRAME_TIME) {
+        frameId = requestAnimationFrame(render);
+        return;
+      }
+      lastTime = timestamp;
+
       const time = timestamp * 0.002;
       drawBackground();
       drawStars(time);
       frameId = requestAnimationFrame(render);
     }
 
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+    const debouncedResize = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        resizeCanvas();
+        createStars();
+      }, 250);
+    };
+
     function start() {
       resizeCanvas();
       createStars();
-      window.addEventListener('resize', resizeCanvas);
-      const parent = canvas.parentElement;
-      const observer = parent ? new ResizeObserver(() => resizeCanvas()) : null;
-      if (observer && parent) {
-        observer.observe(parent);
-      }
+      window.addEventListener('resize', debouncedResize);
+      // Remover ResizeObserver pois causa overhead
       frameId = requestAnimationFrame(render);
 
-      return () => observer?.disconnect();
+      return () => {
+        window.removeEventListener('resize', debouncedResize);
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+      };
     }
 
     function stop(cleanup?: () => void) {
       if (frameId !== null) cancelAnimationFrame(frameId);
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', debouncedResize);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
       cleanup?.();
     }
 

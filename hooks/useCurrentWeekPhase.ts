@@ -5,13 +5,15 @@ import { useLunations } from './useLunationCache';
 import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
 
 export type LunationData = {
-  lunation_date?: string;
-  date?: string;
-  moon_phase?: string;
-  moonPhase?: string;
+  date: string;
+  phase: string; // Usar 'phase' que é o campo correto de LunarPhase
   illumination?: number;
   age_days?: number;
   zodiac_sign?: string;
+  // Legados/fallbacks
+  lunation_date?: string;
+  moon_phase?: string;
+  moonPhase?: string;
 };
 
 export interface CurrentWeekPhaseData {
@@ -59,8 +61,8 @@ const parseLunaDate = (raw: string | Date | undefined) => {
   return new Date(`${raw}T00:00:00`);
 };
 
-const getLunaDateKey = (luna: any) => {
-  const raw = luna?.lunation_date || luna?.date;
+const toLunaDateKey = (luna: any) => {
+  const raw = luna?.date || luna?.lunation_date;
   if (typeof raw === 'string') {
     return raw.split('T')[0];
   }
@@ -84,14 +86,10 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
   useEffect(() => {
     try {
       // Usar lunações passadas como parâmetro ou as do cache
-      let lunas = lunations;
-
-      if (!lunas && cachedLunations?.days) {
-        lunas = cachedLunations.days;
-      }
+      const lunas = lunations || (cachedLunations?.days?.length ? cachedLunations.days : null);
 
       if (!lunas || lunas.length === 0) {
-        console.warn('Nenhuma lunação disponível');
+        // Manter dados anteriores se não há novas lunações
         return;
       }
 
@@ -116,10 +114,10 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
 
       // Encontrar fase de hoje
       const todayKey = toDateKey(now);
-      const todayLuna = lunas.find((luna: any) => getLunaDateKey(luna) === todayKey);
+      const todayLuna = lunas.find((luna: LunationData) => toLunaDateKey(luna) === todayKey);
 
       const currentPhaseCandidate = todayLuna
-        ? normalizePhaseName(todayLuna?.moon_phase || todayLuna?.moonPhase)
+        ? normalizePhaseName((todayLuna as any)?.phase || (todayLuna as any)?.moon_phase || (todayLuna as any)?.moonPhase)
         : null;
 
       const nextWeekStart = new Date(weekEnd);
@@ -138,7 +136,7 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
 
       const nextWeekPhaseFreq = new Map<MoonPhase, number>();
       nextWeekLunations.forEach((l: any) => {
-        const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
+        const phase = normalizePhaseName(l.phase || l.moon_phase || l.moonPhase);
         nextWeekPhaseFreq.set(phase, (nextWeekPhaseFreq.get(phase) || 0) + 1);
       });
 
@@ -150,7 +148,7 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
       // Fases únicas na semana
       const phasesInWeekSet = new Set<MoonPhase>();
       weekLunations.forEach((l: any) => {
-        const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
+        const phase = normalizePhaseName(l.phase || l.moon_phase || l.moonPhase);
         phasesInWeekSet.add(phase);
       });
       const phasesInWeek = Array.from(phasesInWeekSet);
@@ -158,7 +156,7 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
       // Calcular fase dominante
       const phaseFreq = new Map<MoonPhase, number>();
       weekLunations.forEach((l: any) => {
-        const phase = normalizePhaseName(l.moon_phase || l.moonPhase);
+        const phase = normalizePhaseName(l.phase || l.moon_phase || l.moonPhase);
         phaseFreq.set(phase, (phaseFreq.get(phase) || 0) + 1);
       });
 
@@ -171,9 +169,9 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
 
       // Timeline de fases
       const phaseTimeline = weekLunations.map((l: any) => {
-        const date = parseLunaDate(l.lunation_date || l.date) ?? new Date();
+        const date = parseLunaDate(l.date || l.lunation_date) ?? new Date();
         return {
-          phase: normalizePhaseName(l.moon_phase || l.moonPhase),
+          phase: normalizePhaseName(l.phase || l.moon_phase || l.moonPhase),
           startDate: date,
           endDate: date,
         };
@@ -196,7 +194,7 @@ export function useCurrentWeekPhase(lunations?: LunationData[]): CurrentWeekPhas
       console.error('Erro ao processar semana lunar:', error);
       setData(null);
     }
-  }, [lunations, cachedLunations, isLoading]);
+  }, [lunations, cachedLunations?.days]);
 
   return data;
 }

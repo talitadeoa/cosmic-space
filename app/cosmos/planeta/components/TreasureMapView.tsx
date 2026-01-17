@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { type MoonPhase, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
 import { MOON_PHASES, MOON_PHASE_LABELS, MOON_PHASE_EMOJIS } from '@/types/moon';
 import { PHASE_VIBES } from '@/app/cosmos/utils/phaseVibes';
@@ -27,24 +27,35 @@ export const TreasureMapView: React.FC<TreasureMapViewProps> = ({
   selectedIsland,
   onToggleComplete,
 }) => {
-  // Agrupar todos por fase lunar
-  const todosByPhase = MOON_PHASES.reduce((acc, phase) => {
-    acc[phase] = todos.filter((todo) => todo.phase === phase);
-    return acc;
-  }, {} as Record<MoonPhase, SavedTodo[]>);
+  // Agrupar todos por fase lunar - memoizado
+  const todosByPhase = useMemo(() =>
+    MOON_PHASES.reduce((acc, phase) => {
+      acc[phase] = todos.filter((todo) => todo.phase === phase);
+      return acc;
+    }, {} as Record<MoonPhase, SavedTodo[]>),
+    [todos]
+  );
 
   // Todos sem fase atribuída
-  const unassignedTodos = todos.filter((todo) => !todo.phase);
+  const unassignedTodos = useMemo(() =>
+    todos.filter((todo) => !todo.phase),
+    [todos]
+  );
 
-  // Agrupar todos por ilha
-  const todosByIsland = islandIds.reduce((acc, islandId) => {
-    acc[islandId] = todos.filter((todo) => todo.islandId === islandId);
-    return acc;
-  }, {} as Record<IslandId, SavedTodo[]>);
+  // Agrupar todos por ilha - memoizado
+  const todosByIsland = useMemo(() =>
+    islandIds.reduce((acc, islandId) => {
+      acc[islandId] = todos.filter((todo) => todo.islandId === islandId);
+      return acc;
+    }, {} as Record<IslandId, SavedTodo[]>),
+    [todos, islandIds]
+  );
 
-  // Contar tesouros (tarefas completas)
-  const completedCount = todos.filter((t) => t.completed).length;
-  const totalCount = todos.length;
+  // Contar tesouros - memoizado
+  const { completedCount, totalCount } = useMemo(() => ({
+    completedCount: todos.filter((t) => t.completed).length,
+    totalCount: todos.length,
+  }), [todos]);
 
   // Decorações para cada fase
   const decorations = ['🌴', '⚓', '🏝️', '🗿'];
@@ -276,5 +287,7 @@ export const TreasureMapView: React.FC<TreasureMapViewProps> = ({
     </div>
   );
 };
+
+TreasureMapView.displayName = 'TreasureMapView';
 
 export default TreasureMapView;

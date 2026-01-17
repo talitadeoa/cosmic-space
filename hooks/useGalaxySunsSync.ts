@@ -82,11 +82,13 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Determinar quais anos buscar
-  const yearsToFetch = useMemo(() => {
-    if (years.length > 0) return years;
+  // Determinar quais anos buscar - usar string serializada para comparação estável
+  const yearsString = useMemo(() => {
+    if (years.length > 0) {
+      return years.sort((a, b) => a - b).join(',');
+    }
     const now = new Date().getFullYear();
-    return [now - 1, now, now + 1, now + 2];
+    return [now - 1, now, now + 1, now + 2].join(',');
   }, [years]);
 
   // Buscar dados via API diretamente sem chamar hooks dentro de useEffect
@@ -98,6 +100,9 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
         const newData: Record<number, YearMoonData> = {};
         let hasError = false;
         let errorMsg = '';
+
+        // Converter string de anos de volta para array
+        const yearsToFetch = yearsString.split(',').map(Number);
 
         // Buscar cada ano sequencialmente para evitar explosão de requisições
         for (const year of yearsToFetch) {
@@ -126,7 +131,7 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
     };
 
     fetchYearData();
-  }, [yearsToFetch]);
+  }, [yearsString]);
 
   const refresh = async (year?: number) => {
     // Implementação futura se necessário

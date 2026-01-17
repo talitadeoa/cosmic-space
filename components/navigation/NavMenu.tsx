@@ -30,6 +30,8 @@ const devRoutes = [
   { href: '/landing', label: 'Landing' },
   { href: '/page', label: 'Page' },
   { href: '/ilha', label: 'Ilha' },
+  { href: '/cosmos/planeta?view=treasure-map', label: '🗺️ Mapa dos Tesouros' },
+  { href: '/cosmos/planeta?view=treasure-chart', label: '🧭 Carta Náutica' },
 ];
 
 export default function NavMenu({ showDevRoutes = false }: NavMenuProps) {
