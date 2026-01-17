@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from 'react';
 
 /**
  * Componente que sincroniza lunações do banco de dados
- * Usa cache deduplica para evitar requisições duplicadas
+ * Desabilitado: API /api/moons/lunations foi removida
+ * Use getLunations() do lib/forms.ts para buscar dados diretamente
  *
  * Uso:
  *   <LunationSync autoSync={true} years={[2024, 2025]} onSuccess={handleSuccess} />
@@ -25,111 +26,15 @@ export function LunationSync({
   onError,
   verbose = false,
 }: LunationSyncProps) {
-  const [isSyncing, setIsSyncing] = useState(false);
-  const syncedYearsRef = useRef<Set<number>>(new Set());
+  // TODO: Implementar sincronização sem usar /api/moons/lunations
+  // Usar getLunations() diretamente ou criar server action
 
-  useEffect(() => {
-    if (!autoSync) return;
-
-    const yearsToSync =
-      years.length > 0
-        ? years
-        : [new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1];
-
-    async function sync() {
-      for (const year of yearsToSync) {
-        if (syncedYearsRef.current.has(year)) {
-          if (verbose) console.warn(`⏭️  Pulando ${year} (já sincronizado)`);
-          continue;
-        }
-
-        try {
-          setIsSyncing(true);
-
-          const startDate = `${year}-01-01`;
-          const endDate = `${year}-12-31`;
-
-          if (verbose) console.warn(`🌙 Verificando se ${year} está no cache...`);
-
-          // 1. Usar hook de cache para buscar dados
-          // (Isso automaticamente deduplicará requisições)
-          const response = await fetch(
-            `/api/moons/lunations?start=${startDate}&end=${endDate}&source=auto`
-          );
-
-          if (!response.ok) {
-            throw new Error(`Erro ao buscar dados: ${response.status}`);
-          }
-
-          const existingData = await response.json();
-
-          if (existingData?.days?.length > 0) {
-            if (verbose)
-              console.warn(`✅ ${year} já sincronizado (${existingData.days.length} dias)`);
-            syncedYearsRef.current.add(year);
-            if (onSuccess) onSuccess(existingData.days.length);
-            continue;
-          }
-
-          // 2. Gerar dados localmente se não existem
-          if (verbose) console.warn(`📊 Gerando dados para ${year}...`);
-          const generateResponse = await fetch(
-            `/api/moons/lunations?start=${startDate}&end=${endDate}&source=generated`
-          );
-
-          if (!generateResponse.ok) {
-            throw new Error(`Erro ao gerar dados: ${generateResponse.status}`);
-          }
-
-          const { days } = await generateResponse.json();
-          if (!Array.isArray(days) || days.length === 0) {
-            throw new Error(`Nenhum dia gerado para ${year}`);
-          }
-          if (verbose) console.warn(`✨ ${days.length} dias gerados`);
-
-          // 3. Salvar no banco
-          if (verbose) console.warn(`📤 Salvando no banco...`);
-          const saveResponse = await fetch('/api/moons/lunations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              days,
-              action: 'append',
-            }),
-          });
-
-          if (!saveResponse.ok) {
-            const errorData = await saveResponse.json().catch(() => ({}));
-            throw new Error(
-              `Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`
-            );
-          }
-
-          const saveResult = await saveResponse.json();
-          if (verbose) console.warn(`✅ ${saveResult.message}`);
-
-          syncedYearsRef.current.add(year);
-          if (onSuccess) onSuccess(days.length);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Erro desconhecido';
-          console.error(`❌ Erro ao sincronizar ${year}:`, message);
-          if (onError) onError(message);
-        } finally {
-          setIsSyncing(false);
-        }
-      }
-    }
-
-    sync();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks são estáveis
-  }, [autoSync, years, verbose]);
-
-  // Componente sem UI (só sincroniza em background)
   return null;
 }
 
 /**
  * Hook para sincronizar lunações manualmente
+ * TODO: Implementar sem usar /api/moons/lunations
  */
 export function useSyncLunations() {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -140,44 +45,10 @@ export function useSyncLunations() {
       setIsSyncing(true);
       setLastError(null);
 
-      const startDate = `${year}-01-01`;
-      const endDate = `${year}-12-31`;
+      if (verbose) console.warn(`🌙 Sincronizando ${year}... (TODO: Implementar)`);
 
-      if (verbose) console.warn(`🌙 Sincronizando ${year}...`);
-
-      // Gerar dados
-      const generateResponse = await fetch(
-        `/api/moons/lunations?start=${startDate}&end=${endDate}&source=generated`
-      );
-
-      if (!generateResponse.ok) {
-        throw new Error(`Erro ao gerar dados: ${generateResponse.status}`);
-      }
-
-      const { days } = await generateResponse.json();
-      if (!Array.isArray(days) || days.length === 0) {
-        throw new Error(`Nenhum dia gerado para ${year}`);
-      }
-      if (verbose) console.warn(`✨ ${days.length} dias gerados`);
-
-      // Salvar
-      const saveResponse = await fetch('/api/moons/lunations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ days, action: 'replace' }),
-      });
-
-      if (!saveResponse.ok) {
-        const errorData = await saveResponse.json().catch(() => ({}));
-        throw new Error(
-          `Erro ao salvar: ${saveResponse.status} - ${errorData.error || 'erro desconhecido'}`
-        );
-      }
-
-      const result = await saveResponse.json();
-      if (verbose) console.warn(`✅ ${result.message}`);
-
-      return result;
+      // TODO: Implementar sincronização sem usar /api/moons/lunations
+      throw new Error('Sincronização ainda não implementada. Use getLunations() do lib/forms.ts');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro desconhecido';
       setLastError(message);

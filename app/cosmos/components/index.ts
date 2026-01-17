@@ -15,6 +15,7 @@ export { default as MoonPhasesRail } from './MoonPhasesRail';
 export { PhaseTag } from './PhaseTag';
 export { GalaxyInnerView } from './GalaxyInnerView';
 export { default as TodoInput } from './TodoInput';
-export { HomeAlternativa } from './HomeAlternativa';
+export { IslandsList } from './IslandsList';
+export { GestureDetector } from './GestureDetector';
 export { CosmosRouteHelper, useResetRouteHelper } from './CosmosRouteHelper';
 export type { RouteKey, RouteHelperConfig } from './CosmosRouteHelper';

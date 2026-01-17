@@ -214,7 +214,7 @@ export function useLunationCache<T>(
 }
 
 /**
- * Hook para buscar lunações de um período (via CSV)
+ * Hook para buscar lunações de um período (via USNO)
  */
 export function useLunations(
   startDate: Date | string,
@@ -229,9 +229,26 @@ export function useLunations(
   return useLunationCache(
     cacheKey,
     async () => {
-      const response = await fetch(`/api/moons/lunations?start=${start}&end=${end}`);
-      if (!response.ok) throw new Error(`Failed to fetch lunations: ${response.statusText}`);
-      return response.json();
+      // Importar dinamicamente para evitar SSR issues
+      const { getMoonPhases } = await import('@/lib/usno-client');
+      
+      const startYear = Number(start.slice(0, 4));
+      const endYear = Number(end.slice(0, 4));
+      const allPhases = [];
+
+      for (let year = startYear; year <= endYear; year++) {
+        const phases = await getMoonPhases(year);
+        allPhases.push(...phases);
+      }
+
+      // Filtrar por data
+      const filtered = allPhases.filter(p => p.date >= start && p.date <= end);
+
+      return {
+        days: filtered,
+        source: 'usno',
+        timestamp: new Date().toISOString(),
+      };
     },
     { ttl: 86400000, ...options } // 24 horas por padrão
   );

@@ -1,7 +1,6 @@
 import 'server-only';
 import { getDb } from './db';
 import { logger } from './logger';
-import type { LunationData } from '@/types/lunation';
 
 export type FormEntryType =
   | 'subscribe'
@@ -396,79 +395,6 @@ export async function listIslands(userId: string | number): Promise<IslandRow[]>
     return rows as IslandRow[];
   } catch (error) {
     logger.error('Erro ao listar ilhas no banco', error);
-    throw error;
-  }
-}
-
-// Lunações
-export async function saveLunations(lunations: LunationData[]): Promise<any[]> {
-  try {
-    if (!lunations.length) return [];
-
-    const db = getDb();
-    const results: any[] = [];
-
-    // Inserir em pequenos batches para melhor performance
-    for (const l of lunations) {
-      const rows = (await db`
-        INSERT INTO lunations (lunation_date, moon_phase, zodiac_sign, illumination, age_days, description, source)
-        VALUES (${l.lunation_date}, ${l.moon_phase}, ${l.zodiac_sign}, ${l.illumination ?? null}, ${l.age_days ?? null}, ${l.description ?? null}, ${l.source ?? 'generated'})
-        ON CONFLICT (lunation_date) DO UPDATE SET
-          moon_phase = EXCLUDED.moon_phase,
-          zodiac_sign = EXCLUDED.zodiac_sign,
-          illumination = EXCLUDED.illumination,
-          age_days = EXCLUDED.age_days,
-          description = EXCLUDED.description,
-          updated_at = NOW()
-        RETURNING id, lunation_date, moon_phase, zodiac_sign, illumination, age_days, description, created_at, updated_at
-      `) as any[];
-
-      if (rows.length) results.push(rows[0]);
-    }
-
-    return results;
-  } catch (error) {
-    logger.error('Erro ao salvar lunações no banco', error);
-    throw error;
-  }
-}
-
-export async function getLunations(startDate: string, endDate: string): Promise<LunationData[]> {
-  try {
-    const db = getDb();
-    const rows = (await db`
-      SELECT 
-        lunation_date, 
-        moon_phase, 
-        zodiac_sign, 
-        illumination, 
-        age_days, 
-        description,
-        source,
-        created_at
-      FROM lunations
-      WHERE lunation_date >= ${startDate} AND lunation_date <= ${endDate}
-      ORDER BY lunation_date ASC
-    `) as any[];
-
-    return rows;
-  } catch (error) {
-    logger.error('Erro ao buscar lunações no banco', error);
-    throw error;
-  }
-}
-
-export async function deleteLunations(startDate: string, endDate: string): Promise<number> {
-  try {
-    const db = getDb();
-    const result = (await db`
-      DELETE FROM lunations
-      WHERE lunation_date >= ${startDate} AND lunation_date <= ${endDate}
-      RETURNING id
-    `) as any[];
-    return result.length;
-  } catch (error) {
-    logger.error('Erro ao deletar lunações no banco', error);
     throw error;
   }
 }

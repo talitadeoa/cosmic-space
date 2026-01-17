@@ -1,66 +1,15 @@
 /**
- * Script para sincronizar lunações do Google Sheets para o banco de dados
- * Uso: npm run sync:sheets
+ * Script descontinuado: Sincronização de lunações do Google Sheets
+ * 
+ * Motivo: Removida em favor da solução USNO (U.S. Naval Observatory)
+ * Nova abordagem: Usar `lib/usno-client.ts` para capturar dados via API oficial
+ * 
+ * Para sincronizar, use:
+ * ```typescript
+ * import { getMoonPhases } from '@/lib/usno-client';
+ * const phases = await getMoonPhases(2025);
+ * ```
  */
 
-// Carregar variáveis de ambiente (.env.local)
-import * as fs from 'fs';
-import * as path from 'path';
+console.error('❌ Este script foi descontinuado. Use usno-client.ts em vez disso.');
 
-const envPath = path.join(process.cwd(), '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf-8');
-  envContent.split('\n').forEach((line) => {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('#')) {
-      const [key, ...valueParts] = trimmed.split('=');
-      if (key) {
-        process.env[key.trim()] = valueParts.join('=');
-      }
-    }
-  });
-  console.warn('✅ Variáveis de ambiente carregadas do .env.local\n');
-}
-
-import { getLunationsFromSheets } from '@/lib/sheets-lunations';
-import { saveLunations } from '@/lib/forms';
-
-async function syncSheetsToDatabase() {
-  try {
-    console.warn('🌙 Iniciando sincronização de lunações do Google Sheets...\n');
-
-    // 1. Ler lunações do Sheets
-    console.warn('📖 Lendo lunações do Google Sheets...');
-    const lunations = await getLunationsFromSheets();
-
-    if (lunations.length === 0) {
-      console.error('❌ Nenhuma lunação foi lida. Verifique as credenciais do Google.');
-      process.exit(1);
-    }
-
-    console.warn(`✅ ${lunations.length} lunações carregadas do Sheets\n`);
-
-    // 2. Exibir amostra
-    console.warn('📝 Primeiras 3 lunações:');
-    lunations.slice(0, 3).forEach((l) => {
-      console.warn(
-        `  • ${l.lunation_date} - ${l.moon_phase} ${l.moon_emoji} (${l.zodiac_sign} ${l.zodiac_emoji})`
-      );
-    });
-    console.warn();
-
-    // 3. Salvar no banco
-    console.warn('💾 Salvando no banco de dados...');
-    const result = await saveLunations(lunations);
-
-    console.warn(`\n✅ Sincronização concluída com sucesso!`);
-    console.warn(`   ${result.length} lunações foram salvas/atualizadas`);
-    console.warn(`\n🎉 Próxima atualização: daqui a um ano! 🌙`);
-  } catch (error) {
-    console.error('❌ Erro ao sincronizar:', error);
-    process.exit(1);
-  }
-}
-
-// Executar
-syncSheetsToDatabase();

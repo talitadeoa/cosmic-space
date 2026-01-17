@@ -61,17 +61,8 @@ const normalizeFilters = (input: Partial<PlanetFiltersState> | null | undefined)
 };
 
 export const normalizePlanetState = (input: unknown): PlanetUiState => {
-  if (!input || typeof input !== 'object') {
-    return { ...DEFAULT_PLANET_STATE };
-  }
-
-  const raw = input as Record<string, unknown>;
-
-  return {
-    filters: normalizeFilters(raw.filters as PlanetFiltersState),
-    showIslands: Boolean(raw.showIslands),
-    isFiltersPanelOpen: Boolean(raw.isFiltersPanelOpen),
-  };
+  // Sempre retorna estado limpo - sem nenhum filtro persistido
+  return { ...DEFAULT_PLANET_STATE };
 };
 
 export const hasCustomPlanetState = (state: PlanetUiState): boolean => {

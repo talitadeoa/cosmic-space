@@ -24,8 +24,7 @@ import {
 } from '@/app/cosmos/utils/luaList';
 import type { MoonPhase } from '@/app/cosmos/utils/moonPhases';
 import { useMonthlyInsights } from '@/hooks/useMonthlyInsights';
-import { fetchLunations } from '@/hooks/useLunations';
-import { normalizeMoonPhase, type MoonCalendarDay } from '@/lib/api/moonCalendar';
+import { getMoonPhases, type LunarPhase } from '@/lib/usno-client';
 import { formatSavedAtLabel, getResolvedTimezone } from '@/lib/utils/format';
 import HighlightBanner from '../components/HighlightBanner';
 import MoonCarousel from '../components/MoonCarousel';
@@ -33,6 +32,24 @@ import CalendarStatus from '../components/CalendarStatus';
 import LuaCycleMenu from '../components/LuaCycleMenu';
 import { LuminousTrail } from '@/app/cosmos/components/LuminousTrail';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
+
+// Tipo para dados de calendário lunar
+type MoonCalendarDay = {
+  date: string;
+  moonPhase: string;
+  sign: string;
+  normalizedPhase: MoonPhase;
+};
+
+// Normaliza string de fase lunar para tipo MoonPhase
+const normalizeMoonPhase = (phase: string): MoonPhase => {
+  const normalized = phase.toLowerCase().trim();
+  if (normalized.includes('nova')) return 'luaNova';
+  if (normalized.includes('crescente')) return 'luaCrescente';
+  if (normalized.includes('cheia')) return 'luaCheia';
+  if (normalized.includes('minguante')) return 'luaMinguante';
+  return 'luaNova'; // fallback
+};
 
 type LuaScreenProps = {
   navigateWithFocus?: ScreenProps['navigateWithFocus'];
@@ -86,26 +103,31 @@ const LuaScreen: React.FC<LuaScreenProps> = ({ navigateWithFocus }) => {
     setCalendarError(null);
 
     try {
-      const response = await fetchLunations({
-        start: rangeStart,
-        end: rangeEnd,
-        source: 'auto',
-        signal: controller.signal,
-      });
-      if (controller.signal.aborted) return;
-
+      const startYear = Number(rangeStart.slice(0, 4));
+      const endYear = Number(rangeEnd.slice(0, 4));
       const grouped: Record<number, MoonCalendarDay[]> = {};
-      response.days.forEach((day) => {
-        const year = Number(day.date.slice(0, 4));
-        if (!grouped[year]) grouped[year] = [];
-        grouped[year].push({
-          date: day.date,
-          moonPhase: day.moonPhase,
-          sign: day.sign,
-          normalizedPhase: normalizeMoonPhase(day.moonPhase),
-        });
-      });
 
+      // Buscar dados de cada ano usando USNO API
+      for (let year = startYear; year <= endYear; year++) {
+        if (controller.signal.aborted) return;
+
+        const phases = await getMoonPhases(year);
+        
+        // Filtrar por data e agrupar por ano
+        phases.forEach((phase) => {
+          if (phase.date >= rangeStart && phase.date <= rangeEnd) {
+            if (!grouped[year]) grouped[year] = [];
+            grouped[year].push({
+              date: phase.date,
+              moonPhase: phase.phase,
+              sign: '', // USNO não fornece signo zodiacal
+              normalizedPhase: normalizeMoonPhase(phase.phase),
+            });
+          }
+        });
+      }
+
+      if (controller.signal.aborted) return;
       setCalendarByYear(grouped);
       setCalendarError(null);
     } catch (err) {

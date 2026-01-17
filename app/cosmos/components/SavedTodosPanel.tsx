@@ -716,29 +716,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
             </button>
           </div>
 
-          {/* Moon Phase Indicator */}
-          {selectedPhase && (
-            <div className="mt-3 flex items-center gap-1.5 text-[0.65rem] text-slate-400">
-              <span>Ciclo:</span>
-              <div className="flex gap-1">
-                {(['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'] as MoonPhase[]).map((phase) => (
-                  <span
-                    key={phase}
-                    className={`transition ${
-                      phase === selectedPhase
-                        ? 'text-indigo-300 font-semibold'
-                        : phase === getNextPhase(selectedPhase)
-                          ? 'text-amber-300 font-semibold'
-                          : 'text-slate-500'
-                    }`}
-                    title={phaseLabels[phase]}
-                  >
-                    {getMoonEmoji(phase)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
 
         {/* Mode Buttons */}
