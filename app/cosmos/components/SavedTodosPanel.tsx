@@ -7,6 +7,16 @@ import { PhaseGroupedTodoList } from '@/components/todos/PhaseGroupedTodoList';
 import { TodoFilters } from '@/components/todos/TodoFilters';
 import { TodoBatchActions } from '@/components/todos/TodoBatchActions';
 import type { SavedTodo, MoonPhase, IslandId } from '../utils/todoStorage';
+import {
+  isInCurrentCycle,
+  isInNextCycle,
+  isPhaseOnlyNoDeadline,
+  getCurrentCycleStart,
+  getCurrentCycleEnd,
+  getNextCycleStart,
+  getNextCycleEnd,
+  toIsoString,
+} from '@/lib/phase-cycle-utils';
 import { phaseLabels } from '../utils/todoStorage';
 import { getIslandLabel, ISLAND_IDS, type IslandNames } from '../utils/islandNames';
 import type { 
@@ -183,52 +193,40 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     return phases[nextIndex];
   };
 
+  /**
+   * Filtra tarefas pela cronologia/ciclo lunar
+   * Suporta:
+   * - 'todos': Todas as tarefas
+   * - 'em-aberto': Sem fase, sem prazo, sem ilha
+   * - 'lua-atual': Com phaseCycle === 'current'
+   * - 'proxima-fase': Com phaseCycle === 'next'
+   * - 'proximo-ciclo': Com phaseCycle === 'next' (alias para próxima fase)
+   */
   const getFilteredTodosByChronology = (
     todos: SavedTodo[],
     view: string | undefined,
     currentPhase: MoonPhase | null | undefined
   ): SavedTodo[] => {
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-
     if (view === 'todos') return todos;
+    
     if (view === 'em-aberto') {
       return todos.filter((todo) => !todo.phase && !todo.dueDate && !todo.islandId);
     }
-    if (view === 'lua-atual' && currentPhase) {
-      const nextPhaseDate = new Date(today);
-      nextPhaseDate.setDate(today.getDate() + 8);
-      const nextPhaseDateStr = nextPhaseDate.toISOString().split('T')[0];
-      return todos.filter(
-        (todo) => !todo.dueDate || (todo.dueDate >= todayStr && todo.dueDate <= nextPhaseDateStr)
-      );
-    } else if (view === 'proxima-fase' && currentPhase) {
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate() + 8);
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 8);
-
-      const startStr = startDate.toISOString().split('T')[0];
-      const endStr = endDate.toISOString().split('T')[0];
-
-      return todos.filter(
-        (todo) => !todo.dueDate || (todo.dueDate >= startStr && todo.dueDate <= endStr)
-      );
-    } else if (view === 'proximo-ciclo') {
-      const nextMonthStart = new Date(today);
-      nextMonthStart.setMonth(today.getMonth() + 1);
-      nextMonthStart.setDate(1);
-
-      const nextMonthEnd = new Date(nextMonthStart);
-      nextMonthEnd.setMonth(nextMonthStart.getMonth() + 1);
-      nextMonthEnd.setDate(0);
-
-      const startStr = nextMonthStart.toISOString().split('T')[0];
-      const endStr = nextMonthEnd.toISOString().split('T')[0];
-
-      return todos.filter(
-        (todo) => todo.dueDate && todo.dueDate >= startStr && todo.dueDate <= endStr
-      );
+    
+    // Lua atual: apenas tarefas com phaseCycle === 'current'
+    if (view === 'lua-atual') {
+      return todos.filter((todo) => {
+        if (!todo.phase) return false;
+        return isInCurrentCycle(todo);
+      });
+    }
+    
+    // Próxima fase e próximo ciclo: tarefas com phaseCycle === 'next'
+    if (view === 'proxima-fase' || view === 'proximo-ciclo') {
+      return todos.filter((todo) => {
+        if (!todo.phase) return false;
+        return isInNextCycle(todo);
+      });
     }
 
     return todos;
@@ -273,18 +271,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
 
   const handleToggleEditOrSelectionMode = useCallback(() => {
     if (!canEdit) return;
-    // Alterna entre os modos: normal -> edição -> seleção -> normal
-    if (!state.isEditMode && !state.isSelectionMode) {
-      // Normal -> Edição
-      dispatch({ type: 'SET_EDIT_MODE', payload: true });
-    } else if (state.isEditMode) {
-      // Edição -> Seleção
-      dispatch({ type: 'SET_EDIT_MODE', payload: false });
-      setSelectionMode(true);
-    } else {
-      // Seleção -> Normal
-      setSelectionMode(false);
-    }
+    // Ativa/desativa AMBOS os modos simultaneamente
+    const isActive = state.isEditMode && state.isSelectionMode;
+    dispatch({ type: 'SET_EDIT_MODE', payload: !isActive });
+    setSelectionMode(!isActive);
   }, [canEdit, state.isEditMode, state.isSelectionMode, setSelectionMode]);
 
   const handleStartEditing = useCallback((todo: SavedTodo) => {
@@ -469,13 +459,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
         if (timeSinceLastTap < 300 && distFromLastTap < 50) {
           if (doubleTapTimeoutRef.current) clearTimeout(doubleTapTimeoutRef.current);
           const todo = savedTodos.find((t) => t.id === todoId);
-          if (todo) {
-            // Double tap: ativa modo de edição se não estiver, senão inicia edição do item
-            if (!state.isEditMode && !state.isSelectionMode) {
-              dispatch({ type: 'SET_EDIT_MODE', payload: true });
-            }
-            handleStartEditing(todo);
-          }
+          if (todo) handleStartEditing(todo);
           lastTapRef.current = null;
         } else {
           lastTapRef.current = { x: touch.clientX, y: touch.clientY, time: now };
@@ -763,23 +747,19 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
             <button
               type="button"
               onClick={handleToggleEditOrSelectionMode}
-              aria-pressed={state.isEditMode || state.isSelectionMode}
+              aria-pressed={state.isEditMode && state.isSelectionMode}
               className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
-                state.isEditMode
-                  ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
-                  : state.isSelectionMode
-                    ? 'border border-emerald-300/80 bg-emerald-500/20 text-emerald-100'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-300/60'
+                state.isEditMode && state.isSelectionMode
+                  ? 'border border-indigo-300/80 bg-indigo-500/20 text-indigo-100'
+                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-300/60'
               }`}
               title={
-                state.isEditMode
-                  ? 'Sair do modo edição (clique para seleção)'
-                  : state.isSelectionMode
-                    ? 'Sair da seleção múltipla'
-                    : 'Editar inputs (clique duas vezes para abrir)'
+                state.isEditMode && state.isSelectionMode
+                  ? 'Desativar edição e seleção'
+                  : 'Ativar edição e seleção'
               }
             >
-              {state.isEditMode ? '✏️' : state.isSelectionMode ? '⬚' : '✏️'}
+              ✏️
             </button>
           )}
           <button

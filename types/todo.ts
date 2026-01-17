@@ -34,10 +34,20 @@ export interface TodoItem {
 }
 
 /**
+ * Tipo de ciclo para a fase lunar
+ * - null: Sem prazo definido (apenas a fase)
+ * - 'current': Lua atual (mês atual)
+ * - 'next': Próximo ciclo (próximo mês)
+ */
+export type PhaseCycleType = null | 'current' | 'next';
+
+/**
  * Todo salvo com metadados adicionais
  */
 export interface SavedTodo extends TodoItem {
   phase?: MoonPhase;
+  phaseCycle?: PhaseCycleType; // Quando a fase é aplicada: mês atual, próximo, ou sem prazo
+  phaseDeadline?: string; // Data específica da fase (ISO 8601) - opcional
   islandId?: IslandId;
   createdAt?: string;
   updatedAt?: string;
@@ -53,6 +63,10 @@ export function isValidIsland(value: unknown): value is IslandId {
     typeof value === 'string' &&
     /^ilha([1-9]|10)$/.test(value)
   );
+}
+
+export function isValidPhaseCycle(value: unknown): value is PhaseCycleType {
+  return value === null || value === 'current' || value === 'next';
 }
 
 // isValidTodoInputType está em ./inputs.ts - usar de lá para evitar duplicação
