@@ -33,25 +33,28 @@ interface FetchOptions {
 }
 
 export async function fetchLunations(options: FetchOptions): Promise<LunationsResponse> {
-  const { start, end, source = 'auto', signal } = options;
+  const { start, end, signal } = options;
 
-  const params = new URLSearchParams({
-    start,
-    end,
-    source,
-  });
+  const { getMoonPhases } = await import('@/lib/usno-client');
+  
+  const startYear = Number(start.slice(0, 4));
+  const endYear = Number(end.slice(0, 4));
+  const allPhases = [];
 
-  const response = await fetch(`/api/moons/lunations?${params.toString()}`, {
-    method: 'GET',
-    signal,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || `HTTP ${response.status}`);
+  for (let year = startYear; year <= endYear; year++) {
+    const phases = await getMoonPhases(year);
+    allPhases.push(...phases);
   }
 
-  return response.json() as Promise<LunationsResponse>;
+  // Filtrar por data
+  const days = allPhases.filter(p => p.date >= start && p.date <= end);
+
+  return {
+    days,
+    source: 'usno',
+    generatedAt: new Date().toISOString(),
+    range: { start, end },
+  } as LunationsResponse;
 }
 
 export function useLunations() {

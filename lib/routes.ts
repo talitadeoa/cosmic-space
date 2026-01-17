@@ -152,7 +152,6 @@ export const API_ROUTES = {
     CALLBACK: '/api/auth/callback',
   },
   CICLOS: {
-    LUNATIONS: '/api/moons/lunations',
     PHASE_INPUTS: '/api/phase-inputs',
   },
   TAREFAS: {

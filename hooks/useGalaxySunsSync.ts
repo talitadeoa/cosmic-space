@@ -102,17 +102,11 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
         // Buscar cada ano sequencialmente para evitar explosão de requisições
         for (const year of yearsToFetch) {
           try {
-            const response = await fetch(
-              `/api/moons/lunations?start=${year}-01-01&end=${year}-12-31&source=auto`
-            );
+            const { getMoonPhases } = await import('@/lib/usno-client');
+            const phases = await getMoonPhases(year);
             
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
-
-            const result = await response.json();
-            if (result.days && result.days.length > 0) {
-              newData[year] = processYearData(year, result.days);
+            if (phases && phases.length > 0) {
+              newData[year] = processYearData(year, phases);
             }
           } catch (yearError) {
             hasError = true;
