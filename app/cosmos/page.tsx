@@ -6,7 +6,7 @@ import { SpacePageLayout } from '@/components/layouts';
 import InputWindow from '@/app/cosmos/components/InputWindow';
 import { useCosmosNavigation } from '@/app/cosmos/context/CosmosNavigationContext';
 
-const COSMOS_TAG = 'v0.1.3 alpha flow'; // Atualize manualmente aqui
+const COSMOS_TAG = 'v0.1.4 alpha flow'; // Atualize manualmente aqui
 const TAG_STORAGE_KEY = 'cosmos:tag';
 const TRANSITION_STEPS = [900, 900, 700] as const;
 const TOTAL_DURATION_MS = TRANSITION_STEPS.reduce((sum, delayMs) => sum + delayMs, 0);
