@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useLunarPhase } from '@/hooks/useLunarCompute';
-import { fetchLunations } from '@/lib/lunar-api';
+import { useLunarPhaseUSNO } from '@/hooks/useLunarPhaseUSNO';
 
 type MoonPhaseData = {
   faseLua: string;
@@ -37,95 +36,17 @@ const normalizePhaseLabel = (phase: string): string => {
 const MoonPhaseDisplay: React.FC = () => {
   const [moonData, setMoonData] = useState<MoonPhaseData | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const { phase, loading } = useLunarPhaseUSNO(new Date());
 
   useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
-
-    const buildPhaseDetails = (ageDays?: number) => {
-      if (ageDays === undefined || Number.isNaN(ageDays)) {
-        return { age: undefined, phaseDay: undefined, cycleInfo: undefined, daysUntilEvent: undefined };
-      }
-
-      const age = Math.round(ageDays);
-      let phaseDay = '';
-      let phase = '';
-
-      if (ageDays < 1.5 || ageDays > SYNODIC_MONTH - 1.5) {
-        phase = 'Lua Nova';
-        phaseDay = `Dia ${Math.ceil(ageDays)}/1`;
-      } else if (ageDays < SYNODIC_MONTH / 2 - 1.2) {
-        phase = 'Crescente';
-        const dayInPhase = Math.ceil(ageDays - 1.5);
-        phaseDay = `Dia ${dayInPhase} da ${phase}`;
-      } else if (ageDays < SYNODIC_MONTH / 2 + 1.2) {
-        phase = 'Cheia';
-        phaseDay = `Dia ${Math.ceil(ageDays - (SYNODIC_MONTH / 2 - 1.2))}/1`;
-      } else {
-        phase = 'Minguante';
-        const dayInPhase = Math.ceil(ageDays - (SYNODIC_MONTH / 2 + 1.2));
-        phaseDay = `Dia ${dayInPhase} da ${phase}`;
-      }
-
-      let cycleInfo = '';
-      let daysUntilEvent = '';
-
-      if (ageDays < 14.765) {
-        const daysLeft = Math.round(14.765 - ageDays);
-        cycleInfo = 'Próximo: Lua Cheia';
-        daysUntilEvent = `em ${daysLeft} dias`;
-      } else if (ageDays < 15.765) {
-        cycleInfo = 'Agora: Lua Cheia';
-        daysUntilEvent = '';
-      } else {
-        const daysLeft = Math.round(SYNODIC_MONTH - ageDays);
-        cycleInfo = 'Próximo: Lua Nova';
-        daysUntilEvent = `em ${daysLeft} dias`;
-      }
-
-      return { age, phaseDay, cycleInfo, daysUntilEvent };
-    };
-
-    const loadToday = async () => {
-      const today = new Date();
-      const dateStr = formatLocalDate(today);
-
-      try {
-        const response = await fetchLunations({
-          start: dateStr,
-          end: dateStr,
-          source: 'db',
-          signal: controller.signal,
-        });
-
-        const day = response.days[0];
-        if (!day) return;
-
-        const normalizedPhase = normalizePhaseLabel(day.moonPhase);
-        const details = buildPhaseDetails(day.ageDays);
-
-        if (!isMounted) return;
-        setMoonData({
-          faseLua: day.moonPhase,
-          normalizedPhase,
-          signo: day.sign,
-          ...details,
-        });
-      } catch (error) {
-        if ((error as Error)?.name === 'AbortError') return;
-        console.warn('Falha ao carregar lunações do banco:', error);
-      }
-    };
-
-    loadToday();
-    const interval = window.setInterval(loadToday, REFRESH_INTERVAL_MS);
-
-    return () => {
-      isMounted = false;
-      controller.abort();
-      window.clearInterval(interval);
-    };
-  }, []);
+    if (phase) {
+      setMoonData({
+        faseLua: phase.phase,
+        normalizedPhase: normalizePhaseLabel(phase.phase),
+        signo: 'N/A', // USNO não fornece signo
+      });
+    }
+  }, [phase]);
 
   if (!moonData) return null;
 

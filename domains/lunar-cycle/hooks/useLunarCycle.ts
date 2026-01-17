@@ -7,26 +7,14 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useLunarPhase, useLunarBatch } from '@/hooks/useLunarCompute';
-import {
-  findNearestNewMoon,
-  findCycleDay,
-  findPhaseDay,
-  getCycleKeyDates,
-  generateMoonCycleCalendar,
-  getCycleSummary,
-  type CycleEvent,
-  type MoonPhaseType,
-} from '../services/lunar-cycle-utils';
+import { useLunarPhaseUSNO, useLunarBatchUSNO } from '@/hooks/useLunarPhaseUSNO';
 
 /**
  * Hook para obter informações do ciclo lunar com dados em cache
  * Usa deduplica de requisições para a mesma data
  */
 export function useLunarCycle(date: Date = new Date()) {
-  const { phase: lunarPhaseData, loading } = useLunarPhase(date, {
-    includeZodiac: true,
-  });
+  const { phase: lunarPhaseData, loading } = useLunarPhaseUSNO(date);
 
   const cycleData = useMemo(() => {
     return {
@@ -58,26 +46,21 @@ export function useMoonCalendarMonth(year: number, month: number) {
     });
   }, [year, month]);
 
-  // Buscar todas as fases em batch com cache deduplica
-  const { phases: batchData, loading } = useLunarBatch(dates, {
-    includeZodiac: true,
-  });
+  // Buscar todas as fases em batch com USNO
+  const { phases: batchData, loading } = useLunarBatchUSNO(dates);
 
   const lunarData = useMemo(() => {
     if (!batchData) return new Map();
     return batchData;
   }, [batchData, dates]);
 
-  // Fallback para cálculo local se Python não disponível
-  const calendar = useMemo(() => generateMoonCycleCalendar(year, month), [year, month]);
-
-  return { calendar, lunarData, loading };
+  return { lunarData, loading };
 }
 
 /**
  * Hook para obter um dia específico do ciclo
  */
-export function useCycleDay(newMoonDate: Date, dayInCycle: number): CycleEvent {
+export function useCycleDay(newMoonDate: Date, dayInCycle: number) {
   return useMemo(() => ({
     date: newMoonDate,
     dateStr: newMoonDate.toISOString().split('T')[0],
@@ -95,15 +78,17 @@ export function useCycleDay(newMoonDate: Date, dayInCycle: number): CycleEvent {
  */
 export function usePhaseDay(
   newMoonDate: Date,
-  phase: MoonPhaseType,
+  phase: string,
   dayInPhase: number
-): CycleEvent {
-  const phaseLabel = {
+) {
+  const phaseLabelMap: Record<string, string> = {
     luaNova: 'Lua Nova',
     luaCrescente: 'Lua Crescente',
     luaCheia: 'Lua Cheia',
     luaMinguante: 'Lua Minguante',
-  }[phase];
+  };
+  
+  const phaseLabel = phaseLabelMap[phase] || 'N/A';
   
   return useMemo(
     () => ({
@@ -111,7 +96,7 @@ export function usePhaseDay(
       dateStr: newMoonDate.toISOString().split('T')[0],
       dayOfCycle: 1,
       phase,
-      phaseLabel: (phaseLabel as any) || 'N/A',
+      phaseLabel,
       sign: 'N/A',
       age: dayInPhase,
       description: `Dia ${dayInPhase} de ${phaseLabel}`,

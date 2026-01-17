@@ -7,7 +7,6 @@
 
 import { useCallback } from 'react';
 import { useInsights, type GenericInsight } from './useGenericInsights';
-import { useAnnualInsightQuery } from './useInsightsCache';
 
 export interface AnnualInsight extends GenericInsight {
   year: number;

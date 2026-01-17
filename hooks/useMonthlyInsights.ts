@@ -9,7 +9,6 @@
 
 import { useCallback } from 'react';
 import { useInsights, type GenericInsight } from './useGenericInsights';
-import { useMonthlyInsightQuery } from './useInsightsCache';
 import type { MoonPhase } from '@/types/moon';
 
 export interface MonthlyInsight extends GenericInsight {

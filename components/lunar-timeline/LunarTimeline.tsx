@@ -5,10 +5,10 @@
 
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { MoonRenderer } from './MoonRenderer';
 import { Timeline } from './Timeline';
-import { useLunarPhase } from '@/hooks/useLunarCompute';
+import { useLunarPhaseUSNO } from '@/hooks/useLunarPhaseUSNO';
 import type { LunarTimelineProps, MoonData } from './types';
 import styles from './styles/LunarTimeline.module.css';
 
@@ -43,7 +43,7 @@ export function LunarTimeline({
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
 
   // Hook para dados lunares com novo cache deduplica
-  const { phase: phaseData, loading } = useLunarPhase(selectedDate, { includeZodiac: true });
+  const { phase: phaseData, loading } = useLunarPhaseUSNO(selectedDate);
 
   /**
    * Handler de mudança de data da timeline
@@ -58,9 +58,9 @@ export function LunarTimeline({
         onDateChange(newDate, {
           phaseName: phaseData.phase,
           illumination: phaseData.illumination,
-          lunarAge: phaseData.age_days,
-          isWaxing: phaseData.is_waxing,
-          zodiacSign: phaseData.zodiac_sign,
+          lunarAge: phaseData.age_days || 0,
+          isWaxing: phaseData.is_waxing ?? false,
+          zodiacSign: phaseData.zodiac_sign || 'N/A',
         });
       }
     },
@@ -159,7 +159,7 @@ export function LunarTimeline({
 
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Idade</span>
-                <span className={styles.detailValue}>{phaseData.age_days.toFixed(1)} dias</span>
+                <span className={styles.detailValue}>{(phaseData.age_days || 0).toFixed(1)} dias</span>
               </div>
 
               <div className={styles.detailItem}>

@@ -5,7 +5,6 @@ import { PlanetaProviders } from './state';
 import { PlanetaScene } from './visuals';
 import PlanetScreen from './components/PlanetScreen';
 import { usePlanetaNavigation } from './hooks';
-import { LunationSync } from '@/components/sync';
 import { CosmosRouteHelper } from '@/app/cosmos/components';
 
 /**

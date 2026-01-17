@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLunarPhase } from '@/hooks/useLunarCompute';
+import { useLunarPhaseUSNO } from '@/hooks/useLunarPhaseUSNO';
 import { useCycle } from '@/hooks/useCycle';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -109,7 +109,7 @@ export default function CycleJourney({ onComplete, onClose }: CycleJourneyProps)
   const [heartNote, setHeartNote] = useState('');
   const dateObj = new Date(selectedDate + 'T12:00:00');
   // Novo cache com deduplica automática
-  const { phase: lunarData, loading: lunarLoading } = useLunarPhase(dateObj, { includeZodiac: true });
+  const { phase: lunarData, loading: lunarLoading } = useLunarPhaseUSNO(dateObj);
   const [moonData, setMoonData] = useState<{ faseLua: string; signo: string } | null>(null);
   const [welcomePhrase, setWelcomePhrase] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -125,7 +125,7 @@ export default function CycleJourney({ onComplete, onClose }: CycleJourneyProps)
     if (lunarData) {
       setMoonData({
         faseLua: lunarData.phase || 'N/A',
-        signo: lunarData.zodiac_sign || 'N/A',
+        signo: 'N/A', // USNO não fornece zodiac_sign
       });
     }
   }, [lunarData]);

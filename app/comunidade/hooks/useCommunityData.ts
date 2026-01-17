@@ -6,9 +6,8 @@
  * Reduz edge requests ao deduplicar requisições com mesma query
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useCommunityPosts, useCommunityProfile, invalidateCommunityCache } from '@/hooks/useCommunityCache';
-import type { CommunityPost } from '@/types/community';
 
 export interface CommunityProfile {
   displayName: string;

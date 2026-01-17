@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useLunations } from '@/hooks/useLunationCache';
 
 /**
  * Componente que sincroniza lunações do banco de dados

@@ -1,10 +1,10 @@
 /**
  * Utilitários para cálculo de eventos específicos do ciclo lunar
- * DEPRECADO: Use useLunarPhase hook ou lunarComputeClient diretamente
+ * DEPRECADO: Use useLunarPhaseUSNO hook ou usno-client diretamente
  * @module domains/lunar-cycle/services/lunar-cycle-utils
  */
 
-import type { LunarPhaseResponse } from '@/lib/lunar-compute-client';
+import type { LunarPhase } from '@/lib/usno-client';
 
 export type MoonPhaseType = 'luaNova' | 'luaCrescente' | 'luaCheia' | 'luaMinguante';
 export type MoonPhaseLabel = 'Lua Nova' | 'Lua Crescente' | 'Lua Cheia' | 'Lua Minguante';
@@ -35,7 +35,7 @@ export interface CycleEvent {
 export async function findNearestNewMoon(
   date: Date,
   direction: 'before' | 'after' | 'nearest' = 'nearest',
-  phaseData?: LunarPhaseResponse
+  phaseData?: LunarPhase
 ): Promise<Date> {
   // Se não houver dados de fase, usar valor aproximado
   const ageDays = phaseData?.age_days ?? 0;

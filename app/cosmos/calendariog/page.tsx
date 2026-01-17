@@ -1,22 +1,25 @@
 'use client';
 
-import { useMemo, useState, Suspense } from 'react';
+import { useMemo, useState } from 'react';
 import { SpacePageLayout } from '@/components/layouts';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import LuaCycleMenu from '@/app/cosmos/lua/components/LuaCycleMenu';
 import LunarCalendarWidget, { LunarDayData, LunarPhase } from './LunarCalendarWidget';
-import { useLunarBatch, useMonthDates } from '@/hooks/useLunarCompute';
+import { useLunarBatchUSNO } from '@/hooks/useLunarPhaseUSNO';
 
-// Mapa de fases Python para nomes em português
-const phaseNameMap: Record<string, LunarPhase> = {
-  'new': 'new',
-  'waxing_crescent': 'waxing-crescent',
-  'first_quarter': 'first-quarter',
-  'waxing_gibbous': 'waxing-gibbous',
-  'full': 'full',
-  'waning_gibbous': 'waning-gibbous',
-  'last_quarter': 'last-quarter',
-  'waning_crescent': 'waning-crescent',
+// Mapa de fases USNO para nomes esperados
+const mapUSNOPhase = (phase: string): LunarPhase => {
+  const phaseMap: Record<string, LunarPhase> = {
+    'New Moon': 'new',
+    'Waxing Crescent': 'waxing-crescent',
+    'First Quarter': 'first-quarter',
+    'Waxing Gibbous': 'waxing-gibbous',
+    'Full Moon': 'full',
+    'Waning Gibbous': 'waning-gibbous',
+    'Last Quarter': 'last-quarter',
+    'Waning Crescent': 'waning-crescent',
+  };
+  return phaseMap[phase] || 'new';
 };
 
 const pad = (value: number) => value.toString().padStart(2, '0');
@@ -35,13 +38,16 @@ const CalendarPage = () => {
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
 
-  // Obter datas do mês
-  const monthDates = useMonthDates(viewYear, viewMonth);
+  // Gerar datas do mês
+  const monthDates = useMemo(() => {
+    const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+    return Array.from({ length: daysInMonth }, (_, i) => {
+      return new Date(viewYear, viewMonth - 1, i + 1);
+    });
+  }, [viewYear, viewMonth]);
 
-  // Carregar fases lunares do serviço Python
-  const { phases, loading, error } = useLunarBatch(monthDates, {
-    includeZodiac: true,
-  });
+  // Carregar fases lunares da USNO
+  const { phases, loading, error } = useLunarBatchUSNO(monthDates);
 
   // Converter para formato esperado pelo widget
   const lunarDataByDate = useMemo(() => {
@@ -49,11 +55,11 @@ const CalendarPage = () => {
 
     monthDates.forEach((date) => {
       const key = toDateKey(date);
-      const phase = phases.get(date.toISOString());
+      const phase = phases.get(key);
 
       if (phase) {
         data[key] = {
-          phase: (phaseNameMap[phase.phase] || phase.phase) as LunarPhase,
+          phase: mapUSNOPhase(phase.phase) as LunarPhase,
           illumination: phase.illumination,
           showIcon: true,
           hasEvent: false,

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLunarBatch } from '@/hooks/useLunarCompute';
+import { useLunarBatchUSNO } from '@/hooks/useLunarPhaseUSNO';
 import { MoonTimeData } from '@/lib/moon-calculations';
 import styles from './LunarTimeScrubber.module.css';
 
@@ -77,8 +77,8 @@ const LunarTimeScrubber: React.FC<LunarTimeScrubberProps> = ({
     );
   }, [timelineStart, totalHours]);
 
-  // Buscar múltiplas fases em batch com novo cache deduplica
-  const { phases: batchData } = useLunarBatch(datesToFetch);
+  // Buscar múltiplas fases em batch com USNO
+  const { phases: batchData } = useLunarBatchUSNO(datesToFetch);
 
   // Construir mapa de fases do response
   const phases = useMemo(() => {
