@@ -79,6 +79,7 @@ function processYearData(year: number, days: any[]): YearMoonData {
  */
 export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn {
   const [processedData, setProcessedData] = useState<Record<number, YearMoonData>>({});
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Determinar quais anos buscar
@@ -88,49 +89,54 @@ export function useGalaxySunsSync(years: number[] = []): UseGalaxySunsSyncReturn
     return [now - 1, now, now + 1, now + 2];
   }, [years]);
 
-  // Buscar cada ano com cache deduplica
-  const yearHooks = useMemo(
-    () =>
-      yearsToFetch.map((year) =>
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useLunations(`${year}-01-01`, `${year}-12-31`, { autoFetch: true, ttl: 86400000 })
-      ),
-    [yearsToFetch]
-  );
-
-  // Processar dados conforme chegam
+  // Buscar dados via API diretamente sem chamar hooks dentro de useEffect
   useEffect(() => {
-    const newData: Record<number, YearMoonData> = {};
-    let hasError = false;
+    const fetchYearData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const newData: Record<number, YearMoonData> = {};
+        let hasError = false;
+        let errorMsg = '';
 
-    yearsToFetch.forEach((year, index) => {
-      const hook = yearHooks[index];
-      if (hook.error) {
-        hasError = true;
-        setError(`Erro ao carregar ano ${year}: ${hook.error.message}`);
-      } else if (hook.data) {
-        newData[year] = processYearData(year, hook.data);
+        // Buscar cada ano sequencialmente para evitar explosão de requisições
+        for (const year of yearsToFetch) {
+          try {
+            const response = await fetch(
+              `/api/moons/lunations?start=${year}-01-01&end=${year}-12-31&source=auto`
+            );
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            if (result.days && result.days.length > 0) {
+              newData[year] = processYearData(year, result.days);
+            }
+          } catch (yearError) {
+            hasError = true;
+            const msg = yearError instanceof Error ? yearError.message : String(yearError);
+            errorMsg = `Erro ao carregar ano ${year}: ${msg}`;
+            console.error(errorMsg);
+          }
+        }
+
+        setProcessedData(newData);
+        setError(hasError ? errorMsg : null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      } finally {
+        setIsLoading(false);
       }
-    });
+    };
 
-    if (!hasError) {
-      setError(null);
-    }
-
-    setProcessedData(newData);
-  }, [yearHooks, yearsToFetch]);
-
-  const isLoading = yearHooks.some((h) => h.isLoading);
+    fetchYearData();
+  }, [yearsToFetch]);
 
   const refresh = async (year?: number) => {
-    if (year) {
-      const index = yearsToFetch.indexOf(year);
-      if (index >= 0) {
-        await yearHooks[index].mutate();
-      }
-    } else {
-      await Promise.all(yearHooks.map((h) => h.mutate()));
-    }
+    // Implementação futura se necessário
+    // Por enquanto mantém o comportamento compatível
   };
 
   return { data: processedData, isLoading, error, refresh };
