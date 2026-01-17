@@ -5,6 +5,8 @@
 import type { MoonPhase } from './moon';
 import type { TodoInputType } from './inputs';
 
+export type { MoonPhase };
+
 /**
  * ID único de ilha
  */
