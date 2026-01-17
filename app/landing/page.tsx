@@ -103,6 +103,36 @@ export default function LandingPage() {
             <div className="mt-8 rounded-2xl border border-white/10 bg-slate-900/40 p-5 shadow-inner shadow-black/40">
               <EmailSignupForm />
             </div>
+            <div className="mt-6 flex flex-wrap gap-4 sm:gap-3">
+              <a
+                href="https://apps.apple.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 transition-all hover:border-white/40 hover:bg-white/10"
+              >
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.05 13.5c-.16-.85.06-2.74 1.19-4.15 1.12-1.42 3.09-2.26 4.56-2.26.15 2.14-1.17 4.54-2.98 5.76-1.81 1.22-3.77.65-3.77.65zm-4.99-3.62c-.65-1.14-1.71-2.04-2.87-2.04-.47 0-.94.1-1.4.3.63.57 1.12 1.37 1.36 2.35.24.98.22 2.09.06 3.08-.16 1-.52 1.9-1.06 2.55.47.2.93.3 1.4.3 1.16 0 2.22-.9 2.87-2.04.65-1.14.97-2.7 1.1-4.37.12-1.67-.17-3.11-.46-3.83zm7.94.39c-1.38 0-3.52.9-4.83 2.44-1.3 1.55-1.62 3.6-1.47 4.82.15 1.23.77 2.18 1.63 2.58-.62-.71-1.05-1.72-1.15-2.88-.1-1.17.09-2.62.89-3.88.8-1.27 2.34-2.34 3.93-2.34.46 0 .91.08 1.33.23-.11-.09-.23-.17-.33-.27-.77-.7-1.62-1.13-2.62-1.13.47 0 .93.08 1.37.24-.52-.62-1.29-1.07-2.14-1.07z" />
+                </svg>
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-slate-400">Disponível em</span>
+                  <span className="text-sm font-semibold text-white">App Store</span>
+                </div>
+              </a>
+              <a
+                href="https://play.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 transition-all hover:border-white/40 hover:bg-white/10"
+              >
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3.609 1.814L13.792 12 3.609 22.186A.996.996 0 0 1 3 21.812V2.188c0-.341.135-.667.609-.374zM15.327 10.677L5.134 0.483a1 1 0 0 1 1.414 0l10.914 10.914zM16.741 12l9.914 9.914a1 1 0 0 1-1.414 1.414L15.327 13.323zM5.134 23.517l10.193-10.194 1.414 1.414L5.134 24.931a1 1 0 0 1-1.414-1.414z" />
+                </svg>
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-slate-400">Disponível no</span>
+                  <span className="text-sm font-semibold text-white">Google Play</span>
+                </div>
+              </a>
+            </div>
             <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
               {statBlocks.map((stat) => (
                 <div key={stat.label} className="space-y-1 border-l border-white/10 pl-4">

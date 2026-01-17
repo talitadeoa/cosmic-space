@@ -271,6 +271,22 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     dispatch({ type: 'SET_EDIT_MODE', payload: !state.isEditMode });
   }, [canEdit, state.isEditMode]);
 
+  const handleToggleEditOrSelectionMode = useCallback(() => {
+    if (!canEdit) return;
+    // Alterna entre os modos: normal -> edição -> seleção -> normal
+    if (!state.isEditMode && !state.isSelectionMode) {
+      // Normal -> Edição
+      dispatch({ type: 'SET_EDIT_MODE', payload: true });
+    } else if (state.isEditMode) {
+      // Edição -> Seleção
+      dispatch({ type: 'SET_EDIT_MODE', payload: false });
+      setSelectionMode(true);
+    } else {
+      // Seleção -> Normal
+      setSelectionMode(false);
+    }
+  }, [canEdit, state.isEditMode, state.isSelectionMode, setSelectionMode]);
+
   const handleStartEditing = useCallback((todo: SavedTodo) => {
     if (!canEdit) return;
     startEditing(todo.id, todo.text, todo.category, todo.dueDate);
@@ -453,7 +469,13 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
         if (timeSinceLastTap < 300 && distFromLastTap < 50) {
           if (doubleTapTimeoutRef.current) clearTimeout(doubleTapTimeoutRef.current);
           const todo = savedTodos.find((t) => t.id === todoId);
-          if (todo) handleStartEditing(todo);
+          if (todo) {
+            // Double tap: ativa modo de edição se não estiver, senão inicia edição do item
+            if (!state.isEditMode && !state.isSelectionMode) {
+              dispatch({ type: 'SET_EDIT_MODE', payload: true });
+            }
+            handleStartEditing(todo);
+          }
           lastTapRef.current = null;
         } else {
           lastTapRef.current = { x: touch.clientX, y: touch.clientY, time: now };
@@ -740,31 +762,26 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
           {canEdit && (
             <button
               type="button"
-              onClick={handleToggleEditMode}
-              aria-pressed={state.isEditMode}
+              onClick={handleToggleEditOrSelectionMode}
+              aria-pressed={state.isEditMode || state.isSelectionMode}
               className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
                 state.isEditMode
                   ? 'border border-amber-300/80 bg-amber-500/20 text-amber-100'
-                  : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-amber-300/60'
+                  : state.isSelectionMode
+                    ? 'border border-emerald-300/80 bg-emerald-500/20 text-emerald-100'
+                    : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-300/60'
               }`}
-              title={state.isEditMode ? 'Sair do modo edição' : 'Editar inputs'}
+              title={
+                state.isEditMode
+                  ? 'Sair do modo edição (clique para seleção)'
+                  : state.isSelectionMode
+                    ? 'Sair da seleção múltipla'
+                    : 'Editar inputs (clique duas vezes para abrir)'
+              }
             >
-              ✏️
+              {state.isEditMode ? '✏️' : state.isSelectionMode ? '⬚' : '✏️'}
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setSelectionMode(!state.isSelectionMode)}
-            aria-pressed={state.isSelectionMode}
-            className={`flex h-8 w-8 items-center justify-center rounded-lg text-[0.7rem] transition ${
-              state.isSelectionMode
-                ? 'border border-emerald-300/80 bg-emerald-500/20 text-emerald-100'
-                : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-emerald-300/60'
-            }`}
-            title={state.isSelectionMode ? 'Sair da seleção múltipla' : 'Selecionar múltiplos inputs'}
-          >
-            ⬚
-          </button>
           <button
             type="button"
             onClick={() => setGroupByPhase(!state.groupByPhase)}

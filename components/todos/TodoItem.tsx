@@ -224,6 +224,14 @@ export const TodoItem = memo(function TodoItem({
                 >
                   Cancelar
                 </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(todo.id)}
+                  className="rounded-lg border border-red-600/60 bg-red-500/15 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-red-200 transition hover:bg-red-500/25"
+                  title="Deletar este input"
+                >
+                  🗑️ Deletar
+                </button>
               </div>
             </div>
           ) : (

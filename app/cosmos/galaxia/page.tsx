@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SpacePageLayout } from '@/components/layouts';
 import { CosmosRouteHelper } from '@/app/cosmos/components';
@@ -110,6 +111,13 @@ const GalaxiaPage = () => {
                 aria-hidden
               />
             </motion.button>
+          <Link
+            href="/perfil"
+            className="group relative inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/90 shadow-[0_10px_40px_rgba(59,130,246,0.2)] backdrop-blur transition hover:border-sky-300/40 hover:bg-sky-400/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+          >
+            <span className="text-lg">👤</span>
+            <span>Meu Perfil</span>
+          </Link>
           </motion.header>
 
           <section
