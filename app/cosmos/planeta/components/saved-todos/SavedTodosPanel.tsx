@@ -168,6 +168,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     selectedPhase,
     selectedIsland,
     currentPage: state.currentPage,
+    todoStatusFilter: (todoStatusFilter as 'all' | 'open' | 'completed') || 'all',
   });
 
   // === Drag & Drop Hook ===

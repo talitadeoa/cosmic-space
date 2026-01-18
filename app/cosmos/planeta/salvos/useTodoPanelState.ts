@@ -34,7 +34,7 @@ const initialState: TodoPanelState = {
     luaMinguante: true,
     'sem-fase': true,
   },
-  groupByPhase: true,
+  groupByPhase: false,
 };
 
 /**

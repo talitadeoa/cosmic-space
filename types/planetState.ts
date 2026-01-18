@@ -37,7 +37,7 @@ export type PlanetUiState = {
 export const DEFAULT_PLANET_FILTERS: PlanetFiltersState = {
   view: 'todos',
   inputType: 'all',
-  todoStatus: 'all',
+  todoStatus: 'open',
   phase: null,
   island: null,
   month: null,

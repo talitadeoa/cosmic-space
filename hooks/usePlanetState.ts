@@ -122,8 +122,12 @@ export const usePlanetState = () => {
 
       try {
         const pullResult = await pullStateChanges(user.userId);
-        if (!pullResult.item || pendingRef.current) return;
+        if (!pullResult.item) return;
+        
+        // Aplicar estado do servidor mesmo com mudanças locais pendentes
+        // O servidor sempre tem a verdade dos dados sincronizados
         if (!shouldApplyState(pullResult.item, metaRef.current.version)) return;
+        
         suppressOutboxRef.current = true;
         const normalized = normalizePlanetState(pullResult.item.payload);
         setStateInternal(normalized);

@@ -37,39 +37,30 @@ export async function GET(request: NextRequest) {
     const cursor = Number.isFinite(Number(cursorParam)) ? Number(cursorParam) : 0;
     const db = getDb();
 
-    const changes = (await db`
-      SELECT id
-      FROM sync_changes
-      WHERE user_id = ${userId}
-        AND entity_type = 'planet_state'
-        AND id > ${cursor}
-      ORDER BY id ASC
-      LIMIT 1
-    `) as { id: number }[];
-
-    if (!changes.length) {
-      return NextResponse.json({ item: null, cursor }, { status: 200 });
-    }
-
-    const row = (await db`
+    // Buscar estado atual do planeta
+    const rows = (await db`
       SELECT payload, updated_at, version
       FROM planet_state
       WHERE user_id = ${userId}
       LIMIT 1
     `) as any[];
 
-    if (!row.length) {
-      const nextCursor = changes[changes.length - 1]?.id ?? cursor;
-      return NextResponse.json({ item: null, cursor: nextCursor }, { status: 200 });
+    // Se não tem estado, retorna nada
+    if (!rows.length) {
+      return NextResponse.json({ item: null, cursor }, { status: 200 });
     }
 
+    const row = rows[0];
+    
+    // Sempre retorna o estado atual (o cliente compara o updatedAt para decidir se aplica)
     const item = {
-      version: Number(row[0].version),
-      updatedAt: row[0].updated_at instanceof Date ? row[0].updated_at.toISOString() : row[0].updated_at,
-      payload: normalizePlanetState(row[0].payload ?? null),
+      version: Number(row.version),
+      updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+      payload: normalizePlanetState(row.payload ?? null),
     };
-    const nextCursor = changes[changes.length - 1]?.id ?? cursor;
-    return NextResponse.json({ item, cursor: nextCursor }, { status: 200 });
+    
+    // Retorna o estado atual + um cursor baseado na versão
+    return NextResponse.json({ item, cursor: Number(row.version) }, { status: 200 });
   } catch (error) {
     logger.error('Erro ao buscar sync de estado do Planeta', error);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });

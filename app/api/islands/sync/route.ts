@@ -52,68 +52,8 @@ export async function GET(request: NextRequest) {
     const cursor = Number.isFinite(Number(cursorParam)) ? Number(cursorParam) : 0;
     const db = getDb();
 
-    if (cursor === 0) {
-      const rows = (await db`
-        SELECT
-          island_key,
-          title,
-          updated_at,
-          deleted_at,
-          version
-        FROM islands
-        WHERE user_id = ${userId}
-      `) as any[];
-
-      const items = rows
-        .filter((row) => isValidIslandId(row.island_key))
-        .map((row) => {
-          const version = row.version ? Number(row.version) : 1;
-          return {
-            id: row.island_key as IslandId,
-            version,
-            updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
-            deletedAt: row.deleted_at
-              ? row.deleted_at instanceof Date
-                ? row.deleted_at.toISOString()
-                : row.deleted_at
-              : null,
-            payload: {
-              title: row.title ?? defaultIslandName(row.island_key),
-            },
-          };
-        });
-
-      const lastChange = (await db`
-        SELECT id
-        FROM sync_changes
-        WHERE user_id = ${userId}
-          AND entity_type = 'island'
-        ORDER BY id DESC
-        LIMIT 1
-      `) as { id: number }[];
-
-      const nextCursor = lastChange.length ? lastChange[0].id : 0;
-      return NextResponse.json({ items, cursor: nextCursor }, { status: 200 });
-    }
-
-    const changes = (await db`
-      SELECT id, entity_id
-      FROM sync_changes
-      WHERE user_id = ${userId}
-        AND entity_type = 'island'
-        AND id > ${cursor}
-      ORDER BY id ASC
-      LIMIT 200
-    `) as { id: number; entity_id: string }[];
-
-    if (!changes.length) {
-      return NextResponse.json({ items: [], cursor }, { status: 200 });
-    }
-
-    const islandIds = Array.from(new Set(changes.map((change) => change.entity_id))).filter(
-      isValidIslandId
-    ) as IslandId[];
-
+    // Sempre retorna todas as ilhas do usuário que foram modificadas após o cursor
+    // Cursor é baseado na versão para sincronização simples
     const rows = (await db`
       SELECT
         island_key,
@@ -123,27 +63,30 @@ export async function GET(request: NextRequest) {
         version
       FROM islands
       WHERE user_id = ${userId}
-        AND island_key = ANY(${islandIds})
+        AND version > ${cursor}
+      ORDER BY version ASC
     `) as any[];
 
-    const items = rows.map((row) => {
-      const version = row.version ? Number(row.version) : 1;
-      return {
-        id: row.island_key as IslandId,
-        version,
-        updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
-        deletedAt: row.deleted_at
-          ? row.deleted_at instanceof Date
-            ? row.deleted_at.toISOString()
-            : row.deleted_at
-          : null,
-        payload: {
-          title: row.title ?? defaultIslandName(row.island_key),
-        },
-      };
-    });
+    const items = rows
+      .filter((row) => isValidIslandId(row.island_key))
+      .map((row) => {
+        const version = row.version ? Number(row.version) : 1;
+        return {
+          id: row.island_key as IslandId,
+          version,
+          updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+          deletedAt: row.deleted_at
+            ? row.deleted_at instanceof Date
+              ? row.deleted_at.toISOString()
+              : row.deleted_at
+            : null,
+          payload: {
+            title: row.title ?? defaultIslandName(row.island_key),
+          },
+        };
+      });
 
-    const nextCursor = changes[changes.length - 1]?.id ?? cursor;
+    const nextCursor = items.length > 0 ? Math.max(...items.map(i => i.version)) : cursor;
     return NextResponse.json({ items, cursor: nextCursor }, { status: 200 });
   } catch (error) {
     logger.error('Erro ao buscar sync de ilhas', error);

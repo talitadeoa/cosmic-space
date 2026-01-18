@@ -13,6 +13,7 @@ interface UseTodoFilteringOptions {
   selectedPhase: MoonPhase | null | undefined;
   selectedIsland: IslandId | null | undefined;
   currentPage: number;
+  todoStatusFilter?: 'all' | 'open' | 'completed';
 }
 
 interface UseTodoFilteringResult {
@@ -59,6 +60,7 @@ export function useTodoFiltering({
   selectedPhase,
   selectedIsland,
   currentPage,
+  todoStatusFilter = 'all',
 }: UseTodoFilteringOptions): UseTodoFilteringResult {
   const filteredTodos = useMemo(() => {
     // Em "em-aberto", não aplica filtros de fase/ilha
@@ -67,12 +69,19 @@ export function useTodoFiltering({
 
     let result = todos
       .filter((todo) => (phaseFilter ? todo.phase === phaseFilter : true))
-      .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true));
+      .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true))
+      .filter((todo) => {
+        // Aplicar filtro de status
+        if (todoStatusFilter === 'all') return true;
+        if (todoStatusFilter === 'open') return !todo.completed;
+        if (todoStatusFilter === 'completed') return todo.completed;
+        return true;
+      });
 
     result = filterByChronology(result, view);
 
     return result;
-  }, [todos, view, selectedPhase, selectedIsland]);
+  }, [todos, view, selectedPhase, selectedIsland, todoStatusFilter]);
 
   const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
   const startIndex = currentPage * ITEMS_PER_PAGE;

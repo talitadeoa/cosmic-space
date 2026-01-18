@@ -54,21 +54,9 @@ export async function GET(request: NextRequest) {
     const cursor = Number.isFinite(Number(cursorParam)) ? Number(cursorParam) : 0;
 
     const db = getDb();
-    const changes = (await db`
-      SELECT id, entity_id
-      FROM sync_changes
-      WHERE user_id = ${userId}
-        AND entity_type = 'planet_todo'
-        AND id > ${cursor}
-      ORDER BY id ASC
-      LIMIT 200
-    `) as { id: number; entity_id: string }[];
-
-    if (!changes.length) {
-      return NextResponse.json({ items: [], cursor }, { status: 200 });
-    }
-
-    const todoIds = Array.from(new Set(changes.map((change) => change.entity_id)));
+    
+    // Buscar todas as tarefas do usuário que foram modificadas após o cursor
+    // O cursor é baseado na versão (timestamp) para sincronização simples
     const rows = (await db`
       SELECT
         todo_id,
@@ -86,7 +74,9 @@ export async function GET(request: NextRequest) {
         version
       FROM planet_todos
       WHERE user_id = ${userId}
-        AND todo_id = ANY(${todoIds})
+        AND version > ${cursor}
+      ORDER BY version ASC
+      LIMIT 200
     `) as any[];
 
     const items = rows.map((row) => ({
@@ -113,7 +103,7 @@ export async function GET(request: NextRequest) {
       },
     }));
 
-    const nextCursor = changes[changes.length - 1]?.id ?? cursor;
+    const nextCursor = items.length > 0 ? Math.max(...items.map(i => i.version)) : cursor;
     return NextResponse.json({ items, cursor: nextCursor }, { status: 200 });
   } catch (error) {
     logger.error('Erro ao buscar sync de tarefas do Planeta', error);
