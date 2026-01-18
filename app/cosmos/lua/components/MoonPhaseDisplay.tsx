@@ -43,7 +43,7 @@ const MoonPhaseDisplay: React.FC = () => {
       setMoonData({
         faseLua: phase.phase,
         normalizedPhase: normalizePhaseLabel(phase.phase),
-        signo: 'N/A', // USNO não fornece signo
+        signo: phase.zodiac_sign || 'N/A',
       });
     }
   }, [phase]);

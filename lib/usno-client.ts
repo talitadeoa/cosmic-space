@@ -18,6 +18,7 @@ import {
   setPendingRequest,
   getPendingRequestKey,
 } from './lunar-cache';
+import { getMoonZodiacSign, type ZodiacSign } from './lunar-zodiac';
 
 // API local que faz proxy para USNO
 const USNO_API_PROXY = '/api/moons/phases';
@@ -31,7 +32,9 @@ export interface LunarPhase {
   // Fallbacks para compatibilidade com código antigo
   age_days?: number; // Para compatibilidade
   is_waxing?: boolean; // Para compatibilidade
-  zodiac_sign?: string; // USNO não fornece
+  // Signo zodiacal da Lua (calculado)
+  zodiac_sign?: ZodiacSign;
+  zodiac_emoji?: string;
 }
 
 export interface MoonPhaseData {
@@ -99,14 +102,25 @@ export async function getMoonPhases(year: number, month?: number): Promise<Lunar
         throw new Error('Invalid response structure from USNO API');
       }
       
-      // Transformar resposta da USNO
-      const phases = data.properties.data.map((day: MoonPhaseData) => ({
-        date: `${String(day.month).padStart(2, '0')}/${String(day.day).padStart(2, '0')}/${year}`,
-        day: day.day,
-        phase: day.phase,
-        illumination: day.illumination || 0,
-        time: day.time,
-      }));
+      // Transformar resposta da USNO e calcular signo zodiacal
+      const phases = data.properties.data.map((day: MoonPhaseData) => {
+        // Construir data completa para cálculo do signo
+        const dateStr = `${year}-${String(day.month).padStart(2, '0')}-${String(day.day).padStart(2, '0')}`;
+        const dateObj = new Date(dateStr);
+        
+        // Calcular signo zodiacal da Lua
+        const zodiac = getMoonZodiacSign(dateObj);
+        
+        return {
+          date: `${String(day.month).padStart(2, '0')}/${String(day.day).padStart(2, '0')}/${year}`,
+          day: day.day,
+          phase: day.phase,
+          illumination: day.illumination || 0,
+          time: day.time,
+          zodiac_sign: zodiac.sign,
+          zodiac_emoji: zodiac.emoji,
+        };
+      });
 
       // 4. Armazenar em cache
       setCachedPhases(year, phases, month);
