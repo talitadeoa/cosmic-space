@@ -109,7 +109,7 @@ export function useTodoDragDrop({
             todoIds = parsed.filter((id) => typeof id === 'string');
           }
         } catch (error) {
-          console.warn('Falha ao ler seleção de to-dos:', error);
+          console.warn('Falha ao ler seleção de tarefas:', error);
         }
       }
 

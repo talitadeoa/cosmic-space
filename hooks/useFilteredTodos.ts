@@ -41,7 +41,7 @@ export const useFilteredTodos = (
           }
           return todo.inputType === filters.inputType;
         })
-        // 3. Filtrar por status (apenas quando filtra to-dos)
+        // 3. Filtrar por status (apenas quando filtra tarefas)
         .filter((todo) => {
           if (filters.inputType !== 'checkbox') {
             return true;

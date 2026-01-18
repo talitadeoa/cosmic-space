@@ -74,7 +74,7 @@ const ROUTE_HELPER_CONFIG: Record<RouteKey, RouteHelperConfig> = {
     title: 'SidePlanet',
     description: 'Organize suas tarefas alinhadas com as fases lunares.',
     tips: [
-      'Adicione to-dos por fase',
+      'Adicione tarefas por fase',
       'Deslize entre as lunações',
       'Filtre por prioridade ou status',
     ],

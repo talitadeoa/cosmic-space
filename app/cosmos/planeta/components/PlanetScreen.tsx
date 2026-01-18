@@ -264,7 +264,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           if (ids.length > 0) return ids;
         }
       } catch (error) {
-        console.warn('Falha ao ler seleção de to-dos:', error);
+        console.warn('Falha ao ler seleção de tarefas:', error);
       }
     }
     const todoId = event.dataTransfer.getData('text/todo-id');
@@ -483,7 +483,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           )}
         </div>
 
-        {/* Coluna central: Card com To-dos (ordem 3 no mobile, 2 no desktop) */}
+        {/* Coluna central: Card com tarefas (ordem 3 no mobile, 2 no desktop) */}
         <div className="order-3 relative w-full lg:order-2 lg:flex-1">
           <Card className="relative z-10 w-full overflow-hidden border border-white/10 bg-transparent p-3 shadow-none backdrop-blur-0 sm:p-5 md:p-6 !bg-transparent !backdrop-blur-0 !shadow-none">
             <div className="flex flex-col gap-3 overflow-visible pr-1 sm:gap-4 md:gap-5">

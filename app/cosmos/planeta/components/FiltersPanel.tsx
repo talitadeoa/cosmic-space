@@ -130,7 +130,7 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
           )}
           {filters.inputType === 'checkbox' && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
-              To-dos
+              tarefas
             </span>
           )}
           {displayTodoStatus && (

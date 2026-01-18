@@ -36,7 +36,7 @@ const CycleSummaryLayer: React.FC<CycleSummaryLayerProps> = ({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 shadow-inner shadow-black/30">
-          <p className="text-xs text-slate-400">To-dos totais</p>
+          <p className="text-xs text-slate-400">tarefas totais</p>
           <p className="mt-1 text-2xl font-semibold text-white">{totalTodos}</p>
         </div>
         <div className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 p-3 shadow-inner shadow-emerald-900/30">

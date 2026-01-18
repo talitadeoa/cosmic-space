@@ -104,7 +104,7 @@ const ProductivityLayer: React.FC<ProductivityLayerProps> = ({
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-slate-300">
                 Itens fora do fluxo
               </p>
-              <h4 className="text-sm font-semibold text-white">To-dos sem fase</h4>
+              <h4 className="text-sm font-semibold text-white">tarefas sem fase</h4>
             </div>
             <span className="rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-200">
               {unassignedTodos.length}

@@ -6,8 +6,8 @@ export const PHASE_VIBES: Record<MoonPhase, { label: string; tags: string[] }> =
     tags: ['Ideias', 'Intenções', 'Sementes'],
   },
   luaCrescente: {
-    label: 'Checklists · Rituais · To-dos · Planejamento · Ação',
-    tags: ['Checklists', 'Rituais', 'To-dos', 'Planejamento', 'Ação'],
+    label: 'Checklists · Rituais · tarefas · Planejamento · Ação',
+    tags: ['Checklists', 'Rituais', 'tarefas', 'Planejamento', 'Ação'],
   },
   luaCheia: {
     label: 'Tesouros · Recompensas · Frutos · Colheita',

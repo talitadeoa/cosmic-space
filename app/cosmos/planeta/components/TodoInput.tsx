@@ -105,7 +105,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
   nextWeek.setDate(today.getDate() + 7);
   const copyByType = {
     checkbox: {
-      actionLabel: isChatOpen ? 'Fechar' : 'Adicionar to-do',
+      actionLabel: isChatOpen ? 'Fechar' : 'Adicionar tarefa',
       placeholder: 'Digite a tarefa que deseja adicionar...',
       submitLabel: '✨ Salvar tarefa',
     },
@@ -150,7 +150,7 @@ const TodoInput: React.FC<TodoInputProps> = ({
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            To-do
+            tarefa
           </button>
           <button
             type="button"

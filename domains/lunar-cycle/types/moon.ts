@@ -56,7 +56,7 @@ export const MOON_PHASE_EMOJI_LABELS: Record<MoonPhase, string> = {
  */
 export const MOON_PHASE_VIBES: Record<MoonPhase, string[]> = {
   luaNova: ['Ideias', 'Intenções', 'Sementes'],
-  luaCrescente: ['Checklists', 'Rituais', 'To-dos', 'Planejamento', 'Ação'],
+  luaCrescente: ['Checklists', 'Rituais', 'tarefas', 'Planejamento', 'Ação'],
   luaCheia: ['Tesouros', 'Recompensas', 'Frutos', 'Colheita'],
   luaMinguante: ['Reflexão', 'Liberação', 'Encerramento', 'Descanso'],
 } as const;

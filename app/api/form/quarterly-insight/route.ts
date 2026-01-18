@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     const phaseVibes: Record<string, string> = {
       luaNova: 'Ideias · Intenções · Sementes',
-      luaCrescente: 'Checklists · Rituais · To-dos · Planejamento · Ação',
+      luaCrescente: 'Checklists · Rituais · tarefas · Planejamento · Ação',
       luaCheia: 'Tesouros · Recompensas · Frutos · Colheita',
       luaMinguante: 'Aprendizados · Desapegos',
     };

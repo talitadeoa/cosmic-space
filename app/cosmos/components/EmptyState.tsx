@@ -17,7 +17,7 @@ interface EmptyStateProps {
  * Usa opacidade reduzida e ícone sutil para diferenciação visual.
  */
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  title = 'Nenhum to-do salvo',
+  title = 'Nenhum tarefa salvo',
   description = 'Crie uma tarefa ou selecione uma fase lunar.',
   icon,
   className = '',

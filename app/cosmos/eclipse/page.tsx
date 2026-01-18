@@ -27,7 +27,7 @@ const EclipsePage = () => {
             </h1>
             <p className="max-w-2xl text-sm text-slate-300">
               Acompanhe o cruzamento entre o SidePlanet e o ciclo de fases lunares. Visualize os
-              to-dos sincronizados, identifique onde o fluxo fica mais orgânico e mantenha tudo
+              tarefas sincronizados, identifique onde o fluxo fica mais orgânico e mantenha tudo
               alinhado em um painel dedicado.
             </p>
           </header>

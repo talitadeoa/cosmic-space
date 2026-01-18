@@ -52,7 +52,7 @@ const SummaryLayer: React.FC<SummaryLayerProps> = ({
             className="drop-shadow-[0_0_30px_rgba(99,102,241,0.45)]"
           />
           <p className="max-w-xs text-center text-sm text-slate-200">
-            Use o eclipse para sentir a fusão entre os to-dos do planeta lateral e o ciclo lunar.
+            Use o eclipse para sentir a fusão entre os tarefas do planeta lateral e o ciclo lunar.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -60,7 +60,7 @@ const SummaryLayer: React.FC<SummaryLayerProps> = ({
               onClick={onOpenSidePlanet}
               className="rounded-full border border-indigo-300/40 bg-indigo-600/30 px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition hover:bg-indigo-600/50"
             >
-              Editar to-dos no SidePlanet
+              Editar tarefas no SidePlanet
             </button>
             <button
               type="button"
@@ -91,7 +91,7 @@ const SummaryLayer: React.FC<SummaryLayerProps> = ({
           </div>
         ) : (
           <p className="mt-2 text-sm text-slate-400">
-            Ainda não há to-dos classificados por fase lunar.
+            Ainda não há tarefas classificados por fase lunar.
           </p>
         )}
       </div>
