@@ -11,6 +11,7 @@ export type FiltersPanelProps = {
   onClearFilters: () => void;
   onMonthChange: (month: number | null) => void;
   onYearChange: (year: number | null) => void;
+  onTodoStatusToggle?: () => void;
   islandNames: IslandNames;
 };
 
@@ -50,6 +51,7 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
   onClearFilters,
   onMonthChange,
   onYearChange,
+  onTodoStatusToggle,
   islandNames,
 }) => {
   const islandLabel = getIslandLabel(filters.island, islandNames);
@@ -132,9 +134,13 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
             </span>
           )}
           {displayTodoStatus && (
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+            <button
+              type="button"
+              onClick={onTodoStatusToggle}
+              className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[0.7rem] font-semibold text-slate-200 transition hover:bg-slate-900"
+            >
               {filters.todoStatus === 'completed' ? 'Completas' : 'Em aberto'}
-            </span>
+            </button>
           )}
           {phaseLabel && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">

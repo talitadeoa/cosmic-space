@@ -556,6 +556,12 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                       year,
                     }))
                   }
+                  onTodoStatusToggle={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      todoStatus: prev.todoStatus === 'completed' ? 'open' : 'completed',
+                    }))
+                  }
                   islandNames={islandNames}
                 />
 

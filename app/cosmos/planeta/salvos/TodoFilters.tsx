@@ -42,61 +42,67 @@ export const TodoFilters = memo(function TodoFilters({
     onInputTypeFilterChange?.(nextFilter);
   };
 
-  const handleStatusFilter = (status: 'open' | 'completed') => {
-    const nextStatus = todoStatusFilter === status ? 'all' : status;
+  const handleStatusFilter = () => {
+    const nextStatus = todoStatusFilter === 'open' ? 'completed' : 'open';
     onTodoStatusFilterChange?.(nextStatus);
   };
 
   // Estilos base
-  const buttonBase = 'rounded-full border px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition';
+  const buttonBase = 'rounded-full border px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition min-w-[85px] flex items-center justify-center gap-1.5';
   const activeStyle = 'border-indigo-400 bg-indigo-500/30 text-indigo-200';
   const inactiveStyle = 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600';
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-      {/* Filtro: Texto */}
-      <button
-        type="button"
-        onClick={handleTextFilter}
-        className={`${buttonBase} ${isTextFilter ? activeStyle : inactiveStyle}`}
-        aria-pressed={isTextFilter}
-      >
-        📝 Texto
-      </button>
+    <div className={`flex flex-col items-start gap-2 ${className}`}>
+      {/* Filtros principais: Texto e Tarefas */}
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={handleTextFilter}
+          className={`${buttonBase} ${isTextFilter ? activeStyle : inactiveStyle}`}
+          aria-pressed={isTextFilter}
+        >
+          <span className="flex-shrink-0">📝</span>
+          <span className="whitespace-nowrap">Texto</span>
+        </button>
 
-      {/* Filtro: Checkbox/Tarefas */}
-      <button
-        type="button"
-        onClick={handleTodoFilter}
-        className={`${buttonBase} ${isTodoFilter ? activeStyle : inactiveStyle}`}
-        aria-pressed={isTodoFilter}
-      >
-        ☑️ Tarefas
-      </button>
+        <button
+          type="button"
+          onClick={handleTodoFilter}
+          className={`${buttonBase} ${isTodoFilter ? activeStyle : inactiveStyle}`}
+          aria-pressed={isTodoFilter}
+        >
+          <span className="flex-shrink-0">☑️</span>
+          <span className="whitespace-nowrap">Tarefas</span>
+        </button>
+      </div>
 
       {/* Filtros de status (só aparecem quando filtro de tarefas está ativo) */}
       {isTodoFilter && (
-        <>
-          <span className="text-slate-600">|</span>
-          
+        <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1.5">
           <button
             type="button"
-            onClick={() => handleStatusFilter('open')}
-            className={`${buttonBase} ${isOpenFilter ? activeStyle : inactiveStyle}`}
-            aria-pressed={isOpenFilter}
+            onClick={() => onTodoStatusFilterChange?.('open')}
+            className={`rounded-full px-3 py-1 transition text-[0.6rem] font-semibold uppercase tracking-[0.2em] min-w-[75px] whitespace-nowrap ${
+              todoStatusFilter === 'open'
+                ? 'bg-indigo-500/30 text-indigo-100'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
             Em aberto
           </button>
-
           <button
             type="button"
-            onClick={() => handleStatusFilter('completed')}
-            className={`${buttonBase} ${isCompletedFilter ? activeStyle : inactiveStyle}`}
-            aria-pressed={isCompletedFilter}
+            onClick={() => onTodoStatusFilterChange?.('completed')}
+            className={`rounded-full px-3 py-1 transition text-[0.6rem] font-semibold uppercase tracking-[0.2em] min-w-[75px] whitespace-nowrap ${
+              todoStatusFilter === 'completed'
+                ? 'bg-indigo-500/30 text-indigo-100'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
             Completas
           </button>
-        </>
+        </div>
       )}
     </div>
   );

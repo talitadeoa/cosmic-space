@@ -72,13 +72,13 @@ function ViewButton({
       onDrop={onDrop}
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
-      className={`rounded-lg px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center gap-1.5 ${
+      className={`rounded-lg px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] transition flex items-center justify-center gap-1.5 min-w-[90px] ${
         isDropTarget ? colors.dropRing : ''
       } ${isActive ? colors.active : colors.inactive}`}
       title={title}
     >
-      {icon && <span className="text-sm">{icon}</span>}
-      <span>{label}</span>
+      {icon && <span className="text-sm flex-shrink-0">{icon}</span>}
+      <span className="whitespace-nowrap">{label}</span>
     </button>
   );
 }
@@ -122,11 +122,12 @@ export function TodoViewButtons({
   onDragLeave,
 }: TodoViewButtonsProps) {
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
+    <div className="mt-2 flex flex-wrap items-center gap-2">
       <ViewButton
         view="todos"
         currentView={currentView}
         label="Todos"
+        icon="📋"
         activeColor="slate"
         activeViewDrop={activeViewDrop}
         onViewChange={onViewChange}
@@ -136,6 +137,7 @@ export function TodoViewButtons({
         view="em-aberto"
         currentView={currentView}
         label="Em aberto"
+        icon="⏳"
         activeColor="indigo"
         activeViewDrop={activeViewDrop}
         onViewChange={onViewChange}
@@ -149,6 +151,7 @@ export function TodoViewButtons({
         view="lua-atual"
         currentView={currentView}
         label="Lua atual"
+        icon="🌙"
         activeColor="indigo"
         activeViewDrop={activeViewDrop}
         onViewChange={onViewChange}
