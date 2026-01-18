@@ -60,7 +60,7 @@ const CalendarPage = () => {
       if (phase) {
         data[key] = {
           phase: mapUSNOPhase(phase.phase) as LunarPhase,
-          illumination: phase.illumination,
+          illumination: (phase.illumination || 0) / 100, // Converter de 0-100 para 0-1
           showIcon: true,
           hasEvent: false,
         };

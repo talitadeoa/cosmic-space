@@ -99,7 +99,7 @@ const LunarTimeScrubber: React.FC<LunarTimeScrubberProps> = ({
     }
     return {
       phaseName: phaseData.phase,
-      illumination: phaseData.illumination,
+      illumination: (phaseData.illumination || 50) / 100, // Converter de 0-100 para 0-1
       phaseFraction: (phaseData.age_days || 14.76) / 29.53,
       isWaxing: phaseData.is_waxing,
     };

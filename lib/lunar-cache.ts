@@ -50,7 +50,7 @@ export function setCachedPhases(year: number, data: any, month?: number): void {
   console.log(`[Cache SET] ${key}`);
 }
 
-export async function getPendingRequest(key: string): Promise<any> {
+export function getPendingRequest(key: string): Promise<any> | undefined {
   return pendingRequests.get(key);
 }
 

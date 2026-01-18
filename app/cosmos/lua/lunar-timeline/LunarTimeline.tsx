@@ -14,11 +14,12 @@ import styles from './styles/LunarTimeline.module.css';
 
 // Função auxiliar para converter dados do hook para MoonData completo
 function createMoonData(phaseData: any, date: Date): MoonData {
-  const illumination = phaseData?.illumination || 0.5;
+  // illumination agora vem sempre em 0-100 da nova API
+  const illumination = (phaseData?.illumination || 50) / 100; // Converter para 0-1
   const ageDays = phaseData?.age_days || 14.76;
   const phaseFraction = ageDays / 29.53058867;
   
-  return {
+  const moonData = {
     illumination,
     phaseFraction,
     isWaxing: phaseData?.is_waxing ?? true,
@@ -29,6 +30,18 @@ function createMoonData(phaseData: any, date: Date): MoonData {
     lunarAge: ageDays,
     zodiacSign: phaseData?.zodiac_sign,
   };
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[createMoonData] Dados lunares:', {
+      phase: phaseData?.phase,
+      illumination: phaseData?.illumination,
+      illuminationNormalized: illumination,
+      isWaxing: phaseData?.is_waxing,
+      ageDays,
+    });
+  }
+  
+  return moonData;
 }
 
 export function LunarTimeline({
@@ -43,7 +56,17 @@ export function LunarTimeline({
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
 
   // Hook para dados lunares com novo cache deduplica
-  const { phase: phaseData, loading } = useLunarPhaseUSNO(selectedDate);
+  const { phase: phaseData, loading, error } = useLunarPhaseUSNO(selectedDate);
+
+  // Debug: Log dos dados recebidos
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[LunarTimeline] Estado:', { 
+      loading, 
+      hasData: !!phaseData, 
+      error: error?.message,
+      selectedDate: selectedDate.toISOString(),
+    });
+  }
 
   /**
    * Handler de mudança de data da timeline
@@ -57,7 +80,7 @@ export function LunarTimeline({
       if (onDateChange && phaseData) {
         onDateChange(newDate, {
           phaseName: phaseData.phase,
-          illumination: phaseData.illumination,
+          illumination: (phaseData.illumination || 0) / 100, // Converter 0-100 para 0-1
           lunarAge: phaseData.age_days || 0,
           isWaxing: phaseData.is_waxing ?? false,
           zodiacSign: phaseData.zodiac_sign || 'N/A',
@@ -88,7 +111,7 @@ export function LunarTimeline({
   /**
    * Formatar iluminação como percentual
    */
-  const illuminationPercentage = phaseData ? Math.round(phaseData.illumination * 100) : 0;
+  const illuminationPercentage = phaseData ? Math.round(phaseData.illumination) : 0; // Já vem em 0-100
 
   if (loading) {
     return (
@@ -107,7 +130,14 @@ export function LunarTimeline({
       <div className={`${styles.lunarTimelineContainer} ${className}`}>
         <div className={styles.moonSection}>
           <div className={styles.moonRenderer}>
-            <div className="text-center text-red-400">❌ Erro ao carregar dados</div>
+            <div className="text-center text-red-400">
+              <div>❌ Erro ao carregar dados</div>
+              {error && (
+                <div className="text-xs mt-2 text-gray-500">
+                  {error.message}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
