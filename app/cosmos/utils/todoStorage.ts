@@ -1,6 +1,6 @@
 'use client';
 
-import type { TodoItem as ParsedTodoItem } from '../components/TodoInput';
+import type { TodoItem as ParsedTodoItem } from '@/app/cosmos/planeta/components/TodoInput';
 import type { TodoInputType } from '@/types/inputs';
 import { MOON_PHASE_LABELS, MOON_PHASES, type MoonPhase } from './moonPhases';
 import { useLocalStorage } from '../hooks/useLocalStorage';

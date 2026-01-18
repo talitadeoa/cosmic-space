@@ -1,602 +1,35 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Chat modules
+import { ChatHeader, ChatMessages, ChatComposer } from './chat/ChatComponents';
+import { ContextEntries, MessageCounter, CloseButton } from './chat/ChatSubComponents';
+import { toneStyles } from './chat/chatConstants';
+import type { CosmosChatModalProps } from './chat/types';
+import { useChatState } from './chat/useChatState';
+import { useMessageSubmit } from './chat/useMessageSubmit';
+import { useBrainstormIntegration } from './chat/useBrainstormIntegration';
+import { useCosmosChatHandlers } from './chat/useCosmosChatHandlers';
+import { useScrollToBottom } from './chat/useScrollToBottom';
+import { computeComposerProps } from './chat/computeComposerProps';
+
+// Components
 import InputWindow from './InputWindow';
-import { ChatMessage, ChatMessageMeta, loadChatHistory, saveChatHistory } from '@/lib/chatHistory';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthChatFlow } from '@/components/auth/AuthChatFlow';
-import { useBrainstormSession } from '@/hooks/useBrainstormSession';
-import { BrainstormPanel } from '@/components/brainstorm';
+import { BrainstormPanel } from '@/app/cosmos/brainstorm';
 
-type SubmitStrategy = 'concat' | 'last';
+// ============================================================================
+// Effects Hooks
+// ============================================================================
 
-type Tone = 'indigo' | 'violet' | 'amber' | 'sky';
-type ChatStyles = (typeof toneStyles)['indigo'];
-
-interface CosmosChatModalProps {
-  isOpen: boolean;
-  inline?: boolean;
-  requiresAuthOnSave?: boolean;
-  allowUnauthedSubmit?: boolean;
-  authNudgeMessage?: string;
-  authRedirectPath?: string;
-  storageKey: string;
-  title: string;
-  eyebrow?: string;
-  subtitle?: string;
-  badge?: string;
-  placeholder: string;
-  systemGreeting?: string;
-  systemQuestion?: string;
-  initialValue?: string;
-  initialValueLabel?: string;
-  submitLabel?: string;
-  tone?: Tone;
-  systemResponses?: string[];
-  submitStrategy?: SubmitStrategy;
-  resetOnSubmit?: boolean;
-  closeOnSubmit?: boolean;
-  submitOnSend?: boolean;
-  windowClassName?: string;
-  enableBrainstorm?: boolean;
-  onClose: () => void;
-  onSubmit: (value: string, messages: ChatMessage[], meta?: ChatMessageMeta) => Promise<void>;
-  headerExtra?: React.ReactNode;
-  contextTitle?: string;
-  contextEntries?: Array<{
-    id: string;
-    label: string;
-    content: string;
-  }>;
-  suggestions?: Array<{
-    id: string;
-    label: string;
-    value?: string;
-    meta?: ChatMessageMeta;
-    tone?: Tone;
-    action?: 'auth';
-  }>;
-}
-
-const toneStyles: Record<
-  Tone,
-  {
-    headerBorder: string;
-    eyebrowText: string;
-    badge: string;
-    userBubble: string;
-    systemBubble: string;
-    sendButton: string;
-    submitButton: string;
-  }
-> = {
-  indigo: {
-    headerBorder: 'border-indigo-300/30',
-    eyebrowText: 'text-indigo-100/80',
-    badge: 'border-indigo-300/40 bg-indigo-500/10 text-indigo-100',
-    userBubble: 'bg-indigo-500/40 border border-indigo-300/40 text-white rounded-br-none',
-    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
-    sendButton: 'border-indigo-300/60 bg-indigo-500/30 text-white hover:bg-indigo-500/45',
-    submitButton:
-      'border-indigo-300/60 bg-indigo-500/30 text-white hover:bg-indigo-500/45 shadow-indigo-900/40 hover:shadow-indigo-700/40',
-  },
-  violet: {
-    headerBorder: 'border-violet-300/30',
-    eyebrowText: 'text-violet-100/80',
-    badge: 'border-violet-300/40 bg-violet-500/10 text-violet-100',
-    userBubble: 'bg-violet-500/35 border border-violet-300/40 text-white rounded-br-none',
-    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
-    sendButton: 'border-violet-300/60 bg-violet-500/30 text-white hover:bg-violet-500/45',
-    submitButton:
-      'border-violet-300/60 bg-violet-500/30 text-white hover:bg-violet-500/45 shadow-violet-900/40 hover:shadow-violet-700/40',
-  },
-  amber: {
-    headerBorder: 'border-amber-300/40',
-    eyebrowText: 'text-amber-100/80',
-    badge: 'border-amber-300/40 bg-amber-500/10 text-amber-100',
-    userBubble: 'bg-amber-500/30 border border-amber-300/40 text-white rounded-br-none',
-    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
-    sendButton: 'border-amber-300/60 bg-amber-500/30 text-white hover:bg-amber-500/45',
-    submitButton:
-      'border-amber-300/60 bg-amber-500/30 text-white hover:bg-amber-500/45 shadow-amber-900/40 hover:shadow-amber-700/40',
-  },
-  sky: {
-    headerBorder: 'border-sky-300/40',
-    eyebrowText: 'text-sky-100/80',
-    badge: 'border-sky-300/40 bg-sky-500/10 text-sky-100',
-    userBubble: 'bg-sky-500/30 border border-sky-300/40 text-white rounded-br-none',
-    systemBubble: 'bg-white/10 border border-white/15 text-slate-100 rounded-bl-none',
-    sendButton: 'border-sky-300/60 bg-sky-500/30 text-white hover:bg-sky-500/45',
-    submitButton:
-      'border-sky-300/60 bg-sky-500/30 text-white hover:bg-sky-500/45 shadow-sky-900/40 hover:shadow-sky-700/40',
-  },
-};
-
-const buildSystemMessage = (id: string, content: string): ChatMessage => ({
-  id,
-  role: 'system',
-  content,
-  timestamp: new Date().toISOString(),
-});
-
-const buildUserMessage = (content: string): ChatMessage => ({
-  id: `user-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-  role: 'user',
-  content,
-  timestamp: new Date().toISOString(),
-});
-
-interface ChatHeaderProps {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-  badge?: string;
-  headerExtra?: React.ReactNode;
-  inline: boolean;
-  styles: ChatStyles;
-  enableBrainstorm?: boolean;
-  isBrainstormActive?: boolean;
-  onToggleBrainstorm?: () => void;
-}
-
-function ChatHeader({
-  eyebrow,
-  title,
-  subtitle,
-  badge,
-  headerExtra,
-  inline,
-  styles,
-  enableBrainstorm,
-  isBrainstormActive,
-  onToggleBrainstorm,
-}: ChatHeaderProps) {
-  return (
-    <div className={`border-b ${styles.headerBorder} ${inline ? 'pb-3' : 'pb-4'}`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
-          {eyebrow && (
-            <div
-              className={`mb-2 font-semibold uppercase tracking-[0.24em] ${styles.eyebrowText} ${
-                inline ? 'text-[0.65rem]' : 'text-sm'
-              }`}
-            >
-              {eyebrow}
-            </div>
-          )}
-          <h2 className={`${inline ? 'text-lg' : 'text-2xl'} font-bold text-white`}>{title}</h2>
-          {subtitle && (
-            <p className={`${inline ? 'text-[0.7rem]' : 'text-xs'} text-slate-200/70`}>{subtitle}</p>
-          )}
-        </div>
-        
-        {enableBrainstorm && (
-          <button
-            onClick={onToggleBrainstorm}
-            className={`
-              flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all
-              ${isBrainstormActive
-                ? 'bg-violet-500/30 border border-violet-400/50 text-violet-100 shadow-lg shadow-violet-500/20'
-                : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20'
-              }
-            `}
-            title={isBrainstormActive ? 'Sair do modo brainstorm' : 'Ativar modo brainstorm'}
-          >
-            <svg className="w-4 h-4" fill={isBrainstormActive ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            <span className="hidden sm:inline">{isBrainstormActive ? 'Brainstorm ativo' : 'Brainstorm'}</span>
-          </button>
-        )}
-      </div>
-      
-      {badge && (
-        <div
-          className={`mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] ${styles.badge}`}
-        >
-          {badge}
-        </div>
-      )}
-      {headerExtra}
-    </div>
-  );
-}
-
-interface ChatMessagesProps {
-  messages: ChatMessage[];
-  styles: ChatStyles;
-  inline: boolean;
-  containerRef: React.RefObject<HTMLDivElement | null>;
-  messagesEndRef: React.RefObject<HTMLDivElement | null>;
-}
-
-function ChatMessages({
-  messages,
-  styles,
-  inline,
-  containerRef,
-  messagesEndRef,
-}: ChatMessagesProps) {
-  const messagesClassName = inline
-    ? 'flex-1 min-h-[120px] space-y-4 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20'
-    : 'flex-1 min-h-[200px] space-y-4 overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20';
-
-  return (
-    <div ref={containerRef} className={messagesClassName}>
-      {messages.length === 0 ? (
-        <div className="flex items-center justify-center h-full text-slate-400/60 text-sm">
-          <span>💬 Digite algo para começar...</span>
-        </div>
-      ) : (
-        messages.map((message, index) => (
-          <motion.div
-            key={message.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className="flex max-w-xs flex-col gap-1">
-              {message.meta && (message.meta.category || message.meta.date) && (
-                <div className="flex flex-wrap gap-1 text-[0.6rem] text-slate-200/80">
-                  {message.meta.category && (
-                    <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
-                      {message.meta.category}
-                    </span>
-                  )}
-                  {message.meta.date && (
-                    <span className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5">
-                      {message.meta.date}
-                    </span>
-                  )}
-                </div>
-              )}
-              <div
-                className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${
-                  message.role === 'user' ? styles.userBubble : styles.systemBubble
-                }`}
-              >
-                {message.content}
-              </div>
-            </div>
-          </motion.div>
-        ))
-      )}
-      <div ref={messagesEndRef} />
-    </div>
-  );
-}
-
-interface ChatComposerProps {
-  inputValue: string;
-  setInputValue: (value: string) => void;
-  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
-  onSend: () => void;
-  onSave: () => void;
-  placeholder: string;
-  inputType?: 'text' | 'password' | 'email';
-  inputAutoComplete?: string;
-  inputName?: string;
-  minInputLength?: number;
-  submitLabel: string;
-  inline: boolean;
-  styles: ChatStyles;
-  isSaving: boolean;
-  hasUserMessage: boolean;
-  submitError: string | null;
-  authSlot?: React.ReactNode;
-  suggestions?: CosmosChatModalProps['suggestions'];
-  metaDraft: ChatMessageMeta;
-  onSuggestionClick: (suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]) => void;
-  onClearMeta: (key: keyof ChatMessageMeta) => void;
-  isInputDisabled?: boolean;
-  isAuthFlowActive?: boolean;
-}
-
-function ChatComposer({
-  inputValue,
-  setInputValue,
-  onKeyDown,
-  onSend,
-  onSave,
-  placeholder,
-  inputType = 'text',
-  inputAutoComplete,
-  inputName,
-  minInputLength = 3,
-  submitLabel,
-  inline: _inline,
-  styles,
-  isSaving,
-  hasUserMessage,
-  submitError,
-  authSlot,
-  suggestions,
-  metaDraft,
-  onSuggestionClick,
-  onClearMeta,
-  isInputDisabled,
-  isAuthFlowActive,
-}: ChatComposerProps) {
-  const isLocked = isSaving || isInputDisabled;
-  const showMeta = !isAuthFlowActive;
-  const showSubmitError = !isAuthFlowActive && submitError;
-  const showSaveButton = !isAuthFlowActive && hasUserMessage;
-
-  return (
-    <div className="space-y-3 border-t border-white/10 pt-4">
-      {authSlot}
-      {showMeta && (metaDraft.category || metaDraft.date || metaDraft.tags?.length) && (
-        <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-slate-200/80">
-          {metaDraft.category && (
-            <button
-              type="button"
-              onClick={() => onClearMeta('category')}
-              className="rounded-full border border-white/15 bg-white/10 px-2 py-1 transition hover:bg-white/20"
-            >
-              {metaDraft.category} ✕
-            </button>
-          )}
-          {metaDraft.date && (
-            <button
-              type="button"
-              onClick={() => onClearMeta('date')}
-              className="rounded-full border border-white/15 bg-white/10 px-2 py-1 transition hover:bg-white/20"
-            >
-              {metaDraft.date} ✕
-            </button>
-          )}
-          {metaDraft.tags?.map((tag) => (
-            <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {suggestions && suggestions.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {suggestions.map((suggestion) => {
-            const suggestionTone = suggestion.tone ?? 'indigo';
-            const toneStyle = toneStyles[suggestionTone];
-            return (
-              <button
-                key={suggestion.id}
-                type="button"
-                onClick={() => onSuggestionClick(suggestion)}
-                className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold transition ${toneStyle.sendButton}`}
-              >
-                {suggestion.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {showSubmitError && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 shadow-inner shadow-black/20"
-        >
-          {submitError}
-        </motion.div>
-      )}
-
-      <div className="flex gap-2">
-        <input
-          type={inputType}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder={placeholder}
-          disabled={isLocked}
-          autoComplete={inputAutoComplete}
-          name={inputName}
-          className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-100 placeholder-slate-300/70 shadow-inner shadow-black/20 transition-colors focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50"
-        />
-        <button
-          type="button"
-          onClick={onSend}
-          disabled={isLocked || inputValue.trim().length < minInputLength}
-          className={`rounded-2xl border px-4 py-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.sendButton}`}
-          aria-label="Enviar mensagem"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            />
-          </svg>
-        </button>
-      </div>
-
-      {showSaveButton && (
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          type="button"
-          onClick={onSave}
-          disabled={isLocked}
-          className={`w-full rounded-2xl border px-4 py-3 font-semibold shadow-md transition disabled:cursor-not-allowed disabled:opacity-60 ${styles.submitButton}`}
-        >
-          {isSaving ? 'Salvando...' : submitLabel}
-        </motion.button>
-      )}
-    </div>
-  );
-}
-
-export default function CosmosChatModal({
-  isOpen,
-  inline = false,
-  storageKey,
-  title,
-  eyebrow,
-  subtitle,
-  badge,
-  placeholder,
-  systemGreeting,
-  systemQuestion,
-  initialValue,
-  initialValueLabel,
-  submitLabel = '✨ Concluir e Salvar',
-  tone = 'indigo',
-  systemResponses = [],
-  submitStrategy = 'concat',
-  resetOnSubmit = false,
-  closeOnSubmit = true,
-  submitOnSend = false,
-  windowClassName = '',
-  requiresAuthOnSave = false,
-  allowUnauthedSubmit = false,
-  authNudgeMessage = 'Se deseja salvar no servidor, entre ou crie sua conta.',
-  authRedirectPath: _authRedirectPath = '/cosmos/auth',
-  enableBrainstorm = false,
-  onClose,
-  onSubmit,
-  headerExtra,
-  contextTitle,
-  contextEntries = [],
-  suggestions = [],
-}: CosmosChatModalProps) {
-  const { isAuthenticated, verifyAuth } = useAuth();
-  const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [pendingAuthSave, setPendingAuthSave] = useState(false);
-  const [showAuthNudge, setShowAuthNudge] = useState(false);
-  const [metaDraft, setMetaDraft] = useState<ChatMessageMeta>({});
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const [isMounted, setIsMounted] = useState(false);
-  const authBypassRef = useRef(false);
-  
-  // Brainstorm state
-  const [showBrainstormPanel, setShowBrainstormPanel] = useState(false);
-  const brainstorm = useBrainstormSession(`${storageKey}-brainstorm`);
-
-  const handleAuthComplete = () => {
-    void verifyAuth({ silent: true });
-    authBypassRef.current = true;
-    setShowAuthPrompt(false);
-    const shouldSave = pendingAuthSave && !isSaving;
-    if (shouldSave) {
-      setPendingAuthSave(false);
-      setTimeout(() => {
-        void handleSave();
-      }, 0);
-      return;
-    }
-    setPendingAuthSave(false);
-  };
-
-  const {
-    messages: authMessages,
-    step: authStep,
-    stepSuggestions: authSuggestions,
-    isSubmitting: isAuthSubmitting,
-    isAuthenticated: isAuthComplete,
-    loading: isAuthLoading,
-    handleUserInput: handleAuthInput,
-    resetAll: resetAuthFlow,
-  } = useAuthChatFlow({ isActive: showAuthPrompt, onAuthenticated: handleAuthComplete });
-
-  const authInputLocked = isAuthSubmitting || isAuthLoading || isAuthComplete;
-
-  const styles = toneStyles[tone];
-  const hasUserMessage = useMemo(
-    () => messages.some((message) => message.role === 'user'),
-    [messages]
-  );
-  const userMessageCount = useMemo(
-    () => messages.filter((message) => message.role === 'user').length,
-    [messages]
-  );
-
-  // Brainstorm handlers
-  const handleToggleBrainstorm = useCallback(() => {
-    if (brainstorm.isActive) {
-      // Se já está ativo, mostra/esconde o painel
-      setShowBrainstormPanel((prev) => !prev);
-    } else {
-      // Inicia nova sessão
-      brainstorm.startSession(title);
-      setShowBrainstormPanel(true);
-      
-      // Adiciona mensagem de boas-vindas do brainstorm ao chat
-      const welcomeResponse = brainstorm.consumePendingResponse();
-      if (welcomeResponse) {
-        const systemMessage = buildSystemMessage(`brainstorm-welcome-${Date.now()}`, welcomeResponse);
-        setMessages((prev) => {
-          const next = [...prev, systemMessage];
-          saveChatHistory(storageKey, next);
-          return next;
-        });
-      }
-    }
-  }, [brainstorm, title, storageKey]);
-
-  const handleEndBrainstorm = useCallback(() => {
-    const finalSession = brainstorm.endSession();
-    setShowBrainstormPanel(false);
-    
-    if (finalSession?.summary) {
-      // Adiciona resumo final ao chat
-      const summaryMessage = buildSystemMessage(`brainstorm-summary-${Date.now()}`, finalSession.summary);
-      setMessages((prev) => {
-        const next = [...prev, summaryMessage];
-        saveChatHistory(storageKey, next);
-        return next;
-      });
-    }
-  }, [brainstorm, storageKey]);
-
-  const scrollToBottom = useCallback(() => {
-    const container = messagesContainerRef.current;
-    if (container) {
-      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-      return;
-    }
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, []);
-
-  const persistMessages = (next: ChatMessage[]) => {
-    setMessages(next);
-    saveChatHistory(storageKey, next);
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, authMessages, showAuthPrompt, scrollToBottom]);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      authBypassRef.current = false;
-      setShowAuthNudge(false);
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!showAuthPrompt) {
-      resetAuthFlow();
-    }
-  }, [showAuthPrompt, resetAuthFlow]);
-
+function useBodyScrollLock(isOpen: boolean, inline: boolean) {
   useEffect(() => {
     if (inline || !isOpen || typeof document === 'undefined') return;
 
-    // Usar html em vez de body para evitar problemas com overflow
     const htmlElement = document.documentElement;
     const bodyElement = document.body;
     const previousHtmlOverflow = htmlElement.style.overflow;
@@ -616,320 +49,238 @@ export default function CosmosChatModal({
       htmlElement.style.paddingRight = previousPaddingRight;
     };
   }, [isOpen, inline]);
+}
+
+function useAuthEffects(
+  isAuthenticated: boolean,
+  authBypassRef: React.MutableRefObject<boolean>,
+  setShowAuthNudge: (show: boolean) => void,
+  showAuthPrompt: boolean,
+  resetAuthFlow: () => void
+) {
+  useEffect(() => {
+    if (isAuthenticated) {
+      authBypassRef.current = false;
+      setShowAuthNudge(false);
+    }
+  }, [isAuthenticated, authBypassRef, setShowAuthNudge]);
 
   useEffect(() => {
-    if (!isOpen) {
-      setMessages([]);
-      setInputValue('');
-      setSubmitError(null);
-      setIsSaving(false);
-      setShowAuthPrompt(false);
+    if (!showAuthPrompt) {
+      resetAuthFlow();
+    }
+  }, [showAuthPrompt, resetAuthFlow]);
+}
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export default function CosmosChatModal(props: CosmosChatModalProps) {
+  const {
+    isOpen,
+    inline = false,
+    storageKey,
+    title,
+    eyebrow,
+    subtitle,
+    badge,
+    placeholder,
+    systemGreeting,
+    systemQuestion,
+    initialValue,
+    initialValueLabel,
+    submitLabel = '✨ Concluir e Salvar',
+    tone = 'indigo',
+    systemResponses = [],
+    submitStrategy = 'concat',
+    resetOnSubmit = false,
+    closeOnSubmit = true,
+    submitOnSend = false,
+    windowClassName = '',
+    requiresAuthOnSave = false,
+    allowUnauthedSubmit = false,
+    authNudgeMessage = 'Se deseja salvar no servidor, entre ou crie sua conta.',
+    enableBrainstorm = false,
+    onClose,
+    onSubmit,
+    headerExtra,
+    contextTitle,
+    contextEntries = [],
+    suggestions = [],
+  } = props;
+
+  // ===== Core State =====
+  const { isAuthenticated, verifyAuth } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // ===== Chat State =====
+  const chatState = useChatState({
+    isOpen,
+    storageKey,
+    initialValue,
+    initialValueLabel,
+    systemGreeting,
+    systemQuestion,
+  });
+
+  const {
+    inputValue,
+    setInputValue,
+    messages,
+    setMessages,
+    metaDraft,
+    setMetaDraft,
+    submitError,
+    setSubmitError,
+    isSaving,
+    setIsSaving,
+    showAuthPrompt,
+    setShowAuthPrompt,
+    pendingAuthSave,
+    setPendingAuthSave,
+    showAuthNudge,
+    setShowAuthNudge,
+    messagesEndRef,
+    messagesContainerRef,
+    authBypassRef,
+    persistMessages,
+    handleClearMeta,
+    pushSystemMessage,
+    getLastUserMeta,
+  } = chatState;
+
+  // ===== Message Submit =====
+  const messageSubmit = useMessageSubmit({
+    storageKey,
+    submitStrategy,
+    resetOnSubmit,
+    closeOnSubmit,
+    submitOnSend,
+    systemResponses,
+    requiresAuthOnSave,
+    allowUnauthedSubmit,
+    isAuthenticated,
+    onSubmit,
+    onClose,
+  });
+
+  const { buildUserMessage, submitMessages, buildSubmitValue } = messageSubmit;
+
+  // ===== Brainstorm =====
+  const brainstorm = useBrainstormIntegration({
+    storageKey,
+    title,
+    enabled: enableBrainstorm,
+    setMessages,
+  });
+
+  // ===== Auth Flow =====
+  const handleAuthComplete = useCallback(() => {
+    void verifyAuth({ silent: true });
+    authBypassRef.current = true;
+    setShowAuthPrompt(false);
+
+    if (pendingAuthSave && !isSaving) {
       setPendingAuthSave(false);
-      setShowAuthNudge(false);
-      setMetaDraft({});
-      authBypassRef.current = false;
-      return;
-    }
-
-    const stored = loadChatHistory(storageKey);
-    if (stored.length > 0) {
-      setMessages(stored);
-      return;
-    }
-
-    const seed: ChatMessage[] = [];
-    if (systemGreeting) {
-      seed.push(buildSystemMessage('greeting', systemGreeting));
-    }
-
-    if (initialValue?.trim()) {
-      const label = initialValueLabel ? ` (${initialValueLabel})` : '';
-      seed.push(
-        buildSystemMessage('saved', `💾 Registro anterior${label}:\n\n"${initialValue.trim()}"`)
-      );
-    }
-
-    if (systemQuestion) {
-      seed.push(buildSystemMessage('question', systemQuestion));
-    }
-
-    persistMessages(seed);
-    setMetaDraft({});
-  }, [initialValue, initialValueLabel, isOpen, storageKey, systemGreeting, systemQuestion]);
-
-  const handleSendMessage = () => {
-    const trimmed = inputValue.trim();
-    if (trimmed.length < 3) {
-      setSubmitError('Escreva pelo menos 3 caracteres para enviar.');
-      return;
-    }
-
-    const userMessage: ChatMessage = {
-      ...buildUserMessage(trimmed),
-      meta: metaDraft.category || metaDraft.date || metaDraft.tags ? metaDraft : undefined,
-    };
-    setInputValue('');
-    setMetaDraft({});
-    setSubmitError(null);
-
-    const nextMessages = [...messages, userMessage];
-    setMessages(nextMessages);
-    saveChatHistory(storageKey, nextMessages);
-
-    // Se está em modo brainstorm, adiciona a ideia e gera resposta
-    if (brainstorm.isActive && brainstorm.status === 'brainstorming') {
-      brainstorm.addIdea(trimmed);
-      
-      // Adiciona resposta do brainstorm ao chat
-      window.setTimeout(() => {
-        const brainstormResponse = brainstorm.consumePendingResponse();
-        if (brainstormResponse) {
-          const systemMessage = buildSystemMessage(`brainstorm-${Date.now()}`, brainstormResponse);
-          setMessages((prev) => {
-            const next = [...prev, systemMessage];
-            saveChatHistory(storageKey, next);
-            return next;
-          });
-        }
-      }, 500);
-      return; // Não executa o fluxo normal quando em brainstorm
-    }
-
-    if (submitOnSend) {
-      const value =
-        submitStrategy === 'last' ? userMessage.content : buildSubmitValue(nextMessages);
-      void submitMessages(value, nextMessages, userMessage.meta);
-    }
-
-    if (systemResponses.length > 0) {
-      window.setTimeout(() => {
-        const response = systemResponses[Math.floor(Math.random() * systemResponses.length)];
-        const systemMessage = buildSystemMessage(`system-${Date.now()}`, response);
-        setMessages((prev) => {
-          const next = [...prev, systemMessage];
-          saveChatHistory(storageKey, next);
-          return next;
-        });
-      }, 700);
-    }
-  };
-
-  const handleAuthSend = async (value: string) => {
-    const didSend = await handleAuthInput(value);
-    if (didSend) {
-      setInputValue('');
-    }
-  };
-
-  const buildSubmitValue = (messagesToSubmit: ChatMessage[]) => {
-    const userMessages = messagesToSubmit
-      .filter((message) => message.role === 'user')
-      .map((message) => message.content);
-    if (!userMessages.length) return '';
-    if (submitStrategy === 'last') {
-      return userMessages[userMessages.length - 1] ?? '';
-    }
-    return userMessages.join('\n\n');
-  };
-
-  const getLastUserMeta = (messagesToSearch: ChatMessage[]) => {
-    for (let i = messagesToSearch.length - 1; i >= 0; i -= 1) {
-      if (messagesToSearch[i].role === 'user') {
-        return messagesToSearch[i].meta;
-      }
-    }
-    return undefined;
-  };
-
-  const pushSystemMessage = (content: string) => {
-    const systemMessage = buildSystemMessage(`system-${Date.now()}`, content);
-    setMessages((prev) => {
-      const next = [...prev, systemMessage];
-      saveChatHistory(storageKey, next);
-      return next;
-    });
-  };
-
-  const submitMessages = async (
-    value: string,
-    messagesToSubmit: ChatMessage[],
-    meta?: ChatMessageMeta
-  ) => {
-    if (value.trim().length < 3) {
-      setSubmitError('Escreva pelo menos 3 caracteres para salvar.');
-      return false;
-    }
-
-    const shouldNudgeAuth = allowUnauthedSubmit && !isAuthenticated && !authBypassRef.current;
-
-    if (requiresAuthOnSave && !isAuthenticated && !authBypassRef.current && !allowUnauthedSubmit) {
-      setShowAuthPrompt(true);
-      setPendingAuthSave(true);
-      return false;
-    }
-
-    setIsSaving(true);
-    setSubmitError(null);
-
-    try {
-      await onSubmit(value, messagesToSubmit, meta ?? getLastUserMeta(messagesToSubmit));
-      if (shouldNudgeAuth && !showAuthNudge) {
-        pushSystemMessage(authNudgeMessage);
-        setShowAuthNudge(true);
-      }
-      if (resetOnSubmit) {
-        setMessages([]);
-        saveChatHistory(storageKey, []);
-        setInputValue('');
-        setMetaDraft({});
-        setSubmitError(null);
-      }
-      if (closeOnSubmit) {
-        onClose();
-      }
-      return true;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao salvar.';
-      const normalized = message.toLowerCase();
-      if (
-        normalized.includes('não autenticado') ||
-        normalized.includes('nao autenticado') ||
-        normalized.includes('não autorizado') ||
-        normalized.includes('nao autorizado') ||
-        normalized.includes('unauthorized')
-      ) {
-        authBypassRef.current = false;
-        setShowAuthPrompt(true);
-        setSubmitError(null);
-        return false;
-      }
-      setSubmitError(message);
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSave = async () => {
-    const value = buildSubmitValue(messages);
-    await submitMessages(value, messages);
-  };
-
-  const handleSuggestionClick = (
-    suggestion: NonNullable<CosmosChatModalProps['suggestions']>[number]
-  ) => {
-    if (showAuthPrompt) {
-      const value = suggestion.value ?? suggestion.label;
-      void handleAuthSend(value);
-      return;
-    }
-    if (suggestion.action === 'auth') {
-      setShowAuthPrompt(true);
+      setTimeout(() => void handlers.handleSave(), 0);
+    } else {
       setPendingAuthSave(false);
-      return;
     }
-    if (suggestion.value) {
-      setInputValue((prev) =>
-        prev ? `${prev} ${suggestion.value}` : (suggestion.value as string)
-      );
-    }
-    if (suggestion.meta) {
-      const meta = suggestion.meta;
-      setMetaDraft((prev) => ({
-        ...prev,
-        ...meta,
-        tags: meta.tags ?? prev.tags,
-      }));
-    }
-  };
+  }, [verifyAuth, authBypassRef, setShowAuthPrompt, pendingAuthSave, isSaving, setPendingAuthSave]);
 
-  const handleClearMeta = (key: keyof ChatMessageMeta) => {
-    setMetaDraft((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-  };
+  const authFlow = useAuthChatFlow({
+    isActive: showAuthPrompt,
+    onAuthenticated: handleAuthComplete,
+  });
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      if (showAuthPrompt) {
-        void handleAuthSend(inputValue);
-        return;
-      }
-      handleSendMessage();
-    }
-  };
+  const {
+    messages: authMessages,
+    step: authStep,
+    stepSuggestions: authSuggestions,
+    isSubmitting: isAuthSubmitting,
+    isAuthenticated: isAuthComplete,
+    loading: isAuthLoading,
+    handleUserInput: handleAuthInput,
+    resetAll: resetAuthFlow,
+  } = authFlow;
 
+  const authInputLocked = isAuthSubmitting || isAuthLoading || isAuthComplete;
+
+  // ===== Handlers =====
+  const handlers = useCosmosChatHandlers({
+    inputValue,
+    setInputValue,
+    messages,
+    metaDraft,
+    setMetaDraft,
+    setSubmitError,
+    setMessages,
+    setIsSaving,
+    showAuthPrompt,
+    setShowAuthPrompt,
+    setPendingAuthSave,
+    authBypassRef,
+    storageKey,
+    submitStrategy,
+    submitOnSend,
+    systemResponses,
+    authNudgeMessage,
+    buildUserMessage,
+    buildSubmitValue,
+    persistMessages,
+    pushSystemMessage,
+    submitMessages,
+    getLastUserMeta,
+    handleAuthInput,
+    brainstormIsActive: brainstorm.isActive,
+    brainstormStatus: brainstorm.status,
+    brainstormAddIdea: brainstorm.addIdea,
+    brainstormProcessResponse: brainstorm.processIdeaResponse,
+  });
+
+  // ===== Derived State =====
+  const styles = toneStyles[tone];
+  const hasUserMessage = useMemo(() => messages.some((m) => m.role === 'user'), [messages]);
+  const userMessageCount = useMemo(() => messages.filter((m) => m.role === 'user').length, [messages]);
+
+  // ===== Scroll =====
+  const scrollToBottom = useScrollToBottom({ messagesContainerRef, messagesEndRef });
+
+  // ===== Effects =====
+  useEffect(() => setIsMounted(true), []);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, authMessages, showAuthPrompt, scrollToBottom]);
+  useBodyScrollLock(isOpen, inline);
+  useAuthEffects(isAuthenticated, authBypassRef, setShowAuthNudge, showAuthPrompt, resetAuthFlow);
+
+  // ===== Computed Props =====
   if (!isMounted) return null;
-  const displayMessages = showAuthPrompt ? [...messages, ...authMessages] : messages;
-  const composerPlaceholder = showAuthPrompt
-    ? authStep === 'password'
-      ? 'Digite sua senha...'
-      : 'Digite sua resposta...'
-    : placeholder;
-  const composerInputType = showAuthPrompt
-    ? authStep === 'password'
-      ? 'password'
-      : authStep === 'email'
-        ? 'email'
-        : 'text'
-    : 'text';
-  const composerAutoComplete = showAuthPrompt
-    ? authStep === 'email'
-      ? 'email'
-      : authStep === 'password'
-        ? 'current-password'
-        : undefined
-    : undefined;
-  const composerInputName = showAuthPrompt
-    ? authStep === 'email'
-      ? 'email'
-      : authStep === 'password'
-        ? 'password'
-        : undefined
-    : undefined;
-  const authNudgeSuggestions =
-    !showAuthPrompt && showAuthNudge
-      ? [{ id: 'auth-cta', label: 'Entrar ou criar conta', action: 'auth' as const, tone: 'amber' as Tone }]
-      : [];
-  const composerSuggestions = showAuthPrompt
-    ? authSuggestions.map((suggestion) => ({ ...suggestion, tone }))
-    : [...authNudgeSuggestions, ...(suggestions ?? [])];
-  const composerInputDisabled = showAuthPrompt ? authInputLocked : false;
-  const handleComposerSend = () => {
-    if (showAuthPrompt) {
-      void handleAuthSend(inputValue);
-      return;
-    }
-    handleSendMessage();
-  };
 
+  const composerProps = computeComposerProps({
+    messages,
+    authMessages,
+    showAuthPrompt,
+    showAuthNudge,
+    authStep,
+    authSuggestions,
+    authInputLocked,
+    placeholder,
+    tone,
+    suggestions,
+  });
+
+  // ===== Render =====
   const chatWindow = (
     <InputWindow
       variant="glass"
       size={inline ? 'sm' : 'md'}
       radius="lg"
       showAccent
-      className={`flex flex-col relative ${inline ? 'w-full max-h-[420px] overflow-auto' : 'h-[600px]'} ${brainstorm.isActive && showBrainstormPanel ? 'pr-80' : ''} ${windowClassName}`}
+      className={`flex flex-col relative ${inline ? 'w-full max-h-[420px] overflow-auto' : 'h-[600px]'} ${brainstorm.showPanel ? 'pr-80' : ''} ${windowClassName}`}
     >
-      {!inline && (
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 transition hover:border-white/30 hover:bg-white/10 hover:text-white z-20"
-          aria-label="Fechar"
-        >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      )}
+      {!inline && <CloseButton onClose={onClose} />}
 
       <ChatHeader
         eyebrow={eyebrow}
@@ -941,114 +292,59 @@ export default function CosmosChatModal({
         styles={styles}
         enableBrainstorm={enableBrainstorm}
         isBrainstormActive={brainstorm.isActive}
-        onToggleBrainstorm={handleToggleBrainstorm}
+        onToggleBrainstorm={brainstorm.handleToggle}
       />
-      
-      {/* Brainstorm Panel */}
+
       {enableBrainstorm && (
         <BrainstormPanel
-          isOpen={showBrainstormPanel && brainstorm.isActive}
+          isOpen={brainstorm.showPanel}
           status={brainstorm.status}
           ideas={brainstorm.ideas}
           clusters={brainstorm.clusters}
           stats={brainstorm.stats}
           onToggleKeyIdea={brainstorm.toggleKeyIdea}
           onCreateCluster={brainstorm.createCluster}
-          onStartOrganizing={() => {
-            brainstorm.startOrganizing();
-            const response = brainstorm.consumePendingResponse();
-            if (response) {
-              const systemMessage = buildSystemMessage(`brainstorm-organize-${Date.now()}`, response);
-              setMessages((prev) => {
-                const next = [...prev, systemMessage];
-                saveChatHistory(storageKey, next);
-                return next;
-              });
-            }
-          }}
-          onGenerateSummary={() => {
-            const summary = brainstorm.generateSummary();
-            if (summary) {
-              const systemMessage = buildSystemMessage(`brainstorm-summary-${Date.now()}`, summary);
-              setMessages((prev) => {
-                const next = [...prev, systemMessage];
-                saveChatHistory(storageKey, next);
-                return next;
-              });
-            }
-          }}
-          onEndSession={handleEndBrainstorm}
-          onClose={() => setShowBrainstormPanel(false)}
+          onStartOrganizing={brainstorm.handleStartOrganizing}
+          onGenerateSummary={brainstorm.handleGenerateSummary}
+          onEndSession={brainstorm.handleEnd}
+          onClose={() => brainstorm.setShowPanel(false)}
         />
       )}
 
-      {!showAuthPrompt && contextEntries.length > 0 && (
-        <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-200/80 shadow-inner shadow-black/10">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-semibold uppercase tracking-[0.18em] text-[0.65rem] text-slate-200/80">
-              {contextTitle ?? 'Inputs conectados'}
-            </span>
-          </div>
-          <div className="mt-2 space-y-2">
-            {contextEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[0.7rem] text-slate-100"
-              >
-                <div className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-slate-300/80">
-                  {entry.label}
-                </div>
-                <div className="mt-1 whitespace-pre-wrap text-xs text-slate-100/90">
-                  {entry.content}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {!showAuthPrompt && <ContextEntries contextTitle={contextTitle} contextEntries={contextEntries} />}
 
       <ChatMessages
-        messages={displayMessages}
+        messages={composerProps.displayMessages}
         styles={styles}
         inline={inline}
         containerRef={messagesContainerRef}
         messagesEndRef={messagesEndRef}
       />
 
-      {hasUserMessage && !inline && !showAuthPrompt && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="border-t border-white/10 px-2 py-2 text-center text-xs text-slate-400"
-        >
-          {userMessageCount} mensagem{userMessageCount !== 1 ? 's' : ''} registrada
-          {userMessageCount !== 1 ? 's' : ''}
-        </motion.div>
-      )}
+      <MessageCounter count={userMessageCount} inline={inline} showAuthPrompt={showAuthPrompt} />
 
       <ChatComposer
         inputValue={inputValue}
         setInputValue={setInputValue}
-        onKeyDown={handleKeyDown}
-        onSend={handleComposerSend}
-        onSave={handleSave}
-        placeholder={composerPlaceholder}
-        inputType={composerInputType}
-        inputAutoComplete={composerAutoComplete}
-        inputName={composerInputName}
-        minInputLength={showAuthPrompt ? 1 : 3}
+        onKeyDown={handlers.handleKeyDown}
+        onSend={handlers.handleComposerSend}
+        onSave={handlers.handleSave}
+        placeholder={composerProps.placeholder}
+        inputType={composerProps.inputType}
+        inputAutoComplete={composerProps.autoComplete}
+        inputName={composerProps.inputName}
+        minInputLength={composerProps.minInputLength}
         submitLabel={submitLabel}
         inline={inline}
         styles={styles}
         isSaving={isSaving}
         hasUserMessage={hasUserMessage}
         submitError={submitError}
-        authSlot={null}
-        suggestions={composerSuggestions}
+        suggestions={composerProps.suggestions}
         metaDraft={metaDraft}
-        onSuggestionClick={handleSuggestionClick}
+        onSuggestionClick={handlers.handleSuggestionClick}
         onClearMeta={handleClearMeta}
-        isInputDisabled={composerInputDisabled}
+        isInputDisabled={composerProps.inputDisabled}
         isAuthFlowActive={showAuthPrompt}
       />
     </InputWindow>

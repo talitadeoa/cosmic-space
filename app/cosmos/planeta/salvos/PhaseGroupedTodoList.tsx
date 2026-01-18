@@ -145,7 +145,7 @@ export const PhaseGroupedTodoList = memo(function PhaseGroupedTodoList({
     };
 
     displayedTodos.forEach((todo) => {
-      const phase = todo.phase || 'sem-fase';
+      const phase = (todo.phase || 'sem-fase') as keyof typeof groups;
       groups[phase].push(todo);
     });
 

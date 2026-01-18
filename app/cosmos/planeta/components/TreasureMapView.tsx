@@ -175,7 +175,7 @@ export const TreasureMapView: React.FC<TreasureMapViewProps> = ({
                         </span>
                         {todo.islandId && (
                           <span className="text-xs px-2 py-0.5 rounded-full bg-amber-800/50 text-amber-300">
-                            🏝️ {islandNames[todo.islandId] || todo.islandId}
+                            🏝️ {islandNames[todo.islandId as IslandId] || todo.islandId}
                           </span>
                         )}
                       </button>

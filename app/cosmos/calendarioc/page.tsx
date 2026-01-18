@@ -4,8 +4,8 @@ import { useState, useCallback } from 'react';
 import { SpacePageLayout } from '@/components/layouts';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import LuaCycleMenu from '@/app/cosmos/lua/components/LuaCycleMenu';
-import { LunarCalendarWidget, generateMockLunarData } from '@/components/lunar-calendar';
-import type { LunarDataByDate } from '@/components/lunar-calendar';
+import { LunarCalendarWidget, generateMockLunarData } from '@/app/cosmos/lua/lunar-calendar';
+import type { LunarDataByDate } from '@/app/cosmos/lua/lunar-calendar';
 
 export default function CalendarPage() {
   const today = new Date();

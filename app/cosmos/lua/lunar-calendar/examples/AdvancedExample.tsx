@@ -15,7 +15,7 @@ import {
   LunarCalendarWidget,
   LunarDataByDate,
   formatDateKey,
-} from '@/components/lunar-calendar';
+} from '@/app/cosmos/lua/lunar-calendar';
 
 interface UserNote {
   date: string; // "YYYY-MM-DD"

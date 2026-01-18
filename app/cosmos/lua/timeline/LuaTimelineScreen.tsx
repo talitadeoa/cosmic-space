@@ -6,8 +6,8 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import { LunarTimeline } from '@/components/lunar-timeline';
-import type { MoonDataCallback } from '@/components/lunar-timeline';
+import { LunarTimeline } from '@/app/cosmos/lua/lunar-timeline';
+import type { MoonDataCallback } from '@/app/cosmos/lua/lunar-timeline';
 
 const LuaTimelineScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());

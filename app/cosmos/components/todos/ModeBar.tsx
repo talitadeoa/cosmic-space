@@ -3,7 +3,7 @@
  */
 'use client';
 import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
-import { TodoFilters } from '@/components/todos/TodoFilters';
+import { TodoFilters } from '@/app/cosmos/planeta/salvos/TodoFilters';
 
 /**
  * Mode bar para alternar entre edit, select, group
