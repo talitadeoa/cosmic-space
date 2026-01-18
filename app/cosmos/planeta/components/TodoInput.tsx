@@ -193,14 +193,14 @@ const TodoInput: React.FC<TodoInputProps> = ({
           isCheckbox
             ? [
                 {
-                  id: 'categoria-pessoal',
-                  label: 'Categoria: Pessoal',
-                  meta: { category: 'Pessoal' },
+                  id: 'categoria-importante',
+                  label: 'Categoria: Importante',
+                  meta: { category: 'Importante' },
                 },
                 {
-                  id: 'categoria-trabalho',
-                  label: 'Categoria: Trabalho',
-                  meta: { category: 'Trabalho' },
+                  id: 'categoria-secundaria',
+                  label: 'Categoria: Secundária',
+                  meta: { category: 'Secundária' },
                 },
                 { id: 'data-hoje', label: 'Hoje', meta: { date: formatDate(today) }, tone: 'sky' },
                 {

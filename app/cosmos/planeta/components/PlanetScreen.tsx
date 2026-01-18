@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import NavMenu from '@/components/navigation/NavMenu';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
-import { Card } from '@/app/cosmos/components/Card';
 import TodoInput, { TodoItem as ParsedTodoItem } from './TodoInput';
 import { type MoonPhase, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
 import { PHASE_VIBES } from '@/app/cosmos/utils/phaseVibes';
@@ -451,7 +450,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       <NavMenu showDevRoutes={true} />
       <div className="relative flex w-full max-w-7xl flex-col gap-5 sm:gap-7 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
-        <div className="order-4 flex w-full flex-col items-center gap-5 sm:gap-7 lg:order-1 lg:w-auto lg:max-w-xs">
+        <div className="order-4 flex w-full flex-col items-center gap-5 sm:gap-7 lg:order-1 lg:w-auto lg:max-w-xs lg:ml-10 xl:ml-16">
           {/* Planeta */}
           <div className="flex justify-center">
             <CelestialObject
@@ -483,98 +482,96 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
           )}
         </div>
 
-        {/* Coluna central: Card com tarefas (ordem 3 no mobile, 2 no desktop) */}
+        {/* Coluna central: fluxo principal (ordem 3 no mobile, 2 no desktop) */}
         <div className="order-3 relative w-full lg:order-2 lg:flex-1">
-          <Card className="relative z-10 w-full overflow-hidden border border-white/10 bg-transparent p-3 shadow-none backdrop-blur-0 sm:p-5 md:p-6 !bg-transparent !backdrop-blur-0 !shadow-none">
-            <div className="flex flex-col gap-3 overflow-visible pr-1 sm:gap-4 md:gap-5">
-              <div className="flex flex-col gap-4 flex-shrink-0">
-                <SavedTodosPanel
-                  savedTodos={displayedTodos}
-                  view={filters.view}
-                  onViewChange={(view) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      view,
-                    }))
-                  }
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  onTouchMove={handleTouchMove}
-                  onToggleComplete={handleToggleComplete}
-                  onDropInside={() => {
-                    dropHandledRef.current = true;
-                  }}
-                  onDeleteTodo={handleRequestDelete}
-                  onBatchDelete={handleRequestBatchDelete}
-                  onBatchAssignPhase={assignTodosToPhase}
-                  onBatchAssignIsland={assignTodosToIsland}
-                  onUpdateTodo={handleUpdateTodo}
-                  selectedPhase={filters.phase}
-                  selectedIsland={filters.island}
-                  islandNames={islandNames}
-                  islandIds={islandIds}
-                  inputTypeFilter={filters.inputType}
-                  todoStatusFilter={filters.todoStatus}
-                  onInputTypeFilterChange={(inputType) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      inputType,
-                    }))
-                  }
-                  onTodoStatusFilterChange={(todoStatus) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      todoStatus,
-                    }))
-                  }
-                />
-                <div className="flex items-center justify-end flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
-                    className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-4 py-2 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30 active:bg-indigo-500/40 touch-manipulation"
-                  >
-                    {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
-                  </button>
-                </div>
-
-                <FiltersPanel
-                  isOpen={isFiltersPanelOpen}
-                  filters={filters}
-                  onClearFilters={resetFilters}
-                  onMonthChange={(month) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      month,
-                    }))
-                  }
-                  onYearChange={(year) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      year,
-                    }))
-                  }
-                  onTodoStatusToggle={() =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      todoStatus: prev.todoStatus === 'completed' ? 'open' : 'completed',
-                    }))
-                  }
-                  islandNames={islandNames}
-                />
-
-                <TodoInput
-                  className="shadow-lg flex-shrink-0"
-                  onTodoSubmit={handleTodoSubmit}
-                  chatInline={true}
-                  selectedIsland={filters.island}
-                  islandNames={islandNames}
-                />
+          <div className="relative z-10 flex flex-col gap-3 pr-1 sm:gap-4 md:gap-5">
+            <div className="flex flex-col gap-4 flex-shrink-0">
+              <SavedTodosPanel
+                savedTodos={displayedTodos}
+                view={filters.view}
+                onViewChange={(view) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    view,
+                  }))
+                }
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onTouchMove={handleTouchMove}
+                onToggleComplete={handleToggleComplete}
+                onDropInside={() => {
+                  dropHandledRef.current = true;
+                }}
+                onDeleteTodo={handleRequestDelete}
+                onBatchDelete={handleRequestBatchDelete}
+                onBatchAssignPhase={assignTodosToPhase}
+                onBatchAssignIsland={assignTodosToIsland}
+                onUpdateTodo={handleUpdateTodo}
+                selectedPhase={filters.phase}
+                selectedIsland={filters.island}
+                islandNames={islandNames}
+                islandIds={islandIds}
+                inputTypeFilter={filters.inputType}
+                todoStatusFilter={filters.todoStatus}
+                onInputTypeFilterChange={(inputType) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    inputType,
+                  }))
+                }
+                onTodoStatusFilterChange={(todoStatus) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    todoStatus,
+                  }))
+                }
+              />
+              <div className="flex items-center justify-end flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
+                  className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-4 py-2 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30 active:bg-indigo-500/40 touch-manipulation"
+                >
+                  {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
+                </button>
               </div>
+
+              <FiltersPanel
+                isOpen={isFiltersPanelOpen}
+                filters={filters}
+                onClearFilters={resetFilters}
+                onMonthChange={(month) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    month,
+                  }))
+                }
+                onYearChange={(year) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    year,
+                  }))
+                }
+                onTodoStatusToggle={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    todoStatus: prev.todoStatus === 'completed' ? 'open' : 'completed',
+                  }))
+                }
+                islandNames={islandNames}
+              />
+
+              <TodoInput
+                className="shadow-lg flex-shrink-0"
+                onTodoSubmit={handleTodoSubmit}
+                chatInline={true}
+                selectedIsland={filters.island}
+                islandNames={islandNames}
+              />
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Coluna direita: Luas + Sol (ordem 2 e 1 no mobile, 3 no desktop) */}

@@ -48,7 +48,7 @@ export const TodoFilters = memo(function TodoFilters({
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          📝 Texto
+          📝 Textos
         </button>
         <button
           type="button"

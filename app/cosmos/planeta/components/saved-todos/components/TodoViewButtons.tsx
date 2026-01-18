@@ -122,77 +122,81 @@ export function TodoViewButtons({
   onDragLeave,
 }: TodoViewButtonsProps) {
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2">
-      <ViewButton
-        view="todos"
-        currentView={currentView}
-        label="Todos"
-        icon="📋"
-        activeColor="slate"
-        activeViewDrop={activeViewDrop}
-        onViewChange={onViewChange}
-      />
+    <div className="mt-2 flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        <ViewButton
+          view="todos"
+          currentView={currentView}
+          label="Todos"
+          icon="📋"
+          activeColor="slate"
+          activeViewDrop={activeViewDrop}
+          onViewChange={onViewChange}
+        />
 
-      <ViewButton
-        view="em-aberto"
-        currentView={currentView}
-        label="Em aberto"
-        icon="⏳"
-        activeColor="indigo"
-        activeViewDrop={activeViewDrop}
-        onViewChange={onViewChange}
-        onDragOver={onDragOver}
-        onDrop={onDrop('em-aberto')}
-        onDragEnter={onDragEnter('em-aberto')}
-        onDragLeave={onDragLeave}
-      />
+        <ViewButton
+          view="em-aberto"
+          currentView={currentView}
+          label="Em aberto"
+          icon="⏳"
+          activeColor="indigo"
+          activeViewDrop={activeViewDrop}
+          onViewChange={onViewChange}
+          onDragOver={onDragOver}
+          onDrop={onDrop('em-aberto')}
+          onDragEnter={onDragEnter('em-aberto')}
+          onDragLeave={onDragLeave}
+        />
+      </div>
 
-      <ViewButton
-        view="lua-atual"
-        currentView={currentView}
-        label="Lua atual"
-        icon="🌙"
-        activeColor="indigo"
-        activeViewDrop={activeViewDrop}
-        onViewChange={onViewChange}
-        onDragOver={onDragOver}
-        onDrop={onDrop('lua-atual')}
-        onDragEnter={onDragEnter('lua-atual')}
-        onDragLeave={onDragLeave}
-      />
+      <div className="flex flex-wrap gap-2">
+        <ViewButton
+          view="lua-atual"
+          currentView={currentView}
+          label="Lua atual"
+          icon="🌙"
+          activeColor="indigo"
+          activeViewDrop={activeViewDrop}
+          onViewChange={onViewChange}
+          onDragOver={onDragOver}
+          onDrop={onDrop('lua-atual')}
+          onDragEnter={onDragEnter('lua-atual')}
+          onDragLeave={onDragLeave}
+        />
 
-      <ViewButton
-        view="proxima-fase"
-        currentView={currentView}
-        label="Próxima fase"
-        icon={selectedPhase ? MOON_EMOJIS[getNextPhase(selectedPhase)] : '🌙'}
-        activeColor="amber"
-        activeViewDrop={activeViewDrop}
-        onViewChange={onViewChange}
-        onDragOver={onDragOver}
-        onDrop={onDrop('proxima-fase')}
-        onDragEnter={onDragEnter('proxima-fase')}
-        onDragLeave={onDragLeave}
-        title={
-          selectedPhase
-            ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}`
-            : 'Próxima fase lunar'
-        }
-      />
+        <ViewButton
+          view="proxima-fase"
+          currentView={currentView}
+          label="Próxima fase"
+          icon={selectedPhase ? MOON_EMOJIS[getNextPhase(selectedPhase)] : '🌙'}
+          activeColor="amber"
+          activeViewDrop={activeViewDrop}
+          onViewChange={onViewChange}
+          onDragOver={onDragOver}
+          onDrop={onDrop('proxima-fase')}
+          onDragEnter={onDragEnter('proxima-fase')}
+          onDragLeave={onDragLeave}
+          title={
+            selectedPhase
+              ? `Próxima fase: ${phaseLabels[getNextPhase(selectedPhase)]}`
+              : 'Próxima fase lunar'
+          }
+        />
 
-      <ViewButton
-        view="proximo-ciclo"
-        currentView={currentView}
-        label="Próximo ciclo"
-        icon="📅"
-        activeColor="rose"
-        activeViewDrop={activeViewDrop}
-        onViewChange={onViewChange}
-        onDragOver={onDragOver}
-        onDrop={onDrop('proximo-ciclo')}
-        onDragEnter={onDragEnter('proximo-ciclo')}
-        onDragLeave={onDragLeave}
-      />
+        <ViewButton
+          view="proximo-ciclo"
+          currentView={currentView}
+          label="Próximo ciclo"
+          icon="📅"
+          activeColor="rose"
+          activeViewDrop={activeViewDrop}
+          onViewChange={onViewChange}
+          onDragOver={onDragOver}
+          onDrop={onDrop('proximo-ciclo')}
+          onDragEnter={onDragEnter('proximo-ciclo')}
+          onDragLeave={onDragLeave}
+        />
+      </div>
     </div>
   );
 }

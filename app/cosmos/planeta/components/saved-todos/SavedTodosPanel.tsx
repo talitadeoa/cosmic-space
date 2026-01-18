@@ -424,7 +424,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
   return (
     <div
       ref={panelRef}
-      className="rounded-2xl border border-white/10 bg-slate-950/35 p-4 shadow-xl shadow-indigo-900/20 backdrop-blur-md"
+      className="rounded-2xl border-0 bg-transparent p-4 shadow-none backdrop-blur-0"
       role="region"
       aria-label="Painel de tarefas salvas"
       onDragOver={(e) => e.preventDefault()}

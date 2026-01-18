@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useRef } from 'react';
 import type { SavedTodo, } from '@/app/cosmos/utils/todoStorage';
 import { getIslandLabel, type IslandNames } from '@/app/cosmos/utils/islandNames';
 
@@ -87,6 +87,12 @@ export const TodoItem = memo(function TodoItem({
   const isCompleted = isCheckbox && todo.completed;
   const showMeta =
     todo.inputType === 'text' || todo.category || todo.dueDate || islandLabel;
+  const lastTapRef = useRef(0);
+
+  const maybeStartEditing = useCallback(() => {
+    if (isSelectionMode || isEditing) return;
+    onStartEdit(todo);
+  }, [isSelectionMode, isEditing, onStartEdit, todo]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (isSelectionMode && onSelectionTouchStart) {
@@ -101,8 +107,17 @@ export const TodoItem = memo(function TodoItem({
       onSelectionTouchEnd?.();
       return;
     }
+    const now = e.timeStamp;
+    const isDoubleTap = now - lastTapRef.current < 350;
+    if (isDoubleTap) {
+      lastTapRef.current = 0;
+      e.stopPropagation();
+      maybeStartEditing();
+    } else {
+      lastTapRef.current = now;
+    }
     onTouchEnd?.(todo.id)(e);
-  }, [isSelectionMode, todo.id, onSelectionTouchEnd, onTouchEnd]);
+  }, [isSelectionMode, todo.id, onSelectionTouchEnd, onTouchEnd, maybeStartEditing]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (isSelectionMode) {
@@ -130,6 +145,12 @@ export const TodoItem = memo(function TodoItem({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
+      onDoubleClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        maybeStartEditing();
+      }}
+      data-stop-background-click="true"
       className={`group relative flex items-start justify-between gap-3 rounded-xl border px-3 py-2 text-sm text-slate-100 shadow-inner shadow-black/30 transition hover:border-indigo-500/60 hover:bg-slate-900/90 ${
         isSelected
           ? 'border-emerald-400/70 bg-emerald-500/10'
