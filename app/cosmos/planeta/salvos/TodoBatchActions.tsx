@@ -109,7 +109,7 @@ export const TodoBatchActions = memo(function TodoBatchActions({
         </button>
       </div>
 
-      {/* Segunda linha: Mover para fase/ilha */}
+      {/* Segunda linha: Mover para fase/view */}
       <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-[0.6rem] text-slate-300 w-full">
         <span className="uppercase tracking-[0.18em] text-slate-400">Mover para</span>
         <div className="flex flex-wrap gap-2">
@@ -126,13 +126,64 @@ export const TodoBatchActions = memo(function TodoBatchActions({
             </button>
           ))}
         </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onBatchMoveToView?.('em-aberto')}
+            disabled={selectedCount === 0 || !onBatchMoveToView}
+            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+              selectedCount === 0 || !onBatchMoveToView
+                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                : 'border-slate-400/60 bg-slate-500/20 text-slate-100 hover:bg-slate-500/30'
+            }`}
+          >
+            Em aberto
+          </button>
+          <button
+            type="button"
+            onClick={() => onBatchMoveToView?.('lua-atual')}
+            disabled={selectedCount === 0 || !onBatchMoveToView}
+            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+              selectedCount === 0 || !onBatchMoveToView
+                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                : 'border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
+            }`}
+          >
+            Lua atual
+          </button>
+          <button
+            type="button"
+            onClick={() => onBatchMoveToView?.('proxima-fase')}
+            disabled={selectedCount === 0 || !onBatchMoveToView}
+            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+              selectedCount === 0 || !onBatchMoveToView
+                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                : 'border-amber-400/60 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30'
+            }`}
+          >
+            Próxima fase
+          </button>
+          <button
+            type="button"
+            onClick={() => onBatchMoveToView?.('proximo-ciclo')}
+            disabled={selectedCount === 0 || !onBatchMoveToView}
+            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
+              selectedCount === 0 || !onBatchMoveToView
+                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                : 'border-rose-400/60 bg-rose-500/20 text-rose-100 hover:bg-rose-500/30'
+            }`}
+          >
+            Próximo ciclo
+          </button>
+        </div>
       </div>
 
-      {/* Terceira linha: Categoria/Ilha/View */}
+      {/* Terceira linha: Categoria/Ilha */}
       <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-[0.6rem] text-slate-300 w-full">
         <span className="uppercase tracking-[0.18em] text-slate-400">Categoria</span>
         <div className="flex flex-wrap gap-2">
-          {['Prioridade', 'Secundária'].map((category) => (
+          {['⚡Principal', '🫧Secundária'].map((category) => (
             <button
               key={category}
               type="button"
@@ -190,58 +241,6 @@ export const TodoBatchActions = memo(function TodoBatchActions({
             </button>
           </div>
         )}
-
-        {/* Mover para view */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => onBatchMoveToView?.('em-aberto')}
-            disabled={selectedCount === 0 || !onBatchMoveToView}
-            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-              selectedCount === 0 || !onBatchMoveToView
-                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                : 'border-slate-400/60 bg-slate-500/20 text-slate-100 hover:bg-slate-500/30'
-            }`}
-          >
-            Em aberto
-          </button>
-          <button
-            type="button"
-            onClick={() => onBatchMoveToView?.('lua-atual')}
-            disabled={selectedCount === 0 || !onBatchMoveToView}
-            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-              selectedCount === 0 || !onBatchMoveToView
-                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                : 'border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
-            }`}
-          >
-            Lua atual
-          </button>
-          <button
-            type="button"
-            onClick={() => onBatchMoveToView?.('proxima-fase')}
-            disabled={selectedCount === 0 || !onBatchMoveToView}
-            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-              selectedCount === 0 || !onBatchMoveToView
-                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                : 'border-amber-400/60 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30'
-            }`}
-          >
-            Próxima fase
-          </button>
-          <button
-            type="button"
-            onClick={() => onBatchMoveToView?.('proximo-ciclo')}
-            disabled={selectedCount === 0 || !onBatchMoveToView}
-            className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] transition ${
-              selectedCount === 0 || !onBatchMoveToView
-                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
-                : 'border-rose-400/60 bg-rose-500/20 text-rose-100 hover:bg-rose-500/30'
-            }`}
-          >
-            Próximo ciclo
-          </button>
-        </div>
       </div>
     </div>
   );

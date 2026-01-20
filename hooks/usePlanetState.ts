@@ -56,6 +56,14 @@ export const usePlanetState = () => {
         };
         savePlanetStateMeta(metaRef.current);
         pendingRef.current = true;
+        // Remove 'view' do payload antes de enviar ao servidor
+        // A 'view' é apenas um estado de UI transitório e nunca deve ser sincronizado
+        const { filters: resolvedFilters, ...stateWithoutView } = resolved;
+        const payloadFilters = { ...resolvedFilters, view: 'todos' };
+        const payload = {
+          ...stateWithoutView,
+          filters: payloadFilters,
+        } as PlanetUiState;
         void enqueueStateChange({
           clientChangeId: createChangeId(),
           type: 'planet_state',
@@ -64,7 +72,7 @@ export const usePlanetState = () => {
           baseVersion: metaRef.current.version ?? null,
           updatedAt,
           deletedAt: null,
-          payload: resolved,
+          payload,
         });
         return resolved;
       });
@@ -130,7 +138,17 @@ export const usePlanetState = () => {
         
         suppressOutboxRef.current = true;
         const normalized = normalizePlanetState(pullResult.item.payload);
-        setStateInternal(normalized);
+        // IMPORTANTE: A `view` é apenas um estado de UI transitório (qual visualização o usuário
+        // está vendo neste momento). Nunca deve ser sincronizada com o servidor.
+        // Sempre preservamos a view local para não resetar a visualização do usuário
+        // durante sincronizações automáticas que acontecem a cada 30s.
+        setStateInternal((prev) => ({
+          ...normalized,
+          filters: {
+            ...normalized.filters,
+            view: prev.filters.view, // Sempre manter a view local
+          },
+        }));
         metaRef.current = {
           version: pullResult.item.version,
           updatedAt: pullResult.item.updatedAt,

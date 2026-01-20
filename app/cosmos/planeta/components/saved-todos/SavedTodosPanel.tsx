@@ -467,7 +467,6 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
   const handleBatchMoveToView = useCallback(
     (viewType: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => {
       if (selectedCount === 0 || !onUpdateTodo) return;
-      handleViewChange(viewType);
 
       if (viewType === 'em-aberto') {
         state.selectedTodoIds.forEach((id) => {
@@ -513,7 +512,6 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     [
       selectedCount,
       onUpdateTodo,
-      handleViewChange,
       state.selectedTodoIds,
       savedTodos,
       selectedPhase,
