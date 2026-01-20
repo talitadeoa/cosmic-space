@@ -373,6 +373,16 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     onBatchAssignIsland(state.selectedTodoIds, state.batchIsland as IslandId);
   }, [state.batchIsland, selectedCount, onBatchAssignIsland, state.selectedTodoIds]);
 
+  const handleBatchAssignCategory = useCallback(
+    (category: string | null) => {
+      if (selectedCount === 0 || !onUpdateTodo) return;
+      state.selectedTodoIds.forEach((id) => {
+        onUpdateTodo(id, { category: category || undefined });
+      });
+    },
+    [selectedCount, onUpdateTodo, state.selectedTodoIds]
+  );
+
   const getDraggedTodoIds = useCallback((event: React.DragEvent): string[] => {
     const rawTodoIds = event.dataTransfer.getData('text/todo-ids');
     if (rawTodoIds) {
@@ -665,6 +675,7 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
           onBatchAssignPhase={handleBatchAssignPhase}
           onBatchAssignIsland={handleBatchAssignIsland}
           onBatchMoveToView={handleBatchMoveToView}
+          onBatchAssignCategory={handleBatchAssignCategory}
           onBatchIslandChange={setBatchIsland}
         />
       )}

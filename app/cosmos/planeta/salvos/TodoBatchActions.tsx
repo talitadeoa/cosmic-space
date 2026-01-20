@@ -23,6 +23,7 @@ interface TodoBatchActionsProps {
   onBatchDelete?: () => void;
   onBatchAssignPhase?: (phase: MoonPhase) => void;
   onBatchAssignIsland?: () => void;
+  onBatchAssignCategory?: (category: string | null) => void;
   onBatchMoveToView?: (view: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => void;
   onBatchIslandChange: (island: IslandId | '') => void;
   className?: string;
@@ -45,6 +46,7 @@ export const TodoBatchActions = memo(function TodoBatchActions({
   onBatchDelete,
   onBatchAssignPhase,
   onBatchAssignIsland,
+  onBatchAssignCategory,
   onBatchMoveToView,
   onBatchIslandChange,
   className = '',
@@ -59,6 +61,10 @@ export const TodoBatchActions = memo(function TodoBatchActions({
     if (batchIsland) {
       onBatchAssignIsland?.();
     }
+  };
+
+  const handleAssignCategory = (category: string | null) => {
+    onBatchAssignCategory?.(category);
   };
 
   // Estilos
@@ -119,6 +125,40 @@ export const TodoBatchActions = memo(function TodoBatchActions({
               {phaseLabels[phase]}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Terceira linha: Categoria/Ilha/View */}
+      <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-[0.6rem] text-slate-300 w-full">
+        <span className="uppercase tracking-[0.18em] text-slate-400">Categoria</span>
+        <div className="flex flex-wrap gap-2">
+          {['Prioridade', 'Secundária'].map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => handleAssignCategory(category)}
+              disabled={selectedCount === 0 || !onBatchAssignCategory}
+              className={`${buttonBase} ${
+                selectedCount === 0 || !onBatchAssignCategory
+                  ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                  : 'border-indigo-400/60 bg-indigo-500/20 text-indigo-100 hover:bg-indigo-500/30'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => handleAssignCategory(null)}
+            disabled={selectedCount === 0 || !onBatchAssignCategory}
+            className={`${buttonBase} ${
+              selectedCount === 0 || !onBatchAssignCategory
+                ? 'border-slate-800 bg-slate-900/60 text-slate-500'
+                : 'border-slate-600 bg-slate-800/60 text-slate-200 hover:bg-slate-700/60'
+            }`}
+          >
+            Limpar
+          </button>
         </div>
 
         {/* Mover para ilha */}
