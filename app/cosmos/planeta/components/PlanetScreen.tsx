@@ -374,6 +374,82 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     currentWeekPhase?.nextWeekDominantPhase
   );
 
+  const highlightedPhase = currentWeekPhase?.dominantPhase ?? currentWeekPhase?.currentPhase ?? null;
+  const highlightedPhases = useMemo(() => {
+    const set = new Set<MoonPhase>();
+    if (currentWeekPhase?.phasesInWeek) {
+      currentWeekPhase.phasesInWeek.forEach((phase) => set.add(phase));
+    }
+    if (currentWeekPhase?.currentPhase) set.add(currentWeekPhase.currentPhase);
+    if (currentWeekPhase?.dominantPhase) set.add(currentWeekPhase.dominantPhase);
+    return Array.from(set);
+  }, [currentWeekPhase?.phasesInWeek, currentWeekPhase?.currentPhase, currentWeekPhase?.dominantPhase]);
+
+  const phaseZodiacByPhase = useMemo(() => {
+    const days = lunations.data?.days;
+    if (!days || days.length === 0) return null;
+
+    const normalizePhase = (phase: string | undefined | null): MoonPhase | null => {
+      if (!phase) return null;
+      const normalized = phase.toLowerCase();
+      if (normalized.includes('new')) return 'luaNova';
+      if (normalized.includes('first') || normalized.includes('crescente')) return 'luaCrescente';
+      if (normalized.includes('full') || normalized.includes('cheia')) return 'luaCheia';
+      if (normalized.includes('last') || normalized.includes('third') || normalized.includes('minguante'))
+        return 'luaMinguante';
+      return null;
+    };
+
+    const toDate = (dateStr: string) => new Date(`${dateStr}T00:00:00`);
+
+    const parsed = days
+      .map((entry: any) => ({
+        ...entry,
+        dateObj: entry.date ? toDate(entry.date) : null,
+        moonPhase: normalizePhase(entry.phase),
+      }))
+      .filter((entry: any) => entry.dateObj instanceof Date && !isNaN(entry.dateObj) && entry.moonPhase)
+      .sort((a: any, b: any) => (a.dateObj as Date).getTime() - (b.dateObj as Date).getTime());
+
+    if (parsed.length === 0) return null;
+
+    const now = new Date();
+    let lastNewIndex = -1;
+    parsed.forEach((entry: any, index: number) => {
+      if (entry.moonPhase === 'luaNova' && entry.dateObj <= now) {
+        lastNewIndex = index;
+      }
+    });
+
+    if (lastNewIndex === -1) return null;
+
+    const nextNewIndex = parsed.findIndex(
+      (entry: any, idx: number) => idx > lastNewIndex && entry.moonPhase === 'luaNova'
+    );
+    const cycleEndDate = nextNewIndex !== -1 ? (parsed[nextNewIndex].dateObj as Date) : null;
+
+    const isWithinCycle = (entry: any, idx: number) => {
+      if (idx < lastNewIndex) return false;
+      if (!cycleEndDate) return true;
+      return (entry.dateObj as Date) < cycleEndDate;
+    };
+
+    const cycleEntries = parsed.filter(isWithinCycle);
+
+    const phases: Partial<Record<MoonPhase, { sign?: string; emoji?: string }>> = {};
+    (['luaNova', 'luaCrescente', 'luaCheia', 'luaMinguante'] as MoonPhase[]).forEach((phase) => {
+      const match = cycleEntries.find((entry: any) => entry.moonPhase === phase);
+      if (match) {
+        phases[phase] = {
+          sign: match.zodiac_sign,
+          emoji: match.zodiac_emoji,
+        };
+      }
+    });
+
+    return phases;
+  }, [lunations.data?.days]);
+
   const moonCounts = useMemo(
     () =>
       displayedTodos.reduce(
@@ -444,16 +520,16 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
   return (
     <div
-      className="relative flex w-full min-h-[100dvh] items-start justify-center px-3 sm:px-5 lg:px-8 pt-3 sm:pt-5 pb-28 sm:pb-32 safe-area-inset"
+      className="relative flex w-full min-h-[100dvh] items-start justify-center px-3 sm:px-5 lg:px-8 pt-10 sm:pt-12 lg:pt-14 pb-28 sm:pb-32 safe-area-inset"
       onTouchMove={handleTouchMove}
       suppressHydrationWarning
     >
       <NavMenu showDevRoutes={true} />
-      <div className="relative flex w-full max-w-7xl flex-col gap-5 sm:gap-7 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+      <div className="relative flex w-full max-w-7xl flex-col gap-5 sm:gap-7 lg:flex-row lg:items-start lg:justify-between lg:gap-1">
         {/* Coluna esquerda: Planeta + Ilhas (ordem 4 no mobile, 1 no desktop) */}
-        <div className="order-4 flex w-full flex-col items-center gap-5 sm:gap-7 lg:order-1 lg:w-auto lg:max-w-xs lg:ml-10 xl:ml-16">
+        <div className="order-4 flex w-full flex-col items-center gap-5 sm:gap-7 lg:order-1 lg:w-48 lg:flex-shrink-0">
           {/* Planeta */}
-          <div className="flex justify-center">
+          <div className="flex justify-center flex-shrink-0">
             <CelestialObject
               type="planeta"
               size="lg"
@@ -536,40 +612,45 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   }))
                 }
               />
-              <div className="flex items-center justify-end flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
-                  className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-4 py-2 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30 active:bg-indigo-500/40 touch-manipulation"
-                >
-                  {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
-                </button>
-              </div>
 
-              <FiltersPanel
-                isOpen={isFiltersPanelOpen}
-                filters={filters}
-                onClearFilters={resetFilters}
-                onMonthChange={(month) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    month,
-                  }))
-                }
-                onYearChange={(year) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    year,
-                  }))
-                }
-                onTodoStatusToggle={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    todoStatus: prev.todoStatus === 'completed' ? 'open' : 'completed',
-                  }))
-                }
-                islandNames={islandNames}
-              />
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
+                <div className="flex items-center justify-end flex-shrink-0 lg:justify-start lg:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsFiltersPanelOpen((prev) => !prev)}
+                    className="w-full sm:w-auto rounded-full border border-indigo-400/40 bg-indigo-500/20 px-4 py-2 text-xs font-semibold text-indigo-100 shadow-md transition hover:bg-indigo-500/30 active:bg-indigo-500/40 touch-manipulation"
+                  >
+                    {isFiltersPanelOpen ? 'Esconder' : 'Mostrar'} painel
+                  </button>
+                </div>
+
+                <div className="w-full lg:min-w-[360px] lg:max-w-[440px]">
+                  <FiltersPanel
+                    isOpen={isFiltersPanelOpen}
+                    filters={filters}
+                    onClearFilters={resetFilters}
+                    onMonthChange={(month) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        month,
+                      }))
+                    }
+                    onYearChange={(year) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        year,
+                      }))
+                    }
+                    onTodoStatusToggle={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        todoStatus: prev.todoStatus === 'completed' ? 'open' : 'completed',
+                      }))
+                    }
+                    islandNames={islandNames}
+                  />
+                </div>
+              </div>
 
               <TodoInput
                 className="shadow-lg flex-shrink-0"
@@ -583,7 +664,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
         </div>
 
         {/* Coluna direita: Luas + Sol (ordem 2 e 1 no mobile, 3 no desktop) */}
-        <div className="order-1 flex w-full flex-col items-center justify-center gap-5 sm:gap-6 lg:order-3 lg:w-auto lg:max-w-xs lg:flex-row lg:items-center">
+        <div className="order-1 flex w-full flex-col items-center justify-center gap-5 sm:gap-6 lg:order-3 lg:w-64 lg:flex-shrink-0 lg:flex-row lg:items-center">
           {/* Sol (ordem 1 no mobile) */}
           <div className="order-1 lg:order-2">
             <CelestialObject
@@ -593,6 +674,10 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
               onClick={(event) => {
                 if (isDraggingTodo) return;
                 navigateWithFocus('planetCardBelowSun', { event, type: 'sol', size: 'md' });
+                // Navegação direta para a página do Sol
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/cosmos/sol';
+                }
               }}
               floatOffset={-2}
               className="scale-75 sm:scale-90 md:scale-100 touch-manipulation"
@@ -601,17 +686,19 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
 
           {/* MoonCluster com as luas interativas (ordem 2 no mobile) */}
           <div className="order-2 lg:order-1">
-            <MoonCluster
-              activeDrop={activeDrop}
-              moonCounts={moonCounts}
-              isDraggingTodo={isDraggingTodo}
-              selectedPhase={filters.phase}
-              currentPhase={currentWeekPhase?.currentPhase ?? null}
-              onMoonNavigate={(phase, event) =>
-                navigateWithFocus('planetCardStandalone', { event, type: phase, size: 'sm' })
-              }
-              onMoonFilter={(phase) => setFilters((prev) => ({ ...prev, phase }))}
-              onDrop={handleDropOnPhase}
+          <MoonCluster
+            activeDrop={activeDrop}
+            moonCounts={moonCounts}
+            isDraggingTodo={isDraggingTodo}
+            selectedPhase={filters.phase}
+            currentPhase={highlightedPhase}
+            highlightPhases={highlightedPhases}
+            zodiacByPhase={phaseZodiacByPhase ?? undefined}
+            onMoonNavigate={(phase, event) =>
+              navigateWithFocus('planetCardStandalone', { event, type: phase, size: 'sm' })
+            }
+            onMoonFilter={(phase) => setFilters((prev) => ({ ...prev, phase }))}
+            onDrop={handleDropOnPhase}
               onDragOver={handleDragOverPhase}
               onDragLeave={handleDragLeavePhase}
             />

@@ -53,8 +53,8 @@ function buildHeaderDescription(
     return `${prefix} associados à ${islandLabel}.`;
   }
 
-  return view === 'todos'
-    ? 'Todas as tarefas salvas.'
+  return view === 'Salvos'
+    ? 'Todos salvos.'
     : 'Adicione e arraste para a fase lunar desejada.';
 }
 

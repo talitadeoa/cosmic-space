@@ -36,7 +36,7 @@ export const TodoFilters = memo(function TodoFilters({
   const isTodoFilter = inputTypeFilter === 'checkbox';
 
   return (
-    <div className={`flex flex-col items-start gap-3 ${className}`}>
+    <div className={`flex flex-col items-end gap-3 ${className}`}>
       {/* Filtros principais: Texto e Tarefas em um container */}
       <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1.5">
         <button

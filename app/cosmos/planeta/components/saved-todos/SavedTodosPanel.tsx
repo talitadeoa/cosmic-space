@@ -626,11 +626,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-            <div>
-              <TodoPanelHeader view={view} selectedPhase={selectedPhase} islandLabel={islandLabel} />
+      <div className="flex flex-col gap-3">
+        <TodoPanelHeader view={view} selectedPhase={selectedPhase} islandLabel={islandLabel} />
 
-              <TodoViewButtons
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <TodoViewButtons
             currentView={view}
             activeViewDrop={state.activeViewDrop}
             selectedPhase={selectedPhase}
@@ -640,22 +640,22 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
             onDragEnter={handleDragEnterView}
             onDragLeave={handleDragLeaveView}
           />
-        </div>
 
-            <TodoModeButtons
-              canEdit={canEdit}
-              isEditMode={state.isEditMode}
-              isSelectionMode={state.isSelectionMode}
-              groupByPhase={state.groupByPhase}
-              inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
-              todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
-              categoryFilter={categoryFilter}
-              onToggleEditOrSelectionMode={handleToggleEditOrSelectionMode}
-              onToggleGroupByPhase={() => setGroupByPhase(!state.groupByPhase)}
-              onInputTypeFilterChange={onInputTypeFilterChange}
-              onTodoStatusFilterChange={onTodoStatusFilterChange}
-              onCategoryFilterChange={onCategoryFilterChange}
-            />
+          <TodoModeButtons
+            canEdit={canEdit}
+            isEditMode={state.isEditMode}
+            isSelectionMode={state.isSelectionMode}
+            groupByPhase={state.groupByPhase}
+            inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
+            todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
+            categoryFilter={categoryFilter}
+            onToggleEditOrSelectionMode={handleToggleEditOrSelectionMode}
+            onToggleGroupByPhase={() => setGroupByPhase(!state.groupByPhase)}
+            onInputTypeFilterChange={onInputTypeFilterChange}
+            onTodoStatusFilterChange={onTodoStatusFilterChange}
+            onCategoryFilterChange={onCategoryFilterChange}
+          />
+        </div>
       </div>
 
       {/* Selection Mode Toolbar */}

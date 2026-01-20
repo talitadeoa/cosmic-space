@@ -39,7 +39,7 @@ export function TodoModeButtons({
   const isBothModesActive = isEditMode && isSelectionMode;
 
   return (
-    <div className="flex flex-col items-end gap-2 mt-5">
+    <div className="mt-3 flex w-full flex-col items-start gap-2 lg:mt-0 lg:items-end">
       <TodoFilters
         inputTypeFilter={inputTypeFilter}
         todoStatusFilter={todoStatusFilter}

@@ -52,7 +52,7 @@ const CYCLE_OPTIONS: CycleOption[] = [
   {
     key: 'ciclo-menstrual',
     label: 'Jornada do Ciclo',
-    description: 'Experiência guiada e acolhedora',
+    description: '',
     icon: '🌸',
     href: '/ciclos/ciclo',
     group: 'menstrual',
@@ -60,7 +60,7 @@ const CYCLE_OPTIONS: CycleOption[] = [
   {
     key: 'analise-ciclos',
     label: 'Análise de Ciclos',
-    description: 'Estatísticas e correlações',
+    description: '',
     icon: '📊',
     href: '/perfil/ciclos',
     group: 'menstrual',

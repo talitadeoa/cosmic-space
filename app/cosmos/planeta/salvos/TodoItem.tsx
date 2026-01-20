@@ -124,18 +124,17 @@ export const TodoItem = memo(function TodoItem({
   }, [isSelectionMode, isEditing, onStartEdit, todo]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const target = e.target as HTMLElement | null;
-    const isSelectionHandle = Boolean(target?.closest('[data-selection-handle="true"]'));
-
     if (isSelectionMode) {
-      if (isSelectionHandle && onSelectionTouchStart) {
+      if (onSelectionTouchStart) {
         onSelectionTouchStart(todo.id, e);
+      } else {
+        onToggleSelect(todo.id);
       }
       return;
     }
 
     onTouchStart?.(todo.id)(e);
-  }, [isSelectionMode, todo.id, onSelectionTouchStart, onTouchStart]);
+  }, [isSelectionMode, todo.id, onSelectionTouchStart, onTouchStart, onToggleSelect]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (isSelectionMode) {
@@ -213,6 +212,10 @@ export const TodoItem = memo(function TodoItem({
       onClick={(event) => {
         const target = event.target as HTMLElement | null;
         if (target?.closest('[data-todo-action="true"]')) return;
+        if (isSelectionMode) {
+          onToggleSelect(todo.id);
+          return;
+        }
         handleToggleExpand();
       }}
       onDoubleClick={(event) => {
