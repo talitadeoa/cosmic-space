@@ -25,6 +25,7 @@ const todoContentEqual = (a: SavedTodo, b: SavedTodo) =>
   a.completed === b.completed &&
   a.depth === b.depth &&
   a.inputType === b.inputType &&
+  (a.parentId ?? null) === (b.parentId ?? null) &&
   (a.category ?? null) === (b.category ?? null) &&
   (a.dueDate ?? null) === (b.dueDate ?? null) &&
   (a.islandId ?? null) === (b.islandId ?? null) &&
@@ -34,9 +35,9 @@ const applyServerTodos = (localTodos: SavedTodo[], items: SyncTodoItem[]) => {
   const map = new Map(localTodos.map((todo) => [todo.id, todo]));
 
   items.forEach((item) => {
-    const local = map.get(item.id);
-    const localVersion = local?.version ?? 0;
-    if (item.version < localVersion) return;
+      const local = map.get(item.id);
+      const localVersion = local?.version ?? 0;
+      if (item.version < localVersion) return;
 
     if (item.deletedAt) {
       map.delete(item.id);
@@ -44,21 +45,22 @@ const applyServerTodos = (localTodos: SavedTodo[], items: SyncTodoItem[]) => {
     }
 
     const payload = item.payload;
-    map.set(item.id, {
-      id: item.id,
-      text: payload.content,
-      completed: payload.inputType === 'checkbox' ? Boolean(payload.completed) : false,
-      depth: Number.isFinite(payload.depth) ? Number(payload.depth) : 0,
-      inputType: payload.inputType === 'text' ? 'text' : 'checkbox',
-      category: payload.category ?? undefined,
-      dueDate: payload.dueDate ?? undefined,
-      islandId: isValidIsland(payload.islandId) ? payload.islandId : undefined,
-      phase: isValidPhase(payload.phase) ? payload.phase : undefined,
-      createdAt: payload.createdAt ?? local?.createdAt,
-      updatedAt: item.updatedAt,
-      deletedAt: item.deletedAt,
-      version: item.version,
-    });
+      map.set(item.id, {
+        id: item.id,
+        text: payload.content,
+        completed: payload.inputType === 'checkbox' ? Boolean(payload.completed) : false,
+        depth: Number.isFinite(payload.depth) ? Number(payload.depth) : 0,
+        inputType: payload.inputType === 'text' ? 'text' : 'checkbox',
+        category: payload.category ?? undefined,
+        dueDate: payload.dueDate ?? undefined,
+        islandId: isValidIsland(payload.islandId) ? payload.islandId : undefined,
+        phase: isValidPhase(payload.phase) ? payload.phase : undefined,
+        parentId: local?.parentId ?? null,
+        createdAt: payload.createdAt ?? local?.createdAt,
+        updatedAt: item.updatedAt,
+        deletedAt: item.deletedAt,
+        version: item.version,
+      });
   });
 
   return Array.from(map.values()).sort((a, b) => {

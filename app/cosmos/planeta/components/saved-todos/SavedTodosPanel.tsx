@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTodoPanelState } from '@/app/cosmos/planeta/salvos/useTodoPanelState';
 import { TodoList } from '@/app/cosmos/planeta/salvos/TodoList';
 import { PhaseGroupedTodoList } from '@/app/cosmos/planeta/salvos/PhaseGroupedTodoList';
@@ -9,6 +9,7 @@ import type { SavedTodo, MoonPhase, IslandId } from '@/types/todo';
 import type { SavedTodosPanelProps as GroupedProps, TodoView } from '@/app/cosmos/planeta/salvos/types';
 import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
 import { getIslandLabel, ISLAND_IDS, type IslandNames } from '@/app/cosmos/utils/islandNames';
+import type { CategoryFilter } from '@/types/planetState';
 
 // Hooks extraídos
 import { useTodoFiltering } from './hooks/useTodoFiltering';
@@ -44,6 +45,8 @@ interface LegacySavedTodosPanelProps {
   todoStatusFilter?: 'all' | 'completed' | 'open';
   onInputTypeFilterChange?: (filter: 'all' | 'text' | 'checkbox') => void;
   onTodoStatusFilterChange?: (filter: 'all' | 'completed' | 'open') => void;
+  categoryFilter?: CategoryFilter;
+  onCategoryFilterChange?: (filter: CategoryFilter) => void;
   onUpdateTodo?: (todoId: string, updates: Partial<SavedTodo>) => void;
   onBatchDelete?: (todoIds: string[]) => void;
   onBatchAssignPhase?: (todoIds: string[], phase: MoonPhase) => void;
@@ -82,6 +85,8 @@ function normalizeProps(props: SavedTodosPanelProps): LegacySavedTodosPanelProps
     onBatchDelete: props.batch?.onDelete,
     onBatchAssignPhase: props.batch?.onAssignPhase,
     onBatchAssignIsland: props.batch?.onAssignIsland,
+    categoryFilter: props.filters?.categoryFilter ?? 'all',
+    onCategoryFilterChange: props.filters?.onCategoryFilterChange,
     selectedPhase: props.filters?.selectedPhase,
     selectedIsland: props.filters?.selectedIsland,
     inputTypeFilter: props.filters?.inputType ?? 'all',
@@ -134,6 +139,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     todoStatusFilter = 'all',
     onInputTypeFilterChange,
     onTodoStatusFilterChange,
+    categoryFilter = 'all',
+    onCategoryFilterChange,
     onUpdateTodo,
     onBatchDelete,
     onBatchAssignPhase,
@@ -155,6 +162,8 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     togglePhaseExpanded,
     setGroupByPhase,
   } = useTodoPanelState();
+  const [activeTodoDropId, setActiveTodoDropId] = useState<string | null>(null);
+  const [expandedTodoIds, setExpandedTodoIds] = useState<Set<string>>(new Set());
 
   const panelRef = useRef<HTMLDivElement>(null);
   const islandLabel = getIslandLabel(selectedIsland, islandNames);
@@ -162,14 +171,39 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
   const visibleIslandIds = islandIds && islandIds.length > 0 ? islandIds : ISLAND_IDS;
 
   // === Filtering Hook ===
-  const { filteredTodos, displayedTodos, totalPages, startIndex, endIndex } = useTodoFiltering({
+  const { filteredTodos, itemsPerPage } = useTodoFiltering({
     todos: savedTodos,
     view,
     selectedPhase,
     selectedIsland,
     currentPage: state.currentPage,
     todoStatusFilter: (todoStatusFilter as 'all' | 'open' | 'completed') || 'all',
+    categoryFilter: categoryFilter || 'all',
+    inputTypeFilter: inputTypeFilter || 'all',
   });
+
+  const rootFilteredTodos = useMemo(
+    () => filteredTodos.filter((todo) => !todo.parentId),
+    [filteredTodos]
+  );
+
+  const rootTotalPages = Math.ceil(rootFilteredTodos.length / itemsPerPage);
+  const currentRootPage = Math.min(state.currentPage, Math.max(rootTotalPages - 1, 0));
+  const rootStartIndex = currentRootPage * itemsPerPage;
+  const rootEndIndex = Math.min(rootStartIndex + itemsPerPage, rootFilteredTodos.length);
+  const rootDisplayedTodos = rootFilteredTodos.slice(rootStartIndex, rootEndIndex);
+
+  const subtasksByParent = useMemo(() => {
+    const map: Record<string, SavedTodo[]> = {};
+    filteredTodos.forEach((todo) => {
+      if (!todo.parentId) return;
+      if (!map[todo.parentId]) {
+        map[todo.parentId] = [];
+      }
+      map[todo.parentId]?.push(todo);
+    });
+    return map;
+  }, [filteredTodos]);
 
   // === Drag & Drop Hook ===
   const {
@@ -196,24 +230,47 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
   const handleStartEditing = useCallback(
     (todo: SavedTodo) => {
       if (!canEdit) return;
-      startEditing(todo.id, todo.text, todo.category, todo.dueDate);
+      startEditing(
+        todo.id,
+        todo.text,
+        todo.category,
+        todo.dueDate,
+        todo.depth,
+        todo.islandId,
+        todo.parentId ?? null
+      );
     },
     [canEdit, startEditing]
   );
 
   const handleSaveEditing = useCallback(
     (todo: SavedTodo) => {
-      if (!onUpdateTodo) return;
+      if (!onUpdateTodo) {
+        setActiveTodoDropId(null);
+        return;
+      }
       const trimmedText = state.editingText.trim();
       if (!trimmedText) return;
       onUpdateTodo(todo.id, {
         text: trimmedText,
         category: state.editingCategory.trim() || undefined,
         dueDate: state.editingDueDate || undefined,
+        depth: Number.isFinite(state.editingDepth) ? state.editingDepth : 0,
+        islandId: state.editingIslandId || undefined,
+        parentId: state.editingParentId || null,
       });
       cancelEditing();
     },
-    [onUpdateTodo, state.editingText, state.editingCategory, state.editingDueDate, cancelEditing]
+    [
+      onUpdateTodo,
+      state.editingText,
+      state.editingCategory,
+      state.editingDueDate,
+      state.editingDepth,
+      state.editingIslandId,
+      state.editingParentId,
+      cancelEditing,
+    ]
   );
 
   // === Touch Hook ===
@@ -263,27 +320,39 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     dispatch({ type: 'UPDATE_EDITING', payload: { dueDate } });
   }, [dispatch]);
 
+  const handleUpdateEditDepth = useCallback((depth: number) => {
+    dispatch({ type: 'UPDATE_EDITING', payload: { depth } });
+  }, [dispatch]);
+
+  const handleUpdateEditIsland = useCallback((islandId: IslandId | '') => {
+    dispatch({ type: 'UPDATE_EDITING', payload: { islandId } });
+  }, [dispatch]);
+
+  const handleUpdateEditParent = useCallback((parentId: string) => {
+    dispatch({ type: 'UPDATE_EDITING', payload: { parentId } });
+  }, [dispatch]);
+
   // === Handlers de Seleção em Lote ===
   const selectedCount = state.selectedTodoIds.length;
   const allDisplayedSelected =
-    displayedTodos.length > 0 &&
-    displayedTodos.every((todo) => state.selectedTodoIds.includes(todo.id));
+    rootDisplayedTodos.length > 0 &&
+    rootDisplayedTodos.every((todo) => state.selectedTodoIds.includes(todo.id));
 
   const handleToggleSelectDisplayed = useCallback(() => {
-    if (displayedTodos.length === 0) return;
+    if (rootDisplayedTodos.length === 0) return;
 
     if (allDisplayedSelected) {
       const newSelected = state.selectedTodoIds.filter(
-        (id) => !displayedTodos.some((todo) => todo.id === id)
+        (id) => !rootDisplayedTodos.some((todo) => todo.id === id)
       );
       dispatch({ type: 'SELECT_ALL', payload: newSelected });
       return;
     }
 
-    const displayedIds = displayedTodos.map((todo) => todo.id);
+    const displayedIds = rootDisplayedTodos.map((todo) => todo.id);
     const newSelected = Array.from(new Set([...state.selectedTodoIds, ...displayedIds]));
     dispatch({ type: 'SELECT_ALL', payload: newSelected });
-  }, [displayedTodos, state.selectedTodoIds, allDisplayedSelected, dispatch]);
+  }, [rootDisplayedTodos, state.selectedTodoIds, allDisplayedSelected, dispatch]);
 
   const handleBatchDelete = useCallback(() => {
     if (selectedCount === 0 || !onBatchDelete) return;
@@ -303,6 +372,87 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     if (!state.batchIsland || selectedCount === 0 || !onBatchAssignIsland) return;
     onBatchAssignIsland(state.selectedTodoIds, state.batchIsland as IslandId);
   }, [state.batchIsland, selectedCount, onBatchAssignIsland, state.selectedTodoIds]);
+
+  const getDraggedTodoIds = useCallback((event: React.DragEvent): string[] => {
+    const rawTodoIds = event.dataTransfer.getData('text/todo-ids');
+    if (rawTodoIds) {
+      try {
+        const parsed = JSON.parse(rawTodoIds);
+        if (Array.isArray(parsed)) {
+          const ids = parsed.filter((id) => typeof id === 'string');
+          if (ids.length > 0) return ids;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    const todoId = event.dataTransfer.getData('text/todo-id');
+    return todoId ? [todoId] : [];
+  }, []);
+
+  const handleDragStartWithSelection = useCallback(
+    (todoId: string) => (event: React.DragEvent) => {
+      if (state.isSelectionMode && state.selectedTodoIds.length > 0) {
+        event.dataTransfer.setData('text/todo-ids', JSON.stringify(state.selectedTodoIds));
+      } else {
+        event.dataTransfer.setData('text/todo-id', todoId);
+      }
+      onDragStart(todoId)(event);
+    },
+    [state.isSelectionMode, state.selectedTodoIds, onDragStart]
+  );
+
+  const handleDropOnTodo = useCallback(
+    (target: SavedTodo) => (event: React.DragEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!onUpdateTodo) return;
+
+      const todoIds = getDraggedTodoIds(event).filter((id) => id !== target.id);
+      if (todoIds.length === 0) {
+        setActiveTodoDropId(null);
+        return;
+      }
+
+      const nextDepth = (Number.isFinite(target.depth) ? Number(target.depth) : 0) + 1;
+      todoIds.forEach((id) => {
+        onUpdateTodo(id, {
+          depth: nextDepth,
+          islandId: target.islandId ?? undefined,
+          parentId: target.id,
+        });
+      });
+
+      clearSelection();
+      setActiveTodoDropId(null);
+      onDropInside?.();
+    },
+    [getDraggedTodoIds, onUpdateTodo, clearSelection, onDropInside, setActiveTodoDropId]
+  );
+
+  const handleDragOverTodo = useCallback(
+    (todo: SavedTodo) => (event: React.DragEvent) => {
+      event.preventDefault();
+      setActiveTodoDropId(todo.id);
+    },
+    []
+  );
+
+  const handleDragLeaveTodo = useCallback(() => {
+    setActiveTodoDropId(null);
+  }, []);
+
+  const handleToggleExpand = useCallback((todoId: string) => {
+    setExpandedTodoIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(todoId)) {
+        next.delete(todoId);
+      } else {
+        next.add(todoId);
+      }
+      return next;
+    });
+  }, []);
 
   const handleBatchMoveToView = useCallback(
     (viewType: 'em-aberto' | 'lua-atual' | 'proxima-fase' | 'proximo-ciclo') => {
@@ -375,6 +525,26 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     });
   }, [savedTodos, dispatch]);
 
+  useEffect(() => {
+    const maxPageIndex = Math.max(rootTotalPages - 1, 0);
+    if (state.currentPage > maxPageIndex) {
+      setPage(maxPageIndex);
+    }
+  }, [rootTotalPages, state.currentPage, setPage]);
+
+  useEffect(() => {
+    const validIds = new Set(filteredTodos.map((todo) => todo.id));
+    setExpandedTodoIds((prev) => {
+      const next = new Set<string>();
+      prev.forEach((id) => {
+        if (validIds.has(id)) {
+          next.add(id);
+        }
+      });
+      return next;
+    });
+  }, [filteredTodos]);
+
   // === Empty State Config ===
   const emptyTitle = selectedPhase
     ? 'Nada salvo nesta fase'
@@ -396,19 +566,28 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     editingText: state.editingText,
     editingCategory: state.editingCategory,
     editingDueDate: state.editingDueDate,
+    editingDepth: state.editingDepth,
+    editingIslandId: state.editingIslandId,
+    editingParentId: state.editingParentId,
     swipeDeleteId: state.swipeDeleteId,
     selectedTodoIds: state.selectedTodoIds,
     islandNames,
+    islandIds,
+    expandedTodoIds,
+    subtasksByParent,
     onToggleComplete,
     onToggleSelect: toggleSelect,
     onStartEdit: handleStartEditing,
     onUpdateEditText: handleUpdateEditText,
     onUpdateEditCategory: handleUpdateEditCategory,
+    onUpdateEditDepth: handleUpdateEditDepth,
+    onUpdateEditIsland: handleUpdateEditIsland,
+    onUpdateEditParent: handleUpdateEditParent,
     onUpdateEditDueDate: handleUpdateEditDueDate,
     onSaveEdit: handleSaveEditing,
     onCancelEdit: cancelEditing,
     onDelete: onDeleteTodo ?? (() => {}),
-    onDragStart,
+    onDragStart: handleDragStartWithSelection,
     onDragEnd,
     onTouchStart,
     onTouchEnd,
@@ -416,6 +595,11 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     onSelectionTouchStart: handleSelectionTouchStart,
     onSelectionTouchMove: handleSelectionTouchMove,
     onSelectionTouchEnd: handleSelectionTouchEnd,
+    activeTodoDropId,
+    onDropTodo: handleDropOnTodo,
+    onDragOverTodo: handleDragOverTodo,
+    onDragLeaveTodo: handleDragLeaveTodo,
+    onToggleExpand: handleToggleExpand,
     emptyTitle,
     emptyDescription,
   };
@@ -435,10 +619,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <TodoPanelHeader view={view} selectedPhase={selectedPhase} islandLabel={islandLabel} />
+            <div>
+              <TodoPanelHeader view={view} selectedPhase={selectedPhase} islandLabel={islandLabel} />
 
-          <TodoViewButtons
+              <TodoViewButtons
             currentView={view}
             activeViewDrop={state.activeViewDrop}
             selectedPhase={selectedPhase}
@@ -450,18 +634,20 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
           />
         </div>
 
-        <TodoModeButtons
-          canEdit={canEdit}
-          isEditMode={state.isEditMode}
-          isSelectionMode={state.isSelectionMode}
-          groupByPhase={state.groupByPhase}
-          inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
-          todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
-          onToggleEditOrSelectionMode={handleToggleEditOrSelectionMode}
-          onToggleGroupByPhase={() => setGroupByPhase(!state.groupByPhase)}
-          onInputTypeFilterChange={onInputTypeFilterChange}
-          onTodoStatusFilterChange={onTodoStatusFilterChange}
-        />
+            <TodoModeButtons
+              canEdit={canEdit}
+              isEditMode={state.isEditMode}
+              isSelectionMode={state.isSelectionMode}
+              groupByPhase={state.groupByPhase}
+              inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
+              todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
+              categoryFilter={categoryFilter}
+              onToggleEditOrSelectionMode={handleToggleEditOrSelectionMode}
+              onToggleGroupByPhase={() => setGroupByPhase(!state.groupByPhase)}
+              onInputTypeFilterChange={onInputTypeFilterChange}
+              onTodoStatusFilterChange={onTodoStatusFilterChange}
+              onCategoryFilterChange={onCategoryFilterChange}
+            />
       </div>
 
       {/* Selection Mode Toolbar */}
@@ -486,23 +672,27 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
       {/* Todo List */}
       {state.groupByPhase ? (
         <PhaseGroupedTodoList
-          displayedTodos={displayedTodos}
+          displayedTodos={rootDisplayedTodos}
           expandedPhases={state.expandedPhases}
           onTogglePhase={togglePhaseExpanded}
           {...sharedListProps}
         />
       ) : (
-        <TodoList todos={filteredTodos} displayedTodos={displayedTodos} {...sharedListProps} />
+        <TodoList
+          todos={rootFilteredTodos}
+          displayedTodos={rootDisplayedTodos}
+          {...sharedListProps}
+        />
       )}
 
       {/* Pagination */}
-      {filteredTodos.length > 20 && (
+      {rootFilteredTodos.length > 20 && (
         <TodoPagination
-          currentPage={state.currentPage}
-          totalPages={totalPages}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          totalItems={filteredTodos.length}
+          currentPage={currentRootPage}
+          totalPages={rootTotalPages}
+          startIndex={rootStartIndex}
+          endIndex={rootEndIndex}
+          totalItems={rootFilteredTodos.length}
           onPageChange={setPage}
         />
       )}

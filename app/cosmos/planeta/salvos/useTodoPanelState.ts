@@ -21,6 +21,9 @@ const initialState: TodoPanelState = {
   editingText: '',
   editingCategory: '',
   editingDueDate: '',
+  editingDepth: 0,
+  editingIslandId: '',
+  editingParentId: '',
   isSelectionMode: false,
   selectedTodoIds: [],
   batchIsland: '',
@@ -43,11 +46,21 @@ const initialState: TodoPanelState = {
 function todoPanelReducer(state: TodoPanelState, action: TodoPanelAction): TodoPanelState {
   switch (action.type) {
     case 'SET_EDIT_MODE':
-      return { 
-        ...state, 
+      return {
+        ...state,
         isEditMode: action.payload,
         // Limpar edição ao sair do modo
-        ...(action.payload ? {} : { editingTodoId: null, editingText: '', editingCategory: '', editingDueDate: '' }),
+        ...(action.payload
+          ? {}
+          : {
+              editingTodoId: null,
+              editingText: '',
+              editingCategory: '',
+              editingDueDate: '',
+              editingDepth: 0,
+              editingIslandId: '',
+              editingParentId: '',
+            }),
       };
 
     case 'START_EDITING':
@@ -57,6 +70,11 @@ function todoPanelReducer(state: TodoPanelState, action: TodoPanelAction): TodoP
         editingText: action.payload.text,
         editingCategory: action.payload.category || '',
         editingDueDate: action.payload.dueDate || '',
+        editingDepth: Number.isFinite(action.payload.depth)
+          ? Number(action.payload.depth)
+          : 0,
+        editingIslandId: action.payload.islandId ?? '',
+        editingParentId: action.payload.parentId ?? '',
       };
 
     case 'UPDATE_EDITING':
@@ -65,6 +83,9 @@ function todoPanelReducer(state: TodoPanelState, action: TodoPanelAction): TodoP
         ...(action.payload.text !== undefined && { editingText: action.payload.text }),
         ...(action.payload.category !== undefined && { editingCategory: action.payload.category }),
         ...(action.payload.dueDate !== undefined && { editingDueDate: action.payload.dueDate }),
+        ...(action.payload.depth !== undefined && { editingDepth: action.payload.depth }),
+        ...(action.payload.islandId !== undefined && { editingIslandId: action.payload.islandId }),
+        ...(action.payload.parentId !== undefined && { editingParentId: action.payload.parentId }),
       };
 
     case 'CANCEL_EDITING':
@@ -74,6 +95,9 @@ function todoPanelReducer(state: TodoPanelState, action: TodoPanelAction): TodoP
         editingText: '',
         editingCategory: '',
         editingDueDate: '',
+        editingDepth: 0,
+        editingIslandId: '',
+        editingParentId: '',
       };
 
     case 'SET_SELECTION_MODE':
@@ -165,9 +189,23 @@ export function useTodoPanelState() {
   const [state, dispatch] = useReducer(todoPanelReducer, initialState);
 
   // Helpers para ações comuns
-  const startEditing = useCallback((todoId: string, text: string, category?: string, dueDate?: string) => {
-    dispatch({ type: 'START_EDITING', payload: { todoId, text, category, dueDate } });
-  }, []);
+  const startEditing = useCallback(
+    (
+      todoId: string,
+      text: string,
+      category?: string,
+      dueDate?: string,
+      depth?: number,
+      islandId?: IslandId | null,
+      parentId?: string | null
+    ) => {
+      dispatch({
+        type: 'START_EDITING',
+        payload: { todoId, text, category, dueDate, depth, islandId, parentId },
+      });
+    },
+    []
+  );
 
   const cancelEditing = useCallback(() => {
     dispatch({ type: 'CANCEL_EDITING' });

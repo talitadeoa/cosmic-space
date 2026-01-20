@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { TodoFilters } from '@/app/cosmos/planeta/salvos/TodoFilters';
+import type { CategoryFilter } from '@/types/planetState';
 
 interface TodoModeButtonsProps {
   canEdit: boolean;
@@ -10,10 +11,12 @@ interface TodoModeButtonsProps {
   groupByPhase: boolean;
   inputTypeFilter: 'all' | 'text' | 'checkbox';
   todoStatusFilter: 'all' | 'completed' | 'open';
+  categoryFilter: CategoryFilter;
   onToggleEditOrSelectionMode: () => void;
   onToggleGroupByPhase: () => void;
   onInputTypeFilterChange?: (filter: 'all' | 'text' | 'checkbox') => void;
   onTodoStatusFilterChange?: (filter: 'all' | 'completed' | 'open') => void;
+  onCategoryFilterChange?: (filter: CategoryFilter) => void;
 }
 
 /**
@@ -26,10 +29,12 @@ export function TodoModeButtons({
   groupByPhase,
   inputTypeFilter,
   todoStatusFilter,
+  categoryFilter,
   onToggleEditOrSelectionMode,
   onToggleGroupByPhase,
   onInputTypeFilterChange,
   onTodoStatusFilterChange,
+  onCategoryFilterChange,
 }: TodoModeButtonsProps) {
   const isBothModesActive = isEditMode && isSelectionMode;
 
@@ -38,8 +43,10 @@ export function TodoModeButtons({
       <TodoFilters
         inputTypeFilter={inputTypeFilter}
         todoStatusFilter={todoStatusFilter}
+        categoryFilter={categoryFilter}
         onInputTypeFilterChange={onInputTypeFilterChange}
         onTodoStatusFilterChange={onTodoStatusFilterChange}
+        onCategoryFilterChange={onCategoryFilterChange}
         className="w-full"
       />
 

@@ -81,6 +81,7 @@ export function useMessageSubmit({
       setInputValue: (value: string) => void,
       setMetaDraft: (meta: ChatMessageMeta) => void,
       setShowAuthPrompt: (show: boolean) => void,
+      setShowAuthNudge: (show: boolean) => void,
       setPendingAuthSave: (pending: boolean) => void,
       authBypassRef: React.MutableRefObject<boolean>,
       pushSystemMessage: (content: string) => void,
@@ -106,6 +107,8 @@ export function useMessageSubmit({
         await onSubmit(value, messages, meta ?? getLastUserMeta(messages));
         if (shouldNudgeAuth) {
           pushSystemMessage(authNudgeMessage);
+          setShowAuthNudge(true);
+          return true;
         }
         if (resetOnSubmit) {
           setMessages(() => []);

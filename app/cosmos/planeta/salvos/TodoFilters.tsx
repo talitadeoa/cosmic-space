@@ -8,12 +8,15 @@
 
 import { memo } from 'react';
 import type { InputTypeFilter, TodoStatusFilter } from './types';
+import type { CategoryFilter } from '@/types/planetState';
 
 interface TodoFiltersProps {
   inputTypeFilter: InputTypeFilter;
   todoStatusFilter: TodoStatusFilter;
+  categoryFilter: CategoryFilter;
   onInputTypeFilterChange?: (filter: InputTypeFilter) => void;
   onTodoStatusFilterChange?: (filter: TodoStatusFilter) => void;
+  onCategoryFilterChange?: (filter: CategoryFilter) => void;
   className?: string;
 }
 
@@ -23,14 +26,14 @@ interface TodoFiltersProps {
 export const TodoFilters = memo(function TodoFilters({
   inputTypeFilter,
   todoStatusFilter,
+  categoryFilter,
   onInputTypeFilterChange,
   onTodoStatusFilterChange,
+  onCategoryFilterChange,
   className = '',
 }: TodoFiltersProps) {
   const isTextFilter = inputTypeFilter === 'text';
   const isTodoFilter = inputTypeFilter === 'checkbox';
-  const isOpenFilter = todoStatusFilter === 'open';
-  const isCompletedFilter = todoStatusFilter === 'completed';
 
   return (
     <div className={`flex flex-col items-start gap-3 ${className}`}>
@@ -93,6 +96,27 @@ export const TodoFilters = memo(function TodoFilters({
           </button>
         </div>
       )}
+
+      <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1.5">
+        {(['Principal', 'Secundária'] as CategoryFilter[]).map((category) => {
+          const isActive = categoryFilter === category;
+          return (
+            <button
+              key={category}
+              type="button"
+              onClick={() => {
+                const nextFilter = isActive ? 'all' : category;
+                onCategoryFilterChange?.(nextFilter);
+              }}
+              className={`rounded-full px-3 py-1 transition text-[0.6rem] font-semibold uppercase tracking-[0.12em] min-w-[95px] whitespace-nowrap ${
+                isActive ? 'bg-indigo-500/30 text-indigo-100' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {category === 'Principal' ? '⚡Principal' : '🫧Secundária'}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 });

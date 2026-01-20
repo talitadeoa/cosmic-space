@@ -51,24 +51,29 @@ export const useFilteredTodos = (
           }
           return filters.todoStatus === 'completed' ? todo.completed : !todo.completed;
         })
-        // 4. Filtrar por phase específica (se selecionada)
+        // 4. Filtrar por categoria (quando definida)
+        .filter((todo) => {
+          if (!filters.category || filters.category === 'all') return true;
+          return todo.category === filters.category;
+        })
+        // 5. Filtrar por phase específica (se selecionada)
         .filter((todo) => {
           if (!filters.phase) return true;
           return todo.phase === filters.phase;
         })
-        // 5. Filtrar por island (se selecionada)
+        // 6. Filtrar por island (se selecionada)
         .filter((todo) => {
           if (!filters.island) return true;
           return todo.islandId === filters.island;
         })
-        // 6. Filtrar por ano (se selecionado)
+        // 7. Filtrar por ano (se selecionado)
         .filter((todo) => {
           if (!filters.year) return true;
           if (!todo.createdAt) return false;
           const todoYear = new Date(todo.createdAt).getFullYear();
           return todoYear === filters.year;
         })
-        // 7. Filtrar por mês (se selecionado)
+        // 8. Filtrar por mês (se selecionado)
         .filter((todo) => {
           if (!filters.month) return true;
           if (!todo.createdAt) return false;

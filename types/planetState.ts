@@ -18,10 +18,13 @@ export const TODO_STATUS_FILTERS = ['all', 'completed', 'open'] as const;
 
 export type TodoStatusFilter = (typeof TODO_STATUS_FILTERS)[number];
 
+export type CategoryFilter = 'all' | 'Principal' | 'Secundária';
+
 export type PlanetFiltersState = {
   view: PlanetView;
   inputType: InputTypeFilter;
   todoStatus: TodoStatusFilter;
+  category: CategoryFilter;
   phase: MoonPhase | null;
   island: IslandId | null;
   month: number | null;
@@ -38,6 +41,7 @@ export const DEFAULT_PLANET_FILTERS: PlanetFiltersState = {
   view: 'todos',
   inputType: 'all',
   todoStatus: 'open',
+  category: 'all',
   phase: null,
   island: null,
   month: null,

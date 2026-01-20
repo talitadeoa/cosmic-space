@@ -219,6 +219,7 @@ export default function CosmosChatModal(props: CosmosChatModalProps) {
     setIsSaving,
     showAuthPrompt,
     setShowAuthPrompt,
+    setShowAuthNudge,
     setPendingAuthSave,
     authBypassRef,
     storageKey,

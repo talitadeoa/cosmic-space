@@ -33,6 +33,7 @@ export interface TodoItem {
   inputType: TodoInputType;
   category?: string;
   dueDate?: string;
+  parentId?: string | null;
 }
 
 /**

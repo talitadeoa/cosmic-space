@@ -25,6 +25,7 @@ interface UseCosmosChatHandlersProps {
   setIsSaving: (saving: boolean) => void;
   showAuthPrompt: boolean;
   setShowAuthPrompt: (show: boolean) => void;
+  setShowAuthNudge: (show: boolean) => void;
   setPendingAuthSave: (pending: boolean) => void;
   authBypassRef: React.MutableRefObject<boolean>;
   storageKey: string;
@@ -57,6 +58,7 @@ export function useCosmosChatHandlers(props: UseCosmosChatHandlersProps) {
     setIsSaving,
     showAuthPrompt,
     setShowAuthPrompt,
+    setShowAuthNudge,
     setPendingAuthSave,
     authBypassRef,
     storageKey,
@@ -115,6 +117,7 @@ export function useCosmosChatHandlers(props: UseCosmosChatHandlersProps) {
         setInputValue,
         setMetaDraft,
         setShowAuthPrompt,
+        setShowAuthNudge,
         setPendingAuthSave,
         authBypassRef,
         pushSystemMessage,
@@ -154,6 +157,7 @@ export function useCosmosChatHandlers(props: UseCosmosChatHandlersProps) {
     setMessages,
     setIsSaving,
     setShowAuthPrompt,
+    setShowAuthNudge,
     setPendingAuthSave,
     authBypassRef,
     pushSystemMessage,
@@ -184,6 +188,7 @@ export function useCosmosChatHandlers(props: UseCosmosChatHandlersProps) {
       setInputValue,
       setMetaDraft,
       setShowAuthPrompt,
+      setShowAuthNudge,
       setPendingAuthSave,
       authBypassRef,
       pushSystemMessage,
@@ -199,8 +204,7 @@ export function useCosmosChatHandlers(props: UseCosmosChatHandlersProps) {
     setIsSaving,
     setInputValue,
     setMetaDraft,
-    setShowAuthPrompt,
-    setPendingAuthSave,
+    setShowAuthPrompt,    setShowAuthNudge,    setPendingAuthSave,
     authBypassRef,
     pushSystemMessage,
     authNudgeMessage,
@@ -215,6 +219,7 @@ export function useCosmosChatHandlers(props: UseCosmosChatHandlersProps) {
       }
       if (suggestion.action === 'auth') {
         setShowAuthPrompt(true);
+        setShowAuthNudge(false);
         setPendingAuthSave(false);
         return;
       }
@@ -230,7 +235,7 @@ export function useCosmosChatHandlers(props: UseCosmosChatHandlersProps) {
         }));
       }
     },
-    [showAuthPrompt, handleAuthSend, setShowAuthPrompt, setPendingAuthSave, setInputValue, setMetaDraft]
+    [showAuthPrompt, handleAuthSend, setShowAuthPrompt, setShowAuthNudge, setPendingAuthSave, setInputValue, setMetaDraft]
   );
 
   const handleKeyDown = useCallback(

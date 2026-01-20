@@ -7,6 +7,7 @@
 
 import type { SavedTodo, IslandId, MoonPhase } from '@/app/cosmos/utils/todoStorage';
 import type { IslandNames } from '@/app/cosmos/utils/islandNames';
+import type { CategoryFilter } from '@/types/planetState';
 
 /**
  * Tipos de view disponíveis
@@ -81,6 +82,8 @@ export interface FilterConfig {
   todoStatus?: TodoStatusFilter;
   onInputTypeChange?: (filter: InputTypeFilter) => void;
   onTodoStatusChange?: (filter: TodoStatusFilter) => void;
+  categoryFilter?: CategoryFilter;
+  onCategoryFilterChange?: (filter: CategoryFilter) => void;
 }
 
 /**
@@ -130,6 +133,9 @@ export interface TodoPanelState {
   editingText: string;
   editingCategory: string;
   editingDueDate: string;
+  editingDepth: number;
+  editingIslandId: IslandId | '';
+  editingParentId: string;
   
   // Seleção em batch
   isSelectionMode: boolean;
@@ -151,8 +157,29 @@ export interface TodoPanelState {
  */
 export type TodoPanelAction =
   | { type: 'SET_EDIT_MODE'; payload: boolean }
-  | { type: 'START_EDITING'; payload: { todoId: string; text: string; category?: string; dueDate?: string } }
-  | { type: 'UPDATE_EDITING'; payload: Partial<{ text: string; category: string; dueDate: string }> }
+  | {
+      type: 'START_EDITING';
+      payload: {
+        todoId: string;
+        text: string;
+        category?: string;
+        dueDate?: string;
+        depth?: number;
+        islandId?: IslandId | null;
+        parentId?: string | null;
+      };
+    }
+  | {
+      type: 'UPDATE_EDITING';
+      payload: Partial<{
+        text: string;
+        category: string;
+        dueDate: string;
+        depth: number;
+        islandId: IslandId | '';
+        parentId: string;
+      }>;
+    }
   | { type: 'CANCEL_EDITING' }
   | { type: 'SET_SELECTION_MODE'; payload: boolean }
   | { type: 'TOGGLE_SELECT'; payload: string }
@@ -172,8 +199,10 @@ export type TodoPanelAction =
 export interface TodoFiltersProps {
   inputTypeFilter: InputTypeFilter;
   todoStatusFilter: TodoStatusFilter;
+  categoryFilter: CategoryFilter;
   onInputTypeFilterChange?: (filter: InputTypeFilter) => void;
   onTodoStatusFilterChange?: (filter: TodoStatusFilter) => void;
+  onCategoryFilterChange?: (filter: CategoryFilter) => void;
 }
 
 export interface TodoListItemProps {

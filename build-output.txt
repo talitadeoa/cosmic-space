@@ -1,0 +1,96 @@
+
+> flua@1.2.0-alpha build
+> next build
+
+▲ Next.js 16.1.1 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 34.1s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/32) ...
+  Generating static pages using 3 workers (8/32) 
+  Generating static pages using 3 workers (16/32) 
+  Generating static pages using 3 workers (24/32) 
+✓ Generating static pages using 3 workers (32/32) in 12.2s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/check-email
+├ ƒ /api/auth/google
+├ ƒ /api/auth/google/callback
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/signup
+├ ƒ /api/auth/verify
+├ ƒ /api/checklist/save
+├ ƒ /api/community/posts
+├ ƒ /api/community/posts/[id]
+├ ƒ /api/community/posts/[id]/comments
+├ ƒ /api/community/profile
+├ ƒ /api/community/profile/[userId]
+├ ƒ /api/compute
+├ ƒ /api/cycle-sync
+├ ƒ /api/emotion-sync
+├ ƒ /api/form/annual-insight
+├ ƒ /api/form/islands
+├ ƒ /api/form/lunar-phase
+├ ƒ /api/form/monthly-insight
+├ ƒ /api/form/quarterly-insight
+├ ƒ /api/form/submit
+├ ƒ /api/galaxysuns/sync
+├ ƒ /api/insights
+├ ƒ /api/islands
+├ ƒ /api/islands/sync
+├ ƒ /api/logs/emails
+├ ƒ /api/moons/phases
+├ ƒ /api/phase-inputs
+├ ƒ /api/planet-state
+├ ƒ /api/planet-state/sync
+├ ƒ /api/planet-todos
+├ ƒ /api/planet-todos/sync
+├ ƒ /api/projects
+├ ƒ /api/projects/[projectId]
+├ ƒ /api/subscribe
+├ ƒ /api/subscribe/check
+├ ƒ /api/timeline
+├ ƒ /api/todo-parser
+├ ○ /ciclos
+├ ○ /ciclos/calendario
+├ ○ /ciclos/ciclo
+├ ○ /ciclos/lunar
+├ ○ /comunidade
+├ ƒ /comunidade/perfil/[userId]
+├ ○ /cosmos
+├ ○ /cosmos/auth
+├ ○ /cosmos/calendarioc
+├ ○ /cosmos/calendariog
+├ ○ /cosmos/eclipse
+├ ○ /cosmos/galaxia
+├ ○ /cosmos/home
+├ ○ /cosmos/home/alternativa
+├ ○ /cosmos/lua
+├ ○ /cosmos/lua/tempo
+├ ○ /cosmos/lua/timeline
+├ ○ /cosmos/planeta
+├ ○ /cosmos/sol
+├ ○ /emocoes
+├ ƒ /emocoes/historico
+├ ○ /emocoes/padroes
+├ ○ /emocoes/registro
+├ ○ /ilha
+├ ○ /landing
+├ ƒ /logs
+├ ○ /page
+├ ○ /perfil
+├ ○ /perfil/ciclos
+├ ○ /perfil/emocoes
+├ ○ /tarefas
+└ ƒ /timeline
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

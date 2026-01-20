@@ -193,9 +193,9 @@ const TodoInput: React.FC<TodoInputProps> = ({
           isCheckbox
             ? [
                 {
-                  id: 'categoria-prioridade',
-                  label: 'Categoria: Prioridade',
-                  meta: { category: 'Prioridade' },
+                  id: 'categoria-principal',
+                  label: 'Categoria: Principal',
+                  meta: { category: 'Principal' },
                 },
                 {
                   id: 'categoria-secundaria',

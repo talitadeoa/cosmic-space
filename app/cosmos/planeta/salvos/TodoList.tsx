@@ -3,6 +3,7 @@
 import React, { memo } from 'react';
 import type { SavedTodo, } from '@/app/cosmos/utils/todoStorage';
 import type { IslandNames } from '@/app/cosmos/utils/islandNames';
+import type { IslandId } from '@/types/todo';
 import { TodoItem } from './TodoItem';
 import { EmptyState } from '@/app/cosmos/components/EmptyState';
 
@@ -15,16 +16,28 @@ interface TodoListProps {
   editingText: string;
   editingCategory?: string;
   editingDueDate?: string;
+  editingDepth?: number;
+  editingIslandId?: IslandId | '';
   swipeDeleteId: string | null;
   selectedTodoIds: string[];
   islandNames?: IslandNames;
-  
+  islandIds?: IslandId[];
+  activeDropTodoId?: string | null;
+  expandedTodoIds?: Set<string>;
+  subtasksByParent?: Record<string, SavedTodo[]>;
+  onDropTodo?: (todo: SavedTodo) => (event: React.DragEvent) => void;
+  onDragOverTodo?: (todo: SavedTodo) => (event: React.DragEvent) => void;
+  onDragLeaveTodo?: () => void;
+  onToggleExpand?: (todoId: string) => void;
+ 
   // Callbacks
   onToggleComplete: (id: string) => void;
   onToggleSelect: (id: string) => void;
   onStartEdit: (todo: SavedTodo) => void;
   onUpdateEditText: (text: string) => void;
   onUpdateEditCategory: (category: string) => void;
+  onUpdateEditDepth: (depth: number) => void;
+  onUpdateEditIsland: (islandId: IslandId | '') => void;
   onUpdateEditDueDate: (dueDate: string) => void;
   onSaveEdit: (todo: SavedTodo) => void;
   onCancelEdit: () => void;
@@ -68,14 +81,26 @@ export const TodoList = memo(function TodoList({
   editingText,
   editingCategory = '',
   editingDueDate = '',
+  editingDepth = 0,
+  editingIslandId = '',
   swipeDeleteId = null,
   selectedTodoIds,
   islandNames,
+  islandIds,
+  activeDropTodoId,
+  expandedTodoIds,
+  subtasksByParent,
+  onDropTodo,
+  onDragOverTodo,
+  onDragLeaveTodo,
+  onToggleExpand,
   onToggleComplete,
   onToggleSelect,
   onStartEdit,
   onUpdateEditText,
   onUpdateEditCategory,
+  onUpdateEditDepth,
+  onUpdateEditIsland,
   onUpdateEditDueDate,
   onSaveEdit,
   onCancelEdit,
@@ -110,32 +135,47 @@ export const TodoList = memo(function TodoList({
         displayedTodos.map((todo) => {
           const isSelected = selectedTodoIds.includes(todo.id);
           const isEditing = editingTodoId === todo.id;
+          const subtasks = subtasksByParent?.[todo.id] ?? [];
+          const isExpanded = expandedTodoIds?.has(todo.id) ?? false;
 
           return (
             <TodoItem
               key={todo.id}
               todo={todo}
+              editingTodoId={editingTodoId}
+              subtasks={subtasks}
+              isExpanded={isExpanded}
               isSelected={isSelected}
               isEditing={isEditing}
               editingText={editingText}
               editingCategory={editingCategory}
               editingDueDate={editingDueDate}
+              editingDepth={editingDepth}
+              editingIslandId={editingIslandId}
               isSelectionMode={isSelectionMode}
               isEditMode={isEditMode}
               islandNames={islandNames}
+              islandIds={islandIds}
+              activeDropTodoId={activeDropTodoId}
               isSaveDisabled={isSaveDisabled}
               swipeDeleteId={swipeDeleteId}
+              onToggleExpand={onToggleExpand}
               onToggleComplete={onToggleComplete}
               onToggleSelect={onToggleSelect}
               onStartEdit={onStartEdit}
               onUpdateEditText={onUpdateEditText}
               onUpdateEditCategory={onUpdateEditCategory}
+              onUpdateEditDepth={onUpdateEditDepth}
+              onUpdateEditIsland={onUpdateEditIsland}
               onUpdateEditDueDate={onUpdateEditDueDate}
               onSaveEdit={onSaveEdit}
               onCancelEdit={onCancelEdit}
               onDelete={onDelete}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
+              onDropTodo={onDropTodo}
+              onDragOverTodo={onDragOverTodo}
+              onDragLeaveTodo={onDragLeaveTodo}
               onTouchStart={onTouchStart}
               onTouchEnd={onTouchEnd}
               onTouchMove={onTouchMove}

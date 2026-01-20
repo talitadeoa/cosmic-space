@@ -23,6 +23,7 @@ const hasActiveFilters = (filters: FilterState): boolean => {
     filters.view === 'lua-atual' ||
     filters.inputType !== 'all' ||
     showTodoStatus(filters) ||
+    filters.category !== 'all' ||
     Boolean(filters.phase) ||
     Boolean(filters.island) ||
     Boolean(filters.month) ||
@@ -59,6 +60,8 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
   const displayTodoStatus = showTodoStatus(filters);
   const phaseLabel = filters.phase ? phaseLabels[filters.phase] : null;
   const monthLabel = filters.month ? monthNames[filters.month - 1] : null;
+  const categoryLabel =
+    filters.category && filters.category !== 'all' ? `Categoria: ${filters.category}` : null;
 
   return (
     <div
@@ -160,6 +163,11 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
           {islandLabel && (
             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
               {islandLabel}
+            </span>
+          )}
+          {categoryLabel && (
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+              {categoryLabel}
             </span>
           )}
         </div>

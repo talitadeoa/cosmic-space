@@ -3,6 +3,7 @@
  */
 'use client';
 import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { CategoryFilter } from '@/types/planetState';
 import { TodoFilters } from '@/app/cosmos/planeta/salvos/TodoFilters';
 
 /**
@@ -17,11 +18,13 @@ interface ModeBarProps {
   selectedPhase: MoonPhase | null | undefined;
   inputTypeFilter: 'all' | 'text' | 'checkbox';
   todoStatusFilter: 'all' | 'completed' | 'open';
+  categoryFilter: CategoryFilter;
   onToggleEditMode: () => void;
   onToggleSelectionMode: () => void;
   onToggleGroupByPhase: () => void;
   onInputTypeFilterChange?: (filter: 'all' | 'text' | 'checkbox') => void;
   onTodoStatusFilterChange?: (filter: 'all' | 'completed' | 'open') => void;
+  onCategoryFilterChange?: (filter: CategoryFilter) => void;
 }
 
 const getMoonEmoji = (phase: MoonPhase | null): string => {
@@ -46,11 +49,13 @@ export function ModeBar({
   canEdit,
   inputTypeFilter,
   todoStatusFilter,
+  categoryFilter,
   onToggleEditMode,
   onToggleSelectionMode,
   onToggleGroupByPhase,
   onInputTypeFilterChange,
   onTodoStatusFilterChange,
+  onCategoryFilterChange,
 }: ModeBarProps) {
   return (
     <div className="flex flex-col items-end gap-2">
@@ -98,8 +103,10 @@ export function ModeBar({
       <TodoFilters
         inputTypeFilter={inputTypeFilter}
         todoStatusFilter={todoStatusFilter}
+        categoryFilter={categoryFilter}
         onInputTypeFilterChange={onInputTypeFilterChange}
         onTodoStatusFilterChange={onTodoStatusFilterChange}
+        onCategoryFilterChange={onCategoryFilterChange}
       />
     </div>
   );

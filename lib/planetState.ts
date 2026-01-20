@@ -9,6 +9,7 @@ import {
   TODO_STATUS_FILTERS,
   type PlanetFiltersState,
   type PlanetUiState,
+  type CategoryFilter,
 } from '@/types/planetState';
 
 const isValidView = (value: unknown): value is PlanetFiltersState['view'] =>
@@ -19,6 +20,9 @@ const isValidInputTypeFilter = (value: unknown): value is PlanetFiltersState['in
 
 const isValidTodoStatusFilter = (value: unknown): value is PlanetFiltersState['todoStatus'] =>
   TODO_STATUS_FILTERS.includes(value as PlanetFiltersState['todoStatus']);
+
+const isValidCategoryFilter = (value: unknown): value is CategoryFilter =>
+  value === 'all' || value === 'Principal' || value === 'Secundária';
 
 const isValidMonth = (value: unknown): value is number =>
   Number.isInteger(value) && Number(value) >= 1 && Number(value) <= 12;
@@ -35,6 +39,7 @@ const normalizeFilters = (input: Partial<PlanetFiltersState> | null | undefined)
     todoStatus: isValidTodoStatusFilter(raw.todoStatus)
       ? raw.todoStatus
       : DEFAULT_PLANET_FILTERS.todoStatus,
+    category: isValidCategoryFilter(raw.category) ? raw.category : DEFAULT_PLANET_FILTERS.category,
     phase: validators.moonPhase(raw.phase) ? raw.phase : DEFAULT_PLANET_FILTERS.phase,
     island: validators.islandId(raw.island) ? raw.island : DEFAULT_PLANET_FILTERS.island,
     month: isValidMonth(raw.month) ? Number(raw.month) : DEFAULT_PLANET_FILTERS.month,

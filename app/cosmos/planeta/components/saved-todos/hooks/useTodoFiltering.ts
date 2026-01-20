@@ -14,6 +14,8 @@ interface UseTodoFilteringOptions {
   selectedIsland: IslandId | null | undefined;
   currentPage: number;
   todoStatusFilter?: 'all' | 'open' | 'completed';
+  categoryFilter?: 'all' | 'Principal' | 'Secundária';
+  inputTypeFilter?: 'all' | 'text' | 'checkbox';
 }
 
 interface UseTodoFilteringResult {
@@ -61,6 +63,8 @@ export function useTodoFiltering({
   selectedIsland,
   currentPage,
   todoStatusFilter = 'all',
+  categoryFilter = 'all',
+  inputTypeFilter = 'all',
 }: UseTodoFilteringOptions): UseTodoFilteringResult {
   const filteredTodos = useMemo(() => {
     // Em "em-aberto", não aplica filtros de fase/ilha
@@ -68,6 +72,14 @@ export function useTodoFiltering({
     const islandFilter = view === 'em-aberto' ? null : selectedIsland;
 
     let result = todos
+      .filter((todo) => {
+        if (inputTypeFilter === 'all') return true;
+        return todo.inputType === inputTypeFilter;
+      })
+      .filter((todo) => {
+        if (categoryFilter === 'all') return true;
+        return todo.category === categoryFilter;
+      })
       .filter((todo) => (phaseFilter ? todo.phase === phaseFilter : true))
       .filter((todo) => (islandFilter ? todo.islandId === islandFilter : true))
       .filter((todo) => {

@@ -4,6 +4,7 @@ import React, { memo, useMemo } from 'react';
 import type { SavedTodo, MoonPhase } from '@/app/cosmos/utils/todoStorage';
 import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
 import type { IslandNames } from '@/app/cosmos/utils/islandNames';
+import type { IslandId } from '@/types/todo';
 import { TodoItem } from './TodoItem';
 import { EmptyState } from '@/app/cosmos/components/EmptyState';
 
@@ -17,11 +18,22 @@ interface PhaseGroupedTodoListProps {
   editingText: string;
   editingCategory?: string;
   editingDueDate?: string;
+  editingDepth?: number;
+  editingIslandId?: IslandId | '';
+  editingParentId?: string;
   swipeDeleteId: string | null;
   selectedTodoIds: string[];
   islandNames?: IslandNames;
+  islandIds?: IslandId[];
+  expandedTodoIds?: Set<string>;
+  subtasksByParent?: Record<string, SavedTodo[]>;
   expandedPhases: Record<PhaseKey, boolean>;
   onTogglePhase: (phase: PhaseKey) => void;
+  activeDropTodoId?: string | null;
+  onDropTodo?: (todo: SavedTodo) => (event: React.DragEvent) => void;
+  onDragOverTodo?: (todo: SavedTodo) => (event: React.DragEvent) => void;
+  onDragLeaveTodo?: () => void;
+  onToggleExpand?: (todoId: string) => void;
 
   // Callbacks
   onToggleComplete: (id: string) => void;
@@ -29,6 +41,9 @@ interface PhaseGroupedTodoListProps {
   onStartEdit: (todo: SavedTodo) => void;
   onUpdateEditText: (text: string) => void;
   onUpdateEditCategory: (category: string) => void;
+  onUpdateEditDepth: (depth: number) => void;
+  onUpdateEditIsland: (islandId: IslandId | '') => void;
+  onUpdateEditParent: (parentId: string) => void;
   onUpdateEditDueDate: (dueDate: string) => void;
   onSaveEdit: (todo: SavedTodo) => void;
   onCancelEdit: () => void;
@@ -107,16 +122,29 @@ export const PhaseGroupedTodoList = memo(function PhaseGroupedTodoList({
   editingText,
   editingCategory = '',
   editingDueDate = '',
+  editingDepth = 0,
+  editingIslandId = '',
+  editingParentId = '',
   swipeDeleteId = null,
   selectedTodoIds,
   islandNames,
+  islandIds,
+  expandedTodoIds,
+  subtasksByParent,
   expandedPhases,
   onTogglePhase,
+  activeDropTodoId,
+  onDropTodo,
+  onDragOverTodo,
+  onDragLeaveTodo,
+  onToggleExpand,
   onToggleComplete,
   onToggleSelect,
   onStartEdit,
   onUpdateEditText,
   onUpdateEditCategory,
+  onUpdateEditDepth,
+  onUpdateEditIsland,
   onUpdateEditDueDate,
   onSaveEdit,
   onCancelEdit,
@@ -221,32 +249,48 @@ export const PhaseGroupedTodoList = memo(function PhaseGroupedTodoList({
                 {phaseTodos.map((todo) => {
                   const isSelected = selectedTodoIds.includes(todo.id);
                   const isEditing = editingTodoId === todo.id;
+                  const subtasks = subtasksByParent?.[todo.id] ?? [];
+                  const isExpanded = expandedTodoIds?.has(todo.id) ?? false;
 
                   return (
                     <TodoItem
                       key={todo.id}
                       todo={todo}
+                      editingTodoId={editingTodoId}
+                      subtasks={subtasks}
+                      isExpanded={isExpanded}
                       isSelected={isSelected}
                       isEditing={isEditing}
                       editingText={editingText}
                       editingCategory={editingCategory}
                       editingDueDate={editingDueDate}
+                      editingDepth={editingDepth}
+                      editingIslandId={editingIslandId}
+                      editingParentId={editingParentId}
                       isSelectionMode={isSelectionMode}
                       isEditMode={isEditMode}
                       islandNames={islandNames}
+                      islandIds={islandIds}
+                      activeDropTodoId={activeDropTodoId}
                       isSaveDisabled={isSaveDisabled}
                       swipeDeleteId={swipeDeleteId}
+                      onToggleExpand={onToggleExpand}
                       onToggleComplete={onToggleComplete}
                       onToggleSelect={onToggleSelect}
                       onStartEdit={onStartEdit}
                       onUpdateEditText={onUpdateEditText}
                       onUpdateEditCategory={onUpdateEditCategory}
+                      onUpdateEditDepth={onUpdateEditDepth}
+                      onUpdateEditIsland={onUpdateEditIsland}
                       onUpdateEditDueDate={onUpdateEditDueDate}
                       onSaveEdit={onSaveEdit}
                       onCancelEdit={onCancelEdit}
                       onDelete={onDelete}
                       onDragStart={onDragStart}
                       onDragEnd={onDragEnd}
+                      onDropTodo={onDropTodo}
+                      onDragOverTodo={onDragOverTodo}
+                      onDragLeaveTodo={onDragLeaveTodo}
                       onTouchStart={onTouchStart}
                       onTouchEnd={onTouchEnd}
                       onTouchMove={onTouchMove}

@@ -105,6 +105,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       view: 'todos',
       inputType: 'all',
       todoStatus: 'all',
+      category: 'all',
       phase: null,
       island: null,
       month: null,
@@ -515,6 +516,7 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                 islandIds={islandIds}
                 inputTypeFilter={filters.inputType}
                 todoStatusFilter={filters.todoStatus}
+                categoryFilter={filters.category}
                 onInputTypeFilterChange={(inputType) =>
                   setFilters((prev) => ({
                     ...prev,
@@ -525,6 +527,12 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
                   setFilters((prev) => ({
                     ...prev,
                     todoStatus,
+                  }))
+                }
+                onCategoryFilterChange={(category) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    category,
                   }))
                 }
               />

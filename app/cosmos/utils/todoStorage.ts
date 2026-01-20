@@ -25,6 +25,7 @@ export type SavedTodo = ParsedTodoItem & {
   updatedAt?: string;
   deletedAt?: string | null;
   version?: number | null;
+  parentId?: string | null;
 };
 
 export const TODO_STORAGE_KEY = 'flua_todos_salvos';
@@ -73,6 +74,7 @@ const normalizeStoredTodo = (item: SavedTodo, idx: number): SavedTodo => {
   const version = Number.isFinite(item.version) ? Number(item.version) : null;
   const category = normalizeText(item.category);
   const dueDate = normalizeText(item.dueDate);
+  const parentId = normalizeText(item.parentId);
 
   return {
     id: typeof item.id === 'string' ? item.id : `todo-${idx}`,
@@ -88,6 +90,7 @@ const normalizeStoredTodo = (item: SavedTodo, idx: number): SavedTodo => {
     updatedAt,
     deletedAt: deletedAt ?? null,
     version,
+    parentId: parentId ?? null,
   };
 };
 

@@ -113,8 +113,7 @@ export default function IlhaClient() {
           ilha.titulo ||
           ilha.tag ||
           ilha.descricao ||
-          ilha.energia !== null ||
-          ilha.prioridade !== null
+          ilha.energia !== null
       ),
     [ilhas]
   );
@@ -223,20 +222,6 @@ export default function IlhaClient() {
                 placeholder="7"
                 value={formState.energia}
                 onChange={handleChange('energia')}
-                className={styles.field}
-                disabled={isLocked}
-              />
-            </label>
-            <label className={styles.formLabel}>
-              Prioridade (0–10)
-              <input
-                type="number"
-                name="prioridade"
-                min={0}
-                max={10}
-                placeholder="5"
-                value={formState.prioridade}
-                onChange={handleChange('prioridade')}
                 className={styles.field}
                 disabled={isLocked}
               />

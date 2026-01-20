@@ -53,6 +53,7 @@ const normalizeFilters = (input: Partial<PlanetFiltersState> | null | undefined)
     todoStatus: isValidTodoStatusFilter(raw.todoStatus)
       ? raw.todoStatus
       : DEFAULT_PLANET_FILTERS.todoStatus,
+    category: raw.category === 'Principal' || raw.category === 'Secundária' ? raw.category : 'all',
     phase: isValidMoonPhase(raw.phase) ? raw.phase : DEFAULT_PLANET_FILTERS.phase,
     island: isValidIsland(raw.island) ? raw.island : DEFAULT_PLANET_FILTERS.island,
     month: normalizeNumber(raw.month, 1, 12),
@@ -75,6 +76,7 @@ export const hasCustomPlanetState = (state: PlanetUiState): boolean => {
     filters.view !== defaults.view ||
     filters.inputType !== defaults.inputType ||
     filters.todoStatus !== defaults.todoStatus ||
+    filters.category !== defaults.category ||
     filters.phase !== defaults.phase ||
     filters.island !== defaults.island ||
     filters.month !== defaults.month ||

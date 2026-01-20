@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { SpacePageLayout } from '@/components/layouts';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 
@@ -9,10 +9,24 @@ export type PlanetaSceneProps = {
 };
 
 export const PlanetaScene: React.FC<PlanetaSceneProps> = ({ children }) => {
-  const { onBackgroundClick } = useBackToHome();
+  const { navigateToHome } = useBackToHome();
+  const lastClickRef = useRef(0);
+
+  const handleBackgroundClick = useCallback(() => {
+    const now = Date.now();
+    const doubleClickThreshold = 400;
+
+    if (now - lastClickRef.current <= doubleClickThreshold) {
+      lastClickRef.current = 0;
+      navigateToHome();
+      return;
+    }
+
+    lastClickRef.current = now;
+  }, [navigateToHome]);
 
   return (
-    <SpacePageLayout onBackgroundClick={onBackgroundClick}>
+    <SpacePageLayout onBackgroundClick={handleBackgroundClick}>
       {children}
     </SpacePageLayout>
   );
