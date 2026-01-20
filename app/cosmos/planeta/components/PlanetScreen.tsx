@@ -14,7 +14,7 @@ import { useGalaxySunsSync } from '@/hooks/useGalaxySunsSync';
 import { useLunations } from '@/hooks/useLunationCache';
 import { useCurrentWeekPhase } from '@/hooks/useCurrentWeekPhase';
 import { useTemporal } from '@/app/cosmos/planeta/state/TemporalContext';
-import { SavedTodosPanel } from '@/app/cosmos/planeta/components/SavedTodosPanel';
+import { SavedTodosPanel } from '@/app/cosmos/planeta/components/saved-todos/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/planeta/components/IslandsList';
 import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';
 import { useIslandNames } from '@/hooks/useIslandNames';
