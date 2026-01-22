@@ -173,7 +173,7 @@ export function useTodoDragDrop({
       onClearSelection();
       onDropInside?.();
     },
-    [savedTodos, onViewChange, onUpdateTodo, selectedPhase, selectedIsland, onClearSelection, onDropInside, setViewDrop]
+    [savedTodos, onUpdateTodo, selectedPhase, selectedIsland, onClearSelection, onDropInside, setViewDrop]
   );
 
   const handleDragOverView = useCallback((event: React.DragEvent) => {

@@ -530,12 +530,14 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
 
   // === Effects ===
   // Resetar página apenas ao mudar filtros de fase/ilha, não durante edição
-  useEffect(() => {
-    // Não resetar página se estiver editando para evitar mudança automática de view
-    if (!state.isEditMode) {
-      setPage(0);
-    }
-  }, [selectedPhase, selectedIsland, setPage, state.isEditMode]);
+  // DESABILITADO: Resetar página automaticamente causa UX ruim e mudança de view indesejada
+  // Usuário pode navegar manualmente se necessário
+  // useEffect(() => {
+  //   // Não resetar página se estiver editando para evitar mudança automática de view
+  //   if (!state.isEditMode) {
+  //     setPage(0);
+  //   }
+  // }, [selectedPhase, selectedIsland, setPage, state.isEditMode]);
 
   useEffect(() => {
     dispatch({
