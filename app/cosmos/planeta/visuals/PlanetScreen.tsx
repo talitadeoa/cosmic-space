@@ -137,6 +137,26 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     }
   }, [temporal.year]); // Remover lunations do dependency array
 
+  // Adicionar listener global para resetar drag state quando drag termina
+  // Isso previne que isDraggingTodo fique preso como true
+  useEffect(() => {
+    const handleGlobalDragEnd = () => {
+      setIsDraggingTodo(false);
+      setActiveDrop(null);
+      setActiveIslandDrop(null);
+      setDraggingTodoId(null);
+      dropHandledRef.current = false;
+    };
+
+    document.addEventListener('dragend', handleGlobalDragEnd, true);
+    document.addEventListener('drop', handleGlobalDragEnd, true);
+
+    return () => {
+      document.removeEventListener('dragend', handleGlobalDragEnd, true);
+      document.removeEventListener('drop', handleGlobalDragEnd, true);
+    };
+  }, []);
+
   const handleTodoSubmit = useCallback((todo: ParsedTodoItem) => {
     const updatedAt = todo.updatedAt ?? nowIso();
     const resolvedTodo = {
@@ -266,6 +286,11 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     setTimeout(() => {
       dropHandledRef.current = false;
     }, 50);
+    
+    // Segundo timeout para garantir que isDraggingTodo é resetado mesmo em caso de falha
+    setTimeout(() => {
+      setIsDraggingTodo(false);
+    }, 100);
   }, []);
 
   const getDraggedTodoIds = (event: React.DragEvent) => {
