@@ -63,13 +63,14 @@ const getMoonTypeByPhase = (phase: string | undefined): CelestialType => {
   // Nomes em inglês da API USNO
   if (normalized.includes('new moon')) return 'luaNova';
   if (normalized.includes('waxing crescent')) return 'luaCrescente';
-  if (normalized.includes('first quarter')) return 'QuartoCrescente';
+  if (normalized.includes('first quarter')) return 'luaCrescente';
   if (normalized.includes('waxing gibbous')) return 'luaGibosaCrescente';
   if (normalized.includes('full moon')) return 'luaCheia';
   if (normalized.includes('waning gibbous')) return 'luaGibosaMinguante';
-  if (normalized.includes('last quarter')) return 'QuartoMinguante';
+  if (normalized.includes('last quarter')) return 'luaMinguante';
   if (normalized.includes('waning crescent')) return 'luaMinguante';
-  return 'lua';
+  // Default case to satisfy TypeScript
+  return 'lua' as const;
 };
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigateWithFocus }) => {
