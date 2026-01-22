@@ -69,7 +69,7 @@ const getMoonTypeByPhase = (phase: string | undefined): CelestialType => {
   if (normalized.includes('waning gibbous')) return 'luaGibosaMinguante';
   if (normalized.includes('last quarter')) return 'QuartoMinguante';
   if (normalized.includes('waning crescent')) return 'luaMinguante';
-
+  return 'lua';
 };
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigateWithFocus }) => {
