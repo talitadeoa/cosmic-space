@@ -39,16 +39,17 @@ export function TodoModeButtons({
   const isBothModesActive = isEditMode && isSelectionMode;
 
   return (
-    <div className="mt-3 flex w-full flex-col items-start gap-2 lg:mt-0 lg:items-end">
-      <TodoFilters
-        inputTypeFilter={inputTypeFilter}
-        todoStatusFilter={todoStatusFilter}
-        categoryFilter={categoryFilter}
-        onInputTypeFilterChange={onInputTypeFilterChange}
-        onTodoStatusFilterChange={onTodoStatusFilterChange}
-        onCategoryFilterChange={onCategoryFilterChange}
-        className="w-full md:hidden lg:block"
-      />
+    <div className="mt-3 flex w-full flex-col items-start gap-2 lg:mt-0 lg:items-end lg:gap-3">
+      <div className="md:hidden lg:flex lg:flex-col lg:items-end lg:gap-3">
+        <TodoFilters
+          inputTypeFilter={inputTypeFilter}
+          todoStatusFilter={todoStatusFilter}
+          categoryFilter={categoryFilter}
+          onInputTypeFilterChange={onInputTypeFilterChange}
+          onTodoStatusFilterChange={onTodoStatusFilterChange}
+          onCategoryFilterChange={onCategoryFilterChange}
+        />
+      </div>
 
       <div className="flex w-full justify-end gap-2">
         <button

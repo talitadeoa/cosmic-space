@@ -106,7 +106,7 @@ export const TodoFilters = memo(function TodoFilters({
       )}
 
       {showCategory && (
-        <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1.5">
+        <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1.5 flex-wrap">
           {(['Principal', 'Secundária'] as CategoryFilter[]).map((category) => {
             const isActive = categoryFilter === category;
             return (
