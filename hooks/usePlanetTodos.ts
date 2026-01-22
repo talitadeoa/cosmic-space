@@ -55,7 +55,7 @@ const applyServerTodos = (localTodos: SavedTodo[], items: SyncTodoItem[]) => {
         dueDate: payload.dueDate ?? undefined,
         islandId: isValidIsland(payload.islandId) ? payload.islandId : undefined,
         phase: isValidPhase(payload.phase) ? payload.phase : undefined,
-        parentId: local?.parentId ?? null,
+        parentId: payload.parentId ?? null,
         createdAt: payload.createdAt ?? local?.createdAt,
         updatedAt: item.updatedAt,
         deletedAt: item.deletedAt,

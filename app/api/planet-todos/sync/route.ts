@@ -14,6 +14,7 @@ type SyncTodoPayload = {
   dueDate?: string | null;
   islandId?: string | null;
   phase?: string | null;
+  parentId?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
         due_date,
         island_id,
         phase,
+        parent_id,
         created_at,
         updated_at,
         deleted_at,
@@ -98,6 +100,7 @@ export async function GET(request: NextRequest) {
               : null,
         islandId: row.island_id ?? null,
         phase: row.phase ?? null,
+        parentId: row.parent_id ?? null,
         createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
         updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
       },
@@ -179,6 +182,7 @@ export async function POST(request: NextRequest) {
           due_date,
           island_id,
           phase,
+          parent_id,
           created_at,
           updated_at,
           deleted_at,
@@ -251,6 +255,7 @@ export async function POST(request: NextRequest) {
           due_date,
           island_id,
           phase,
+          parent_id,
           created_at,
           updated_at,
           deleted_at,
@@ -268,6 +273,7 @@ export async function POST(request: NextRequest) {
           ${payload.dueDate ?? existing?.due_date ?? null},
           ${payload.islandId ?? existing?.island_id ?? null},
           ${payload.phase ?? existing?.phase ?? null},
+          ${payload.parentId ?? existing?.parent_id ?? null},
           ${createdAt},
           ${now},
           ${deletedAt},
@@ -283,6 +289,7 @@ export async function POST(request: NextRequest) {
           due_date = EXCLUDED.due_date,
           island_id = EXCLUDED.island_id,
           phase = EXCLUDED.phase,
+          parent_id = EXCLUDED.parent_id,
           updated_at = EXCLUDED.updated_at,
           deleted_at = EXCLUDED.deleted_at,
           version = ${nextVersion}

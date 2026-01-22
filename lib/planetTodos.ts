@@ -16,6 +16,7 @@ export interface PlanetTodoRecord {
   dueDate?: string | null;
   islandId?: IslandId | null;
   phase?: MoonPhase | null;
+  parentId?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 }
@@ -52,6 +53,7 @@ const normalizeTodo = (input: Partial<PlanetTodoRecord>, fallbackId: string): Pl
   const dueDate = normalizeDate(input.dueDate);
   const islandId = validators.islandId(input.islandId) ? input.islandId : null;
   const phase = validators.moonPhase(input.phase) ? input.phase : null;
+  const parentId = typeof input.parentId === 'string' && input.parentId.trim() ? input.parentId : null;
   const createdAt = normalizeTimestamp(input.createdAt);
   const updatedAt = normalizeTimestamp(input.updatedAt ?? input.createdAt);
 
@@ -65,6 +67,7 @@ const normalizeTodo = (input: Partial<PlanetTodoRecord>, fallbackId: string): Pl
     dueDate,
     islandId,
     phase,
+    parentId,
     createdAt,
     updatedAt,
   };
@@ -84,6 +87,7 @@ export async function listPlanetTodos(userId: string | number): Promise<PlanetTo
         due_date,
         island_id,
         phase,
+        parent_id,
         created_at,
         updated_at
       FROM planet_todos
@@ -104,6 +108,7 @@ export async function listPlanetTodos(userId: string | number): Promise<PlanetTo
           dueDate: row.due_date,
           islandId: row.island_id,
           phase: row.phase,
+          parentId: row.parent_id,
           createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
           updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
         },
@@ -140,6 +145,7 @@ export async function mergePlanetTodos(
         due_date,
         island_id,
         phase,
+        parent_id,
         created_at,
         updated_at
       FROM planet_todos
@@ -160,6 +166,7 @@ export async function mergePlanetTodos(
           dueDate: row.due_date,
           islandId: row.island_id,
           phase: row.phase,
+          parentId: row.parent_id,
           createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
           updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
         },
@@ -203,6 +210,7 @@ export async function mergePlanetTodos(
           due_date,
           island_id,
           phase,
+          parent_id,
           created_at,
           updated_at
         )
@@ -217,6 +225,7 @@ export async function mergePlanetTodos(
           ${normalized.dueDate ?? null},
           ${normalized.islandId ?? null},
           ${normalized.phase ?? null},
+          ${normalized.parentId ?? null},
           ${createdAt},
           ${updatedAt}
         )
@@ -229,6 +238,7 @@ export async function mergePlanetTodos(
           due_date = EXCLUDED.due_date,
           island_id = EXCLUDED.island_id,
           phase = EXCLUDED.phase,
+          parent_id = EXCLUDED.parent_id,
           updated_at = EXCLUDED.updated_at
       `;
     }

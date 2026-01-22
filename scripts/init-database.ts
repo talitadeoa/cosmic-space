@@ -24,6 +24,7 @@ const scripts = [
   '10-planet-sync-alter.sql',
   '11-island-sync-alter.sql',
   '12-planet-todos-indexes.sql',
+  '16-planet-todos-parent-id.sql',
 ];
 
 async function runAllMigrations() {
@@ -39,7 +40,7 @@ async function runAllMigrations() {
       console.log(`✅ ${script} concluído\n`);
     }
 
-    console.log('🎉 Todos os 12 scripts executados com sucesso!');
+    console.log('🎉 Todos os 13 scripts executados com sucesso!');
     await sql.end();
   } catch (error) {
     console.error('❌ Erro:', error instanceof Error ? error.message : String(error));

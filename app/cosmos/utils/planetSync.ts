@@ -21,6 +21,7 @@ export type SyncTodoPayload = {
   dueDate?: string | null;
   islandId?: string | null;
   phase?: string | null;
+  parentId?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -160,6 +161,7 @@ export const mapTodoToPayload = (todo: SavedTodo): SyncTodoPayload => ({
   dueDate: todo.dueDate ?? null,
   islandId: todo.islandId ?? null,
   phase: todo.phase ?? null,
+  parentId: todo.parentId ?? null,
   createdAt: todo.createdAt ?? null,
   updatedAt: todo.updatedAt ?? null,
 });

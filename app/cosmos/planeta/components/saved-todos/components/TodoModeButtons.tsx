@@ -47,7 +47,7 @@ export function TodoModeButtons({
         onInputTypeFilterChange={onInputTypeFilterChange}
         onTodoStatusFilterChange={onTodoStatusFilterChange}
         onCategoryFilterChange={onCategoryFilterChange}
-        className="w-full"
+        className="w-full md:hidden lg:block"
       />
 
       <div className="flex w-full justify-end gap-2">

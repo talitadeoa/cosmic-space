@@ -50,6 +50,7 @@ const files = [
   'infra/db/10-planet-sync-alter.sql',
   'infra/db/11-island-sync-alter.sql',
   'infra/db/12-planet-todos-indexes.sql',
+  'infra/db/16-planet-todos-parent-id.sql',
 ];
 
 (async () => {

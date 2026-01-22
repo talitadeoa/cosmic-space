@@ -5,6 +5,7 @@ import { useTodoPanelState } from '@/app/cosmos/planeta/salvos/useTodoPanelState
 import { TodoList } from '@/app/cosmos/planeta/salvos/TodoList';
 import { PhaseGroupedTodoList } from '@/app/cosmos/planeta/salvos/PhaseGroupedTodoList';
 import { TodoBatchActions } from '@/app/cosmos/planeta/salvos/TodoBatchActions';
+import TodoFilters from '@/app/cosmos/planeta/salvos/TodoFilters';
 import type { SavedTodo, MoonPhase, IslandId } from '@/types/todo';
 import type { SavedTodosPanelProps as GroupedProps, TodoView } from '@/app/cosmos/planeta/salvos/types';
 import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
@@ -630,17 +631,60 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
         <TodoPanelHeader view={view} selectedPhase={selectedPhase} islandLabel={islandLabel} />
 
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <TodoViewButtons
-            currentView={view}
-            activeViewDrop={state.activeViewDrop}
-            selectedPhase={selectedPhase}
-            onViewChange={handleViewChange}
-            onDragOver={handleDragOverView}
-            onDrop={handleDropOnView}
-            onDragEnter={handleDragEnterView}
-            onDragLeave={handleDragLeaveView}
-          />
+          {/* Left: view buttons + compact filters for tablet portrait (md) */}
+          <div className="w-full">
+            <div className="md:grid md:grid-cols-2 md:gap-3 md:items-start lg:block">
+              <div>
+                <TodoViewButtons
+                  currentView={view}
+                  activeViewDrop={state.activeViewDrop}
+                  selectedPhase={selectedPhase}
+                  onViewChange={handleViewChange}
+                  onDragOver={handleDragOverView}
+                  onDrop={handleDropOnView}
+                  onDragEnter={handleDragEnterView}
+                  onDragLeave={handleDragLeaveView}
+                />
+              </div>
 
+              {/* Compact filters shown only on md (tablet portrait) */}
+              <div className="hidden md:flex md:flex-col md:justify-between lg:hidden">
+                {/* Align category (Principal/Secundária) with the first row (Todos / Em aberto) */}
+                <div className="mb-2">
+                  <TodoFilters
+                    inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
+                    todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
+                    categoryFilter={categoryFilter}
+                    onInputTypeFilterChange={onInputTypeFilterChange}
+                    onTodoStatusFilterChange={onTodoStatusFilterChange}
+                    onCategoryFilterChange={onCategoryFilterChange}
+                    showInputType={false}
+                    showTodoStatus={false}
+                    showCategory={true}
+                    className=""
+                  />
+                </div>
+
+                {/* Align input type (Textos / Tarefas) with the second row (Lua atual / Próxima fase / Próximo ciclo) */}
+                <div>
+                  <TodoFilters
+                    inputTypeFilter={inputTypeFilter as 'all' | 'text' | 'checkbox'}
+                    todoStatusFilter={todoStatusFilter as 'all' | 'completed' | 'open'}
+                    categoryFilter={categoryFilter}
+                    onInputTypeFilterChange={onInputTypeFilterChange}
+                    onTodoStatusFilterChange={onTodoStatusFilterChange}
+                    onCategoryFilterChange={onCategoryFilterChange}
+                    showInputType={true}
+                    showTodoStatus={true}
+                    showCategory={false}
+                    className=""
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: full mode buttons & filters (mobile & lg+) */}
           <TodoModeButtons
             canEdit={canEdit}
             isEditMode={state.isEditMode}

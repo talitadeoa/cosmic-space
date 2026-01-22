@@ -62,8 +62,19 @@ const normalizeFilters = (input: Partial<PlanetFiltersState> | null | undefined)
 };
 
 export const normalizePlanetState = (input: unknown): PlanetUiState => {
-  // Sempre retorna estado limpo - sem nenhum filtro persistido
-  return { ...DEFAULT_PLANET_STATE };
+  if (!input || typeof input !== 'object') {
+    return { ...DEFAULT_PLANET_STATE };
+  }
+
+  const raw = input as Partial<PlanetUiState>;
+
+  return {
+    filters: normalizeFilters(raw.filters),
+    showIslands: typeof raw.showIslands === 'boolean' ? raw.showIslands : DEFAULT_PLANET_STATE.showIslands,
+    isFiltersPanelOpen: typeof raw.isFiltersPanelOpen === 'boolean' 
+      ? raw.isFiltersPanelOpen 
+      : DEFAULT_PLANET_STATE.isFiltersPanelOpen,
+  };
 };
 
 export const hasCustomPlanetState = (state: PlanetUiState): boolean => {
@@ -111,6 +122,15 @@ export const loadPlanetStateSync = (): PlanetUiState => {
 };
 
 export const savePlanetState = (state: PlanetUiState) => {
+  // Não persistir 'view' no localStorage - é apenas estado de UI transitório
+  const { filters, ...rest } = state;
+  const stateToSave: PlanetUiState = {
+    ...rest,
+    filters: {
+      ...filters,
+      view: 'todos' as const, // Sempre salvar como 'todos' para não persistir a view entre sessões
+    },
+  };
   const { setValue } = useLocalStorage<PlanetUiState>(PLANET_STATE_STORAGE_KEY, DEFAULT_PLANET_STATE);
-  setValue(state);
+  setValue(stateToSave);
 };
