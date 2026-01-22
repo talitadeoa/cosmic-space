@@ -3,7 +3,7 @@
 import React from 'react';
 import { PlanetaProviders } from './state';
 import { PlanetaScene } from './visuals';
-import PlanetScreen from './components/PlanetScreen';
+import PlanetScreen from './visuals/PlanetScreen';
 import { usePlanetaNavigation } from './hooks';
 import { CosmosRouteHelper } from '@/app/cosmos/components';
 

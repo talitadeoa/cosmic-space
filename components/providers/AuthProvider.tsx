@@ -262,7 +262,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-      if (typeof window !== 'undefined') {localStorage.clear();}
+      
+      // Limpar apenas dados relacionados ao usuário, preservando configurações gerais
+      if (typeof window !== 'undefined') {
+        const keysToRemove = [
+          'flua_todos_salvos',
+          'flua_planet_state',
+          'flua_island_names',
+          'flua_island_meta',
+          'flua_sync_outbox',
+        ];
+        
+        keysToRemove.forEach(key => {
+          try {
+            localStorage.removeItem(key);
+          } catch (e) {
+            console.warn(`Erro ao remover ${key}:`, e);
+          }
+        });
+        
+        // Limpar também itens que começam com prefixos específicos
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('flua_sync_') || 
+              key.startsWith('flua_outbox_') ||
+              key.startsWith('flua_user_')) {
+            try {
+              localStorage.removeItem(key);
+            } catch (e) {
+              console.warn(`Erro ao remover ${key}:`, e);
+            }
+          }
+        });
+      }
+      
       setState(INITIAL_STATE);
       clearAuthStateCache();
       router.refresh();

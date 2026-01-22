@@ -146,17 +146,32 @@ export const usePlanetTodos = () => {
 
   useEffect(() => {
     if (loading) return;
+    
+    // Se não está autenticado, limpar todos os dados de sincronização e localStorage
+    if (!isAuthenticated) {
+      pendingIdsRef.current = new Set();
+      // Limpar dados locais ao fazer logout
+      setTodosState([]);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('flua_todos_salvos');
+        } catch (e) {
+          console.warn('Erro ao limpar todos salvos:', e);
+        }
+      }
+      setHasLoaded(true);
+      return;
+    }
+
+    // Se está autenticado, carregar dados locais primeiro
     const localItems = loadSavedTodos();
     setTodosState(localItems);
     setHasLoaded(true);
 
-    if (isAuthenticated) {
-      void listOutboxChanges('planet_todo', 200, true).then((items) => {
-        pendingIdsRef.current = new Set(items.map((item) => item.entityId));
-      });
-    } else {
-      pendingIdsRef.current = new Set();
-    }
+    // Então verificar mudanças pendentes para não sobrescrevê-las
+    void listOutboxChanges('planet_todo', 200, true).then((items) => {
+      pendingIdsRef.current = new Set(items.map((item) => item.entityId));
+    });
   }, [loading, isAuthenticated]);
 
   useEffect(() => {
@@ -175,6 +190,8 @@ export const usePlanetTodos = () => {
 
     let isMounted = true;
 
+    let isFirstSync = true;
+    
     const syncTodos = async () => {
       if (!isMounted) return;
       try {
@@ -203,12 +220,27 @@ export const usePlanetTodos = () => {
 
       try {
         const pullResult = await pullTodoChanges(user.userId);
-        if (!pullResult.items?.length) return;
+        if (!pullResult.items?.length) {
+          isFirstSync = false;
+          return;
+        }
         suppressOutboxRef.current = true;
         setTodosState((prev) => {
+          // Na primeira sincronização após login, sobrescrever dados locais
+          // com dados do servidor (exceto os que estão pendentes de envio)
           const filteredItems = pullResult.items.filter(
             (item) => !pendingIdsRef.current.has(item.id)
           );
+          
+          if (isFirstSync) {
+            // Manter apenas itens pendentes de envio + aplicar dados do servidor
+            const pendingTodos = prev.filter(todo => pendingIdsRef.current.has(todo.id));
+            const result = applyServerTodos(pendingTodos, filteredItems);
+            isFirstSync = false;
+            return result;
+          }
+          
+          // Sincronizações subsequentes apenas aplicam mudanças incrementais
           return applyServerTodos(prev, filteredItems);
         });
         suppressOutboxRef.current = false;

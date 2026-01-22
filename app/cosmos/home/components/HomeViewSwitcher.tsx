@@ -8,7 +8,7 @@ import { CelestialObject, CosmosRouteHelper } from '@/app/cosmos/components';
 import { useCosmosNavigationSafe, HomeViewType } from '@/app/cosmos/context/CosmosNavigationContext';
 import { CosmosParallax } from '@/components/home/CosmosParallax';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
-import HomeScreen from '@/app/cosmos/screens/HomeScreen';
+import HomeScreen from '@/app/cosmos/home/HomeScreen';
 import type { ScreenId, ScreenProps, FocusState, CelestialType, } from '@/app/cosmos/types';
 
 // ============================================

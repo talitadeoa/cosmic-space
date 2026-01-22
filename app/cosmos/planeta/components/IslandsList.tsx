@@ -193,7 +193,6 @@ export const IslandsList: React.FC<IslandsListProps> = ({
       className={`flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3 sm:p-4 ${containerClassName}`}
       role="group"
       aria-label="Island selection"
-      onClick={(event) => event.stopPropagation()}
     >
       {visibleIslandIds.map((islandId) => {
         const isActiveDrop = activeDropIsland === islandId;

@@ -1,6 +1,6 @@
-export { FiltersPanel } from './FiltersPanel';
+export { FiltersPanel } from '../salvos/FiltersPanel';
 export { IslandsList } from './IslandsList';
 export { MoonCluster } from './MoonCluster';
-export { default as PlanetScreen } from './PlanetScreen';
-export { SavedTodosPanel } from './saved-todos/SavedTodosPanel';
-export { default as TodoInput } from './TodoInput';
+export { default as PlanetScreen } from '../visuals/PlanetScreen';
+export { SavedTodosPanel } from '../salvos/SavedTodosPanel';
+export { default as TodoInput } from '../salvos/TodoInput';

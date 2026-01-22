@@ -295,9 +295,10 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
   const handleViewChange = useCallback(
     (nextView: TodoView) => {
       onViewChange?.(nextView);
-      setPage(0);
+      // Não resetar página automaticamente - deixar o usuário navegar livremente
+      // setPage(0); // REMOVIDO: causava mudança automática de view ao editar
     },
-    [onViewChange, setPage]
+    [onViewChange]
   );
 
   // === Handlers de Modo ===
@@ -434,11 +435,16 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
         });
       });
 
-      clearSelection();
+      // Não limpar seleção se estiver em modo de edição/seleção
+      // Isso previne mudança automática de view
+      if (!state.isEditMode && !state.isSelectionMode) {
+        clearSelection();
+      }
+      
       setActiveTodoDropId(null);
       onDropInside?.();
     },
-    [getDraggedTodoIds, onUpdateTodo, clearSelection, onDropInside, setActiveTodoDropId]
+    [getDraggedTodoIds, onUpdateTodo, clearSelection, onDropInside, setActiveTodoDropId, state.isEditMode, state.isSelectionMode]
   );
 
   const handleDragOverTodo = useCallback(
@@ -523,9 +529,13 @@ export const SavedTodosPanel: React.FC<SavedTodosPanelProps> = (rawProps) => {
   );
 
   // === Effects ===
+  // Resetar página apenas ao mudar filtros de fase/ilha, não durante edição
   useEffect(() => {
-    setPage(0);
-  }, [selectedPhase, selectedIsland, setPage]);
+    // Não resetar página se estiver editando para evitar mudança automática de view
+    if (!state.isEditMode) {
+      setPage(0);
+    }
+  }, [selectedPhase, selectedIsland, setPage, state.isEditMode]);
 
   useEffect(() => {
     dispatch({

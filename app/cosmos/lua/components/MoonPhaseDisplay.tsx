@@ -25,11 +25,18 @@ const formatLocalDate = (date: Date) => {
 
 const normalizePhaseLabel = (phase: string): string => {
   const normalized = phase.toLowerCase();
-  if (normalized.includes('primeiro quarto')) return 'Primeiro Quarto';
-  if (normalized.includes('nova')) return 'Nova';
-  if (normalized.includes('crescente')) return 'Crescente';
-  if (normalized.includes('cheia')) return 'Cheia';
-  if (normalized.includes('minguante')) return 'Minguante';
+  // Mapeamento de inglês (da API USNO) para português
+  if (normalized.includes('new moon')) return 'Nova';
+  if (normalized.includes('waxing crescent')) return 'Crescente';
+  if (normalized.includes('first quarter')) return 'Primeiro Quarto';
+  if (normalized.includes('waxing gibbous')) return 'Gibosa Crescente';
+  if (normalized.includes('full moon')) return 'Cheia';
+  if (normalized.includes('waning gibbous')) return 'Gibosa Minguante';
+  if (normalized.includes('last quarter')) return 'Último Quarto';
+  if (normalized.includes('waning crescent')) return 'Minguante';
+  // Variações em português
+  if (normalized.includes('quarto crescente')) return 'Primeiro Quarto';
+  if (normalized.includes('quarto minguante')) return 'Último Quarto';
   return phase;
 };
 
@@ -55,13 +62,20 @@ const MoonPhaseDisplay: React.FC = () => {
       case 'Nova':
         return '🌑';
       case 'Crescente':
-        return '🌓';
+        return '🌒';
       case 'Primeiro Quarto':
         return '🌓';
+      case 'Gibosa Crescente':
+        return '🌔';
       case 'Cheia':
         return '🌕';
-      case 'Minguante':
+      case 'Gibosa Minguante':
+        return '🌖';
+      case 'Último Quarto':
+      case 'Quarto Minguante':
         return '🌗';
+      case 'Minguante':
+        return '🌘';
       default:
         return '🌙';
     }
@@ -90,11 +104,17 @@ const MoonPhaseDisplay: React.FC = () => {
       case 'Nova':
         return 'from-slate-900 to-slate-800';
       case 'Crescente':
-        return 'from-amber-900 to-amber-800';
+        return 'from-amber-700 to-amber-600';
       case 'Primeiro Quarto':
-        return 'from-yellow-900 to-yellow-800';
+        return 'from-yellow-700 to-amber-600';
+      case 'Gibosa Crescente':
+        return 'from-yellow-600 to-amber-500';
       case 'Cheia':
         return 'from-yellow-400 to-amber-300';
+      case 'Gibosa Minguante':
+        return 'from-amber-500 to-blue-600';
+      case 'Último Quarto':
+        return 'from-blue-700 to-slate-700';
       case 'Minguante':
         return 'from-blue-900 to-slate-800';
       default:
@@ -106,7 +126,10 @@ const MoonPhaseDisplay: React.FC = () => {
     Nova: 'Lua Nova',
     Crescente: 'Lua Crescente',
     'Primeiro Quarto': 'Primeiro Quarto',
+    'Gibosa Crescente': 'Gibosa Crescente',
     Cheia: 'Lua Cheia',
+    'Gibosa Minguante': 'Gibosa Minguante',
+    'Último Quarto': 'Último Quarto',
     Minguante: 'Lua Minguante',
   };
 

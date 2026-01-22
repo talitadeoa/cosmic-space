@@ -1,12 +1,28 @@
 'use client';
 
 import React, { useCallback, memo } from 'react';
+import Image from 'next/image';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
 import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
 
 type MoonZodiacInfo = {
   sign?: string;
   emoji?: string;
+};
+
+const ZODIAC_SIGN_TO_IMAGE: Record<string, string> = {
+  'Áries': 'aries.png',
+  'Touro': 'taurus.png',
+  'Gêmeos': 'gemini.png',
+  'Câncer': 'cancer.png',
+  'Leão': 'leo.png',
+  'Virgem': 'virgo.png',
+  'Libra': 'libra.png',
+  'Escorpião': 'scorpio.png',
+  'Sagitário': 'sagittarius.png',
+  'Capricórnio': 'capricornus.png',
+  'Aquário': 'aquarius.png',
+  'Peixes': 'pisces.png',
 };
 
 type MoonClusterProps = {
@@ -95,9 +111,14 @@ export const MoonCluster: React.FC<MoonClusterProps> = memo(function MoonCluster
                   } group-hover:drop-shadow-[0_0_25px_rgba(129,140,248,0.8)]`}
                 />
                 {zodiacInfo && (zodiacInfo.emoji || zodiacInfo.sign) && (
-                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-2xl text-amber-100/60 drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] mix-blend-screen">
-                    {zodiacInfo.emoji ?? ''}
-                  </span>
+                  <Image
+                    src={`/signs/${ZODIAC_SIGN_TO_IMAGE[zodiacInfo.sign || ''] || 'aries.png'}`}
+                    alt={zodiacInfo.sign || 'Zodiac sign'}
+                    width={28}
+                    height={28}
+                    className="pointer-events-none absolute -right-7 -bottom-1 h-7 w-7 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]"
+                    priority={false}
+                  />
                 )}
               </div>
               {zodiacInfo && (zodiacInfo.emoji || zodiacInfo.sign) && (

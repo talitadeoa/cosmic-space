@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import NavMenu from '@/components/navigation/NavMenu';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
-import TodoInput, { TodoItem as ParsedTodoItem } from './TodoInput';
+import TodoInput, { TodoItem as ParsedTodoItem } from '../salvos/TodoInput';
 import { type MoonPhase, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
 import { PHASE_VIBES } from '@/app/cosmos/utils/phaseVibes';
 import type { ScreenProps } from '@/app/cosmos/types';
@@ -14,14 +14,14 @@ import { useGalaxySunsSync } from '@/hooks/useGalaxySunsSync';
 import { useLunations } from '@/hooks/useLunationCache';
 import { useCurrentWeekPhase } from '@/hooks/useCurrentWeekPhase';
 import { useTemporal } from '@/app/cosmos/planeta/state/TemporalContext';
-import { SavedTodosPanel } from '@/app/cosmos/planeta/components/saved-todos/SavedTodosPanel';
+import { SavedTodosPanel } from '@/app/cosmos/planeta/salvos/SavedTodosPanel';
 import { IslandsList } from '@/app/cosmos/planeta/components/IslandsList';
 import { MAX_ISLANDS } from '@/app/cosmos/utils/islandNames';
 import { useIslandNames } from '@/hooks/useIslandNames';
 import { usePlanetTodos } from '@/hooks/usePlanetTodos';
 import { usePlanetState } from '@/hooks/usePlanetState';
-import { FiltersPanel } from './FiltersPanel';
-import { MoonCluster } from './MoonCluster';
+import { FiltersPanel } from '../salvos/FiltersPanel';
+import { MoonCluster } from '../components/MoonCluster';
 import { TreasureMapView } from './TreasureMapView';
 import { TreasureChartView } from './TreasureChartView';
 
@@ -111,6 +111,14 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       month: null,
       year: null,
     });
+    // Limpar TODOS os estados de drag para prevenir bloqueios de interação
+    setActiveDrop(null);
+    setActiveIslandDrop(null);
+    setIsDraggingTodo(false);
+    setDraggingTodoId(null);
+    // Limpar também referências de touch que podem bloquear
+    touchIdRef.current = null;
+    dropHandledRef.current = false;
   };
 
   // Sincronizar lunações do banco de dados
@@ -247,11 +255,17 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
   }, []);
 
   const handleDragEnd = useCallback(() => {
+    // Garantir limpeza completa do estado de drag
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
     setDraggingTodoId(null);
     dropHandledRef.current = false;
+    
+    // Forçar uma pequena pausa para garantir que todos os eventos de drag sejam processados
+    setTimeout(() => {
+      dropHandledRef.current = false;
+    }, 50);
   }, []);
 
   const getDraggedTodoIds = (event: React.DragEvent) => {
@@ -275,11 +289,20 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     e.preventDefault();
     e.stopPropagation();
     const todoIds = getDraggedTodoIds(e);
-    if (todoIds.length === 0) return;
+    if (todoIds.length === 0) {
+      // Limpar estados mesmo se não houver IDs
+      setActiveDrop(null);
+      setIsDraggingTodo(false);
+      setDraggingTodoId(null);
+      return;
+    }
     dropHandledRef.current = true;
     assignTodosToPhase(todoIds, phase);
+    // Limpar TODOS os estados de drag
     setActiveDrop(null);
+    setActiveIslandDrop(null);
     setIsDraggingTodo(false);
+    setDraggingTodoId(null);
   };
 
   const handleDragOverPhase = (phase: MoonPhase) => (e: React.DragEvent) => {
@@ -295,11 +318,20 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
     e.preventDefault();
     e.stopPropagation();
     const todoIds = getDraggedTodoIds(e);
-    if (todoIds.length === 0) return;
+    if (todoIds.length === 0) {
+      // Limpar estados mesmo se não houver IDs
+      setActiveIslandDrop(null);
+      setIsDraggingTodo(false);
+      setDraggingTodoId(null);
+      return;
+    }
     dropHandledRef.current = true;
     assignTodosToIsland(todoIds, islandId);
+    // Limpar TODOS os estados de drag
     setActiveIslandDrop(null);
+    setActiveDrop(null);
     setIsDraggingTodo(false);
+    setDraggingTodoId(null);
   };
 
   const handleDragOverIsland = (islandId: IslandId) => (e: React.DragEvent) => {
@@ -331,12 +363,22 @@ const PlanetScreen: React.FC<ScreenProps> = ({ navigateWithFocus }) => {
       }
     }
 
+    // Limpar COMPLETAMENTE todos os estados de drag/touch
     setDraggingTodoId(null);
     touchIdRef.current = null;
     setIsDraggingTodo(false);
     setActiveDrop(null);
     setActiveIslandDrop(null);
     dropHandledRef.current = false;
+    
+    // Garantir limpeza com pequeno delay para processar eventos pendentes
+    setTimeout(() => {
+      if (dropHandledRef.current === false) {
+        setIsDraggingTodo(false);
+        setActiveDrop(null);
+        setActiveIslandDrop(null);
+      }
+    }, 100);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {

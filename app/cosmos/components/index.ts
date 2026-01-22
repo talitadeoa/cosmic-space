@@ -14,7 +14,7 @@ export { default as MoonPhaseDisplay } from '../lua/components/MoonPhaseDisplay'
 export { default as MoonPhasesRail } from '../lua/components/MoonPhasesRail';
 export { PhaseTag } from '../lua/components/PhaseTag';
 export { GalaxyInnerView } from '../galaxia/components/GalaxyInnerView';
-export { default as TodoInput } from '../planeta/components/TodoInput';
+export { default as TodoInput } from '../planeta/salvos/TodoInput';
 export { IslandsList } from '../planeta/components/IslandsList';
 export { GestureDetector } from './GestureDetector';
 export { CosmosRouteHelper, useResetRouteHelper } from './CosmosRouteHelper';

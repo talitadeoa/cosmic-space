@@ -120,7 +120,8 @@ export function useTodoDragDrop({
 
       if (todoIds.length === 0) return;
 
-      onViewChange?.(viewType);
+      // NÃO mudar a view automaticamente - apenas atualizar os dados
+      // onViewChange?.(viewType); // REMOVIDO: view não deve mudar automaticamente
 
       if (viewType === 'em-aberto' && onUpdateTodo) {
         // Mover para "em aberto": limpar tudo
