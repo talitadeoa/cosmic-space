@@ -161,6 +161,7 @@ export const useIslandNames = () => {
     }
 
     let isMounted = true;
+    let isFirstSync = true;
 
     const syncIslands = async () => {
       if (!isMounted) return;
@@ -191,7 +192,9 @@ export const useIslandNames = () => {
       }
 
       try {
-        const pullResult = await pullIslandChanges(user.userId);
+        // Na primeira sincronização, forçar busca desde o início (cursor = 0)
+        const pullResult = await pullIslandChanges(user.userId, isFirstSync);
+        isFirstSync = false;
         if (!pullResult.items?.length) return;
         suppressOutboxApplyRef.current = true;
         setIslandNamesState((prevNames) => {

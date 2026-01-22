@@ -231,7 +231,8 @@ export const usePlanetTodos = () => {
       }
 
       try {
-        const pullResult = await pullTodoChanges(user.userId);
+        // Na primeira sincronização, forçar busca desde o início (cursor = 0)
+        const pullResult = await pullTodoChanges(user.userId, isFirstSync);
         if (!pullResult.items?.length) {
           isFirstSync = false;
           return;

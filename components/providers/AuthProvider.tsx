@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { clearAllSyncData } from '@/app/cosmos/utils/syncOutbox';
 
 interface User {
   [key: string]: any;
@@ -262,6 +263,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      
+      // Limpar IndexedDB de sincronização (cursors e outbox)
+      try {
+        await clearAllSyncData();
+      } catch (e) {
+        console.warn('Erro ao limpar dados de sincronização:', e);
+      }
       
       // Limpar apenas dados relacionados ao usuário, preservando configurações gerais
       if (typeof window !== 'undefined') {

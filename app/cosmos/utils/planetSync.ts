@@ -94,9 +94,10 @@ export const pushTodoChanges = async (): Promise<PushResponse | null> => {
 };
 
 export const pullTodoChanges = async (
-  userId: string | number
+  userId: string | number,
+  forceFromStart = false
 ): Promise<{ items: SyncTodoItem[]; cursor: number | null }> => {
-  const cursor = (await getMeta<number>(cursorKey(userId, 'planet_todo'))) ?? 0;
+  const cursor = forceFromStart ? 0 : ((await getMeta<number>(cursorKey(userId, 'planet_todo'))) ?? 0);
   const response = await fetch(`/api/planet-todos/sync?cursor=${cursor}`, {
     credentials: 'include',
   });
@@ -136,9 +137,10 @@ export const pushStateChanges = async (): Promise<PushResponse | null> => {
 };
 
 export const pullStateChanges = async (
-  userId: string | number
+  userId: string | number,
+  forceFromStart = false
 ): Promise<{ item: SyncStateItem | null; cursor: number | null }> => {
-  const cursor = (await getMeta<number>(cursorKey(userId, 'planet_state'))) ?? 0;
+  const cursor = forceFromStart ? 0 : ((await getMeta<number>(cursorKey(userId, 'planet_state'))) ?? 0);
   const response = await fetch(`/api/planet-state/sync?cursor=${cursor}`, {
     credentials: 'include',
   });

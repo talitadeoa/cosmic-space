@@ -124,3 +124,14 @@ export const getMeta = async <T>(key: string): Promise<T | null> => {
 export const setMeta = async <T>(key: string, value: T): Promise<void> => {
   await withStore<void>(META_STORE, 'readwrite', (store) => store.put({ key, value }));
 };
+
+export const clearAllSyncData = async (): Promise<void> => {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([OUTBOX_STORE, META_STORE], 'readwrite');
+    tx.objectStore(OUTBOX_STORE).clear();
+    tx.objectStore(META_STORE).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+};

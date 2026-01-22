@@ -128,6 +128,7 @@ export const usePlanetState = () => {
     }
 
     let isMounted = true;
+    let isFirstSync = true;
 
     const syncState = async () => {
       if (!isMounted) return;
@@ -147,7 +148,9 @@ export const usePlanetState = () => {
       }
 
       try {
-        const pullResult = await pullStateChanges(user.userId);
+        // Na primeira sincronização, forçar busca desde o início (cursor = 0)
+        const pullResult = await pullStateChanges(user.userId, isFirstSync);
+        isFirstSync = false;
         if (!pullResult.item) return;
         
         // Aplicar estado do servidor mesmo com mudanças locais pendentes

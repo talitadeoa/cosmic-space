@@ -64,9 +64,10 @@ export const pushIslandChanges = async (): Promise<PushResponse | null> => {
 };
 
 export const pullIslandChanges = async (
-  userId: string | number
+  userId: string | number,
+  forceFromStart = false
 ): Promise<{ items: SyncIslandItem[]; cursor: number | null }> => {
-  const cursor = (await getMeta<number>(cursorKey(userId))) ?? 0;
+  const cursor = forceFromStart ? 0 : ((await getMeta<number>(cursorKey(userId))) ?? 0);
   const response = await fetch(`/api/islands/sync?cursor=${cursor}`, {
     credentials: 'include',
   });
