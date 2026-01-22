@@ -147,18 +147,12 @@ export const usePlanetTodos = () => {
   useEffect(() => {
     if (loading) return;
     
-    // Se não está autenticado, limpar todos os dados de sincronização e localStorage
+    // Se não está autenticado, limpar apenas dados de sincronização (não localStorage)
     if (!isAuthenticated) {
       pendingIdsRef.current = new Set();
-      // Limpar dados locais ao fazer logout
-      setTodosState([]);
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.removeItem('flua_todos_salvos');
-        } catch (e) {
-          console.warn('Erro ao limpar todos salvos:', e);
-        }
-      }
+      // Carregar dados locais mesmo deslogado
+      const localItems = loadSavedTodos();
+      setTodosState(localItems);
       setHasLoaded(true);
       return;
     }
@@ -172,7 +166,25 @@ export const usePlanetTodos = () => {
     void listOutboxChanges('planet_todo', 200, true).then((items) => {
       pendingIdsRef.current = new Set(items.map((item) => item.entityId));
     });
-  }, [loading, isAuthenticated]);
+    
+    // Se há dados locais ao fazer login, enfileirar para enviar ao servidor
+    if (localItems.length > 0) {
+      const nowIso = new Date().toISOString();
+      localItems.forEach((todo) => {
+        pendingIdsRef.current.add(todo.id);
+        void enqueueTodoChange({
+          clientChangeId: createChangeId(),
+          type: 'planet_todo',
+          entityId: todo.id,
+          deviceId,
+          baseVersion: todo.version ?? null,
+          updatedAt: todo.updatedAt ?? nowIso,
+          deletedAt: todo.deletedAt ?? null,
+          payload: mapTodoToPayload(todo),
+        });
+      });
+    }
+  }, [loading, isAuthenticated, deviceId]);
 
   useEffect(() => {
     if (!hasLoaded) return;

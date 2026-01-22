@@ -269,6 +269,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'flua_todos_salvos',
           'flua_planet_state',
           'flua_island_names',
+          'flua_island_ids',
           'flua_island_meta',
           'flua_sync_outbox',
         ];
@@ -280,6 +281,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.warn(`Erro ao remover ${key}:`, e);
           }
         });
+        
+        // Limpar sessionStorage também
+        try {
+          sessionStorage.removeItem('flua_planet_state_meta');
+          sessionStorage.removeItem('flua_island_meta');
+        } catch (e) {
+          console.warn('Erro ao limpar sessionStorage:', e);
+        }
         
         // Limpar também itens que começam com prefixos específicos
         Object.keys(localStorage).forEach(key => {
