@@ -90,17 +90,27 @@ export const usePlanetState = () => {
 
   useEffect(() => {
     if (loading) return;
+    
+    // Se não está autenticado, limpar dados e usar padrões
+    if (!isAuthenticated) {
+      pendingRef.current = false;
+      const defaultState = {
+        ...DEFAULT_PLANET_STATE,
+        filters: { ...DEFAULT_PLANET_FILTERS },
+      };
+      setStateInternal(defaultState);
+      setHasLoaded(true);
+      return;
+    }
+    
+    // Se está autenticado, carregar dados locais
     const localState = normalizePlanetState(loadPlanetStateSync());
     setStateInternal(localState);
     setHasLoaded(true);
 
-    if (isAuthenticated) {
-      void listOutboxChanges('planet_state', 50, true).then((items) => {
-        pendingRef.current = items.length > 0;
-      });
-    } else {
-      pendingRef.current = false;
-    }
+    void listOutboxChanges('planet_state', 50, true).then((items) => {
+      pendingRef.current = items.length > 0;
+    });
   }, [loading, isAuthenticated]);
 
   useEffect(() => {
@@ -169,15 +179,13 @@ export const usePlanetState = () => {
       }
     };
 
-    const immediateTimeoutRef = setTimeout(() => {
-      syncState();
-    }, 100);
+    // Sincronização IMEDIATA após login para carregar dados do servidor
+    syncState();
 
     syncIntervalRef.current = setInterval(syncState, SYNC_INTERVAL_MS);
 
     return () => {
       isMounted = false;
-      clearTimeout(immediateTimeoutRef);
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
         syncIntervalRef.current = null;

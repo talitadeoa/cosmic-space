@@ -249,15 +249,13 @@ export const usePlanetTodos = () => {
       }
     };
 
-    const immediateTimeoutRef = setTimeout(() => {
-      syncTodos();
-    }, 100);
+    // Sincronização IMEDIATA após login para carregar dados do servidor
+    syncTodos();
 
     syncIntervalRef.current = setInterval(syncTodos, SYNC_INTERVAL_MS);
 
     return () => {
       isMounted = false;
-      clearTimeout(immediateTimeoutRef);
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
         syncIntervalRef.current = null;

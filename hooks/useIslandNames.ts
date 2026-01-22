@@ -118,6 +118,17 @@ export const useIslandNames = () => {
 
   useEffect(() => {
     if (loading) return;
+    
+    // Se não está autenticado, usar dados padrões
+    if (!isAuthenticated) {
+      pendingRef.current = new Set();
+      setIslandNamesState(DEFAULT_ISLAND_NAMES);
+      setIslandIdsState(['ilha1']);
+      setHasLoaded(true);
+      return;
+    }
+    
+    // Se está autenticado, carregar dados locais
     const localNames = loadIslandNames();
     const localIds = loadIslandIds().slice(0, MAX_ISLANDS);
 
@@ -128,13 +139,9 @@ export const useIslandNames = () => {
     setIslandIdsState(orderIslandIds(localIds));
     setHasLoaded(true);
 
-    if (isAuthenticated) {
-      void listOutboxChanges('island', 200, true).then((items) => {
-        pendingRef.current = new Set(items.map((item) => item.entityId as IslandId));
-      });
-    } else {
-      pendingRef.current = new Set();
-    }
+    void listOutboxChanges('island', 200, true).then((items) => {
+      pendingRef.current = new Set(items.map((item) => item.entityId as IslandId));
+    });
   }, [loading, isAuthenticated]);
 
   useEffect(() => {
@@ -207,15 +214,13 @@ export const useIslandNames = () => {
       }
     };
 
-    const immediateTimeoutRef = setTimeout(() => {
-      syncIslands();
-    }, 100);
+    // Sincronização IMEDIATA após login para carregar dados do servidor
+    syncIslands();
 
     syncIntervalRef.current = setInterval(syncIslands, SYNC_INTERVAL_MS);
 
     return () => {
       isMounted = false;
-      clearTimeout(immediateTimeoutRef);
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
         syncIntervalRef.current = null;
