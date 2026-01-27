@@ -7,9 +7,7 @@
 'use client';
 
 import { memo } from 'react';
-import type { MoonPhase, IslandId } from '@/app/cosmos/utils/todoStorage';
-import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
-import { getIslandLabel, type IslandNames } from '@/app/cosmos/utils/islandNames';
+import { type MoonPhase, type IslandId, phaseLabels, getIslandLabel, type IslandNames } from '@/client/storage';
 
 interface TodoBatchActionsProps {
   isSelectionMode: boolean;

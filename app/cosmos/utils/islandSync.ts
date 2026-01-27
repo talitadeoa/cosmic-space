@@ -1,15 +1,16 @@
 'use client';
 
-import type { IslandId, IslandNames } from '@/app/cosmos/utils/islandNames';
-import type { OutboxChange } from '@/app/cosmos/utils/syncOutbox';
 import {
+  type IslandId,
+  type IslandNames,
+  type OutboxChange,
   addOutboxChange,
   getMeta,
   listOutboxChanges,
   removeOutboxChange,
   setMeta,
   updateOutboxChangeStatus,
-} from '@/app/cosmos/utils/syncOutbox';
+} from '@/client/storage';
 
 export type SyncIslandPayload = {
   title: string | null;

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { clearAllSyncData } from '@/app/cosmos/utils/syncOutbox';
+import { clearAllSyncData } from '@/client/storage';
 
 interface User {
   [key: string]: any;

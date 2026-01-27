@@ -3,7 +3,7 @@
 import React from 'react';
 import type { MoonPhase } from '@/types/todo';
 import type { TodoView } from '@/app/cosmos/planeta/salvos/types';
-import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
+import { phaseLabels } from '@/client/storage';
 
 interface ViewButtonProps {
   view: TodoView;

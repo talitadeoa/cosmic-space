@@ -4,7 +4,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { SavedTodo, MoonPhase, IslandId } from '@/app/cosmos/utils/todoStorage';
+import type { SavedTodo, MoonPhase, IslandId } from '@/client/storage';
 
 export function useBatchOperations(
   selectedTodoIds: string[],

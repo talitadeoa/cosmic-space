@@ -3,7 +3,7 @@
 import React, { useCallback, memo } from 'react';
 import Image from 'next/image';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
-import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { MoonPhase } from '@/client/storage';
 
 type MoonZodiacInfo = {
   sign?: string;

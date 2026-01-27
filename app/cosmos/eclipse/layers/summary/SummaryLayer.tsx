@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CelestialObject } from '@/app/cosmos/components/CelestialObject';
-import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
+import { phaseLabels } from '@/client/storage';
 import type { PhaseStat } from '../../types';
 
 type SummaryLayerProps = {

@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
-import { getIslandLabel, type IslandNames } from '@/app/cosmos/utils/islandNames';
+import { phaseLabels, getIslandLabel, type IslandNames } from '@/client/storage';
 import type { FilterState } from '@/hooks/useFilteredTodos';
 
 export type FiltersPanelProps = {

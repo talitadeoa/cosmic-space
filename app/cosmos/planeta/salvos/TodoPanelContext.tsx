@@ -8,8 +8,7 @@
  */
 
 import { createContext, useContext, type ReactNode, type Dispatch } from 'react';
-import type { SavedTodo, IslandId, MoonPhase } from '@/app/cosmos/utils/todoStorage';
-import type { IslandNames } from '@/app/cosmos/utils/islandNames';
+import { type SavedTodo, type IslandId, type MoonPhase, type IslandNames } from '@/client/storage';
 import type { 
   TodoPanelState, 
   TodoPanelAction,

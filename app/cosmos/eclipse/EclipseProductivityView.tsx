@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { formatTimePtBr } from '@/lib/utils/format';
-import { loadSavedTodos, phaseOrder, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
+import { loadSavedTodos, phaseOrder, type SavedTodo } from '@/client/storage';
 import { useBackToHome } from '@/app/cosmos/hooks/useBackToHome';
 import type { ScreenProps } from '@/app/cosmos/types';
 import SummaryLayer from './layers/summary/SummaryLayer';

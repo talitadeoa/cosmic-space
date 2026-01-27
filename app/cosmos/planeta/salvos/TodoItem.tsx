@@ -1,9 +1,7 @@
 'use client';
 
 import React, { memo, useCallback, useRef } from 'react';
-import type { SavedTodo, } from '@/app/cosmos/utils/todoStorage';
-import type { IslandId } from '@/types/todo';
-import { getIslandLabel, ISLAND_IDS, type IslandNames } from '@/app/cosmos/utils/islandNames';
+import { type SavedTodo, type IslandId, getIslandLabel, ISLAND_IDS, type IslandNames } from '@/client/storage';
 
 export interface TodoItemProps {
   todo: SavedTodo;

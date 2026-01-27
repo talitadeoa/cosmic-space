@@ -8,8 +8,7 @@ import { TodoBatchActions } from '@/app/cosmos/planeta/salvos/TodoBatchActions';
 import TodoFilters from '@/app/cosmos/planeta/salvos/TodoFilters';
 import type { SavedTodo, MoonPhase, IslandId } from '@/types/todo';
 import type { SavedTodosPanelProps as GroupedProps, TodoView } from '@/app/cosmos/planeta/salvos/types';
-import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
-import { getIslandLabel, ISLAND_IDS, type IslandNames } from '@/app/cosmos/utils/islandNames';
+import { phaseLabels, getIslandLabel, ISLAND_IDS, type IslandNames } from '@/client/storage';
 import type { CategoryFilter } from '@/types/planetState';
 
 // Hooks extraídos

@@ -5,8 +5,7 @@
  * Props agrupadas por domínio para reduzir prop drilling.
  */
 
-import type { SavedTodo, IslandId, MoonPhase } from '@/app/cosmos/utils/todoStorage';
-import type { IslandNames } from '@/app/cosmos/utils/islandNames';
+import { type SavedTodo, type IslandId, type MoonPhase, type IslandNames } from '@/client/storage';
 import type { CategoryFilter } from '@/types/planetState';
 
 /**

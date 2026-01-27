@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/app/cosmos/components/Card';
-import { phaseLabels, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
+import { phaseLabels, type SavedTodo } from '@/client/storage';
 import type { PhaseStat } from '../../types';
 
 type ProductivityLayerProps = {

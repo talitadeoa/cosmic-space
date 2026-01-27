@@ -3,16 +3,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { DEFAULT_PLANET_FILTERS, DEFAULT_PLANET_STATE, type PlanetUiState } from '@/types/planetState';
-import { loadPlanetStateSync, normalizePlanetState, savePlanetState } from '@/app/cosmos/utils/planetStateStorage';
-import { loadPlanetStateMeta, savePlanetStateMeta } from '@/app/cosmos/utils/planetStateMetaStorage';
-import { getDeviceId } from '@/app/cosmos/utils/deviceId';
+import {
+  loadPlanetStateSync,
+  normalizePlanetState,
+  savePlanetState,
+  loadPlanetStateMeta,
+  savePlanetStateMeta,
+  getDeviceId,
+  listOutboxChanges,
+} from '@/client/storage';
 import {
   enqueueStateChange,
   pullStateChanges,
   pushStateChanges,
   type SyncStateItem,
 } from '@/app/cosmos/utils/planetSync';
-import { listOutboxChanges } from '@/app/cosmos/utils/syncOutbox';
 
 const SYNC_INTERVAL_MS = 30000; // Aumentado de 10s para 30s para reduzir requisições
 

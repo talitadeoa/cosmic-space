@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import InputWindow from '@/app/cosmos/components/InputWindow';
 import CosmosChatModal from '@/app/cosmos/components/CosmosChatModal';
-import type { IslandId } from '@/app/cosmos/utils/todoStorage';
-import { getIslandLabel, type IslandNames } from '@/app/cosmos/utils/islandNames';
+import { type IslandId, getIslandLabel, type IslandNames } from '@/client/storage';
 import type { TodoInputType } from '@/types/inputs';
 
 export interface TodoItem {

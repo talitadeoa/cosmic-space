@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { type MoonPhase, type SavedTodo } from '@/app/cosmos/utils/todoStorage';
+import { type MoonPhase, type SavedTodo, type IslandId } from '@/client/storage';
 import { MOON_PHASES, MOON_PHASE_LABELS, MOON_PHASE_EMOJIS } from '@/types/moon';
 import { PHASE_VIBES } from '@/app/cosmos/utils/phaseVibes';
-import type { IslandId } from '@/app/cosmos/types/screen';
 
 interface TreasureMapViewProps {
   todos: SavedTodo[];

@@ -10,7 +10,7 @@ import type {
   TodoPanelState, 
   TodoPanelAction, 
 } from './types';
-import type { MoonPhase, IslandId } from '@/app/cosmos/utils/todoStorage';
+import type { MoonPhase, IslandId } from '@/client/storage';
 
 /**
  * Estado inicial

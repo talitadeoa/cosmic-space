@@ -23,13 +23,13 @@ const cosmosRoutes = [
 
 const appRoutes = [
   { href: '/comunidade', label: '👥 Comunidade' },
-  { href: '/perfil', label: '👤 Perfil' },
+  { href: '/usuario', label: '👤 Perfil' },
 ];
 
 const devRoutes = [
   { href: '/landing', label: 'Landing' },
   { href: '/page', label: 'Page' },
-  { href: '/ilha', label: 'Ilha' },
+  { href: '/tarefas', label: 'Tarefas' },
   { href: '/cosmos/planeta?view=treasure-map', label: '🗺️ Mapa dos Tesouros' },
   { href: '/cosmos/planeta?view=treasure-chart', label: '🧭 Carta Náutica' },
 ];

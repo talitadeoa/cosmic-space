@@ -1,4 +1,4 @@
-import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { MoonPhase } from '@/client/storage';
 
 export type PhaseStat = {
   phase: MoonPhase;

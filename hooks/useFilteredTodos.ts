@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { SavedTodo, MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { SavedTodo, MoonPhase } from '@/client/storage';
 import type { PlanetFiltersState, InputTypeFilter, TodoStatusFilter } from '@/types/planetState';
 
 export type FilterState = PlanetFiltersState;

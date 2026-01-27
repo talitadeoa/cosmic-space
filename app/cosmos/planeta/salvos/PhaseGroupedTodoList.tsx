@@ -1,10 +1,7 @@
 'use client';
 
 import React, { memo, useMemo } from 'react';
-import type { SavedTodo, MoonPhase } from '@/app/cosmos/utils/todoStorage';
-import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
-import type { IslandNames } from '@/app/cosmos/utils/islandNames';
-import type { IslandId } from '@/types/todo';
+import { type SavedTodo, type MoonPhase, type IslandId, phaseLabels, type IslandNames } from '@/client/storage';
 import { TodoItem } from './TodoItem';
 import { EmptyState } from '@/app/cosmos/components/EmptyState';
 

@@ -1,14 +1,13 @@
 /**
  * 📍 Rota: /tarefas
  *
- * Página principal de tarefas (anteriormente /ilha).
- * Migração: /ilha → /tarefas
+ * Página principal de tarefas com seletor de ilhas.
  *
  * @see /doc/CONVENCAO_ROTAS_BASEADA_EM_DOMINIO.md
  */
 
-import styles from '@/app/ilha/ilha.module.css';
-import IlhaClient from '@/app/ilha/IlhaClient';
+import styles from '@/components/tarefas/island-selector.module.css';
+import { IslandSelector } from '@/components/tarefas';
 
 export default function TarefasPage() {
   return (
@@ -18,7 +17,7 @@ export default function TarefasPage() {
         Clique em uma ilha para abrir o painel de inputs e registrar informações daquela área do
         seu mundo.
       </p>
-      <IlhaClient />
+      <IslandSelector />
     </main>
   );
 }

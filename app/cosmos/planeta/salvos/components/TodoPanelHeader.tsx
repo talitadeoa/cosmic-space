@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { MoonPhase } from '@/types/todo';
-import { phaseLabels } from '@/app/cosmos/utils/todoStorage';
+import { phaseLabels } from '@/client/storage';
 
 interface TodoPanelHeaderProps {
   view: string;

@@ -4,17 +4,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_ISLAND_NAMES,
   loadIslandNames,
+  saveIslandNames,
   loadIslandIds,
   saveIslandIds,
   ISLAND_IDS,
   MAX_ISLANDS,
-  saveIslandNames,
   type IslandId,
   type IslandNames,
-} from '@/app/cosmos/utils/islandNames';
+  getDeviceId,
+  loadIslandMeta,
+  saveIslandMeta,
+  type IslandMeta,
+  listOutboxChanges,
+  removeOutboxChange,
+} from '@/client/storage';
 import { useAuth } from '@/hooks/useAuth';
-import { getDeviceId } from '@/app/cosmos/utils/deviceId';
-import { loadIslandMeta, saveIslandMeta, type IslandMeta } from '@/app/cosmos/utils/islandMetaStorage';
 import {
   buildIslandPayload,
   enqueueIslandChange,
@@ -22,7 +26,6 @@ import {
   pushIslandChanges,
   type SyncIslandItem,
 } from '@/app/cosmos/utils/islandSync';
-import { listOutboxChanges, removeOutboxChange } from '@/app/cosmos/utils/syncOutbox';
 
 const SYNC_INTERVAL_MS = 10000;
 
@@ -42,9 +45,10 @@ const applyIslandItems = (
 ) => {
   const names: IslandNames = { ...prevNames };
   const idSet = new Set<IslandId>(prevIds);
+  const updatedMeta = { ...meta };
 
   items.forEach((item) => {
-    meta[item.id] = {
+    updatedMeta[item.id] = {
       version: item.version,
       updatedAt: item.updatedAt,
       deletedAt: item.deletedAt,

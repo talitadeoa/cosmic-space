@@ -2,7 +2,7 @@
  * Componente para exibir botões de modo (edit, select, group)
  */
 'use client';
-import type { MoonPhase } from '@/app/cosmos/utils/todoStorage';
+import type { MoonPhase } from '@/client/storage';
 import type { CategoryFilter } from '@/types/planetState';
 import { TodoFilters } from '@/app/cosmos/planeta/salvos/TodoFilters';
 

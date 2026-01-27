@@ -1,16 +1,16 @@
 'use client';
 
 import type { PlanetUiState } from '@/types/planetState';
-import type { SavedTodo } from '@/app/cosmos/utils/todoStorage';
-import type { OutboxChange } from '@/app/cosmos/utils/syncOutbox';
 import {
+  type SavedTodo,
+  type OutboxChange,
   addOutboxChange,
   getMeta,
   listOutboxChanges,
   removeOutboxChange,
   setMeta,
   updateOutboxChangeStatus,
-} from '@/app/cosmos/utils/syncOutbox';
+} from '@/client/storage';
 
 export type SyncTodoPayload = {
   content: string;

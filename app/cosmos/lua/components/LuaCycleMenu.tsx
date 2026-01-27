@@ -62,7 +62,7 @@ const CYCLE_OPTIONS: CycleOption[] = [
     label: 'Análise de Ciclos',
     description: '',
     icon: '📊',
-    href: '/perfil/ciclos',
+    href: '/usuario/ciclos',
     group: 'menstrual',
   },
 ];

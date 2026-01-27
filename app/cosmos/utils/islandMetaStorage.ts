@@ -1,6 +1,6 @@
 'use client';
 
-import type { IslandId } from '@/app/cosmos/utils/islandNames';
+import type { IslandId } from '@/client/storage';
 
 export type IslandMeta = Record<
   IslandId,

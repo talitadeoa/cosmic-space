@@ -1,7 +1,7 @@
 'use client';
 
 import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
-import styles from './ilha.module.css';
+import styles from './island-selector.module.css';
 
 type IslandId = 'ilha1' | 'ilha2' | 'ilha3' | 'ilha4';
 
@@ -44,7 +44,7 @@ const emptyFormState: FormState = {
   prioridade: '',
 };
 
-export default function IlhaClient() {
+export default function IslandSelector() {
   const [ilhas, setIlhas] = useState<Record<IslandId, IslandData>>({
     ilha1: createEmptyIsland(),
     ilha2: createEmptyIsland(),

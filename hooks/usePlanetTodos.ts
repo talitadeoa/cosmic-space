@@ -1,9 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { loadSavedTodos, saveSavedTodos, type SavedTodo, isValidIsland, isValidPhase } from '@/app/cosmos/utils/todoStorage';
+import {
+  loadSavedTodos,
+  saveSavedTodos,
+  type SavedTodo,
+  isValidIsland,
+  isValidPhase,
+  getDeviceId,
+  listOutboxChanges,
+} from '@/client/storage';
 import { useAuth } from '@/hooks/useAuth';
-import { getDeviceId } from '@/app/cosmos/utils/deviceId';
 import {
   enqueueTodoChange,
   mapTodoToPayload,
@@ -11,7 +18,6 @@ import {
   pushTodoChanges,
   type SyncTodoItem,
 } from '@/app/cosmos/utils/planetSync';
-import { listOutboxChanges } from '@/app/cosmos/utils/syncOutbox';
 
 const SYNC_INTERVAL_MS = 10000;
 

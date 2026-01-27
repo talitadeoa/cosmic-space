@@ -88,7 +88,7 @@ export const CommunityHeader = memo(function CommunityHeader({
 
         {/* Profile */}
         <Link
-          href="/perfil"
+          href="/usuario"
           className="flex items-center gap-2 rounded-full border border-slate-700/70 bg-black/40 p-1 pr-3 transition-colors hover:border-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
           aria-label={`Perfil de ${profile.displayName || 'Tripulação'}`}
         >
