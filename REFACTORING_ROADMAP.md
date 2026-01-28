@@ -1,6 +1,6 @@
 # Flua Architecture Refactoring Roadmap
 
-## Status: Phase 4 ✅ Complete
+## Status: Phase 5 ✅ Complete
 
 ### Phase 1: ilha → tarefas ✅
 - **Status**: COMPLETE
@@ -79,31 +79,41 @@ types/                # (deprecados - re-exports)
 
 ## Próximas Fases
 
-### Phase 5: Create Server Directory 🔄
+### Phase 5: Create Server Directory ✅
+- **Status**: COMPLETE
 - **Objetivo**: Separar lógica server-only
-- **Escopo**: Criar estrutura de servidor no `server/`
+- **Mudanças**:
+  - ✅ Criou `server/` com módulo centralizado
+  - ✅ Moveu 10 arquivos server-only de `lib/` para `server/`
+  - ✅ Criou `server/index.ts` como barrel export
+  - ✅ Atualizou `lib/db.ts` e `lib/auth.ts` para re-exports deprecados
+  - ✅ Build passa com sucesso
 
-**Estrutura proposta:**
+**Estrutura criada:**
 ```
 server/
-├── db.ts               # Database connection (from lib/db.ts)
-├── auth.ts             # Auth logic (from lib/auth.ts)
-├── forms.ts            # Form processing (from lib/forms.ts)
+├── index.ts            # Barrel export centralizado
+├── db.ts               # Database connection (Neon)
+├── auth.ts             # Auth tokens & passwords
+├── forms.ts            # Form processing & insights
 ├── sheets.ts           # Google Sheets integration
 ├── timeline.ts         # Timeline data
 ├── phaseInputs.ts      # Phase input logic
 ├── planetTodos.ts      # Planet todos server logic
 ├── planetState.ts      # Planet state server logic
-└── sync/               # Sync endpoints
-    ├── island.ts
-    ├── planet-todos.ts
-    └── planet-state.ts
+├── logger.ts           # Centralized logging
+└── validators.ts       # Server-side validators
 ```
 
-- **Mudanças**:
-  - Mover arquivos `server-only` de `lib/` para `server/`
-  - Atualizar imports em `app/api/**`
-  - Manter padrão `import 'server-only'`
+**Uso:**
+```typescript
+// Antes (deprecado)
+import { getDb } from '@/lib/db';
+import { saveFormEntry } from '@/lib/forms';
+
+// Agora
+import { getDb, saveFormEntry, logger } from '@/server';
+```
 
 ### Phase 6: Consolidate Hooks 🔄
 - **Objetivo**: Organizar hooks por domínio
@@ -149,7 +159,7 @@ client/hooks/
 | 2     | ✅     | 4        | ✅    | N/A   |
 | 3     | ✅     | 35+      | ✅    | N/A   |
 | 4     | ✅     | 6        | ✅    | N/A   |
-| 5     | ⏳     | ~10      | TBD   | TBD   |
+| 5     | ✅     | 10       | ✅    | N/A   |
 | 6     | ⏳     | ~15      | TBD   | TBD   |
 | 7     | ⏳     | N/A      | TBD   | TBD   |
 
@@ -193,4 +203,4 @@ find domains/ features/ -type f 2>/dev/null
 ---
 
 **Last Updated**: 28 de janeiro de 2026
-**Commits**: Phase 4 - Consolidate types to shared/types
+**Commits**: Phase 5 - Create server directory
