@@ -16,7 +16,7 @@
     "web:build": "npm -w @flua/web run build",
     "web:start": "npm -w @flua/web run start",
     "build:mobile": "npm -w @flua/web run build:mobile",
-    "cap:sync": "npx cap sync",
+    "cap:sync": "npx cap sync --project apps/web",
     "mobile": "npm run build:mobile && npm run cap:sync",
     "seed": "npx tsx scripts/seed-lunations.ts",
     "sync:csv": "npx tsx scripts/sync-csv-to-db.ts",

@@ -13,7 +13,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'app.flua.cosmic',
   appName: 'Flua',
-  webDir: 'out', // Diretório de output do Next.js (static export)
+  webDir: './out', // Diretório de output do Next.js (static export)
   
   // Servidor de desenvolvimento (comentar em produção)
   // server: {
