@@ -1,6 +1,6 @@
 # Flua Architecture Refactoring Roadmap
 
-## Status: Phase 6 ✅ Complete
+## Status: 🎉 ALL PHASES COMPLETE
 
 ### Phase 1: ilha → tarefas ✅
 - **Status**: COMPLETE
@@ -178,15 +178,25 @@ import { usePlanetState, useNativeGestures } from '@/client/hooks';
 import { usePlanetState } from '@/client/hooks/state/usePlanetState';
 ```
 
-### Phase 7: Cleanup Scaffolds 🔄
+### Phase 7: Cleanup Scaffolds ✅
+- **Status**: COMPLETE
 - **Objetivo**: Remover estrutura vazia e obsoleta
 - **Mudanças**:
-  - ❌ Deletar `domains/` (vazio)
-  - ❌ Deletar `features/` (vazio)
-  - ❌ Revisar e deletar componentes obsoletos em `app/cosmos/utils/`
-  - ✅ Validar que nenhum arquivo importa desses diretórios
+  - ✅ Analisou `domains/` - **EM USO** (tipos e serviços ativos)
+  - ✅ Deletou `features/` - scaffolds vazios, sem código ativo
+  - ✅ Manteve `app/cosmos/utils/` - ainda em uso por componentes
+  - ✅ Build passa com sucesso
+
+**Resultado:**
+- `features/` removido (era scaffold vazio com exports `{}`)
+- `domains/` mantido (contém tipos ativos usados por `@/shared/types`)
+- `app/cosmos/utils/` mantido (ainda usado por componentes de sync)
 
 ---
+
+## 🎉 REFACTORING COMPLETO!
+
+Todas as 7 fases foram concluídas com sucesso!
 
 ## Métricas de Progresso
 
@@ -198,26 +208,44 @@ import { usePlanetState } from '@/client/hooks/state/usePlanetState';
 | 4     | ✅     | 6        | ✅    | N/A   |
 | 5     | ✅     | 10       | ✅    | N/A   |
 | 6     | ✅     | 24       | ✅    | N/A   |
-| 7     | ⏳     | N/A      | TBD   | TBD   |
+| 7     | ✅     | 1        | ✅    | N/A   |
 
 ---
 
 ## Notas Importantes
 
-### Circular Dependencies Resolvidas
-- `hooks/` → `app/cosmos/utils/` (RESOLVIDO pela Phase 3)
-  - Hooks agora importam de `@/client/storage` em vez de `@/app/cosmos/utils`
+### Estrutura Final
+```
+apps/web/
+├── client/
+│   ├── storage/     # Persistência local (Phase 3)
+│   └── hooks/       # Hooks organizados por domínio (Phase 6)
+├── server/          # Lógica server-only (Phase 5)
+├── hooks/           # Re-exports deprecados
+└── lib/             # Re-exports deprecados
 
-### Próximos Passos Críticos
-1. **Phase 5** requer testes de API antes de mesclar
-2. **Phase 6** é refactoring puro, pode ser feito em paralelo
-3. **Phase 7** é limpeza final
+shared/types/        # Tipos centralizados (Phase 4)
+domains/             # Domínios de negócio (em uso)
+types/               # Re-exports deprecados
+```
+
+### Imports Recomendados
+```typescript
+// Tipos
+import type { MoonPhase } from '@/shared/types';
+import type { SavedTodo } from '@/client/storage';
+
+// Hooks
+import { usePlanetState, usePlanetTodos } from '@/client/hooks';
+
+// Server
+import { getDb, logger } from '@/server';
+```
 
 ### Observações
-- Arquivos em `/types/` agora são re-exports deprecados
-- Novos códigos devem importar de `@/shared/types` ou `@/domains/*/types`
-- `@/client/storage` é a fonte para tipos de storage do cliente
-- Documentação em `doc/` ficará com imports antigos (exemplos)
+- Arquivos em `/types/`, `/hooks/`, `/lib/` agora são re-exports deprecados
+- Novos códigos devem importar de `@/shared/types`, `@/client/hooks`, `@/server`
+- Documentação em `doc/` mantém imports antigos (exemplos)
 
 ---
 
@@ -240,4 +268,4 @@ find domains/ features/ -type f 2>/dev/null
 ---
 
 **Last Updated**: 28 de janeiro de 2026
-**Commits**: Phase 6 - Consolidate hooks to client/hooks
+**Commits**: Phase 7 - Cleanup scaffolds (FINAL)

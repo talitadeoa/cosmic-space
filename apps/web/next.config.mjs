@@ -15,6 +15,11 @@ const nextConfig = {
   // Transpile React Three Fiber packages para evitar erros de SSR
   transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
 
+  // Usar public compartilhado da raiz do monorepo
+  publicRuntimeConfig: {
+    publicFolder: path.join(__dirname, '../../public'),
+  },
+
   // Turbopack não suporta bem react-three-fiber ainda - configuração vazia
   turbopack: {},
 
