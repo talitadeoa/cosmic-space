@@ -1,6 +1,6 @@
 # Flua Architecture Refactoring Roadmap
 
-## Status: Phase 3 ✅ Complete
+## Status: Phase 4 ✅ Complete
 
 ### Phase 1: ilha → tarefas ✅
 - **Status**: COMPLETE
@@ -43,25 +43,41 @@ client/storage/
 └── index.ts                 # Barrel export
 ```
 
+### Phase 4: Extract Types ✅
+- **Status**: COMPLETE
+- **Objetivo**: Centralizar tipos compartilhados
+- **Mudanças**:
+  - ✅ Criou `shared/types/planetState.ts` com tipos consolidados
+  - ✅ Atualizou `shared/types/index.ts` para exportar novos tipos
+  - ✅ Atualizou `/types/planetState.ts` como re-export deprecado
+  - ✅ Atualizou `/types/todo.ts` como re-export deprecado
+  - ✅ `/types/moon.ts` já estava como re-export de `@/domains/lunar-cycle`
+  - ✅ `/types/inputs.ts` já estava como re-export de `@/shared/types`
+  - ✅ Build passa com sucesso
+
+**Estrutura atualizada:**
+```
+shared/types/
+├── api.ts           # ApiResponse, ApiError, FetchState
+├── gestures.ts      # Gesture types
+├── inputs.ts        # FormEntryType, PhaseInputType, TodoInputType
+├── planetState.ts   # PlanetUiState, PlanetFiltersState, IslandId (NOVO)
+├── timeline.ts      # Timeline types
+└── index.ts         # Barrel export
+
+types/                # (deprecados - re-exports)
+├── moon.ts          → @/domains/lunar-cycle/types/moon
+├── inputs.ts        → @/shared/types/inputs
+├── planetState.ts   → @/shared/types/planetState
+├── todo.ts          → re-exports com deprecated markers
+└── index.ts         # Barrel export
+```
+
+**Benefício**: Tipos centralizados em `shared/types` e `domains/*/types`, com backwards compatibility via re-exports deprecados.
+
 ---
 
 ## Próximas Fases
-
-### Phase 4: Extract Types 🔄
-- **Objetivo**: Centralizar tipos compartilhados
-- **Escopo**: Mover tipos para `shared/types/`
-- **Arquivos a criar**:
-  - `shared/types/moon.ts` - MoonPhase, MOON_PHASES, etc (já existe em `/types`)
-  - `shared/types/todo.ts` - SavedTodo, TodoInputType
-  - `shared/types/planet.ts` - PlanetUiState, PlanetFiltersState
-  - `shared/types/island.ts` - IslandId, IslandNames
-
-- **Arquivos a atualizar**: ~20 arquivos
-  - `app/cosmos/planeta/salvos/types.ts`
-  - Components em `app/cosmos/eclipse/`
-  - Documentação em `doc/`
-
-**Benefício**: Eliminar imports circulares entre `/types` e `/client/storage`
 
 ### Phase 5: Create Server Directory 🔄
 - **Objetivo**: Separar lógica server-only
@@ -132,7 +148,7 @@ client/hooks/
 | 1     | ✅     | 5        | ✅    | N/A   |
 | 2     | ✅     | 4        | ✅    | N/A   |
 | 3     | ✅     | 35+      | ✅    | N/A   |
-| 4     | ⏳     | ~20      | TBD   | TBD   |
+| 4     | ✅     | 6        | ✅    | N/A   |
 | 5     | ⏳     | ~10      | TBD   | TBD   |
 | 6     | ⏳     | ~15      | TBD   | TBD   |
 | 7     | ⏳     | N/A      | TBD   | TBD   |
@@ -146,15 +162,15 @@ client/hooks/
   - Hooks agora importam de `@/client/storage` em vez de `@/app/cosmos/utils`
 
 ### Próximos Passos Críticos
-1. **Phase 4** deve ser feita antes de Phase 5 (separação de concerns)
-2. **Phase 5** requer testes de API antes de mesclar
-3. **Phase 6** é refactoring puro, pode ser feito em paralelo
-4. **Phase 7** é limpeza final
+1. **Phase 5** requer testes de API antes de mesclar
+2. **Phase 6** é refactoring puro, pode ser feito em paralelo
+3. **Phase 7** é limpeza final
 
 ### Observações
-- Documentação em `doc/` ficará com imports antigos até Phase 4
-- Arquivos `app/cosmos/utils/` antigos podem ser mantidos como referência
-- Considerar deprecation warning antes de deletar scaffolds
+- Arquivos em `/types/` agora são re-exports deprecados
+- Novos códigos devem importar de `@/shared/types` ou `@/domains/*/types`
+- `@/client/storage` é a fonte para tipos de storage do cliente
+- Documentação em `doc/` ficará com imports antigos (exemplos)
 
 ---
 
@@ -168,7 +184,7 @@ npm run build
 npx tsc --noEmit
 
 # Procurar imports de paths antigos
-grep -r "@/app/cosmos/utils" --include="*.ts" --include="*.tsx" src/
+grep -r "@/types/planetState" --include="*.ts" --include="*.tsx" apps/web/
 
 # Procurar arquivos órfãos
 find domains/ features/ -type f 2>/dev/null
@@ -176,5 +192,5 @@ find domains/ features/ -type f 2>/dev/null
 
 ---
 
-**Last Updated**: 27 de janeiro de 2026
-**Commits**: Phase 3 - Extract storage to client/storage
+**Last Updated**: 28 de janeiro de 2026
+**Commits**: Phase 4 - Consolidate types to shared/types
