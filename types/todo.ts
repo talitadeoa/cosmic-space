@@ -1,14 +1,17 @@
 /**
- * 📝 Todo Types - Centralizados
+ * @deprecated Importe de @/shared/types ou @/client/storage em vez de @/types/todo
+ * Este arquivo será removido em versões futuras.
  */
 
-import type { MoonPhase } from './moon';
-import type { TodoInputType } from './inputs';
+// Re-export do domain lunar-cycle
+export type { MoonPhase } from '@/domains/lunar-cycle/types/moon';
 
-export type { MoonPhase };
+// Re-export de shared/types para inputs
+export type { TodoInputType } from '@/shared/types/inputs';
 
 /**
  * ID único de ilha
+ * @deprecated Use import de @/client/storage
  */
 export type IslandId =
   | 'ilha1'
@@ -24,13 +27,14 @@ export type IslandId =
 
 /**
  * Todo item básico (do input)
+ * @deprecated Use import de @/client/storage
  */
 export interface TodoItem {
   id: string;
   text: string;
   completed: boolean;
   depth: number;
-  inputType: TodoInputType;
+  inputType: 'text' | 'checkbox';
   category?: string;
   dueDate?: string;
   parentId?: string | null;
@@ -38,19 +42,17 @@ export interface TodoItem {
 
 /**
  * Tipo de ciclo para a fase lunar
- * - null: Sem prazo definido (apenas a fase)
- * - 'current': Lua atual (mês atual)
- * - 'next': Próximo ciclo (próximo mês)
  */
 export type PhaseCycleType = null | 'current' | 'next';
 
 /**
  * Todo salvo com metadados adicionais
+ * @deprecated Use import de @/client/storage
  */
 export interface SavedTodo extends TodoItem {
-  phase?: MoonPhase;
-  phaseCycle?: PhaseCycleType; // Quando a fase é aplicada: mês atual, próximo, ou sem prazo
-  phaseDeadline?: string; // Data específica da fase (ISO 8601) - opcional
+  phase?: import('@/domains/lunar-cycle/types/moon').MoonPhase;
+  phaseCycle?: PhaseCycleType;
+  phaseDeadline?: string;
   islandId?: IslandId;
   createdAt?: string;
   updatedAt?: string;
@@ -72,8 +74,6 @@ export function isValidPhaseCycle(value: unknown): value is PhaseCycleType {
   return value === null || value === 'current' || value === 'next';
 }
 
-// isValidTodoInputType está em ./inputs.ts - usar de lá para evitar duplicação
-
 /**
  * Constantes
  */
@@ -91,3 +91,4 @@ export const ISLAND_IDS: IslandId[] = [
   'ilha9',
   'ilha10',
 ];
+

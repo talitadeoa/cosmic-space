@@ -1,0 +1,284 @@
+'use client';
+
+import { useEffect, useRef, useState, useCallback } from 'react';
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+}
+
+interface RequestInFlight<T> {
+  promise: Promise<T>;
+  settled: boolean;
+}
+
+class LunationCacheStore {
+  private cache = new Map<string, CacheEntry<any>>();
+  private requestsInFlight = new Map<string, RequestInFlight<any>>();
+  private subscribers = new Map<string, Set<() => void>>();
+
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+
+    const isExpired = Date.now() - entry.timestamp > entry.ttl;
+    if (isExpired) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry.data as T;
+  }
+
+  set<T>(key: string, data: T, ttlMs: number = 3600000) {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl: ttlMs,
+    });
+    this.notify(key);
+  }
+
+  /**
+   * Deduplicação de requisições em voo
+   * Se já há uma requisição em andamento, retorna a mesma promise
+   */
+  async fetch<T>(key: string, fetcher: () => Promise<T>, ttlMs: number = 3600000): Promise<T> {
+    // 1. Verificar cache
+    const cached = this.get<T>(key);
+    if (cached) return cached;
+
+    // 2. Verificar se há requisição em voo
+    const inFlight = this.requestsInFlight.get(key);
+    if (inFlight && !inFlight.settled) {
+      return inFlight.promise as Promise<T>;
+    }
+
+    // 3. Criar nova requisição
+    const promise = fetcher().then(
+      (data) => {
+        this.set(key, data, ttlMs);
+        const entry = this.requestsInFlight.get(key);
+        if (entry) {
+          entry.settled = true;
+        }
+        return data;
+      },
+      (error) => {
+        const entry = this.requestsInFlight.get(key);
+        if (entry) {
+          entry.settled = true;
+        }
+        throw error;
+      }
+    );
+
+    this.requestsInFlight.set(key, {
+      promise,
+      settled: false,
+    });
+
+    return promise;
+  }
+
+  private notify(key: string) {
+    const subscribers = this.subscribers.get(key);
+    if (subscribers) {
+      subscribers.forEach((cb) => cb());
+    }
+  }
+
+  subscribe(key: string, callback: () => void) {
+    if (!this.subscribers.has(key)) {
+      this.subscribers.set(key, new Set());
+    }
+    this.subscribers.get(key)!.add(callback);
+
+    return () => {
+      const subs = this.subscribers.get(key);
+      if (subs) {
+        subs.delete(callback);
+      }
+    };
+  }
+
+  clear() {
+    this.cache.clear();
+    this.requestsInFlight.clear();
+    this.subscribers.clear();
+  }
+}
+
+// Singleton global
+const cacheStore = new LunationCacheStore();
+
+export interface UseLunationCacheOptions {
+  /** TTL em milissegundos (padrão: 1 hora) */
+  ttl?: number;
+  /** Se false, não faz fetch automático no mount */
+  autoFetch?: boolean;
+  /** Revalidar em segundos (refetch periodicamente) */
+  revalidateInterval?: number;
+}
+
+export function useLunationCache<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  options: UseLunationCacheOptions = {}
+) {
+  const { ttl = 3600000, autoFetch = true, revalidateInterval } = options;
+
+  const [data, setData] = useState<T | null>(() => cacheStore.get(key));
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+  const fetcherRef = useRef(fetcher);
+
+  // Atualizar ref quando fetcher muda, sem disparar useEffect
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+  }, [fetcher]);
+
+  // Função de carregamento estável
+  const load = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
+    setIsLoading(true);
+    try {
+      const result = await cacheStore.fetch(key, fetcherRef.current, ttl);
+      if (isMountedRef.current) {
+        setData(result);
+        setError(null);
+      }
+    } catch (err) {
+      if (isMountedRef.current) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [key, ttl]); // Usar ref para não adicionar fetcher ao dependency
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    // Subscribe to cache updates
+    unsubscribeRef.current = cacheStore.subscribe(key, () => {
+      const cached = cacheStore.get<T>(key);
+      if (cached && isMountedRef.current) {
+        setData(cached);
+        setError(null);
+      }
+    });
+
+    if (autoFetch) {
+      load();
+
+      // Setup revalidation interval
+      if (revalidateInterval) {
+        intervalRef.current = setInterval(() => {
+          load();
+        }, revalidateInterval * 1000);
+      }
+    }
+
+    return () => {
+      isMountedRef.current = false;
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [key, autoFetch, revalidateInterval]); // load NÃO deve estar aqui pois causa loop
+
+  const mutate = async (newData?: T | Promise<T>) => {
+    if (newData instanceof Promise) {
+      setIsLoading(true);
+      try {
+        const resolved = await newData;
+        cacheStore.set(key, resolved, ttl);
+      } finally {
+        setIsLoading(false);
+      }
+    } else if (newData !== undefined) {
+      cacheStore.set(key, newData, ttl);
+    } else {
+      // Revalidar
+      setIsLoading(true);
+      try {
+        const result = await cacheStore.fetch(key, fetcherRef.current, ttl);
+        setData(result);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  return {
+    data,
+    isLoading,
+    error,
+    mutate,
+  };
+}
+
+/**
+ * Hook para buscar lunações de um período (via USNO)
+ */
+export function useLunations(
+  startDate: Date | string,
+  endDate: Date | string,
+  options: UseLunationCacheOptions = {}
+) {
+  const start = typeof startDate === 'string' ? startDate : startDate.toISOString().split('T')[0];
+  const end = typeof endDate === 'string' ? endDate : endDate.toISOString().split('T')[0];
+
+  const cacheKey = `lunations:${start}:${end}`;
+
+  // Memoizar a função fetcher para evitar recriações desnecessárias
+  const fetcher = useCallback(async () => {
+    // Importar dinamicamente para evitar SSR issues
+    const { getMoonPhases } = await import('@/lib/usno-client');
+    
+    const startYear = Number(start.slice(0, 4));
+    const endYear = Number(end.slice(0, 4));
+    const allPhases = [];
+
+    for (let year = startYear; year <= endYear; year++) {
+      const phases = await getMoonPhases(year);
+      allPhases.push(...phases);
+    }
+
+    // Filtrar por data
+    const filtered = allPhases.filter(p => p.date >= start && p.date <= end);
+
+    return {
+      days: filtered,
+      source: 'usno',
+      timestamp: new Date().toISOString(),
+    };
+  }, [start, end]);
+
+  return useLunationCache(
+    cacheKey,
+    fetcher,
+    { ttl: 86400000, ...options } // 24 horas por padrão
+  );
+}
+
+/**
+ * Limpar todo o cache
+ */
+export function clearLunationCache() {
+  cacheStore.clear();
+}

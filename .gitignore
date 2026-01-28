@@ -1,27 +1,58 @@
+# Node
 node_modules/
-.next/
-.vercel/
-dist/
-out/
-.env
-.env.local
-.env.*.local
-aaa
-.DS_Store
-.idea/
-.vscode/
-/.pnp/
-/.pnp.js
+*.log
+*.tgz
+*.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-coverage/
-build/
+pnpm-debug.log*
+lerna-debug.log*
 npm-packages-offline-cache/
-*.tgz
-*.log
+
+# Build artifacts
+dist/
+build/
 public/build/
-/.parcel-cache/
+coverage/
+out/
+.next/
+.next/cache/
+.turbo/
+turbo-*
+.parcel-cache/
+.cache/
+
+# Env files (keep real secrets local)
+.env
 .env.local
+.env.*.local
+.env.development
+.env.test
 .env.production
-.husky
+.envrc
+
+# Package manager
+/.pnp/
+/.pnp.js
+
+# Tooling
+.vercel/
+.DS_Store
+.idea/
+.vscode/
+
+# Mobile / Expo
+.expo/
+.expo-shared/
+android/.gradle/
+android/.idea/
+android/local.properties
+android/app/debug.keystore
+android/app/release.keystore
+android/app/build/
+ios/Pods/
+ios/build/
+
+# Temporary
+aaa

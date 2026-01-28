@@ -1,0 +1,6 @@
+{
+  "name": "@flua/ios",
+  "version": "1.2.0-alpha",
+  "private": true,
+  "description": "Capacitor iOS native wrapper for Flua"
+}

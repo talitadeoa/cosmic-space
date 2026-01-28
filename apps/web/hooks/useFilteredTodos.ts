@@ -1,0 +1,85 @@
+import { useMemo } from 'react';
+import type { SavedTodo, MoonPhase } from '@/client/storage';
+import type { PlanetFiltersState, InputTypeFilter, TodoStatusFilter } from '@/types/planetState';
+
+export type FilterState = PlanetFiltersState;
+export type { InputTypeFilter, TodoStatusFilter };
+
+/**
+ * Hook que aplica filtros em cascata aos todos
+ * Ordem: view → inputType → todoStatus → phase → island → month → year
+ */
+export const useFilteredTodos = (
+  todos: SavedTodo[],
+  filters: FilterState,
+  currentWeekPhase?: MoonPhase | null,
+  nextWeekDominantPhase?: MoonPhase | null
+) => {
+  return useMemo(() => {
+    return (
+      todos
+        // 1. Filtrar por view (inbox ou lua-atual)
+        .filter((todo) => {
+          if (filters.view === 'lua-atual') {
+            if (currentWeekPhase) {
+              return todo.phase === currentWeekPhase;
+            }
+            return todo.phase !== null;
+          }
+          if (filters.view === 'proxima-fase') {
+            if (nextWeekDominantPhase) {
+              return todo.phase === nextWeekDominantPhase;
+            }
+            return todo.phase !== null;
+          }
+          return true;
+        })
+        // 2. Filtrar por tipo de input (se selecionado)
+        .filter((todo) => {
+          if (filters.inputType === 'all') {
+            return true;
+          }
+          return todo.inputType === filters.inputType;
+        })
+        // 3. Filtrar por status (apenas quando filtra tarefas)
+        .filter((todo) => {
+          if (filters.inputType !== 'checkbox') {
+            return true;
+          }
+          if (filters.todoStatus === 'all') {
+            return true;
+          }
+          return filters.todoStatus === 'completed' ? todo.completed : !todo.completed;
+        })
+        // 4. Filtrar por categoria (quando definida)
+        .filter((todo) => {
+          if (!filters.category || filters.category === 'all') return true;
+          return todo.category === filters.category;
+        })
+        // 5. Filtrar por phase específica (se selecionada)
+        .filter((todo) => {
+          if (!filters.phase) return true;
+          return todo.phase === filters.phase;
+        })
+        // 6. Filtrar por island (se selecionada)
+        .filter((todo) => {
+          if (!filters.island) return true;
+          return todo.islandId === filters.island;
+        })
+        // 7. Filtrar por ano (se selecionado)
+        .filter((todo) => {
+          if (!filters.year) return true;
+          if (!todo.createdAt) return false;
+          const todoYear = new Date(todo.createdAt).getFullYear();
+          return todoYear === filters.year;
+        })
+        // 8. Filtrar por mês (se selecionado)
+        .filter((todo) => {
+          if (!filters.month) return true;
+          if (!todo.createdAt) return false;
+          const todoMonth = new Date(todo.createdAt).getMonth() + 1;
+          return todoMonth === filters.month;
+        })
+    );
+  }, [todos, filters, currentWeekPhase, nextWeekDominantPhase]);
+};

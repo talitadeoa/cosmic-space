@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@/shared/*": ["../../shared/*"],
+      "@/domains/*": ["../../domains/*"],
+      "@/features/*": ["./features/*"],
+      "@/app/*": ["./app/*"],
+      "@/types/*": ["../../types/*"],
+      "@/types": ["../../shared/types/index"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}
