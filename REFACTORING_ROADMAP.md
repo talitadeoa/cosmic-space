@@ -1,6 +1,6 @@
 # Flua Architecture Refactoring Roadmap
 
-## Status: Phase 5 ✅ Complete
+## Status: Phase 6 ✅ Complete
 
 ### Phase 1: ilha → tarefas ✅
 - **Status**: COMPLETE
@@ -115,31 +115,68 @@ import { saveFormEntry } from '@/lib/forms';
 import { getDb, saveFormEntry, logger } from '@/server';
 ```
 
-### Phase 6: Consolidate Hooks 🔄
+### Phase 6: Consolidate Hooks ✅
+- **Status**: COMPLETE
 - **Objetivo**: Organizar hooks por domínio
-- **Escopo**: Mover e reorganizar em `client/hooks/`
+- **Mudanças**:
+  - ✅ Criou `client/hooks/` com 9 subpastas por domínio
+  - ✅ Moveu 24 hooks de `hooks/` e `lib/hooks/`
+  - ✅ Criou `client/hooks/index.ts` como barrel export
+  - ✅ Corrigidos imports relativos entre hooks
+  - ✅ Build passa com sucesso
 
-**Estrutura proposta:**
+**Estrutura criada:**
 ```
 client/hooks/
+├── index.ts              # Barrel export
 ├── auth/
-│   ├── useAuth.ts
-│   └── useAuthGuard.ts
+│   └── useAuth.ts
 ├── state/
 │   ├── usePlanetState.ts
 │   ├── usePlanetTodos.ts
-│   └── useIslandNames.ts
+│   ├── useIslandNames.ts
+│   └── useFilteredTodos.ts
 ├── data/
-│   ├── useLunations.ts
+│   ├── useLunationCache.ts
 │   ├── usePhaseInputs.ts
-│   └── useLunationCache.ts
+│   ├── useInsightsCache.ts
+│   ├── useAnnualInsights.ts
+│   ├── useMonthlyInsights.ts
+│   ├── useQuarterlyInsights.ts
+│   └── useGenericInsights.ts
 ├── gestures/
-│   └── useTodoGestures.ts
-└── index.ts
+│   ├── useNativeGestures.ts
+│   ├── useHaptics.ts
+│   └── useMotion.ts
+├── ui/
+│   ├── useKeyboardNavigation.ts
+│   ├── useMediaQuery.ts
+│   └── useDebounce.ts
+├── cycle/
+│   ├── useCycle.ts
+│   ├── useMenstrualCycle.ts
+│   ├── useCurrentWeekPhase.ts
+│   └── useLunarPhaseUSNO.ts
+├── community/
+│   └── useCommunityCache.ts
+├── sync/
+│   └── useGalaxySunsSync.ts
+└── other/
+    ├── useBrainstormSession.ts
+    └── useEmotionalInput.ts
 ```
 
-- **Mudanças**: ~15 hooks para reorganizar
-- **Benefício**: Melhor descobertabilidade e manutenção
+**Uso:**
+```typescript
+// Antes
+import { usePlanetState } from '@/hooks/usePlanetState';
+import { useNativeGestures } from '@/hooks/useNativeGestures';
+
+// Agora
+import { usePlanetState, useNativeGestures } from '@/client/hooks';
+// ou importação específica
+import { usePlanetState } from '@/client/hooks/state/usePlanetState';
+```
 
 ### Phase 7: Cleanup Scaffolds 🔄
 - **Objetivo**: Remover estrutura vazia e obsoleta
@@ -160,7 +197,7 @@ client/hooks/
 | 3     | ✅     | 35+      | ✅    | N/A   |
 | 4     | ✅     | 6        | ✅    | N/A   |
 | 5     | ✅     | 10       | ✅    | N/A   |
-| 6     | ⏳     | ~15      | TBD   | TBD   |
+| 6     | ✅     | 24       | ✅    | N/A   |
 | 7     | ⏳     | N/A      | TBD   | TBD   |
 
 ---
@@ -203,4 +240,4 @@ find domains/ features/ -type f 2>/dev/null
 ---
 
 **Last Updated**: 28 de janeiro de 2026
-**Commits**: Phase 5 - Create server directory
+**Commits**: Phase 6 - Consolidate hooks to client/hooks
