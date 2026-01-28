@@ -14,27 +14,12 @@
     "jsx": "react-jsx",
     "incremental": true,
     "types": ["node", "react", "react-dom"],
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
       "@/shared/*": ["./shared/*"],
       "@/domains/*": ["./domains/*"],
-      "@/features/*": ["./features/*"],
-      "@/app/*": ["./app/*"],
       "@/types": ["./shared/types/index"]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": ["node_modules", "scripts", "capacitor.config.ts", "doc"]
+  "exclude": ["node_modules", "scripts", "capacitor.config.ts", "doc", "apps", "packages"]
 }
