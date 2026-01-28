@@ -2,7 +2,6 @@
   "buildCommand": "turbo run build --filter=@flua/web",
   "installCommand": "npm install --force",
   "framework": "nextjs",
-  "rootDirectory": "apps/web",
   "env": {
     "NEXT_PUBLIC_API_URL": "@NEXT_PUBLIC_API_URL",
     "DATABASE_URL": "@DATABASE_URL"
